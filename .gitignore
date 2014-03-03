@@ -1,0 +1,9 @@
+.*.swp
+*~
+*.py[co]
+.coverage
+*.egg-info
+dist
+*.egg
+coverage.xml
+junit.xml
