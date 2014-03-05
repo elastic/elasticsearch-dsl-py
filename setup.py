@@ -11,6 +11,7 @@ long_description = f.read().strip()
 f.close()
 
 install_requires = [
+    'six',
     'elasticsearch>=1.0.0'
 ]
 tests_require = [
