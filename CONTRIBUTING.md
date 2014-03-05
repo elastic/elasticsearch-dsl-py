@@ -1,5 +1,5 @@
 If you have a bugfix or new feature that you would like to contribute to
-elasticsearch-py, please find or open an issue about it first. Talk about what
+elasticsearch-dsl-py, please find or open an issue about it first. Talk about what
 you would like to do. It may be that somebody is already working on it, or that
 there are particular issues that you should know about before implementing the
 change.
@@ -23,12 +23,9 @@ The process for contributing to any of the Elasticsearch repositories is similar
     python setup.py test
     ````
 
-   See the README file in `test_elasticsearch` dirctory for more information on
-   running the test suite.
-
 3. Rebase your changes.
    Update your local repository with the most recent code from the main
-   elasticsearch-py repository, and rebase your branch on top of the latest master
+   elasticsearch-dsl-py repository, and rebase your branch on top of the latest master
    branch. We prefer your changes to be squashed into a single commit.
 
 4. Submit a pull request. Push your local changes to your forked copy of the
@@ -39,5 +36,5 @@ The process for contributing to any of the Elasticsearch repositories is similar
 
 Then sit back and wait. There will probably be discussion about the pull
 request and, if any changes are needed, we would love to work with you to get
-your pull request merged into elasticsearch-py.
+your pull request merged into elasticsearch-dsl-py.
 
