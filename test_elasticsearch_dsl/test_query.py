@@ -10,6 +10,12 @@ def test_bool_to_dict():
 
     assert {"bool": {"must": [{"match": {"f": "value"}}]}} == bool.to_dict()
 
+def test_bool_converts_its_init_args_to_queries():
+    q = query.BoolQuery(must=[{"match": {"f": "value"}}])
+
+    assert len(q.must) == 1
+    assert q.must[0] == query.MatchQuery(f='value')
+
 def test_two_queries_make_a_bool():
     q1 = query.MatchQuery(f='value1')
     q2 = query.MatchQuery(message={"query": "this is a test", "opeartor": "and"})
@@ -40,6 +46,29 @@ def test_Q_constructs_query_by_name():
     assert isinstance(q, query.MatchQuery)
     assert {'f': 'value'} == q._params
 
+def test_Q_constructs_simple_query_from_dict():
+    q = query.Q({'match': {'f': 'value'}})
+
+    assert isinstance(q, query.MatchQuery)
+    assert {'f': 'value'} == q._params
+
+def test_Q_constructs_compound_query_from_dict():
+    q = query.Q(
+        {
+            "bool": {
+                "must": [
+                    {'match': {'f': 'value'}},
+                ]
+            }
+        }
+    )
+
+    assert q == query.BoolQuery(must=[query.MatchQuery(f='value')])
+
+def test_Q_raises_error_when_passed_in_dict_and_params():
+    with raises(Exception):
+        query.Q({"match": {'f': 'value'}}, f='value')
+
 def test_Q_raises_error_when_passed_in_query_and_params():
     q = query.MatchQuery(f='value1')
 
@@ -49,3 +78,4 @@ def test_Q_raises_error_when_passed_in_query_and_params():
 def test_Q_raises_error_on_unknown_query():
     with raises(Exception):
         query.Q('not a query', f='value')
+
