@@ -79,3 +79,9 @@ def test_Q_raises_error_on_unknown_query():
     with raises(Exception):
         query.Q('not a query', f='value')
 
+def test_match_all_plus_anything_is_anything():
+    q = query.MatchAll()
+
+    s = object()
+    assert q+s is s
+    assert s+q is s

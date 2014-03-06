@@ -50,6 +50,13 @@ class Query(object):
 
 class MatchAll(Query):
     name = 'match_all'
+    def __add__(self, other):
+        return other
+
+    def __radd__(self, other):
+        return other
+
+EMPTY_QUERY = MatchAll()
 
 class MatchQuery(Query):
     name = 'match'
