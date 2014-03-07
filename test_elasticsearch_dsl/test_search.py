@@ -62,3 +62,15 @@ def test_search_to_dict():
     assert {"query": {"match": {'f': 42}}} == s.to_dict()
 
     assert {"query": {"match": {'f': 42}}, "size": 10} == s.to_dict(size=10)
+
+    s.aggs.bucket('per_tag', 'terms', field='f').aggregate('max_score', 'max', field='score')
+    d = {
+        'aggs': {
+            'per_tag': {
+                'terms': {'field': 'f'},
+                'aggs': {'max_score': {'max': {'field': 'score'}}}
+            }
+        },
+        'query': {'match': {'f': 42}}
+    }
+    assert d == s.to_dict()

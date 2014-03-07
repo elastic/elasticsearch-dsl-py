@@ -45,17 +45,7 @@ class Agg(object):
             }
         }
 
-class Bucket(Agg):
-    def __init__(self, name, aggs=None, **params):
-        super(Bucket, self).__init__(name, **params)
-        self.aggs = {}
-        if aggs:
-            for name, agg in aggs.items():
-                self[name] = {name: agg}
-
-    def __eq__(self, other):
-        return super(Bucket, self).__eq__(other) and self.aggs == other.aggs
-
+class AggBase(object):
     def __getitem__(self, agg_name):
         return self.aggs[agg_name] # propagate KeyError
 
@@ -68,15 +58,28 @@ class Bucket(Agg):
         if bucket:
             return agg
 
-        # otherwise return self so we can keep chaining
+        # otherwise return self._base so we can keep chaining
         else:
-            return self
+            return self._base
 
     def aggregate(self, name, agg_type, **params):
         return self._agg(False, name, agg_type, **params)
 
     def bucket(self, name, agg_type, **params):
         return self._agg(True, name, agg_type, **params)
+
+
+class Bucket(AggBase, Agg):
+    def __init__(self, name, aggs=None, **params):
+        super(Bucket, self).__init__(name, **params)
+        self._base = self
+        self.aggs = {}
+        if aggs:
+            for name, agg in aggs.items():
+                self[name] = {name: agg}
+
+    def __eq__(self, other):
+        return super(Bucket, self).__eq__(other) and self.aggs == other.aggs
 
     def to_dict(self):
         d =  {
