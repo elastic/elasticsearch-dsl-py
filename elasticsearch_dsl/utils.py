@@ -6,8 +6,9 @@ class DslMeta(type):
 
     @classmethod
     def get_dsl_obj(cls, name, params):
-        DslClass = cls._classes.get(name)
-        if not DslClass:
+        try:
+            DslClass = cls._classes[name]
+        except KeyError:
             raise #XXX
         return DslClass(**params)
 
