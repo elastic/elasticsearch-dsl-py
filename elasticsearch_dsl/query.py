@@ -23,7 +23,7 @@ class Query(object):
         self._params = params
 
     def __add__(self, other):
-        return BoolQuery(must=[self, other])
+        return Bool(must=[self, other])
 
     def __eq__(self, other):
         return isinstance(other, Query) and other.name == self.name \
@@ -42,16 +42,16 @@ class MatchAll(Query):
 
 EMPTY_QUERY = MatchAll()
 
-class MatchQuery(Query):
+class Match(Query):
     name = 'match'
 
-class BoolQuery(Query):
+class Bool(Query):
     name = 'bool'
     def __init__(self, **params):
         for n in ('must', 'should', 'must_not'):
             if n in params:
                 params[n] = list(map(Q, params[n]))
-        super(BoolQuery, self).__init__(**params)
+        super(Bool, self).__init__(**params)
 
     @property
     def must(self):

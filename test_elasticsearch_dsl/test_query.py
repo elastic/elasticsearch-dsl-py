@@ -3,30 +3,30 @@ from elasticsearch_dsl import query
 from pytest import raises
 
 def test_match_to_dict():
-    assert {"match": {"f": "value"}} == query.MatchQuery(f='value').to_dict()
+    assert {"match": {"f": "value"}} == query.Match(f='value').to_dict()
 
 def test_bool_to_dict():
-    bool = query.BoolQuery(must=[query.MatchQuery(f='value')])
+    bool = query.Bool(must=[query.Match(f='value')])
 
     assert {"bool": {"must": [{"match": {"f": "value"}}]}} == bool.to_dict()
 
 def test_bool_converts_its_init_args_to_queries():
-    q = query.BoolQuery(must=[{"match": {"f": "value"}}])
+    q = query.Bool(must=[{"match": {"f": "value"}}])
 
     assert len(q.must) == 1
-    assert q.must[0] == query.MatchQuery(f='value')
+    assert q.must[0] == query.Match(f='value')
 
 def test_two_queries_make_a_bool():
-    q1 = query.MatchQuery(f='value1')
-    q2 = query.MatchQuery(message={"query": "this is a test", "opeartor": "and"})
+    q1 = query.Match(f='value1')
+    q2 = query.Match(message={"query": "this is a test", "opeartor": "and"})
     q = q1 + q2
 
-    assert isinstance(q, query.BoolQuery)
+    assert isinstance(q, query.Bool)
     assert [q1, q2] == q.must
 
 def test_queries_are_registered():
     assert 'match' in query.QueryMeta._classes
-    assert query.QueryMeta._classes['match'] is query.MatchQuery
+    assert query.QueryMeta._classes['match'] is query.Match
 
 def test_defining_query_registers_it():
     class MyQuery(query.Query):
@@ -36,20 +36,20 @@ def test_defining_query_registers_it():
     assert query.QueryMeta._classes['my_query'] is MyQuery
 
 def test_Q_passes_query_through():
-    q = query.MatchQuery(f='value1')
+    q = query.Match(f='value1')
 
     assert query.Q(q) is q
 
 def test_Q_constructs_query_by_name():
     q = query.Q('match', f='value')
 
-    assert isinstance(q, query.MatchQuery)
+    assert isinstance(q, query.Match)
     assert {'f': 'value'} == q._params
 
 def test_Q_constructs_simple_query_from_dict():
     q = query.Q({'match': {'f': 'value'}})
 
-    assert isinstance(q, query.MatchQuery)
+    assert isinstance(q, query.Match)
     assert {'f': 'value'} == q._params
 
 def test_Q_constructs_compound_query_from_dict():
@@ -63,14 +63,14 @@ def test_Q_constructs_compound_query_from_dict():
         }
     )
 
-    assert q == query.BoolQuery(must=[query.MatchQuery(f='value')])
+    assert q == query.Bool(must=[query.Match(f='value')])
 
 def test_Q_raises_error_when_passed_in_dict_and_params():
     with raises(Exception):
         query.Q({"match": {'f': 'value'}}, f='value')
 
 def test_Q_raises_error_when_passed_in_query_and_params():
-    q = query.MatchQuery(f='value1')
+    q = query.Match(f='value1')
 
     with raises(Exception):
         query.Q(q, f='value')
