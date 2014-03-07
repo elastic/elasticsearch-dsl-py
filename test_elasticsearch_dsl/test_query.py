@@ -25,15 +25,15 @@ def test_two_queries_make_a_bool():
     assert [q1, q2] == q.must
 
 def test_queries_are_registered():
-    assert 'match' in query.QueryMeta._queries
-    assert query.QueryMeta._queries['match'] is query.MatchQuery
+    assert 'match' in query.QueryMeta._classes
+    assert query.QueryMeta._classes['match'] is query.MatchQuery
 
 def test_defining_query_registers_it():
     class MyQuery(query.Query):
         name = 'my_query'
 
-    assert 'my_query' in query.QueryMeta._queries
-    assert query.QueryMeta._queries['my_query'] is MyQuery
+    assert 'my_query' in query.QueryMeta._classes
+    assert query.QueryMeta._classes['my_query'] is MyQuery
 
 def test_Q_passes_query_through():
     q = query.MatchQuery(f='value1')

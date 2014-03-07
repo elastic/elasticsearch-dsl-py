@@ -1,25 +1,9 @@
 from six import add_metaclass
 
-class QueryMeta(type):
-    _queries = {}
-    def __new__(cls, name, bases, attrs):
-        new_class = super(QueryMeta, cls).__new__(cls, name, bases, attrs)
-        cls._queries[new_class.name] = new_class
-        return new_class
+from .utils import DslMeta
 
-    @classmethod
-    def get_query(cls, name, params):
-        QueryClass = cls._queries.get(name)
-        if not QueryClass:
-            raise #XXX
-        return QueryClass(**params)
-
-    @classmethod
-    def from_dict(cls, query):
-        if len(query) != 1:
-            raise #XXX
-        name, params = query.popitem()
-        return cls.get_query(name, params)
+class QueryMeta(DslMeta):
+    _classes = {}
 
 def Q(name_or_query, **params):
     if isinstance(name_or_query, dict):
@@ -30,7 +14,7 @@ def Q(name_or_query, **params):
         if params:
             raise #XXX
         return name_or_query
-    return Query.get_query(name_or_query, params)
+    return Query.get_dsl_obj(name_or_query, params)
 
 @add_metaclass(QueryMeta)
 class Query(object):
