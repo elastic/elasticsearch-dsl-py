@@ -9,12 +9,15 @@ def Q(name_or_query, **params):
     if isinstance(name_or_query, dict):
         if params:
             raise #XXX
-        return Query.from_dict(name_or_query)
+        if len(name_or_query) != 1:
+            raise #XXX
+        name, params = name_or_query.popitem()
+        return Query.get_dsl_class(name)(**params)
     if isinstance(name_or_query, Query):
         if params:
             raise #XXX
         return name_or_query
-    return Query.get_dsl_obj(name_or_query, params)
+    return Query.get_dsl_class(name_or_query)(**params)
 
 @add_metaclass(QueryMeta)
 class Query(object):
