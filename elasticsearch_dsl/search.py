@@ -55,3 +55,8 @@ class Search(object):
         else:
             self._doc_type.extend(doc_type)
 
+    def to_dict(self, **kwargs):
+        d = {"query": self.query.to_dict()}
+        d.update(kwargs)
+        return d
+

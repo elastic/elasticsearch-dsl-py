@@ -54,3 +54,11 @@ def test_search_doc_type():
     s.doc_type('i', 'i2')
     assert s._doc_type == ['i', 'i2']
 
+def test_search_to_dict():
+    s = search.Search()
+    assert {"query": {"match_all": {}}} == s.to_dict()
+
+    s.query('match', f=42)
+    assert {"query": {"match": {'f': 42}}} == s.to_dict()
+
+    assert {"query": {"match": {'f': 42}}, "size": 10} == s.to_dict(size=10)
