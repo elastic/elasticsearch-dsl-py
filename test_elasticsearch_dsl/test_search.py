@@ -8,10 +8,10 @@ def test_search_starts_with_empty_query():
 def test_search_query_combines_query():
     s = search.Search()
 
-    s.query('match', f=42)
+    assert s is s.query('match', f=42)
     assert s.query._query == query.Match(f=42)
 
-    s.query('match', f=43)
+    assert s is s.query('match', f=43)
     assert s.query._query == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
 def test_methods_are_proxied_to_the_query():
