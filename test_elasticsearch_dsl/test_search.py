@@ -69,7 +69,7 @@ def test_search_to_dict():
             'per_tag': {
                 'terms': {'field': 'f'},
                 'aggs': {'max_score': {'max': {'field': 'score'}}}
-            }
+             }
         },
         'query': {'match': {'f': 42}}
     }

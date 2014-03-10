@@ -1,5 +1,6 @@
 from .query import Q, EMPTY_QUERY
 from .aggs import AggBase
+from .utils import DslBase
 
 class ProxyQuery(object):
     def __init__(self, search):
@@ -20,17 +21,15 @@ class ProxyQuery(object):
             setattr(self._query, attr_name, value)
         super(ProxyQuery, self).__setattr__(attr_name, value)
 
-class AggsProxy(AggBase):
+class AggsProxy(AggBase, DslBase):
+    name = 'aggs'
     def __init__(self, search):
         self._base = self._search = search
-        self.aggs = {}
+        self._params = {'aggs': {}}
 
     def to_dict(self):
-        aggs = {}
-        for a in self.aggs.values():
-            aggs.update(a.to_dict())
-        return aggs
-    
+        return super(AggsProxy, self).to_dict().get('aggs', {})
+
 class Search(object):
     def __init__(self, using=None, index=None, doc_type=None):
         self._using = using
@@ -71,7 +70,7 @@ class Search(object):
     def to_dict(self, **kwargs):
         d = {"query": self.query.to_dict()}
         if self.aggs.aggs:
-            d['aggs'] = self.aggs.to_dict()
+            d.update(self.aggs.to_dict())
         d.update(kwargs)
         return d
 

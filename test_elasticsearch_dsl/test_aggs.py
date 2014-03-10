@@ -25,7 +25,7 @@ def test_A_from_dict():
     a = aggs.A(d)
 
     assert isinstance(a, aggs.Terms)
-    assert a._params == {'field': 'tags'}
+    assert a._params == {'field': 'tags', 'aggs': {'per_author': aggs.A('per_author', 'terms', field='author.raw')}}
     assert a._name == 'per_tag'
     assert a['per_author'] == aggs.A('per_author', 'terms', field='author.raw')
 

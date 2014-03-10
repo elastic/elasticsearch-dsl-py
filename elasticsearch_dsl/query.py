@@ -1,6 +1,6 @@
 from six import add_metaclass
 
-from .utils import DslMeta
+from .utils import DslMeta, DslBase
 
 class QueryMeta(DslMeta):
     _classes = {}
@@ -20,10 +20,10 @@ def Q(name_or_query, **params):
     return Query.get_dsl_class(name_or_query)(**params)
 
 @add_metaclass(QueryMeta)
-class Query(object):
+class Query(DslBase):
+    _type_name = 'query'
+    _type_shortcut = Q
     name = None
-    def __init__(self, **params):
-        self._params = params
 
     def __add__(self, other):
         return Bool(must=[self, other])
@@ -31,9 +31,6 @@ class Query(object):
     def __eq__(self, other):
         return isinstance(other, Query) and other.name == self.name \
             and other._params == self._params
-
-    def to_dict(self):
-        return {self.name: self._params}
 
 class MatchAll(Query):
     name = 'match_all'
@@ -50,29 +47,9 @@ class Match(Query):
 
 class Bool(Query):
     name = 'bool'
-    def __init__(self, **params):
-        for n in ('must', 'should', 'must_not'):
-            if n in params:
-                params[n] = list(map(Q, params[n]))
-        super(Bool, self).__init__(**params)
-
-    @property
-    def must(self):
-        return self._params.setdefault('must', [])
-
-    @property
-    def should(self):
-        return self._params.setdefault('should', [])
-
-    @property
-    def must_not(self):
-        return self._params.setdefault('must_not', [])
-
-    def to_dict(self):
-        d = {}
-        out = {self.name: d}
-        for n in ('must', 'should', 'must_not'):
-            if n in self._params:
-                d[n] = list(map(lambda x: x.to_dict(), self._params[n]))
-        return out
+    _param_defs = {
+        'must': {'type': 'query', 'multi': True},
+        'should': {'type': 'query', 'multi': True},
+        'must_not': {'type': 'query', 'multi': True},
+    }
 

@@ -1,8 +1,8 @@
 from six import add_metaclass
 
-from .utils import DslMeta
+from .utils import DslMeta, DslBase
 
-class BucketMeta(DslMeta):
+class AggMeta(DslMeta):
     _classes = {}
 
 def A(name_or_agg, agg_type=None, **params):
@@ -27,33 +27,40 @@ def A(name_or_agg, agg_type=None, **params):
     
     return Agg.get_dsl_class(agg_type)(name_or_agg, **params)
 
-@add_metaclass(BucketMeta)
-class Agg(object):
+@add_metaclass(AggMeta)
+class Agg(DslBase):
+    _type_name = 'agg'
+    _type_shortcut = A
     name = None
+
     def __init__(self, name, **params):
         self._name = name
-        self._params = params
+        super(Agg, self).__init__(**params)
 
     def __eq__(self, other):
         return isinstance(other, Agg) and other.name == self.name \
             and other._name == self._name and other._params == self._params
 
     def to_dict(self):
-        return {
-            self._name: {
-                self.name: self._params
-            }
-        }
+        d = super(Agg, self).to_dict()
+        out = {self._name: d}
+        if 'aggs' in d[self.name]:
+            d['aggs'] = d[self.name].pop('aggs')
+
+        return out
 
 class AggBase(object):
+    _param_defs = {
+        'aggs': {'type': 'agg', 'hash': True},
+    }
     def __getitem__(self, agg_name):
-        return self.aggs[agg_name] # propagate KeyError
+        return self._params.setdefault('aggs', {})[agg_name] # propagate KeyError
 
     def __setitem__(self, agg_name, agg):
-        self.aggs[agg_name] = A(agg)
+        self._params.setdefault('aggs', {})[agg_name] = A(agg)
 
     def _agg(self, bucket, name, agg_type, **params):
-        agg = self.aggs[name] = A(name, agg_type, **params)
+        agg = self[name] = A(name, agg_type, **params)
         # when creating new buckets return them...
         if bucket:
             return agg
@@ -70,29 +77,12 @@ class AggBase(object):
 
 
 class Bucket(AggBase, Agg):
-    def __init__(self, name, aggs=None, **params):
+    def __init__(self, name, **params):
         super(Bucket, self).__init__(name, **params)
         self._base = self
-        self.aggs = {}
-        if aggs:
-            for name, agg in aggs.items():
-                self[name] = {name: agg}
 
     def __eq__(self, other):
-        return super(Bucket, self).__eq__(other) and self.aggs == other.aggs
-
-    def to_dict(self):
-        d =  {
-            self._name: {
-                self.name: self._params
-            }
-        }
-        if self.aggs:
-            aggs = {}
-            d[self._name]['aggs'] = aggs
-            for a in self.aggs.values():
-                aggs.update(a.to_dict())
-        return d
+        return super(Bucket, self).__eq__(other)
 
 class Terms(Bucket):
     name = 'terms'
