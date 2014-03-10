@@ -38,8 +38,7 @@ class Agg(DslBase):
         super(Agg, self).__init__(**params)
 
     def __eq__(self, other):
-        return isinstance(other, Agg) and other.name == self.name \
-            and other._name == self._name and other._params == self._params
+        return super(Agg, self).__eq__(other) and other._name == self._name
 
     def to_dict(self):
         d = super(Agg, self).to_dict()
@@ -80,9 +79,6 @@ class Bucket(AggBase, Agg):
     def __init__(self, name, **params):
         super(Bucket, self).__init__(name, **params)
         self._base = self
-
-    def __eq__(self, other):
-        return super(Bucket, self).__eq__(other)
 
 class Terms(Bucket):
     name = 'terms'

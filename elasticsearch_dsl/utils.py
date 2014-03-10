@@ -7,6 +7,10 @@ class DslBase(object):
         for pname, pvalue in iteritems(params):
             setattr(self, pname, pvalue)
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and other.name == self.name \
+            and other._params == self._params
+
     def __setattr__(self, name, value):
         if name.startswith('_'):
             return super(DslBase, self).__setattr__(name, value)

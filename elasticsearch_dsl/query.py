@@ -28,10 +28,6 @@ class Query(DslBase):
     def __add__(self, other):
         return Bool(must=[self, other])
 
-    def __eq__(self, other):
-        return isinstance(other, Query) and other.name == self.name \
-            and other._params == self._params
-
 class MatchAll(Query):
     name = 'match_all'
     def __add__(self, other):
