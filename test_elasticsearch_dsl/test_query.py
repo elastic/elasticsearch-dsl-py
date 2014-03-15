@@ -24,6 +24,22 @@ def test_two_queries_make_a_bool():
     assert isinstance(q, query.Bool)
     assert [q1, q2] == q.must
 
+def test_other_and_bool_appends_other_to_must():
+    q1 = query.Match(f='value1')
+    qb = query.Bool()
+
+    q = q1 + qb
+    assert q is qb
+    assert q.must[0] is q1
+
+def test_bool_and_other_appends_other_to_must():
+    q1 = query.Match(f='value1')
+    qb = query.Bool()
+
+    q = qb + q1
+    assert q is qb
+    assert q.must[0] is q1
+
 def test_queries_are_registered():
     assert 'match' in query.QueryMeta._classes
     assert query.QueryMeta._classes['match'] is query.Match

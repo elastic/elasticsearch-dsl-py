@@ -26,6 +26,10 @@ class Query(DslBase):
     name = None
 
     def __add__(self, other):
+        # make sure we give queries that know how to combine themselves
+        # preference
+        if hasattr(other, '__radd__'):
+            return other.__radd__(self)
         return Bool(must=[self, other])
 
 class MatchAll(Query):
@@ -33,8 +37,7 @@ class MatchAll(Query):
     def __add__(self, other):
         return other
 
-    def __radd__(self, other):
-        return other
+    __radd__ = __add__
 
 EMPTY_QUERY = MatchAll()
 
@@ -49,3 +52,13 @@ class Bool(Query):
         'must_not': {'type': 'query', 'multi': True},
     }
 
+    def __add__(self, other):
+        if isinstance(other, Bool):
+            self.must += other.must
+            self.shoult += other.should
+            self.must_not += other.must_not
+        else:
+            self.must.append(other)
+        return self
+
+    __radd__ = __add__

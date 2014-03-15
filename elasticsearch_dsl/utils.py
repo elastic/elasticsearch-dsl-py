@@ -40,7 +40,12 @@ class DslBase(object):
         try:
             return self._params[name]
         except KeyError:
-            # TODO: if type.multi/hash return setdefault([]/{}) ???
+            if name in self._param_defs:
+                pinfo = self._param_defs[name]
+                if pinfo.get('multi'):
+                    return self._params.setdefault(name, [])
+                elif pinfo.get('hash'):
+                    return self._params.setdefault(name, {})
             raise AttributeError()
 
     def to_dict(self):
