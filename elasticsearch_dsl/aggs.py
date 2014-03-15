@@ -30,7 +30,7 @@ def A(name_or_agg, agg_type=None, **params):
 @add_metaclass(AggMeta)
 class Agg(DslBase):
     _type_name = 'agg'
-    _type_shortcut = A
+    _type_shortcut = staticmethod(A)
     name = None
 
     def __init__(self, name, **params):

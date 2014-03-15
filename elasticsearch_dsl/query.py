@@ -22,7 +22,7 @@ def Q(name_or_query, **params):
 @add_metaclass(QueryMeta)
 class Query(DslBase):
     _type_name = 'query'
-    _type_shortcut = Q
+    _type_shortcut = staticmethod(Q)
     name = None
 
     def __add__(self, other):
