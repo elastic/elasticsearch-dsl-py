@@ -54,6 +54,9 @@ class DslBase(object):
         for pname, value in iteritems(self._params):
             pinfo = self._param_defs.get(pname)
             if pinfo and 'type' in pinfo:
+                # don't serialize empty lists and dicts for typed fields
+                if not value:
+                    continue
                 if pinfo.get('multi'):
                     value = list(map(lambda x: x.to_dict(), value))
                 elif pinfo.get('hash'):

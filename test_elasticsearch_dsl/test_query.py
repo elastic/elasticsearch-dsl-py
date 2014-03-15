@@ -6,7 +6,7 @@ def test_match_to_dict():
     assert {"match": {"f": "value"}} == query.Match(f='value').to_dict()
 
 def test_bool_to_dict():
-    bool = query.Bool(must=[query.Match(f='value')])
+    bool = query.Bool(must=[query.Match(f='value')], should=[])
 
     assert {"bool": {"must": [{"match": {"f": "value"}}]}} == bool.to_dict()
 
