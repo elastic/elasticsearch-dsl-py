@@ -40,6 +40,16 @@ def test_bool_and_other_appends_other_to_must():
     assert q is qb
     assert q.must[0] is q1
 
+def test_two_bools_are_combined():
+    q1 = query.Bool(must=[query.MatchAll(), query.Match(f=42)], should=[query.Match(g="v")])
+    q2 = query.Bool(must=[query.Match(x=42)], should=[query.Match(g="v2")], must_not=[query.Match(title='value')])
+
+    q = q1 + q2
+    assert isinstance(q, query.Bool)
+    assert q.must == [query.MatchAll(), query.Match(f=42), query.Match(x=42)]
+    assert q.should == [query.Match(g="v"), query.Match(g="v2")]
+    assert q.must_not == [query.Match(title='value')]
+
 def test_query_and_query_creates_bool():
     q1 = query.Match(f=42)
     q2 = query.Match(g=47)

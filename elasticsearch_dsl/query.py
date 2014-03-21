@@ -62,7 +62,7 @@ class Bool(Query):
     def __add__(self, other):
         if isinstance(other, Bool):
             self.must += other.must
-            self.shoult += other.should
+            self.should += other.should
             self.must_not += other.must_not
         else:
             self.must.append(other)
