@@ -32,12 +32,19 @@ class Query(DslBase):
             return other.__radd__(self)
         return Bool(must=[self, other])
 
+    def __and__(self, other):
+        # make sure we give queries that know how to combine themselves
+        # preference
+        if hasattr(other, '__rand__'):
+            return other.__rand__(self)
+        return Bool(must=[self, other])
+
 class MatchAll(Query):
     name = 'match_all'
     def __add__(self, other):
         return other
+    __and__ = __rand__ = __radd__ = __add__
 
-    __radd__ = __add__
 
 EMPTY_QUERY = MatchAll()
 

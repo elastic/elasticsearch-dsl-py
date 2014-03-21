@@ -40,6 +40,21 @@ def test_bool_and_other_appends_other_to_must():
     assert q is qb
     assert q.must[0] is q1
 
+def test_query_and_query_creates_bool():
+    q1 = query.Match(f=42)
+    q2 = query.Match(g=47)
+
+    q = q1 & q2
+    assert isinstance(q, query.Bool)
+    assert q.must == [q1, q2]
+
+def test_match_all_and_query_equals_other():
+    q1 = query.Match(f=42)
+    q2 = query.MatchAll()
+
+    q = q1 & q2
+    assert q1 == q
+
 def test_queries_are_registered():
     assert 'match' in query.QueryMeta._classes
     assert query.QueryMeta._classes['match'] is query.Match
