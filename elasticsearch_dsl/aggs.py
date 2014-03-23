@@ -37,9 +37,6 @@ class Agg(DslBase):
         self._name = name
         super(Agg, self).__init__(**params)
 
-    def __eq__(self, other):
-        return super(Agg, self).__eq__(other) and other._name == self._name
-
     def to_dict(self):
         d = super(Agg, self).to_dict()
         out = {self._name: d}

@@ -8,8 +8,7 @@ class DslBase(object):
             setattr(self, pname, pvalue)
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and other.name == self.name \
-            and other._params == self._params
+        return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()
 
     def __setattr__(self, name, value):
         if name.startswith('_'):
