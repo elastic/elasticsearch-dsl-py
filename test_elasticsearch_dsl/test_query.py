@@ -65,6 +65,24 @@ def test_match_all_and_query_equals_other():
     q = q1 & q2
     assert q1 == q
 
+def test_inverted_query_becomes_bool_with_must_not():
+    q = query.Match(f=42)
+    q = ~q
+
+    assert q == query.Bool(must_not=[query.Match(f=42)])
+
+def test_double_invert_returns_original_query():
+    q = query.Match(f=42)
+
+    assert q == ~~q
+
+def test_bool_query_gets_inverted_internally():
+    q = query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')])
+    q = ~q
+
+    assert q == query.Bool(must=[query.Match(f=42)], must_not=[query.Match(g='v')])
+
+
 def test_queries_are_registered():
     assert 'match' in query.QueryMeta._classes
     assert query.QueryMeta._classes['match'] is query.Match
