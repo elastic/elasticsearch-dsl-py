@@ -1,6 +1,7 @@
 import operator
 
 from .query import Q, EMPTY_QUERY
+from .filter import F, EMPTY_FILTER
 from .aggs import AggBase
 from .utils import DslBase
 
@@ -13,10 +14,14 @@ OPERATORS = {
     'not': lambda a, b: operator.add(a, operator.invert(b)),
 }
 
-class ProxyQuery(object):
+class BaseProxy(object):
     def __init__(self, search):
         self._search = search
-        self._query = EMPTY_QUERY
+        self._proxied = self._empty
+
+    def __nonzero__(self):
+        return self._proxied != self._empty
+    __bool__ = __nonzero__
 
     def __call__(self, *args, **kwargs):
         op = kwargs.pop('operator', 'add')
@@ -24,18 +29,29 @@ class ProxyQuery(object):
             op = OPERATORS[op]
         except KeyError:
             raise #XXX
-        self._query = op(self._query, Q(*args, **kwargs))
+        self._proxied = op(self._proxied, self._shortcut(*args, **kwargs))
 
         # always return search to be chainable
         return self._search
 
     def __getattr__(self, attr_name):
-        return getattr(self._query, attr_name)
+        return getattr(self._proxied, attr_name)
 
     def __setattr__(self, attr_name, value):
         if not attr_name.startswith('_'):
-            setattr(self._query, attr_name, value)
-        super(ProxyQuery, self).__setattr__(attr_name, value)
+            setattr(self._proxied, attr_name, value)
+        super(BaseProxy, self).__setattr__(attr_name, value)
+
+
+class ProxyQuery(BaseProxy):
+    _empty = EMPTY_QUERY
+    _shortcut = staticmethod(Q)
+
+
+class ProxyFilter(BaseProxy):
+    _empty = EMPTY_FILTER
+    _shortcut = staticmethod(F)
+
 
 class AggsProxy(AggBase, DslBase):
     name = 'aggs'
@@ -63,6 +79,8 @@ class Search(object):
             self._doc_type = [doc_type]
 
         self.query = ProxyQuery(self)
+        self.filter = ProxyFilter(self)
+        self.post_filter = ProxyFilter(self)
         self.aggs = AggsProxy(self)
 
     def index(self, *index):
@@ -84,9 +102,26 @@ class Search(object):
             self._doc_type.extend(doc_type)
 
     def to_dict(self, **kwargs):
-        d = {"query": self.query.to_dict()}
+        if self.filter:
+            d = {
+              "query": {
+                "filtered": {
+                  "query": self.query.to_dict(),
+                  "filter": self.filter.to_dict()
+                }
+              }
+            }
+        else:
+            d = {"query": self.query.to_dict()}
+
+        if self.post_filter:
+            print(self.post_filter._proxied, self.post_filter._empty)
+            print(bool(self.post_filter))
+            d['post_filter'] = self.post_filter.to_dict()
+
         if self.aggs.aggs:
             d.update(self.aggs.to_dict())
+
         d.update(kwargs)
         return d
 

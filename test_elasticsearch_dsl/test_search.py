@@ -3,31 +3,66 @@ from elasticsearch_dsl import search, query
 def test_search_starts_with_empty_query():
     s = search.Search()
 
-    assert s.query._query == query.MatchAll()
+    assert s.query._proxied == query.MatchAll()
 
 def test_search_query_combines_query():
     s = search.Search()
 
     assert s is s.query('match', f=42)
-    assert s.query._query == query.Match(f=42)
+    assert s.query._proxied == query.Match(f=42)
 
     assert s is s.query('match', f=43)
-    assert s.query._query == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
+    assert s.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
 def test_search_query_accepts_operator():
     s = search.Search()
 
     s.query('match', f=42, operator='not')
-    assert s.query._query == query.Bool(must_not=[query.Match(f=42)])
+    assert s.query._proxied == query.Bool(must_not=[query.Match(f=42)])
 
     s.query('match', g='v')
-    assert s.query._query == query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')])
+    assert s.query._proxied == query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')])
 
     s.query('bool', must=[{"match": {"f2": "v2"}}], operator='and')
-    assert s.query._query == query.Bool(must=[
+    assert s.query._proxied == query.Bool(must=[
         query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')]),
         query.Bool(must=[query.Match(f2="v2")])
     ])
+
+def test_filter_turns_search_into_filtered_query():
+    s = search.Search()
+
+
+    s.query('match', title='ruby', operator='not') \
+        .query('match', title='python') \
+        .filter('term', category='meetup', operator='or') \
+        .filter('term', category='conference', operator='or') \
+        .post_filter('terms', tags=['prague', 'czech'])
+
+    assert {
+        'query': {
+            'filtered': {
+                'filter': {
+                    'bool': {
+                        'should': [
+                            {'term': {'category': 'meetup'}},
+                            {'term': {'category': 'conference'}}
+                        ]
+                    }
+                },
+                'query': {
+                    'bool': {
+                        'must': [ {'match': {'title': 'python'}}],
+                        'must_not': [{'match': {'title': 'ruby'}}]
+                    }
+                }
+            }
+        },
+        'post_filter': {
+            'bool': {'must': [{'terms': {'tags': ['prague', 'czech']}}]}
+        }
+    } == s.to_dict()
+
 
 def test_methods_are_proxied_to_the_query():
     s = search.Search()
