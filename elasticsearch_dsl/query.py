@@ -25,30 +25,6 @@ class Query(DslBase):
     _type_shortcut = staticmethod(Q)
     name = None
 
-    def __add__(self, other):
-        # make sure we give queries that know how to combine themselves
-        # preference
-        if hasattr(other, '__radd__'):
-            return other.__radd__(self)
-        return Bool(must=[self, other])
-
-    def __invert__(self):
-        return Bool(must_not=[self])
-
-    def __or__(self, other):
-        # make sure we give queries that know how to combine themselves
-        # preference
-        if hasattr(other, '__ror__'):
-            return other.__ror__(self)
-        return Bool(should=[self, other])
-
-    def __and__(self, other):
-        # make sure we give queries that know how to combine themselves
-        # preference
-        if hasattr(other, '__rand__'):
-            return other.__rand__(self)
-        return Bool(must=[self, other])
-
 class MatchAll(Query):
     name = 'match_all'
     def __add__(self, other):
@@ -71,4 +47,7 @@ class Bool(BoolMixin, Query):
         'should': {'type': 'query', 'multi': True},
         'must_not': {'type': 'query', 'multi': True},
     }
+
+# register this as Bool for Query
+Query._bool = Bool
 
