@@ -1,6 +1,17 @@
+import operator
+
 from .query import Q, EMPTY_QUERY
 from .aggs import AggBase
 from .utils import DslBase
+
+OPERATORS = {
+    'add': operator.add,
+    'and': operator.and_,
+
+    # this should just add to .should?
+    'or': operator.or_,
+    'not': lambda a, b: operator.add(a, operator.invert(b)),
+}
 
 class ProxyQuery(object):
     def __init__(self, search):
@@ -8,7 +19,12 @@ class ProxyQuery(object):
         self._query = EMPTY_QUERY
 
     def __call__(self, *args, **kwargs):
-        self._query += Q(*args, **kwargs)
+        op = kwargs.pop('operator', 'add')
+        try:
+            op = OPERATORS[op]
+        except KeyError:
+            raise #XXX
+        self._query = op(self._query, Q(*args, **kwargs))
 
         # always return search to be chainable
         return self._search
