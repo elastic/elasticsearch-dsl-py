@@ -82,6 +82,35 @@ def test_bool_query_gets_inverted_internally():
 
     assert q == query.Bool(must=[query.Match(f=42)], must_not=[query.Match(g='v')])
 
+def test_match_all_or_something_is_match_all():
+    q1 = query.MatchAll()
+    q2 = query.Match(f=42)
+
+    assert (q1 | q2) == query.MatchAll()
+    assert (q2 | q1) == query.MatchAll()
+
+def test_or_produces_bool_with_should():
+    q1 = query.Match(f=42)
+    q2 = query.Match(g='v')
+
+    q = q1|q2
+    assert q == query.Bool(should=[q1, q2])
+
+def test_bool_with_only_should_will_append_another_query_with_or():
+    qb = query.Bool(should=[query.Match(f='v')])
+    q = query.Match(g=42)
+
+    assert (q | qb) == query.Bool(should=[query.Match(f='v'), q])
+
+def test_two_bool_queries_append_one_to_should_if_possible():
+    q1 = query.Bool(should=[query.Match(f='v')])
+    q2 = query.Bool(must=[query.Match(f='v')])
+
+    assert (q1 | q2) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
+    q1 = query.Bool(should=[query.Match(f='v')])
+    q2 = query.Bool(must=[query.Match(f='v')])
+
+    assert (q2 | q1) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
 
 def test_queries_are_registered():
     assert 'match' in query.QueryMeta._classes

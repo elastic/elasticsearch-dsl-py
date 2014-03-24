@@ -35,6 +35,13 @@ class Query(DslBase):
     def __invert__(self):
         return Bool(must_not=[self])
 
+    def __or__(self, other):
+        # make sure we give queries that know how to combine themselves
+        # preference
+        if hasattr(other, '__ror__'):
+            return other.__ror__(self)
+        return Bool(should=[self, other])
+
     def __and__(self, other):
         # make sure we give queries that know how to combine themselves
         # preference
@@ -48,6 +55,9 @@ class MatchAll(Query):
         return other
     __and__ = __rand__ = __radd__ = __add__
 
+    def __or__(self, other):
+        return self
+    __ror__ = __or__
 
 EMPTY_QUERY = MatchAll()
 
@@ -70,8 +80,21 @@ class Bool(Query):
         else:
             self.must.append(other)
         return self
-
     __radd__ = __add__
+
+    def __or__(self, other):
+        if not (self.must or self.must_not):
+            # TODO: if only 1 in must or should, append the query instead of other
+            self.should.append(other)
+            return self
+
+        elif isinstance(other, Bool) and not (other.must or other.must_not):
+            # TODO: if only 1 in must or should, append the query instead of self
+            other.should.append(self)
+            return other
+
+        return super(Bool, self).__or__(other)
+    __ror__ = __or__
 
     def __invert__(self):
         # special case for single negated query
