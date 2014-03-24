@@ -10,6 +10,14 @@ def test_bool_to_dict():
 
     assert {"bool": {"must": [{"match": {"f": "value"}}]}} == bool.to_dict()
 
+def test_query_clone():
+    bool = query.Bool(must=[query.Match(x=42)], should=[query.Match(g="v2")], must_not=[query.Match(title='value')])
+    bool_clone = bool._clone()
+
+    assert bool == bool_clone
+    assert bool is not bool_clone
+    assert bool.must[0] is not bool_clone.must[0]
+
 def test_bool_converts_its_init_args_to_queries():
     q = query.Bool(must=[{"match": {"f": "value"}}])
 
@@ -29,16 +37,16 @@ def test_other_and_bool_appends_other_to_must():
     qb = query.Bool()
 
     q = q1 + qb
-    assert q is qb
-    assert q.must[0] is q1
+    assert q is not qb
+    assert q.must[0] == q1
 
 def test_bool_and_other_appends_other_to_must():
     q1 = query.Match(f='value1')
     qb = query.Bool()
 
     q = qb + q1
-    assert q is qb
-    assert q.must[0] is q1
+    assert q is not qb
+    assert q.must[0] == q1
 
 def test_two_bools_are_combined():
     q1 = query.Bool(must=[query.MatchAll(), query.Match(f=42)], should=[query.Match(g="v")])
@@ -107,9 +115,6 @@ def test_two_bool_queries_append_one_to_should_if_possible():
     q2 = query.Bool(must=[query.Match(f='v')])
 
     assert (q1 | q2) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
-    q1 = query.Bool(should=[query.Match(f='v')])
-    q2 = query.Bool(must=[query.Match(f='v')])
-
     assert (q2 | q1) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
 
 def test_queries_are_registered():
@@ -170,6 +175,6 @@ def test_Q_raises_error_on_unknown_query():
 def test_match_all_plus_anything_is_anything():
     q = query.MatchAll()
 
-    s = object()
-    assert q+s is s
-    assert s+q is s
+    s = query.Match(f=42)
+    assert q+s == s
+    assert s+q == s

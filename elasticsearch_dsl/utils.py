@@ -68,6 +68,9 @@ class DslBase(object):
             d[pname] = value
         return out
 
+    def _clone(self):
+        return self._type_shortcut(self.to_dict())
+
 
 class DslMeta(type):
     _types = {}

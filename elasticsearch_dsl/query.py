@@ -52,7 +52,7 @@ class Query(DslBase):
 class MatchAll(Query):
     name = 'match_all'
     def __add__(self, other):
-        return other
+        return other._clone()
     __and__ = __rand__ = __radd__ = __add__
 
     def __or__(self, other):
@@ -73,25 +73,28 @@ class Bool(Query):
     }
 
     def __add__(self, other):
+        q = self._clone()
         if isinstance(other, Bool):
-            self.must += other.must
-            self.should += other.should
-            self.must_not += other.must_not
+            q.must += other.must
+            q.should += other.should
+            q.must_not += other.must_not
         else:
-            self.must.append(other)
-        return self
+            q.must.append(other)
+        return q
     __radd__ = __add__
 
     def __or__(self, other):
         if not (self.must or self.must_not):
             # TODO: if only 1 in must or should, append the query instead of other
-            self.should.append(other)
-            return self
+            q = self._clone()
+            q.should.append(other)
+            return q
 
         elif isinstance(other, Bool) and not (other.must or other.must_not):
             # TODO: if only 1 in must or should, append the query instead of self
-            other.should.append(self)
-            return other
+            q = other._clone()
+            q.should.append(self)
+            return q
 
         return super(Bool, self).__or__(other)
     __ror__ = __or__
@@ -99,12 +102,13 @@ class Bool(Query):
     def __invert__(self):
         # special case for single negated query
         if not (self.must or self.should) and len(self.must_not) == 1:
-            return self.must_not[0]
+            return self.must_not[0]._clone()
 
         # bol without should, just flip must and must_not
         elif not self.should:
-            self.must, self.must_not = self.must_not, self.must
-            return self
+            q = self._clone()
+            q.must, q.must_not = q.must_not, q.must
+            return q
 
         # TODO: should -> must_not.append(Bool(should=self.should)) ??
         # queries with should just invert normally
