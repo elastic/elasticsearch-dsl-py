@@ -91,6 +91,7 @@ class Search(object):
             self._index = list(index)
         else:
             self._index.extend(index)
+        return self
 
     def doc_type(self, *doc_type):
         # .doc_type() resets
@@ -100,6 +101,7 @@ class Search(object):
             self._doc_type = list(doc_type)
         else:
             self._doc_type.extend(doc_type)
+        return self
 
     def to_dict(self, **kwargs):
         if self.filter:
