@@ -38,6 +38,7 @@ def test_filter_turns_search_into_filtered_query():
         .filter('term', category='meetup', operator='or') \
         .filter('term', category='conference', operator='or') \
         .post_filter('terms', tags=['prague', 'czech'])
+    s.query.minimum_should_match = 2
 
     assert {
         'query': {
@@ -53,7 +54,8 @@ def test_filter_turns_search_into_filtered_query():
                 'query': {
                     'bool': {
                         'must': [ {'match': {'title': 'python'}}],
-                        'must_not': [{'match': {'title': 'ruby'}}]
+                        'must_not': [{'match': {'title': 'ruby'}}],
+                        'minimum_should_match': 2
                     }
                 }
             }
