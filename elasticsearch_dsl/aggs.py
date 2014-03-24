@@ -82,3 +82,6 @@ class Terms(Bucket):
 
 class Max(Agg):
     name = 'max'
+
+class Avg(Agg):
+    name = 'avg'

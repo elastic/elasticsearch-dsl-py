@@ -29,41 +29,6 @@ def test_search_query_accepts_operator():
         query.Bool(must=[query.Match(f2="v2")])
     ])
 
-def test_filter_turns_search_into_filtered_query():
-    s = search.Search()
-    s.query('match', title='ruby', operator='not') \
-        .query('match', title='python') \
-        .filter('term', category='meetup', operator='or') \
-        .filter('term', category='conference', operator='or') \
-        .post_filter('terms', tags=['prague', 'czech'])
-    s.query.minimum_should_match = 2
-
-    assert {
-        'query': {
-            'filtered': {
-                'filter': {
-                    'bool': {
-                        'should': [
-                            {'term': {'category': 'meetup'}},
-                            {'term': {'category': 'conference'}}
-                        ]
-                    }
-                },
-                'query': {
-                    'bool': {
-                        'must': [ {'match': {'title': 'python'}}],
-                        'must_not': [{'match': {'title': 'ruby'}}],
-                        'minimum_should_match': 2
-                    }
-                }
-            }
-        },
-        'post_filter': {
-            'bool': {'must': [{'terms': {'tags': ['prague', 'czech']}}]}
-        }
-    } == s.to_dict()
-
-
 def test_methods_are_proxied_to_the_query():
     s = search.Search()
 
@@ -124,3 +89,49 @@ def test_search_to_dict():
         'query': {'match': {'f': 42}}
     }
     assert d == s.to_dict()
+
+def test_complex_example():
+    s = search.Search()
+    s.query('match', title='ruby', operator='not') \
+        .query('match', title='python') \
+        .filter('term', category='meetup', operator='or') \
+        .filter('term', category='conference', operator='or') \
+        .post_filter('terms', tags=['prague', 'czech'])
+
+    s.aggs.bucket('per_country', 'terms', field='country')\
+        .aggregate('avg_attendees', 'avg', field='attendees')
+
+    s.query.minimum_should_match = 2
+
+    assert {
+        'query': {
+            'filtered': {
+                'filter': {
+                    'bool': {
+                        'should': [
+                            {'term': {'category': 'meetup'}},
+                            {'term': {'category': 'conference'}}
+                        ]
+                    }
+                },
+                'query': {
+                    'bool': {
+                        'must': [ {'match': {'title': 'python'}}],
+                        'must_not': [{'match': {'title': 'ruby'}}],
+                        'minimum_should_match': 2
+                    }
+                }
+            }
+        },
+        'post_filter': {
+            'bool': {'must': [{'terms': {'tags': ['prague', 'czech']}}]}
+        },
+        'aggs': {
+            'per_country': {
+                'terms': {'field': 'country'},
+                'aggs': {
+                    'avg_attendees': {'avg': {'field': 'attendees'}}
+                }
+            }
+        }
+    } == s.to_dict()
