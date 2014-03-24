@@ -1,6 +1,6 @@
 from six import add_metaclass
 
-from .utils import DslMeta, DslBase
+from .utils import DslMeta, DslBase, BoolMixin
 
 class QueryMeta(DslMeta):
     _classes = {}
@@ -64,7 +64,7 @@ EMPTY_QUERY = MatchAll()
 class Match(Query):
     name = 'match'
 
-class Bool(Query):
+class Bool(BoolMixin, Query):
     name = 'bool'
     _param_defs = {
         'must': {'type': 'query', 'multi': True},
@@ -72,44 +72,3 @@ class Bool(Query):
         'must_not': {'type': 'query', 'multi': True},
     }
 
-    def __add__(self, other):
-        q = self._clone()
-        if isinstance(other, Bool):
-            q.must += other.must
-            q.should += other.should
-            q.must_not += other.must_not
-        else:
-            q.must.append(other)
-        return q
-    __radd__ = __add__
-
-    def __or__(self, other):
-        if not (self.must or self.must_not):
-            # TODO: if only 1 in must or should, append the query instead of other
-            q = self._clone()
-            q.should.append(other)
-            return q
-
-        elif isinstance(other, Bool) and not (other.must or other.must_not):
-            # TODO: if only 1 in must or should, append the query instead of self
-            q = other._clone()
-            q.should.append(self)
-            return q
-
-        return super(Bool, self).__or__(other)
-    __ror__ = __or__
-
-    def __invert__(self):
-        # special case for single negated query
-        if not (self.must or self.should) and len(self.must_not) == 1:
-            return self.must_not[0]._clone()
-
-        # bol without should, just flip must and must_not
-        elif not self.should:
-            q = self._clone()
-            q.must, q.must_not = q.must_not, q.must
-            return q
-
-        # TODO: should -> must_not.append(Bool(should=self.should)) ??
-        # queries with should just invert normally
-        return super(Bool, self).__invert__()
