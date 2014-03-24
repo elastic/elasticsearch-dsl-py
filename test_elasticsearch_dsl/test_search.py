@@ -31,8 +31,6 @@ def test_search_query_accepts_operator():
 
 def test_filter_turns_search_into_filtered_query():
     s = search.Search()
-
-
     s.query('match', title='ruby', operator='not') \
         .query('match', title='python') \
         .filter('term', category='meetup', operator='or') \
