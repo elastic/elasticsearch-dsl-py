@@ -1,18 +1,8 @@
-import operator
-
 from .query import Q, EMPTY_QUERY
 from .filter import F, EMPTY_FILTER
 from .aggs import AggBase
 from .utils import DslBase
 
-OPERATORS = {
-    'add': operator.add,
-    'and': operator.and_,
-
-    # this should just add to .should?
-    'or': operator.or_,
-    'not': lambda a, b: operator.add(a, operator.invert(b)),
-}
 
 class BaseProxy(object):
     def __init__(self, search):
@@ -24,12 +14,7 @@ class BaseProxy(object):
     __bool__ = __nonzero__
 
     def __call__(self, *args, **kwargs):
-        op = kwargs.pop('operator', 'add')
-        try:
-            op = OPERATORS[op]
-        except KeyError:
-            raise #XXX
-        self._proxied = op(self._proxied, self._shortcut(*args, **kwargs))
+        self._proxied += self._shortcut(*args, **kwargs)
 
         # always return search to be chainable
         return self._search

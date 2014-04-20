@@ -1,4 +1,4 @@
-from elasticsearch_dsl import search, query
+from elasticsearch_dsl import search, query, F, Q
 
 def test_search_starts_with_empty_query():
     s = search.Search()
@@ -13,21 +13,6 @@ def test_search_query_combines_query():
 
     assert s is s.query('match', f=43)
     assert s.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
-
-def test_search_query_accepts_operator():
-    s = search.Search()
-
-    s.query('match', f=42, operator='not')
-    assert s.query._proxied == query.Bool(must_not=[query.Match(f=42)])
-
-    s.query('match', g='v')
-    assert s.query._proxied == query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')])
-
-    s.query('bool', must=[{"match": {"f2": "v2"}}], operator='and')
-    assert s.query._proxied == query.Bool(must=[
-        query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')]),
-        query.Bool(must=[query.Match(f2="v2")])
-    ])
 
 def test_methods_are_proxied_to_the_query():
     s = search.Search()
@@ -92,10 +77,9 @@ def test_search_to_dict():
 
 def test_complex_example():
     s = search.Search()
-    s.query('match', title='ruby', operator='not') \
-        .query('match', title='python') \
-        .filter('term', category='meetup', operator='or') \
-        .filter('term', category='conference', operator='or') \
+    s.query('match', title='python') \
+        .query(~Q('match', title='ruby')) \
+        .filter(F('term', category='meetup') | F('term', category='conference')) \
         .post_filter('terms', tags=['prague', 'czech'])
 
     s.aggs.bucket('per_country', 'terms', field='country')\
