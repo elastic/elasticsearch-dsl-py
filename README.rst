@@ -3,6 +3,12 @@ Elasticsearch DSL
 
 Higher level client built on top of `elasticsearch-py`.
 
+Warning
+-------
+
+This is a work in progress - any part of the library can change or disappear
+with no advance warning, use at your own risk.
+
 License
 -------
 
