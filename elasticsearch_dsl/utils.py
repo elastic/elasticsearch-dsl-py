@@ -1,6 +1,20 @@
 from six import iteritems
 
 class DslBase(object):
+    """
+    Base class for all DSL objects - queries, filters, aggregations etc. Wraps
+    a dictionary representing the object's json.
+
+    Provides several feature:
+        - attribute access to the wrapped dictionary (.field instead of ['field'])
+        - _clone method returning a deep copy of self
+        - to_dict method to serialize into dict (to be sent via elasticsearch-py)
+        - basic logical operators (&, | and ~) using a Bool(Filter|Query) TODO:
+          move into a class specific for Query/Filter
+        - respects the definiton of the class and (de)serializes it's
+          attributes based on the `_param_defs` definition (for example turning
+          all values in the `must` attribute into Query objects)
+    """
     _param_defs = {}
 
     def __init__(self, **params):
@@ -50,7 +64,6 @@ class DslBase(object):
 
     def to_dict(self):
         d = {}
-        out = {self.name: d}
         for pname, value in iteritems(self._params):
             pinfo = self._param_defs.get(pname)
             if pinfo and 'type' in pinfo:
@@ -67,7 +80,7 @@ class DslBase(object):
                 else:
                     value = value.to_dict()
             d[pname] = value
-        return out
+        return {self.name: d}
 
     def _clone(self):
         return self._type_shortcut(self.to_dict())
@@ -97,8 +110,18 @@ class DslBase(object):
         return self._bool(must=[self, other])
 
 
-
 class DslMeta(type):
+    """
+    Base Metaclass for DslBase subclasses that builds a registry of all classes
+    for given DslBase subclass (== all the query types for the Query subclass
+    of DslBase).
+
+    It then uses the information from that registry (as well as `name` and
+    `shortcut` attributes from the base class) to construct any subclass based
+    on it's name.
+
+    For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
+    """
     _types = {}
     def __new__(cls, name, bases, attrs):
         new_class = super(DslMeta, cls).__new__(cls, name, bases, attrs)
@@ -126,6 +149,9 @@ class DslMeta(type):
 
 
 class BoolMixin(object):
+    """
+    Mixin containing all the operator overrides for Bool queries and filters.
+    """
     def __add__(self, other):
         q = self._clone()
         if isinstance(other, self.__class__):
