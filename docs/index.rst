@@ -1,6 +1,12 @@
 Elasticsearch Python DSL
 ========================
 
+.. warning:: 
+
+    This is a work in progress - any part of the library can change or disappear
+    with no advance warning, use at your own risk.
+
+
 Contents
 --------
 
