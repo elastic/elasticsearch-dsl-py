@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pytest import fixture
+from pytest import fixture, raises
 
 from elasticsearch_dsl import result
 
@@ -38,6 +38,12 @@ def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
     assert 'Elasticsearch' == h['name']
 
     assert 'Honza' == res.hits[2].name.first
+
+    with raises(KeyError):
+        h['not_there']
+
+    with raises(AttributeError):
+        h.not_there
 
 
 
