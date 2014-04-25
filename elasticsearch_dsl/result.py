@@ -1,5 +1,7 @@
 from six import iteritems
 
+from .utils import AttrDict
+
 class Hits(list):
     pass
 
@@ -37,8 +39,9 @@ class ResultMeta(object):
                     self.doc_type = v
                 setattr(self, k[1:], v)
 
-class Result(object):
+class Result(AttrDict):
     def __init__(self, document):
+        super(Result, self).__init__(document['_source'])
         self._doc = document
 
     @property
@@ -46,9 +49,3 @@ class Result(object):
         if not hasattr(self, '__meta'):
             self.__meta = ResultMeta(self._doc)
         return self.__meta
-
-    def __getattr__(self, attr_name):
-        try:
-            return self._doc['_source'][attr_name]
-        except KeyError:
-            raise AttributeError()

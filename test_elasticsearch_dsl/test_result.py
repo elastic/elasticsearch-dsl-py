@@ -19,7 +19,6 @@ def test_iterating_over_response_gives_you_hits(dummy_response):
     assert 'company' == h._meta.doc_type
     assert 'elasticsearch' == h._meta.id
     assert 12 == h._meta.score
-    assert 'Elasticsearch' == h.name
 
     assert hits[1]._meta.parent == 'elasticsearch'
 
@@ -30,6 +29,16 @@ def test_hits_get_wrapped_to_contain_additional_attrs(dummy_response):
     assert isinstance(hits, result.Hits)
     assert 123 == hits.total
     assert 12.0 == hits.max_score
+
+def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
+    res = result.Response(dummy_response)
+    h = res.hits[0]
+
+    assert 'Elasticsearch' == h.name
+    assert 'Elasticsearch' == h['name']
+
+    assert 'Honza' == res.hits[2].name.first
+
 
 
 @fixture

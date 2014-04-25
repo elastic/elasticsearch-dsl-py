@@ -1,5 +1,22 @@
 from six import iteritems
 
+class AttrDict(object):
+    def __init__(self, d):
+        self._d = d
+
+    def __getattr__(self, attr_name):
+        try:
+            d = self._d[attr_name]
+            if isinstance(d, dict):
+                return AttrDict(d)
+            return d
+        except KeyError:
+            raise AttributeError()
+
+    def __getitem__(self, key):
+        return self._d[key]
+
+
 class DslBase(object):
     """
     Base class for all DSL objects - queries, filters, aggregations etc. Wraps
