@@ -9,11 +9,12 @@ def A(name_or_agg, agg_type=None, **params):
     if isinstance(name_or_agg, dict):
         if params or agg_type or len(name_or_agg) != 1:
             raise #XXX
-        name, agg = name_or_agg.popitem()
+        name, agg = name_or_agg.copy().popitem()
+        agg = agg.copy()
         aggs = agg.pop('aggs', None)
         if len(agg) != 1:
             raise #XXX
-        agg_type, params = agg.popitem()
+        agg_type, params = agg.copy().popitem()
         if aggs:
             params = params.copy()
             params['aggs'] = aggs

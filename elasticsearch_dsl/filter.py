@@ -11,7 +11,7 @@ def F(name_or_filter, **params):
             raise #XXX
         if len(name_or_filter) != 1:
             raise #XXX
-        name, params = name_or_filter.popitem()
+        name, params = name_or_filter.copy().popitem()
         return Filter.get_dsl_class(name)(**params)
     if isinstance(name_or_filter, Filter):
         if params:

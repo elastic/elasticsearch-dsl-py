@@ -1,29 +1,32 @@
-from .query import Q, EMPTY_QUERY
+from .query import Q, EMPTY_QUERY, FilteredQuery
 from .filter import F, EMPTY_FILTER
-from .aggs import AggBase
+from .aggs import A, AggBase
 from .utils import DslBase
 
 
 class BaseProxy(object):
-    def __init__(self, search):
+    def __init__(self, search, attr_name):
         self._search = search
         self._proxied = self._empty
+        self._attr_name = attr_name
 
     def __nonzero__(self):
         return self._proxied != self._empty
     __bool__ = __nonzero__
 
     def __call__(self, *args, **kwargs):
-        self._proxied += self._shortcut(*args, **kwargs)
+        s = self._search._clone()
+        getattr(s, self._attr_name)._proxied += self._shortcut(*args, **kwargs)
 
         # always return search to be chainable
-        return self._search
+        return s
 
     def __getattr__(self, attr_name):
         return getattr(self._proxied, attr_name)
 
     def __setattr__(self, attr_name, value):
         if not attr_name.startswith('_'):
+            self._proxied = self._shortcut(self._proxied.to_dict())
             setattr(self._proxied, attr_name, value)
         super(BaseProxy, self).__setattr__(attr_name, value)
 
@@ -47,6 +50,7 @@ class AggsProxy(AggBase, DslBase):
     def to_dict(self):
         return super(AggsProxy, self).to_dict().get('aggs', {})
 
+
 class Search(object):
     def __init__(self, using=None, index=None, doc_type=None):
         self._using = using
@@ -63,10 +67,38 @@ class Search(object):
         elif doc_type:
             self._doc_type = [doc_type]
 
-        self.query = ProxyQuery(self)
-        self.filter = ProxyFilter(self)
-        self.post_filter = ProxyFilter(self)
+        self.query = ProxyQuery(self, 'query')
+        self.filter = ProxyFilter(self, 'filter')
+        self.post_filter = ProxyFilter(self, 'post_filter')
         self.aggs = AggsProxy(self)
+
+    @classmethod
+    def from_dict(cls, d):
+        s = cls()
+        s.update_from_dict(d)
+        return s
+
+    def _clone(self):
+        s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
+        for x in ('query', 'filter', 'post_filter'):
+            getattr(s, x)._proxied = getattr(self, x)._proxied
+        return s
+
+    def update_from_dict(self, d):
+        self.query._proxied = Q(d['query'])
+        if 'post_filter' in d:
+            self.post_filter._proxied = F(d['post_filter'])
+
+        if isinstance(self.query._proxied, FilteredQuery):
+            self.filter._proxied = self.query._proxied.filter
+            self.query._proxied = self.query._proxied.query
+
+        aggs = d.get('aggs', d.get('aggregations', {}))
+        if aggs:
+            self.aggs._params = {
+                'aggs': dict(
+                    (name, A({name: value})) for (name, value) in aggs.items())
+            }
 
     def index(self, *index):
         # .index() resets
@@ -102,8 +134,6 @@ class Search(object):
             d = {"query": self.query.to_dict()}
 
         if self.post_filter:
-            print(self.post_filter._proxied, self.post_filter._empty)
-            print(bool(self.post_filter))
             d['post_filter'] = self.post_filter.to_dict()
 
         if self.aggs.aggs:

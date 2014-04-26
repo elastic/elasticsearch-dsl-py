@@ -8,11 +8,13 @@ def test_search_starts_with_empty_query():
 def test_search_query_combines_query():
     s = search.Search()
 
-    assert s is s.query('match', f=42)
-    assert s.query._proxied == query.Match(f=42)
+    s2 = s.query('match', f=42)
+    assert s2.query._proxied == query.Match(f=42)
+    assert s.query._proxied == query.MatchAll()
 
-    assert s is s.query('match', f=43)
-    assert s.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
+    s3 = s2.query('match', f=43)
+    assert s2.query._proxied == query.Match(f=42)
+    assert s3.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
 def test_methods_are_proxied_to_the_query():
     s = search.Search()
@@ -22,7 +24,7 @@ def test_methods_are_proxied_to_the_query():
 def test_query_always_returns_search():
     s = search.Search()
 
-    assert s.query('match', f=42) is s
+    assert isinstance(s.query('match', f=42), search.Search)
 
 def test_search_index():
     s = search.Search(index='i')
@@ -58,7 +60,7 @@ def test_search_to_dict():
     s = search.Search()
     assert {"query": {"match_all": {}}} == s.to_dict()
 
-    s.query('match', f=42)
+    s = s.query('match', f=42)
     assert {"query": {"match": {'f': 42}}} == s.to_dict()
 
     assert {"query": {"match": {'f': 42}}, "size": 10} == s.to_dict(size=10)
@@ -77,7 +79,7 @@ def test_search_to_dict():
 
 def test_complex_example():
     s = search.Search()
-    s.query('match', title='python') \
+    s = s.query('match', title='python') \
         .query(~Q('match', title='ruby')) \
         .filter(F('term', category='meetup') | F('term', category='conference')) \
         .post_filter('terms', tags=['prague', 'czech'])
@@ -119,3 +121,41 @@ def test_complex_example():
             }
         }
     } == s.to_dict()
+
+def test_reverse():
+    d =  {
+        'query': {
+            'filtered': {
+                'filter': {
+                    'bool': {
+                        'should': [
+                            {'term': {'category': 'meetup'}},
+                            {'term': {'category': 'conference'}}
+                        ]
+                    }
+                },
+                'query': {
+                    'bool': {
+                        'must': [ {'match': {'title': 'python'}}],
+                        'must_not': [{'match': {'title': 'ruby'}}],
+                        'minimum_should_match': 2
+                    }
+                }
+            }
+        },
+        'post_filter': {
+            'bool': {'must': [{'terms': {'tags': ['prague', 'czech']}}]}
+        },
+        'aggs': {
+            'per_country': {
+                'terms': {'field': 'country'},
+                'aggs': {
+                    'avg_attendees': {'avg': {'field': 'attendees'}}
+                }
+            }
+        }
+    }
+
+    s = search.Search.from_dict(d)
+
+    assert d == s.to_dict()

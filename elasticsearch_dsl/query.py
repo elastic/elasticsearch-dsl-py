@@ -11,7 +11,7 @@ def Q(name_or_query, **params):
             raise #XXX
         if len(name_or_query) != 1:
             raise #XXX
-        name, params = name_or_query.popitem()
+        name, params = name_or_query.copy().popitem()
         return Query.get_dsl_class(name)(**params)
     if isinstance(name_or_query, Query):
         if params:
@@ -51,3 +51,9 @@ class Bool(BoolMixin, Query):
 # register this as Bool for Query
 Query._bool = Bool
 
+class FilteredQuery(Query):
+    name = 'filtered'
+    _param_defs = {
+        'query': {'type': 'query'},
+        'filter': {'type': 'filter'},
+    }
