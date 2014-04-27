@@ -54,7 +54,7 @@ class AggBase(object):
         return self._params.setdefault('aggs', {})[agg_name] # propagate KeyError
 
     def __setitem__(self, agg_name, agg):
-        self._params.setdefault('aggs', {})[agg_name] = A(agg)
+        self.aggs[agg_name] = A(agg)
 
     def _agg(self, bucket, name, agg_type, **params):
         agg = self[name] = A(name, agg_type, **params)
