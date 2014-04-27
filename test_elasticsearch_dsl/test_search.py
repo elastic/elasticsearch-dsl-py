@@ -26,6 +26,27 @@ def test_query_always_returns_search():
 
     assert isinstance(s.query('match', f=42), search.Search)
 
+def test_aggs_get_copied_on_change():
+    s = search.Search()
+    s.aggs.bucket('per_tag', 'terms', field='f').aggregate('max_score', 'max', field='score')
+
+    s2 = s.query('match_all')
+    s2.aggs.bucket('per_month', 'date_histogram', field='date', interval='month')
+
+    d = {
+        'query': {'match_all': {}},
+        'aggs': {
+            'per_tag': {
+                'terms': {'field': 'f'},
+                'aggs': {'max_score': {'max': {'field': 'score'}}}
+             }
+        }
+    }
+
+    assert d == s.to_dict()
+    d['aggs']['per_month'] = {"date_histogram": {'field': 'date', 'interval': 'month'}}
+    assert d == s2.to_dict()
+
 def test_search_index():
     s = search.Search(index='i')
     assert s._index == ['i']

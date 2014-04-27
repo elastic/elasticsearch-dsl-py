@@ -57,6 +57,9 @@ class AggBase(object):
         self.aggs[agg_name] = A(agg)
 
     def _agg(self, bucket, name, agg_type, **params):
+        # make sure we're not mutating a shared state
+        if 'aggs' in self._params:
+            self._params= {'aggs': self._params['aggs'].copy()}
         agg = self[name] = A(name, agg_type, **params)
         # when creating new buckets return them...
         if bucket:
@@ -80,6 +83,9 @@ class Bucket(AggBase, Agg):
 
 class Terms(Bucket):
     name = 'terms'
+
+class DateHistogram(Bucket):
+    name = 'date_histogram'
 
 class Max(Agg):
     name = 'max'

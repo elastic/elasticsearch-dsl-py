@@ -82,6 +82,7 @@ class Search(object):
         s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
+        s.aggs._params = self.aggs._params
         return s
 
     def update_from_dict(self, d):
