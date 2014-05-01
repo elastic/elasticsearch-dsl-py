@@ -4,6 +4,15 @@ class AttrDict(object):
     def __init__(self, d):
         self._d = d
 
+    def __dir__(self):
+        return list(self._d.keys())
+
+    def __repr__(self):
+        r = repr(self._d)
+        if len(r) > 60:
+            r = r[:60] + '...}'
+        return r
+
     def __getattr__(self, attr_name):
         try:
             d = self._d[attr_name]

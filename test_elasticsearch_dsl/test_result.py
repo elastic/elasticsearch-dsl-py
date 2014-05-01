@@ -4,6 +4,18 @@ from pytest import fixture, raises
 
 from elasticsearch_dsl import result
 
+def test_interactive_helpers(dummy_response):
+    res = result.Response(dummy_response)
+    hits = res.hits
+    h = hits[0]
+
+    rhits = "[<Result(test-index/company/elasticsearch): {'city': 'Amsterdam', 'name': 'Elasticsearch'}>, <Result(test-index/employee/42): {'lang': 'java', 'twitter': 'kimchy', 'name': {'last': 'Bann...}>, <Result(test-index/employee/47): {'lang': 'python', 'twitter': 'honzakral', 'name': {'last': ...}>]"
+    
+    assert '<Response: %s>' % rhits == repr(res)
+    assert rhits == repr(hits)
+    assert ['_meta', 'city', 'name'] == dir(h)
+    assert "<Result(test-index/company/elasticsearch): {'city': 'Amsterdam', 'name': 'Elasticsearch'}>" == repr(h)
+
 def test_iterating_over_response_gives_you_hits(dummy_response):
     res = result.Response(dummy_response)
     hits = list(h for h in res)

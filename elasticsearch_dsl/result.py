@@ -1,17 +1,17 @@
-from six import iteritems
+from six import iteritems, u
 
 from .utils import AttrDict
 
 class Hits(list):
-    pass
+    def __repr__(self):
+        if len(self) > 3:
+            return u('[%s, ...]') % u(', ').join(repr(h) for h in self[:2])
+        return super(Hits, self).__repr__()
 
 class Response(object):
     def __init__(self, raw):
         self._response = raw
         self.took = raw['took']
-
-    def success(self):
-        return not (self._response['timed_out'] or self._response['_shards']['failed'])
 
     def __iter__(self):
         return iter(self.hits)
@@ -19,6 +19,12 @@ class Response(object):
     def __getitem__(self, key):
         # for slicing etc
         return self.hits[key]
+
+    def __repr__(self):
+        return '<Response: %r>' % self.hits
+
+    def success(self):
+        return not (self._response['timed_out'] or self._response['_shards']['failed'])
 
     @property
     def hits(self):
@@ -30,22 +36,21 @@ class Response(object):
         return self._hits
 
 
-class ResultMeta(object):
+class ResultMeta(AttrDict):
     def __init__(self, document):
-        for k, v in iteritems(document):
-            if k.startswith('_') and k != '_source':
-                # make sure we are consistent everywhere in python
-                if k == '_type':
-                    self.doc_type = v
-                setattr(self, k[1:], v)
+        d = dict((k[1:], v) for (k, v) in iteritems(document) if k.startswith('_') and k != '_source')
+        # make sure we are consistent everywhere in python
+        d['doc_type'] = d['type']
+        super(ResultMeta, self).__init__(d)
 
 class Result(AttrDict):
     def __init__(self, document):
         super(Result, self).__init__(document['_source'])
-        self._doc = document
+        self._meta = ResultMeta(document)
 
-    @property
-    def _meta(self):
-        if not hasattr(self, '__meta'):
-            self.__meta = ResultMeta(self._doc)
-        return self.__meta
+    def __dir__(self):
+        return super(Result, self).__dir__() + ['_meta']
+
+    def __repr__(self):
+        return u('<Result(%s/%s/%s): %s>') % (
+            self._meta.index, self._meta.doc_type, self._meta.id, super(Result, self).__repr__())
