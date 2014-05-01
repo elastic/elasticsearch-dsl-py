@@ -2,6 +2,7 @@ from .query import Q, EMPTY_QUERY, FilteredQuery
 from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
 from .utils import DslBase
+from .result import Response
 
 
 class BaseProxy(object):
@@ -142,4 +143,21 @@ class Search(object):
 
         d.update(kwargs)
         return d
+
+    def using(self, client):
+        self._using = client
+        return self
+
+    def execute(self, **kwargs):
+        if not self._using:
+            raise #XXX
+
+        return Response(
+            self._using.search(
+                index=self._index,
+                doc_type=self._doc_type,
+                body=self.to_dict(),
+                **kwargs
+            )
+        )
 
