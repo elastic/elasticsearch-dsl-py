@@ -120,7 +120,8 @@ def test_nested_buckets_are_reachable_as_getitem():
     a = aggs.Terms('per_tag', field='tags')
     b = a.bucket('per_author', 'terms', field='author.raw')
 
-    assert a['per_author'] is b
+    assert a['per_author'] is not b
+    assert a['per_author'] == b
 
 def test_nested_buckets_are_settable_as_getitem():
     a = aggs.Terms('per_tag', field='tags')

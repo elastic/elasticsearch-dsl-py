@@ -32,6 +32,10 @@ def test_aggs_get_copied_on_change():
 
     s2 = s.query('match_all')
     s2.aggs.bucket('per_month', 'date_histogram', field='date', interval='month')
+    s3 = s2.query('match_all')
+    s3.aggs['per_month'].aggregate('max_score', 'max', field='score')
+    s4 = s3._clone()
+    s4.aggs.aggregate('max_score', 'max', field='score')
 
     d = {
         'query': {'match_all': {}},
@@ -46,6 +50,10 @@ def test_aggs_get_copied_on_change():
     assert d == s.to_dict()
     d['aggs']['per_month'] = {"date_histogram": {'field': 'date', 'interval': 'month'}}
     assert d == s2.to_dict()
+    d['aggs']['per_month']['aggs'] = {"max_score": {"max": {"field": 'score'}}}
+    assert d == s3.to_dict()
+    d['aggs']['max_score'] = {"max": {"field": 'score'}}
+    assert d == s4.to_dict()
 
 def test_search_index():
     s = search.Search(index='i')

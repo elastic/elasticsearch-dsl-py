@@ -83,7 +83,10 @@ class Search(object):
         s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
-        s.aggs._params = self.aggs._params
+
+        # copy top-level bucket definitions
+        if self.aggs._params.get('aggs'):
+            s.aggs._params = {'aggs': self.aggs._params['aggs'].copy()}
         return s
 
     def update_from_dict(self, d):

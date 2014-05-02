@@ -1,4 +1,4 @@
-from six import add_metaclass
+from six import add_metaclass, iteritems
 
 from .utils import DslMeta, DslBase
 
@@ -51,15 +51,19 @@ class AggBase(object):
         'aggs': {'type': 'agg', 'hash': True},
     }
     def __getitem__(self, agg_name):
-        return self._params.setdefault('aggs', {})[agg_name] # propagate KeyError
+        agg = self._params.setdefault('aggs', {})[agg_name] # propagate KeyError
+        # make sure we're not mutating a shared state - whenever accessing a
+        # bucket, return a shallow copy of it to be safe
+        if isinstance(agg, Bucket):
+            agg = A(agg_name, agg.name, **agg._params)
+            self._params['aggs'][agg_name] = agg
+
+        return agg
 
     def __setitem__(self, agg_name, agg):
         self.aggs[agg_name] = A(agg)
 
     def _agg(self, bucket, name, agg_type, **params):
-        # make sure we're not mutating a shared state
-        if 'aggs' in self._params:
-            self._params= {'aggs': self._params['aggs'].copy()}
         agg = self[name] = A(name, agg_type, **params)
         # when creating new buckets return them...
         if bucket:
