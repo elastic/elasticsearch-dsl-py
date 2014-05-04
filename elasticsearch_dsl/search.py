@@ -151,6 +151,19 @@ class Search(object):
         self._using = client
         return self
 
+    def count(self):
+        if not self._using:
+            raise #XXX
+
+        d = self.to_dict()
+        # TODO: failed shards detection
+        # TODO: remove aggs etc?
+        return self._using.count(
+            index=self._index,
+            doc_type=self._doc_type,
+            body=d
+        )['count']
+
     def execute(self, **kwargs):
         if not self._using:
             raise #XXX

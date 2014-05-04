@@ -31,6 +31,9 @@ class Term(Filter):
 class Terms(Filter):
     name = 'terms'
 
+class Missing(Filter):
+    name = 'missing'
+
 class Bool(BoolMixin, Filter):
     name = 'bool'
     _param_defs = {
