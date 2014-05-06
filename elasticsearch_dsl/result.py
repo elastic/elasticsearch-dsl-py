@@ -8,10 +8,9 @@ class Hits(list):
             return u('[%s, ...]') % u(', ').join(repr(h) for h in self[:2])
         return super(Hits, self).__repr__()
 
-class Response(object):
+class Response(AttrDict):
     def __init__(self, raw):
-        self._response = raw
-        self.took = raw['took']
+        super(Response, self).__init__(raw)
 
     def __iter__(self):
         return iter(self.hits)
@@ -24,12 +23,12 @@ class Response(object):
         return '<Response: %r>' % self.hits
 
     def success(self):
-        return not (self._response['timed_out'] or self._response['_shards']['failed'])
+        return not (self.timed_out or self._shards.failed)
 
     @property
     def hits(self):
         if not hasattr(self, '_hits'):
-            h = self._response['hits']
+            h = self._d['hits']
             self._hits = Hits(map(Result, h['hits']))
             self._hits.max_score = h['max_score']
             self._hits.total = h['total']
