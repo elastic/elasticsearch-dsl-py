@@ -10,6 +10,8 @@ def A(name_or_agg, agg_type=None, **params):
         if params or agg_type or len(name_or_agg) != 1:
             raise #XXX
         name, agg = name_or_agg.copy().popitem()
+        if isinstance(agg, Agg):
+            return agg
         agg = agg.copy()
         aggs = agg.pop('aggs', None)
         if len(agg) != 1:

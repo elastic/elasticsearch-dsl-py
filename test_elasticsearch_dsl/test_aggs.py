@@ -11,6 +11,14 @@ def test_A_creates_proper_agg():
     assert a._params == {'field': 'tags'}
     assert a._name == 'per_tag'
 
+def test_A_handles_nested_aggs_properly():
+    max_score = aggs.Max('max_score', field='score')
+    a = aggs.A('per_tag', 'terms', field='tags', aggs={'max_score': max_score})
+
+    assert isinstance(a, aggs.Terms)
+    assert a._params == {'field': 'tags', 'aggs': {'max_score': max_score}}
+    assert a._name == 'per_tag'
+
 def test_A_passes_aggs_through():
     a = aggs.A('per_tag', 'terms', field='tags')
     assert aggs.A(a) is a
