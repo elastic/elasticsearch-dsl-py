@@ -16,7 +16,7 @@ def client(request):
 
     _client_loaded = True
     try:
-        return get_test_client()
+        return get_test_client(nowait=True)
     except SkipTest:
         skip()
 
