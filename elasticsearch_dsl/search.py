@@ -107,23 +107,21 @@ class Search(object):
 
     def index(self, *index):
         # .index() resets
+        s = self._clone()
         if not index:
-            self._index = None
-        elif self._index is None:
-            self._index = list(index)
+            s._index = None
         else:
-            self._index.extend(index)
-        return self
+            s._index = (self._index or []) + list(index)
+        return s
 
     def doc_type(self, *doc_type):
         # .doc_type() resets
+        s = self._clone()
         if not doc_type:
-            self._doc_type = None
-        elif self._doc_type is None:
-            self._doc_type = list(doc_type)
+            s._doc_type = None
         else:
-            self._doc_type.extend(doc_type)
-        return self
+            s._doc_type = (self._doc_type or []) + list(doc_type)
+        return s
 
     def to_dict(self, **kwargs):
         if self.filter:
@@ -148,8 +146,9 @@ class Search(object):
         return d
 
     def using(self, client):
-        self._using = client
-        return self
+        s = self._clone()
+        s._using = client
+        return s
 
     def count(self):
         if not self._using:

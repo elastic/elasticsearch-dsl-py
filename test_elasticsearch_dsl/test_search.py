@@ -16,6 +16,15 @@ def test_search_query_combines_query():
     assert s2.query._proxied == query.Match(f=42)
     assert s3.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
+def test_using():
+    o = object()
+    o2 = object()
+    s = search.Search(using=o)
+    assert s._using is o
+    s2 = s.using(o2)
+    assert s._using is o
+    assert s2._using is o2
+
 def test_methods_are_proxied_to_the_query():
     s = search.Search()
 
@@ -58,32 +67,38 @@ def test_aggs_get_copied_on_change():
 def test_search_index():
     s = search.Search(index='i')
     assert s._index == ['i']
-    s.index('i2')
+    s = s.index('i2')
     assert s._index == ['i', 'i2']
-    s.index()
+    s = s.index()
     assert s._index is None
     s = search.Search(index=('i', 'i2'))
     assert s._index == ['i', 'i2']
     s = search.Search(index=['i', 'i2'])
     assert s._index == ['i', 'i2']
     s = search.Search()
-    s.index('i', 'i2')
+    s = s.index('i', 'i2')
     assert s._index == ['i', 'i2']
+    s2 = s.index('i3')
+    assert s._index == ['i', 'i2']
+    assert s2._index == ['i', 'i2', 'i3']
 
 def test_search_doc_type():
     s = search.Search(doc_type='i')
     assert s._doc_type == ['i']
-    s.doc_type('i2')
+    s = s.doc_type('i2')
     assert s._doc_type == ['i', 'i2']
-    s.doc_type()
+    s = s.doc_type()
     assert s._doc_type is None
     s = search.Search(doc_type=('i', 'i2'))
     assert s._doc_type == ['i', 'i2']
     s = search.Search(doc_type=['i', 'i2'])
     assert s._doc_type == ['i', 'i2']
     s = search.Search()
-    s.doc_type('i', 'i2')
+    s = s.doc_type('i', 'i2')
     assert s._doc_type == ['i', 'i2']
+    s2 = s.doc_type('i3')
+    assert s._doc_type == ['i', 'i2']
+    assert s2._doc_type == ['i', 'i2', 'i3']
 
 def test_search_to_dict():
     s = search.Search()
