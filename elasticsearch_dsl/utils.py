@@ -44,6 +44,9 @@ class AttrDict(object):
         self._d[key] = value
     __setattr__ = __setitem__
 
+    def to_dict(self):
+        return self._d
+
 
 class DslBase(object):
     """
@@ -74,19 +77,25 @@ class DslBase(object):
         if name.startswith('_'):
             return super(DslBase, self).__setattr__(name, value)
 
+        # if this attribute has special type assigned to it...
         if name in self._param_defs:
             pinfo = self._param_defs[name]
 
             if 'type' in pinfo:
+                # get the shortcut used to construct this type (query.Q, aggs.A, etc)
                 shortcut = self.__class__.get_dsl_type(pinfo['type'])
                 if pinfo.get('multi'):
                     value = list(map(shortcut, value))
+
+                # dict(name -> DslBase), make sure we pickup all the objs
                 elif pinfo.get('hash'):
                     d = {}
                     for k, v in iteritems(value):
                         v = shortcut({k: v})
                         d[v._name] = v
                     value = d
+
+                # single value object, just convert
                 else:
                     value = shortcut(value)
         self._params[name] = value
@@ -99,6 +108,8 @@ class DslBase(object):
         try:
             value = self._params[name]
         except KeyError:
+            # compound types should never throw AttributeError and return empty
+            # container instead
             if name in self._param_defs:
                 pinfo = self._param_defs[name]
                 if pinfo.get('multi'):
@@ -108,27 +119,44 @@ class DslBase(object):
         if value is None:
             raise AttributeError()
 
+        # wrap nested dicts in AttrDict for convenient access
         if isinstance(value, dict):
             return AttrDict(value)
         return value
 
     def to_dict(self):
+        """
+        Serialize the DSL object to plain dict
+        """
         d = {}
         for pname, value in iteritems(self._params):
             pinfo = self._param_defs.get(pname)
+
+            # typed param
             if pinfo and 'type' in pinfo:
                 # don't serialize empty lists and dicts for typed fields
                 if not value:
                     continue
+
+                # multi-values are serialized as list of dicts
                 if pinfo.get('multi'):
                     value = list(map(lambda x: x.to_dict(), value))
+
+                # squash all the hash values into one dict
                 elif pinfo.get('hash'):
                     new_value = {}
                     for v in value.values():
                         new_value.update(v.to_dict())
                     value = new_value
+
+                # serialize single values
                 else:
                     value = value.to_dict()
+
+            # serialize anything with to_dict method
+            elif hasattr(value, 'to_dict'):
+                value - value.to_dict()
+
             d[pname] = value
         return {self.name: d}
 
