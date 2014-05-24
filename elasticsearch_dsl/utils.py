@@ -7,6 +7,11 @@ class AttrDict(object):
     def __dir__(self):
         return list(self._d.keys())
 
+    def __eq__(self, other):
+        if isinstance(other, AttrDict):
+            return other._d == self._d
+        return other == self._d
+
     def __repr__(self):
         r = repr(self._d)
         if len(r) > 60:
@@ -24,6 +29,14 @@ class AttrDict(object):
 
     def __getitem__(self, key):
         return self._d[key]
+
+    def __setitem__(self, key, value):
+        self._d[key] = value
+
+    def __setattr__(self, key, value):
+        if key != '_d':
+            return self.__setitem__(key, value)
+        super(AttrDict, self).__setattr__(key, value)
 
 
 class DslBase(object):
@@ -76,17 +89,22 @@ class DslBase(object):
         if name.startswith('_'):
             raise AttributeError()
 
-        # TODO: return something that will provide attribute access for inner dicts
+        value = None
         try:
-            return self._params[name]
+            value = self._params[name]
         except KeyError:
             if name in self._param_defs:
                 pinfo = self._param_defs[name]
                 if pinfo.get('multi'):
-                    return self._params.setdefault(name, [])
+                    value = self._params.setdefault(name, [])
                 elif pinfo.get('hash'):
-                    return self._params.setdefault(name, {})
+                    value = self._params.setdefault(name, {})
+        if value is None:
             raise AttributeError()
+
+        if isinstance(value, dict):
+            return AttrDict(value)
+        return value
 
     def to_dict(self):
         d = {}

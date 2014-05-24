@@ -45,7 +45,8 @@ class ResultMeta(AttrDict):
 class Result(AttrDict):
     def __init__(self, document):
         super(Result, self).__init__(document['_source'])
-        self._meta = ResultMeta(document)
+        # hack to assign _meta as attribute and not as key
+        super(AttrDict, self).__setattr__('_meta', ResultMeta(document))
 
     def __dir__(self):
         return super(Result, self).__dir__() + ['_meta']

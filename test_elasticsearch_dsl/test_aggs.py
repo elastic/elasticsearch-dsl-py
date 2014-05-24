@@ -36,6 +36,7 @@ def test_A_from_dict():
     assert a._params == {'field': 'tags', 'aggs': {'per_author': aggs.A('per_author', 'terms', field='author.raw')}}
     assert a._name == 'per_tag'
     assert a['per_author'] == aggs.A('per_author', 'terms', field='author.raw')
+    assert a.aggs.per_author == aggs.A('per_author', 'terms', field='author.raw')
 
 def test_A_fails_with_incorrect_dict():
     correct_d = {
