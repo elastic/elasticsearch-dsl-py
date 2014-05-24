@@ -6,6 +6,7 @@ class QueryMeta(DslMeta):
     _classes = {}
 
 def Q(name_or_query, **params):
+    # {"match": {"title": "python"}}
     if isinstance(name_or_query, dict):
         if params:
             raise #XXX
@@ -13,10 +14,14 @@ def Q(name_or_query, **params):
             raise #XXX
         name, params = name_or_query.copy().popitem()
         return Query.get_dsl_class(name)(**params)
+
+    # MatchAll()
     if isinstance(name_or_query, Query):
         if params:
             raise #XXX
         return name_or_query
+
+    # "match", title="python"
     return Query.get_dsl_class(name_or_query)(**params)
 
 @add_metaclass(QueryMeta)

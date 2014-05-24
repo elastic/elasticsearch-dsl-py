@@ -6,6 +6,7 @@ class FilterMeta(DslMeta):
     _classes = {}
 
 def F(name_or_filter, **params):
+    # {"term": {...}}
     if isinstance(name_or_filter, dict):
         if params:
             raise #XXX
@@ -13,10 +14,14 @@ def F(name_or_filter, **params):
             raise #XXX
         name, params = name_or_filter.copy().popitem()
         return Filter.get_dsl_class(name)(**params)
+
+    # Term(...)
     if isinstance(name_or_filter, Filter):
         if params:
             raise #XXX
         return name_or_filter
+
+    # 'term', tag='python', ...
     return Filter.get_dsl_class(name_or_filter)(**params)
 
 @add_metaclass(FilterMeta)
