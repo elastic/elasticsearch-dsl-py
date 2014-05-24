@@ -1,15 +1,23 @@
 from six import iteritems
 
 class AttrDict(object):
+    """
+    Helper class to provide attribute like access (read and write) to
+    dictionaries. Used to provide a convenient way to access both results and
+    nested dsl dicts.
+    """
     def __init__(self, d):
-        self._d = d
+        # assign the inner dict manually to prevent __setattr__ from firing
+        super(AttrDict, self).__setattr__('_d', d)
 
     def __dir__(self):
+        # introspection for auto-complete in IPython etc
         return list(self._d.keys())
 
     def __eq__(self, other):
         if isinstance(other, AttrDict):
             return other._d == self._d
+        # make sure we still equal to a dict with the same data
         return other == self._d
 
     def __repr__(self):
@@ -21,6 +29,7 @@ class AttrDict(object):
     def __getattr__(self, attr_name):
         try:
             d = self._d[attr_name]
+            # wrap nested dicts in AttrDict as well to preserve attr access
             if isinstance(d, dict):
                 return AttrDict(d)
             return d
@@ -28,15 +37,12 @@ class AttrDict(object):
             raise AttributeError()
 
     def __getitem__(self, key):
+        # don't wrap things whe accessing via __getitem__ for consistency
         return self._d[key]
 
     def __setitem__(self, key, value):
         self._d[key] = value
-
-    def __setattr__(self, key, value):
-        if key != '_d':
-            return self.__setitem__(key, value)
-        super(AttrDict, self).__setattr__(key, value)
+    __setattr__ = __setitem__
 
 
 class DslBase(object):
