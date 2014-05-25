@@ -1,13 +1,113 @@
 Elasticsearch DSL
 =================
 
-Higher level client built on top of `elasticsearch-py`.
+Elasticsearch DSL is a high-level library whose aim is to help with writing and
+running queries against Elasticsearch. It is built on top of the official
+low-level client (``elasticsearch-py``).
+
 
 Warning
 -------
 
 This is a work in progress - any part of the library can change or disappear
 with no advance warning, use at your own risk.
+
+
+Philosophy
+----------
+
+The DSL inroduced in this library is trying to stay close to the terminology
+and strucutre of the actual JSON DSL used by Elasticsearch; it doesn't try to
+invent a new DSL, instead it aims at providing a more convenient way how to
+write, and manipulate, queries without limiting you to a subset of
+functionality. Since it uses the same terminology and building blocks no
+special knowledge, on top of familiarity with the query DSL, should be
+required.
+
+
+Example
+-------
+
+With the low-level client you would write something like this::
+
+    from elasticsearch import Elasticsearch
+    es = Elasticsearch()
+
+    response = es.search(
+        index="my-index",
+        body={
+          "query": {
+            "filtered": {
+              "query": {
+                "bool": {
+                  "must": [{"match": {"title": "python"}}],
+                  "must_not": [{"match: {"description": "beta"}}]
+                }
+              },
+              "filter": {"term": {"category": "search"}}
+            }
+          }
+        }
+    )
+    for hit in response['hits']['hits']:
+        print(hit['_score'], hit['_source']['title'])
+
+Which would be very hard to modify (imagine adding another filter to that
+query) and is definitely no fun to write. With the python DSL you can write the same query as::
+
+    from elasticsearch_dsl import Search, Q
+
+    s = Search(using=es).index("my-index") \
+        .filter("term", category="search") \
+        .search("match", title="python")   \
+        .search(~Q("match", description="beta"))
+
+    response = s.execute()
+    for hit in response:
+        print(hit._meta.score, hit.title)
+
+Or, if you want to have absolute control over your queries::
+
+    from elasticsearch_dsl.query import Bool, Match
+    s = Search(using=es).query(
+      Bool(
+        must=[Match(title="python")],
+        must_not=[Match(description="beta")]
+      )
+    )
+
+The library will take care of:
+
+  * composing queries/filters into ``bool`` queries/filters
+
+  * creating filtered queries when ``.filter()`` has been used
+
+  * providing a convenient wrapper around responses
+
+  * no curly or square brackets everywhere!
+
+
+Migration
+---------
+
+If you already have existing code using the ``elasticsearch-py`` library you
+can easily start using this DSL without committing to porting your entire
+application. You can create the ``Search`` object from current query dict, work
+with it and, at the end, serialize it back to dict to send over the wire::
+
+    body = {...} # insert complicated query here
+    # convert to search
+    s = Search.from_dict()
+    # add some filters, aggregations, queries, ...
+    s.filter("term", tags="python")
+    # convert back to dict to plug back into existing code
+    body = s.to_dict()
+
+Since the DSL is built on top of the low-level client there should be nothing
+stopping you from using your existing code or just dropping down to the low
+level API whenever required; for example for all the APIs not (yet) covered by
+the DSL.
+
 
 License
 -------
