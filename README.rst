@@ -28,7 +28,9 @@ required.
 Example
 -------
 
-With the low-level client you would write something like this::
+With the low-level client you would write something like this:
+
+.. code:: python
 
     from elasticsearch import Elasticsearch
     es = Elasticsearch()
@@ -53,7 +55,9 @@ With the low-level client you would write something like this::
         print(hit['_score'], hit['_source']['title'])
 
 Which would be very hard to modify (imagine adding another filter to that
-query) and is definitely no fun to write. With the python DSL you can write the same query as::
+query) and is definitely no fun to write. With the python DSL you can write the same query as:
+
+.. code:: python
 
     from elasticsearch_dsl import Search, Q
 
@@ -66,7 +70,9 @@ query) and is definitely no fun to write. With the python DSL you can write the 
     for hit in response:
         print(hit._meta.score, hit.title)
 
-Or, if you want to have absolute control over your queries::
+Or, if you want to have absolute control over your queries:
+
+.. code:: python
 
     from elasticsearch_dsl.query import Bool, Match
     s = Search(using=es).query(
@@ -93,7 +99,9 @@ Migration
 If you already have existing code using the ``elasticsearch-py`` library you
 can easily start using this DSL without committing to porting your entire
 application. You can create the ``Search`` object from current query dict, work
-with it and, at the end, serialize it back to dict to send over the wire::
+with it and, at the end, serialize it back to dict to send over the wire:
+
+.. code:: python
 
     body = {...} # insert complicated query here
     # convert to search
