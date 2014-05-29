@@ -220,6 +220,9 @@ def test_function_score_from_dict():
             'script_score': {
               'script': "doc['comment_count'] * _score"
             }
+          },
+          {
+            'boost_factor': 6
           }
         ]
       }
@@ -228,8 +231,13 @@ def test_function_score_from_dict():
     q = query.Q(d)
     assert isinstance(q, query.FunctionScore)
     assert isinstance(q.filter, filter.Term)
-    assert len(q.functions) == 1
+    assert len(q.functions) == 2
 
     sf = q.functions[0]
     assert isinstance(sf, function.ScriptScore)
     assert isinstance(sf.filter, filter.Terms)
+
+    sf = q.functions[1]
+    assert isinstance(sf, function.BoostFactor)
+    assert 6 == sf.value
+    assert {'boost_factor': 6} == sf.to_dict()

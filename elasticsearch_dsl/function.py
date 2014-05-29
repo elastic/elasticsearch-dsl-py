@@ -18,6 +18,9 @@ def SF(name_or_sf, **params):
         if len(sf) != 1:
             raise #XXX
         name, params = sf.popitem()
+        # boost factor special case, see elasticsearch #6343
+        if not isinstance(params, dict):
+            params = {'value': params}
         kwargs.update(params)
         return ScoreFunction.get_dsl_class(name)(**kwargs)
 
@@ -50,6 +53,15 @@ class ScoreFunction(DslBase):
 
 class ScriptScore(ScoreFunction):
     name = 'script_score'
+
+class BoostFactor(ScoreFunction):
+    name = 'boost_factor'
+
+    def to_dict(self):
+        d = super(BoostFactor, self).to_dict()
+        if 'value' in d[self.name]:
+            d[self.name] = d[self.name].pop('value')
+        return d
 
 class Random(ScoreFunction):
     name = 'random'
