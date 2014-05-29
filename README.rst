@@ -43,7 +43,7 @@ With the low-level client you would write something like this:
               "query": {
                 "bool": {
                   "must": [{"match": {"title": "python"}}],
-                  "must_not": [{"match: {"description": "beta"}}]
+                  "must_not": [{"match": {"description": "beta"}}]
                 }
               },
               "filter": {"term": {"category": "search"}}
