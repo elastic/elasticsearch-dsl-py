@@ -1,4 +1,4 @@
-from elasticsearch_dsl import query
+from elasticsearch_dsl import query, function, filter
 
 from pytest import raises
 
@@ -178,3 +178,58 @@ def test_match_all_plus_anything_is_anything():
     s = query.Match(f=42)
     assert q+s == s
     assert s+q == s
+
+def test_function_score_with_functions():
+    q = query.Q('function_score', functions=[query.SF('script_score', script="doc['comment_count'] * _score")])
+
+    assert {'function_score': {'functions': [{'script_score': {'script': "doc['comment_count'] * _score"}}]}} == q.to_dict()
+
+def test_function_score_to_dict():
+    q = query.Q(
+        'function_score',
+        query=query.Q('match', title='python'),
+        functions=[
+            query.SF('random'),
+            query.SF('field_value_factor', field='comment_count', filter=filter.F('term', tags='python'))
+        ]
+    )
+
+    d = {
+      'function_score': {
+        'query': {'match': {'title': 'python'}},
+        'functions': [
+          {'random': {}},
+          {
+            'filter': {'term': {'tags': 'python'}},
+            'field_value_factor': {
+              'field': 'comment_count',
+            }
+          }
+        ],
+      }
+    }
+    assert d == q.to_dict()
+
+def test_function_score_from_dict():
+    d = {
+      'function_score': {
+        'filter': {"term": {"tags": "python"}},
+        'functions': [
+          {
+            'filter': {"terms": {"tags": "python"}},
+            'script_score': {
+              'script': "doc['comment_count'] * _score"
+            }
+          }
+        ]
+      }
+    }
+
+    q = query.Q(d)
+    assert isinstance(q, query.FunctionScore)
+    assert isinstance(q.filter, filter.Term)
+    assert len(q.functions) == 1
+
+    sf = q.functions[0]
+    assert isinstance(sf, function.ScriptScore)
+    assert isinstance(sf.filter, filter.Terms)

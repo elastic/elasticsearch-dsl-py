@@ -1,6 +1,7 @@
 from six import add_metaclass
 
 from .utils import DslMeta, DslBase, BoolMixin
+from .function import SF
 
 class QueryMeta(DslMeta):
     _classes = {}
@@ -62,3 +63,19 @@ class FilteredQuery(Query):
         'query': {'type': 'query'},
         'filter': {'type': 'filter'},
     }
+
+class FunctionScore(Query):
+    name = 'function_score'
+    _param_defs = {
+        'query': {'type': 'query'},
+        'filter': {'type': 'filter'},
+        'functions': {'type': 'score_function', 'multi': True},
+    }
+
+    def __init__(self, **kwargs):
+        if 'functions' in kwargs:
+            pass
+        else:
+            kwargs['functions'] = [{'FUNCTION': kwargs.pop('FUNCTION')}]
+        super().__init__(**kwargs)
+    # TODO: function score with just one function (essentially just a ScoreFunction) ???
