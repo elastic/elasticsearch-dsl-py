@@ -100,6 +100,17 @@ def test_search_doc_type():
     assert s._doc_type == ['i', 'i2']
     assert s2._doc_type == ['i', 'i2', 'i3']
 
+def test_sort():
+    s = search.Search()
+    s = s.sort('fielda', '-fieldb')
+
+    assert ['fielda', {'fieldb': {'order': 'desc'}}] == s._sort
+    assert {'query': {'match_all': {}}, 'sort': ['fielda', {'fieldb': {'order': 'desc'}}]} == s.to_dict()
+
+    s = s.sort()
+    assert [] == s._sort
+    assert search.Search().to_dict() == s.to_dict()
+
 def test_search_to_dict():
     s = search.Search()
     assert {"query": {"match_all": {}}} == s.to_dict()

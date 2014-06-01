@@ -72,6 +72,7 @@ class Search(object):
         self.filter = ProxyFilter(self, 'filter')
         self.post_filter = ProxyFilter(self, 'post_filter')
         self.aggs = AggsProxy(self)
+        self._sort = []
 
     @classmethod
     def from_dict(cls, d):
@@ -81,6 +82,7 @@ class Search(object):
 
     def _clone(self):
         s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
+        s._sort = self._sort[:]
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -104,6 +106,15 @@ class Search(object):
                 'aggs': dict(
                     (name, A({name: value})) for (name, value) in aggs.items())
             }
+
+    def sort(self, *keys):
+        s = self._clone()
+        s._sort = []
+        for k in keys:
+            if isinstance(k, str) and k.startswith('-'):
+                k = {k[1:]: {"order": "desc"}}
+            s._sort.append(k)
+        return s
 
     def index(self, *index):
         # .index() resets
@@ -141,6 +152,9 @@ class Search(object):
 
         if self.aggs.aggs:
             d.update(self.aggs.to_dict())
+
+        if self._sort:
+            d['sort'] = self._sort
 
         d.update(kwargs)
         return d
