@@ -55,7 +55,8 @@ With the low-level client you would write something like this:
         print(hit['_score'], hit['_source']['title'])
 
 Which would be very hard to modify (imagine adding another filter to that
-query) and is definitely no fun to write. With the python DSL you can write the same query as:
+query) and is definitely no fun to write. With the python DSL you can write the
+same query as:
 
 .. code:: python
 
@@ -63,8 +64,8 @@ query) and is definitely no fun to write. With the python DSL you can write the 
 
     s = Search(using=es).index("my-index") \
         .filter("term", category="search") \
-        .search("match", title="python")   \
-        .search(~Q("match", description="beta"))
+        .query("match", title="python")   \
+        .query(~Q("match", description="beta"))
 
     response = s.execute()
     for hit in response:
