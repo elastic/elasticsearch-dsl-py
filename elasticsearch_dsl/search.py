@@ -53,7 +53,17 @@ class AggsProxy(AggBase, DslBase):
 
 
 class Search(object):
-    def __init__(self, using=None, index=None, doc_type=None):
+    def __init__(self, using=None, index=None, doc_type=None, extra=None):
+        """
+        Search request to elasticsearch.
+
+        :arg using: `Elasticsearch` instance to use
+        :arg index: limit the search to index
+        :arg doc_type: only query this type.
+
+        All the paramters supplied (or omitted) at creation type can be later
+        overriden by methods (`using`, `index` and `doc_type` respectively).
+        """
         self._using = using
 
         self._index = None
@@ -73,9 +83,14 @@ class Search(object):
         self.post_filter = ProxyFilter(self, 'post_filter')
         self.aggs = AggsProxy(self)
         self._sort = []
+        self._extra = extra or {}
 
     @classmethod
     def from_dict(cls, d):
+        """
+        Construct a `Search` instance from a draw dict containing the search
+        body.
+        """
         s = cls()
         s.update_from_dict(d)
         return s
@@ -83,6 +98,7 @@ class Search(object):
     def _clone(self):
         s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
         s._sort = self._sort[:]
+        s._extra = self._extra.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -92,22 +108,34 @@ class Search(object):
         return s
 
     def update_from_dict(self, d):
-        self.query._proxied = Q(d['query'])
+        d = d.copy()
+        self.query._proxied = Q(d.pop('query'))
         if 'post_filter' in d:
-            self.post_filter._proxied = F(d['post_filter'])
+            self.post_filter._proxied = F(d.pop('post_filter'))
 
         if isinstance(self.query._proxied, FilteredQuery):
             self.filter._proxied = self.query._proxied.filter
             self.query._proxied = self.query._proxied.query
 
-        aggs = d.get('aggs', d.get('aggregations', {}))
+        aggs = d.pop('aggs', d.pop('aggregations', {}))
         if aggs:
             self.aggs._params = {
                 'aggs': dict(
                     (name, A({name: value})) for (name, value) in aggs.items())
             }
         if 'sort' in d:
-            self._sort = d['sort']
+            self._sort = d.pop('sort')
+        self._extra = d
+
+    def extra(self, **kwargs):
+        """
+        Add extra keys to the request body.
+        """
+        s = self._clone()
+        if 'from_' in kwargs:
+            kwargs['from'] = kwargs.pop('from_')
+        s._extra.update(kwargs)
+        return s
 
     def sort(self, *keys):
         """
@@ -141,6 +169,13 @@ class Search(object):
         return s
 
     def index(self, *index):
+        """
+        Set the index for the search. If called empty it will rmove all information.
+
+        Example:
+
+            s = Search().index('twitter')
+        """
         # .index() resets
         s = self._clone()
         if not index:
@@ -180,6 +215,7 @@ class Search(object):
         if self._sort:
             d['sort'] = self._sort
 
+        d.update(self._extra)
         d.update(kwargs)
         return d
 

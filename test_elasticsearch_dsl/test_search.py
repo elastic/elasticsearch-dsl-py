@@ -132,6 +132,12 @@ def test_search_to_dict():
     }
     assert d == s.to_dict()
 
+    s = search.Search(extra={"size": 5})
+    assert {"query": {"match_all": {}}, "size": 5} == s.to_dict()
+    s = s.extra(from_=42)
+    assert {"query": {"match_all": {}}, "size": 5, "from": 42} == s.to_dict()
+
+
 def test_complex_example():
     s = search.Search()
     s = s.query('match', title='python') \
@@ -214,8 +220,10 @@ def test_reverse():
             {"category": {"order": "desc"}},
             "_score"
         ],
+        "size": 5
     }
 
     s = search.Search.from_dict(d)
 
+    assert {"size": 5} == s._extra
     assert d == s.to_dict()
