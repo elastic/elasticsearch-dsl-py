@@ -208,7 +208,12 @@ def test_reverse():
                     'avg_attendees': {'avg': {'field': 'attendees'}}
                 }
             }
-        }
+        },
+        "sort": [
+            "title",
+            {"category": {"order": "desc"}},
+            "_score"
+        ],
     }
 
     s = search.Search.from_dict(d)

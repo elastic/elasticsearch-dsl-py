@@ -106,8 +106,32 @@ class Search(object):
                 'aggs': dict(
                     (name, A({name: value})) for (name, value) in aggs.items())
             }
+        if 'sort' in d:
+            self._sort = d['sort']
 
     def sort(self, *keys):
+        """
+        Add sorting information to the search request. If called without
+        arguments it will remove all sort requirements. Otherwise it will
+        replace them. Acceptable arguments are:
+
+            'some.field'
+            '-some.other.fiels'
+            {'different.field': {'any': 'dict'}}
+
+        so for example:
+
+            s = Search().sort(
+                'category',
+                '-title',
+                {"price" : {"order" : "asc", "mode" : "avg"}}
+            )
+
+        will sort by ``category``, ``title`` (in descending order) and
+        ``price`` in ascending order using the ``avg`` mode.
+
+        The API returns a copy of the Search object and can thus be chained.
+        """
         s = self._clone()
         s._sort = []
         for k in keys:
