@@ -86,5 +86,5 @@ class FunctionScore(Query):
             pass
         else:
             kwargs['functions'] = [{'FUNCTION': kwargs.pop('FUNCTION')}]
-        super().__init__(**kwargs)
+        super(FunctionScore, self).__init__(**kwargs)
     # TODO: function score with just one function (essentially just a ScoreFunction) ???
