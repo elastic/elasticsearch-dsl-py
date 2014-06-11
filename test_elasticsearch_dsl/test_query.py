@@ -5,6 +5,18 @@ from pytest import raises
 def test_match_to_dict():
     assert {"match": {"f": "value"}} == query.Match(f='value').to_dict()
 
+def test_match_to_dict_extra():
+    assert {"match": {"f": "value", "boost": 2}} == query.Match(f='value', boost=2).to_dict()
+
+def test_fuzzy_to_dict():
+    assert {"fuzzy": {"f": "value"}} == query.Fuzzy(f='value').to_dict()
+
+def test_prefix_to_dict():
+    assert {"prefix": {"f": "value"}} == query.Prefix(f='value').to_dict()
+
+def test_term_to_dict():
+    assert {"term": {"f": "value"}} == query.Term(f='value').to_dict()
+
 def test_bool_to_dict():
     bool = query.Bool(must=[query.Match(f='value')], should=[])
 
