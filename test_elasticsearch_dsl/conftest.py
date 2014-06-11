@@ -1,9 +1,11 @@
+import os
+
 from elasticsearch.helpers.test import get_test_client, SkipTest
 from elasticsearch.helpers import bulk
 
 from pytest import fixture, skip
 
-from test_integration.test_data import DATA, create_git_index
+from .test_integration.test_data import DATA, create_git_index
 
 _client_loaded = False
 
@@ -16,7 +18,7 @@ def client(request):
 
     _client_loaded = True
     try:
-        return get_test_client(nowait=True)
+        return get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
     except SkipTest:
         skip()
 
