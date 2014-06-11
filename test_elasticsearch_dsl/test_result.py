@@ -14,7 +14,7 @@ def test_interactive_helpers(dummy_response):
             repr(dummy_response['hits']['hits'][1]['_source'])[:60],
             repr(dummy_response['hits']['hits'][2]['_source'])[:60],
             )
-    
+
     assert '<Response: %s>' % rhits == repr(res)
     assert rhits == repr(hits)
     assert ['_meta', 'city', 'name'] == dir(h)
@@ -52,6 +52,7 @@ def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
 
     assert 'Elasticsearch' == h.name
     assert 'Elasticsearch' == h['name']
+    assert 'Elasticsearch' == h.get('name')
 
     assert 'Honza' == res.hits[2].name.first
 
@@ -61,9 +62,11 @@ def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
     with raises(AttributeError):
         h.not_there
 
+    assert None == h.get('not_there')
+
 def test_slicing_on_response_slices_on_hits(dummy_response):
     res = result.Response(dummy_response)
-    
+
     assert res[0] is res.hits[0]
     assert res[::-1] == res.hits[::-1]
 
@@ -83,7 +86,7 @@ def dummy_response():
             "_type": "company",
             "_id": "elasticsearch",
             "_score": 12.0,
-    
+
             "_source": {
               "city": "Amsterdam",
               "name": "Elasticsearch",
@@ -95,7 +98,7 @@ def dummy_response():
             "_id": "42",
             "_score": 11.123,
             "_parent": "elasticsearch",
-    
+
             "_source": {
               "name": {
                 "first": "Shay",
@@ -111,7 +114,7 @@ def dummy_response():
             "_id": "47",
             "_score": 1,
             "_parent": "elasticsearch",
-    
+
             "_source": {
               "name": {
                 "first": "Honza",
