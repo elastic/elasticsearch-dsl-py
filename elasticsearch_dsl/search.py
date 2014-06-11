@@ -85,6 +85,39 @@ class Search(object):
         self._sort = []
         self._extra = extra or {}
 
+    def __getitem__(self, n):
+        """
+        Support slicing the `Search` instance for pagination.
+
+        Slicing equates to the from/size parameters. E.g.::
+
+            Search().query(...)[0:25]
+
+        is equivalent to::
+
+            {"query": ...
+             "from": 0, "size": 25}
+
+        """
+        s = self._clone()
+
+        if isinstance(n, slice):
+            # If negative slicing, abort.
+            if n.start and n.start < 0 or n.stop and n.stop < 0:
+                raise
+            # Elasticsearch won't get all results so we default to size: 10 if
+            # stop not given.
+            s._extra['from'] = n.start or 0
+            s._extra['size'] = n.stop - (n.start or 0) if n.stop else 10
+            return s
+        else:  # This is an index lookup, equivalent to slicing by [n:n+1].
+            # If negative index, abort.
+            if n < 0:
+                raise
+            s._extra['from'] = n
+            s._extra['size'] = 1
+            return s
+
     @classmethod
     def from_dict(cls, d):
         """

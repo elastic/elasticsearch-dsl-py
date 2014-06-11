@@ -111,6 +111,16 @@ def test_sort():
     assert [] == s._sort
     assert search.Search().to_dict() == s.to_dict()
 
+def test_slice():
+    s = search.Search()
+    assert {'query': {'match_all': {}}, 'from': 3, 'size': 7} == s[3:10].to_dict()
+    assert {'query': {'match_all': {}}, 'from': 0, 'size': 5} == s[:5].to_dict()
+    assert {'query': {'match_all': {}}, 'from': 3, 'size': 10} == s[3:].to_dict()
+
+def test_index():
+    s = search.Search()
+    assert {'query': {'match_all': {}}, 'from': 3, 'size': 1} == s[3].to_dict()
+
 def test_search_to_dict():
     s = search.Search()
     assert {"query": {"match_all": {}}} == s.to_dict()
