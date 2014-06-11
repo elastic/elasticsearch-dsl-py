@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from os.path import join, dirname
 from setuptools import setup, find_packages
 
@@ -18,6 +19,10 @@ tests_require = [
     "pytest",
     "pytest-cov"
 ]
+
+# use external unittest for 2.6
+if sys.version_info[:2] == (2, 6):
+    tests_require.append('unittest2')
 
 setup(
     name = "elasticsearch-dsl",
