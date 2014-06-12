@@ -36,6 +36,9 @@ class Term(Filter):
 class Terms(Filter):
     name = 'terms'
 
+class Range(Filter):
+    name = 'range'
+
 class Missing(Filter):
     name = 'missing'
 
