@@ -1,16 +1,6 @@
 from six import iteritems, u
 
-from .utils import AttrDict
-
-class Hits(list):
-    """
-    List with custom repr and additional attributes `max_score` and `total` set
-    by Response.
-    """
-    def __repr__(self):
-        if len(self) > 3:
-            return u('[%s, ...]') % u(', ').join(repr(h) for h in self[:2])
-        return super(Hits, self).__repr__()
+from .utils import AttrDict, AttrList
 
 class Response(AttrDict):
     def __iter__(self):
@@ -31,9 +21,9 @@ class Response(AttrDict):
         if not hasattr(self, '_hits'):
             h = self._d['hits']
             # avoid assigning _hits into self._d
-            super(AttrDict, self).__setattr__('_hits', Hits(map(Result, h['hits'])))
-            self._hits.max_score = h['max_score']
-            self._hits.total = h['total']
+            super(AttrDict, self).__setattr__('_hits', AttrList(map(Result, h['hits'])))
+            for k in h:
+                setattr(self._hits, k, h[k])
         return self._hits
 
 

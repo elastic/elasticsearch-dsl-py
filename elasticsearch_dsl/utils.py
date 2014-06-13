@@ -1,5 +1,21 @@
 from six import iteritems
 
+def _wrap(val):
+    if isinstance(val, dict):
+        return AttrDict(val)
+    if isinstance(val, list) and not isinstance(val, AttrList):
+        return AttrList(val)
+    return val
+
+
+class AttrList(list):
+    def __getitem__(self, k):
+        l = super(AttrList, self).__getitem__(k)
+        if isinstance(k, slice):
+            return AttrList(l)
+        return _wrap(l)
+
+
 class AttrDict(object):
     """
     Helper class to provide attribute like access (read and write) to
@@ -35,11 +51,7 @@ class AttrDict(object):
 
     def __getattr__(self, attr_name):
         try:
-            d = self._d[attr_name]
-            # wrap nested dicts in AttrDict as well to preserve attr access
-            if isinstance(d, dict):
-                return AttrDict(d)
-            return d
+            return _wrap(self._d[attr_name])
         except KeyError:
             raise AttributeError()
 

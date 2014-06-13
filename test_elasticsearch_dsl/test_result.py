@@ -42,7 +42,6 @@ def test_hits_get_wrapped_to_contain_additional_attrs(dummy_response):
     res = result.Response(dummy_response)
     hits = res.hits
 
-    assert isinstance(hits, result.Hits)
     assert 123 == hits.total
     assert 12.0 == hits.max_score
 
