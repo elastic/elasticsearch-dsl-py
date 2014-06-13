@@ -53,4 +53,14 @@ class Bool(BoolMixin, Filter):
 # register this as Bool for Filter
 Filter._bool = Bool
 
-EMPTY_FILTER = Bool()
+class MatchAll(Filter):
+    name = 'match_all'
+    def __add__(self, other):
+        return other._clone()
+    __and__ = __rand__ = __radd__ = __add__
+
+    def __or__(self, other):
+        return self
+    __ror__ = __or__
+
+EMPTY_FILTER = MatchAll()

@@ -181,7 +181,7 @@ def test_complex_example():
             }
         },
         'post_filter': {
-            'bool': {'must': [{'terms': {'tags': ['prague', 'czech']}}]}
+            'terms': {'tags': ['prague', 'czech']}
         },
         'aggs': {
             'per_country': {
