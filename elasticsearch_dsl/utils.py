@@ -87,7 +87,7 @@ class DslBase(object):
     def __init__(self, **params):
         self._params = {}
         for pname, pvalue in iteritems(params):
-            setattr(self, pname, pvalue)
+            self._setattr(pname, pvalue)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()
@@ -95,7 +95,9 @@ class DslBase(object):
     def __setattr__(self, name, value):
         if name.startswith('_'):
             return super(DslBase, self).__setattr__(name, value)
+        return self._setattr(name, value)
 
+    def _setattr(self, name, value):
         # if this attribute has special type assigned to it...
         if name in self._param_defs:
             pinfo = self._param_defs[name]

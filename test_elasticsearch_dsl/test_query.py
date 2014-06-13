@@ -15,7 +15,7 @@ def test_prefix_to_dict():
     assert {"prefix": {"f": "value"}} == query.Prefix(f='value').to_dict()
 
 def test_term_to_dict():
-    assert {"term": {"f": "value"}} == query.Term(f='value').to_dict()
+    assert {"term": {"_type": "article"}} == query.Term(_type='article').to_dict()
 
 def test_bool_to_dict():
     bool = query.Bool(must=[query.Match(f='value')], should=[])
