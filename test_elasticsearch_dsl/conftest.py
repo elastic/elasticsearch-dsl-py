@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 
 from elasticsearch.helpers.test import get_test_client, SkipTest

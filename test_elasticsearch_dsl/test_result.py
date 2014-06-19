@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from pytest import fixture, raises
+from pytest import raises
 
 from elasticsearch_dsl import result
 
