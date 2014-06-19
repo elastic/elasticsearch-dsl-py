@@ -84,6 +84,7 @@ class Search(object):
         self.aggs = AggsProxy(self)
         self._sort = []
         self._extra = extra or {}
+        self._params = {}
 
     def __getitem__(self, n):
         """
@@ -138,6 +139,7 @@ class Search(object):
         # copy top-level bucket definitions
         if self.aggs._params.get('aggs'):
             s.aggs._params = {'aggs': self.aggs._params['aggs'].copy()}
+        s._params = self._params.copy()
         return s
 
     def update_from_dict(self, d):
@@ -159,6 +161,11 @@ class Search(object):
         if 'sort' in d:
             self._sort = d.pop('sort')
         self._extra = d
+
+    def params(self, **kwargs):
+        s = self._clone()
+        s._params.update(kwargs)
+        return s
 
     def extra(self, **kwargs):
         """
@@ -270,7 +277,7 @@ class Search(object):
             body=d
         )['count']
 
-    def execute(self, **kwargs):
+    def execute(self):
         if not self._using:
             raise #XXX
 
@@ -279,7 +286,7 @@ class Search(object):
                 index=self._index,
                 doc_type=self._doc_type,
                 body=self.to_dict(),
-                **kwargs
+                **self._params
             )
         )
 

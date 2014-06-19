@@ -16,6 +16,7 @@ install_requires = [
     'elasticsearch>=1.0.0'
 ]
 tests_require = [
+    "mock",
     "pytest",
     "pytest-cov"
 ]

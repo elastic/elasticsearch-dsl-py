@@ -1,3 +1,5 @@
+from mock import Mock
+
 from elasticsearch_dsl import search, query, F, Q
 
 def test_search_starts_with_empty_query():
@@ -237,3 +239,20 @@ def test_reverse():
 
     assert {"size": 5} == s._extra
     assert d == s.to_dict()
+
+def test_params_being_passed_to_search(dummy_response):
+    client = Mock()
+    client.search.return_value = dummy_response
+
+    s = search.Search(client)
+    s = s.params(routing='42')
+    s.execute()
+
+    client.search.assert_called_once_with(
+        doc_type=None,
+        index=None,
+        body={'query': {'match_all': {}}},
+        routing='42'
+    )
+
+
