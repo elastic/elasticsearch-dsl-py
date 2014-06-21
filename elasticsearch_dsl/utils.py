@@ -24,20 +24,20 @@ class AttrDict(object):
     """
     def __init__(self, d):
         # assign the inner dict manually to prevent __setattr__ from firing
-        super(AttrDict, self).__setattr__('_d', d)
+        super(AttrDict, self).__setattr__('_d_', d)
 
     def __dir__(self):
         # introspection for auto-complete in IPython etc
-        return list(self._d.keys())
+        return list(self._d_.keys())
 
     def __eq__(self, other):
         if isinstance(other, AttrDict):
-            return other._d == self._d
+            return other._d_ == self._d_
         # make sure we still equal to a dict with the same data
-        return other == self._d
+        return other == self._d_
 
     def __repr__(self):
-        r = repr(self._d)
+        r = repr(self._d_)
         if len(r) > 60:
             r = r[:60] + '...}'
         return r
@@ -45,26 +45,26 @@ class AttrDict(object):
     def get(self, key, default=None):
         # Don't confuse `obj.get('...')` as `obj['get']`.
         try:
-            return self._d[key]
+            return self._d_[key]
         except KeyError:
             return default
 
     def __getattr__(self, attr_name):
         try:
-            return _wrap(self._d[attr_name])
+            return _wrap(self._d_[attr_name])
         except KeyError:
             raise AttributeError()
 
     def __getitem__(self, key):
         # don't wrap things whe accessing via __getitem__ for consistency
-        return self._d[key]
+        return self._d_[key]
 
     def __setitem__(self, key, value):
-        self._d[key] = value
+        self._d_[key] = value
     __setattr__ = __setitem__
 
     def to_dict(self):
-        return self._d
+        return self._d_
 
 
 class DslBase(object):
