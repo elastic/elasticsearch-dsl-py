@@ -17,11 +17,9 @@ env:
 install:
   - mkdir /tmp/elasticsearch
   - wget -O - https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  - /tmp/elasticsearch/bin/elasticsearch -d -D es.path.data=/tmp -D es.gateway.type=none -D es.index.store.type=memory -D es.discovery.zen.ping.multicast.enabled=false
   - pip install git+https://github.com/elasticsearch/elasticsearch-py.git#egg=elasticsearch
   - pip install .
-
-before_script:
-  - /tmp/elasticsearch/bin/elasticsearch -d -D es.path.data=/tmp -D es.gateway.type=none -D es.index.store.type=memory -D es.discovery.zen.ping.multicast.enabled=false
 
 script:
   - python setup.py test
