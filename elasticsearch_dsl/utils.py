@@ -251,6 +251,26 @@ class BoolMixin(object):
     """
     Mixin containing all the operator overrides for Bool queries and filters.
     """
+    def __and__(self, other):
+        q = self._clone()
+        if isinstance(other, self.__class__):
+            q.must += other.must
+            q.must_not += other.must_not
+            if q.should and other.should:
+                should = []
+                for orig_should in (q.should, other.should):
+                    if len(orig_should) == 1:
+                        should.append(orig_should[0])
+                    else:
+                        should.append(self.__class__(should=orig_should))
+                q.should = should
+            else:
+                q.should += other.should
+        else:
+            q.must.append(other)
+        return q
+    __rand__ = __and__
+
     def __add__(self, other):
         q = self._clone()
         if isinstance(other, self.__class__):
