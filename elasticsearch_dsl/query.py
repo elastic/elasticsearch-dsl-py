@@ -46,6 +46,9 @@ EMPTY_QUERY = MatchAll()
 class Match(Query):
     name = 'match'
 
+class MultiMatch(Query):
+    name = 'multi_match'
+
 class Fuzzy(Query):
     name = 'fuzzy'
 
@@ -54,6 +57,12 @@ class Prefix(Query):
 
 class Term(Query):
     name = 'term'
+
+class HasChild(Query):
+    name = 'has_child'
+    _param_defs = {
+        'query': {'type': 'query'},
+    }
 
 class Bool(BoolMixin, Query):
     name = 'bool'
