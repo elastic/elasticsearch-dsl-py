@@ -93,7 +93,7 @@ class AggBase(object):
         else:
             return self._base
 
-    def aggregate(self, name, agg_type, **params):
+    def metric(self, name, agg_type, **params):
         return self._agg(False, name, agg_type, **params)
 
     def bucket(self, name, agg_type, **params):

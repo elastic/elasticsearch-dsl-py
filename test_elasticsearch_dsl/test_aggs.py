@@ -95,9 +95,9 @@ def test_buckets_are_nestable():
     assert b._name == 'per_author'
     assert a.aggs == {'per_author': b}
 
-def test_aggregate_inside_buckets():
+def test_metric_inside_buckets():
     a = aggs.Terms('per_tag', field='tags')
-    b = a.aggregate('max_score', 'max', field='score')
+    b = a.metric('max_score', 'max', field='score')
 
     # returns bucket so it's chainable
     assert a is b
@@ -122,7 +122,7 @@ def test_buckets_to_dict():
     } == a.to_dict()
 
     a = aggs.Terms('per_tag', field='tags')
-    b = a.aggregate('max_score', 'max', field='score')
+    a.metric('max_score', 'max', field='score')
 
     assert {
         'per_tag': {

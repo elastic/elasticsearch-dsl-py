@@ -39,14 +39,14 @@ def test_query_always_returns_search():
 
 def test_aggs_get_copied_on_change():
     s = search.Search()
-    s.aggs.bucket('per_tag', 'terms', field='f').aggregate('max_score', 'max', field='score')
+    s.aggs.bucket('per_tag', 'terms', field='f').metric('max_score', 'max', field='score')
 
     s2 = s.query('match_all')
     s2.aggs.bucket('per_month', 'date_histogram', field='date', interval='month')
     s3 = s2.query('match_all')
-    s3.aggs['per_month'].aggregate('max_score', 'max', field='score')
+    s3.aggs['per_month'].metric('max_score', 'max', field='score')
     s4 = s3._clone()
-    s4.aggs.aggregate('max_score', 'max', field='score')
+    s4.aggs.metric('max_score', 'max', field='score')
 
     d = {
         'query': {'match_all': {}},
@@ -132,7 +132,7 @@ def test_search_to_dict():
 
     assert {"query": {"match": {'f': 42}}, "size": 10} == s.to_dict(size=10)
 
-    s.aggs.bucket('per_tag', 'terms', field='f').aggregate('max_score', 'max', field='score')
+    s.aggs.bucket('per_tag', 'terms', field='f').metric('max_score', 'max', field='score')
     d = {
         'aggs': {
             'per_tag': {
@@ -158,7 +158,7 @@ def test_complex_example():
         .post_filter('terms', tags=['prague', 'czech'])
 
     s.aggs.bucket('per_country', 'terms', field='country')\
-        .aggregate('avg_attendees', 'avg', field='attendees')
+        .metric('avg_attendees', 'avg', field='attendees')
 
     s.query.minimum_should_match = 2
 
