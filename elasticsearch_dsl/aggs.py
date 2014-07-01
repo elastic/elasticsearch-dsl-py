@@ -1,4 +1,4 @@
-from six import add_metaclass
+from six import add_metaclass, iteritems
 
 from .utils import DslMeta, DslBase
 
@@ -48,6 +48,12 @@ class Agg(DslBase):
     def __init__(self, name, **params):
         self._name = name
         super(Agg, self).__init__(**params)
+
+    def __repr__(self):
+        return '%s(%r, %r%s)' % (
+            self._type_shortcut.__name__,
+            self._name, self.name, self._repr_params()
+        )
 
     def to_dict(self):
         d = super(Agg, self).to_dict()

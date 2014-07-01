@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from six import iteritems
 
 def _wrap(val):
@@ -88,6 +90,24 @@ class DslBase(object):
         self._params = {}
         for pname, pvalue in iteritems(params):
             self._setattr(pname, pvalue)
+
+    def _repr_params(self):
+        """ Produce a repr of all our parameters to be used in __repr__. """
+        params = ', '.join(
+            '%s=%r' % (n, v)
+            for (n, v) in sorted(iteritems(self._params))
+            # make sure we don't include empty typed params
+            if 'type' not in self._param_defs.get(n, {}) or v
+        )
+        if params:
+            params = ', ' + params
+        return params
+
+    def __repr__(self):
+        return '%s(%r%s)' % (
+            self._type_shortcut.__name__,
+            self.name, self._repr_params()
+        )
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()

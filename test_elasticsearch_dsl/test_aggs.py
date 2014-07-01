@@ -4,6 +4,12 @@ from elasticsearch_dsl import aggs
 
 from pytest import raises
 
+def test_repr():
+    max_score = aggs.Max('max_score', field='score')
+    a = aggs.A('per_tag', 'terms', field='tags', aggs={'max_score': max_score})
+
+    assert "A('per_tag', 'terms', aggs={'max_score': A('max_score', 'max', field='score')}, field='tags')" == repr(a)
+
 def test_A_creates_proper_agg():
     a = aggs.A('per_tag', 'terms', field='tags')
 
