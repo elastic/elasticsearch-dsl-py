@@ -238,6 +238,27 @@ def test_function_score_to_dict():
     }
     assert d == q.to_dict()
 
+
+def test_function_score_with_single_function():
+    d = {
+      'function_score': {
+        'filter': {"term": {"tags": "python"}},
+        'script_score': {
+            'script': "doc['comment_count'] * _score"
+        }
+      }
+    }
+
+    q = query.Q(d)
+    assert isinstance(q, query.FunctionScore)
+    assert isinstance(q.filter, filter.Term)
+    assert len(q.functions) == 1
+
+    sf = q.functions[0]
+    assert isinstance(sf, function.ScriptScore)
+    assert "doc['comment_count'] * _score" == sf.script
+
+
 def test_function_score_from_dict():
     d = {
       'function_score': {
