@@ -85,6 +85,7 @@ class Search(object):
         self._sort = []
         self._extra = extra or {}
         self._params = {}
+        self._fields = []
 
     def __getitem__(self, n):
         """
@@ -121,7 +122,7 @@ class Search(object):
     @classmethod
     def from_dict(cls, d):
         """
-        Construct a `Search` instance from a draw dict containing the search
+        Construct a `Search` instance from a raw dict containing the search
         body.
         """
         s = cls()
@@ -135,6 +136,7 @@ class Search(object):
         """
         s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
         s._sort = self._sort[:]
+        s._fields = self._fields[:]
         s._extra = self._extra.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
@@ -167,6 +169,8 @@ class Search(object):
             }
         if 'sort' in d:
             self._sort = d.pop('sort')
+        if 'fields' in d:
+            self._fields = d.pop('fields')
         self._extra = d
 
     def params(self, **kwargs):
@@ -186,6 +190,14 @@ class Search(object):
         if 'from_' in kwargs:
             kwargs['from'] = kwargs.pop('from_')
         s._extra.update(kwargs)
+        return s
+
+    def fields(self, *args):
+        """
+        Selectively load specific stored fields for each document.
+        """
+        s = self._clone()
+        s._fields = list(args)
         return s
 
     def sort(self, *keys):
@@ -282,6 +294,10 @@ class Search(object):
 
         if not count:
             d.update(self._extra)
+
+        if not count and  self._fields:
+            d['fields'] = self._fields
+
         d.update(kwargs)
         return d
 
