@@ -232,6 +232,10 @@ def test_reverse():
             {"category": {"order": "desc"}},
             "_score"
         ],
+        "fields": [
+            "category",
+            "title"
+        ],
         "size": 5
     }
 
@@ -255,4 +259,27 @@ def test_params_being_passed_to_search(dummy_response):
         routing='42'
     )
 
+def test_fields():
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        'fields': ['title']
+    } == search.Search().fields('title').to_dict()
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        'fields': ['id', 'title']
+    } == search.Search().fields('id', 'title').to_dict()
 
+def test_fields_on_clone():
+    assert {
+        'query': {
+            'filtered': {
+                'filter': {'term': {'title': 'python'}},
+                'query': {'match_all': {}}
+            }
+        },
+        'fields': ['title']
+    } == search.Search().fields('title').filter('term', title='python').to_dict()
