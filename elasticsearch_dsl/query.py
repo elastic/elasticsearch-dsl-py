@@ -49,6 +49,9 @@ class Match(Query):
 class MultiMatch(Query):
     name = 'multi_match'
 
+class QueryString(Query):
+    name = 'query_string'
+
 class Fuzzy(Query):
     name = 'fuzzy'
 
