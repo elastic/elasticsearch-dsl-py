@@ -36,7 +36,10 @@ class ResultMeta(AttrDict):
 
 class Result(AttrDict):
     def __init__(self, document):
-        super(Result, self).__init__(document['_source'])
+        if 'fields' in document:
+            super(Result, self).__init__(document['fields'])
+        else:
+            super(Result, self).__init__(document['_source'])
         # assign _meta as attribute and not as key in self._d_
         super(AttrDict, self).__setattr__('_meta', ResultMeta(document))
 
