@@ -233,7 +233,7 @@ class Search(object):
             s._doc_type = (self._doc_type or []) + list(doc_type)
         return s
 
-    def to_dict(self, **kwargs):
+    def to_dict(self, count=False, **kwargs):
         if self.filter:
             d = {
               "query": {
@@ -249,13 +249,14 @@ class Search(object):
         if self.post_filter:
             d['post_filter'] = self.post_filter.to_dict()
 
-        if self.aggs.aggs:
+        if not count and self.aggs.aggs:
             d.update(self.aggs.to_dict())
 
-        if self._sort:
+        if not count and self._sort:
             d['sort'] = self._sort
 
-        d.update(self._extra)
+        if not count:
+            d.update(self._extra)
         d.update(kwargs)
         return d
 
@@ -268,9 +269,8 @@ class Search(object):
         if not self._using:
             raise #XXX
 
-        d = self.to_dict()
+        d = self.to_dict(count=True)
         # TODO: failed shards detection
-        # TODO: remove aggs etc?
         return self._using.count(
             index=self._index,
             doc_type=self._doc_type,
