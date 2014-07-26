@@ -54,7 +54,7 @@ With the low-level client you would write something like this:
     for hit in response['hits']['hits']:
         print(hit['_score'], hit['_source']['title'])
 
-Which would be very hard to modify (imagine adding another filter to that
+Which could be very hard to modify (imagine adding another filter to that
 query) and is definitely no fun to write. With the python DSL you can write the
 same query as:
 
@@ -85,7 +85,7 @@ Or, if you want to have absolute control over your queries:
 
 The library will take care of:
 
-  * composing queries/filters into ``bool`` queries/filters
+  * composing queries/filters into compound queries/filters
 
   * creating filtered queries when ``.filter()`` has been used
 
@@ -106,10 +106,10 @@ with it and, at the end, serialize it back to dict to send over the wire:
 
     body = {...} # insert complicated query here
     # convert to search
-    s = Search.from_dict()
+    s = Search.from_dict(body)
     # add some filters, aggregations, queries, ...
     s.filter("term", tags="python")
-    # convert back to dict to plug back into existing code
+    # optionally convert back to dict to plug back into existing code
     body = s.to_dict()
 
 Since the DSL is built on top of the low-level client there should be nothing

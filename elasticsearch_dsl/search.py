@@ -92,12 +92,11 @@ class Search(object):
 
         Slicing equates to the from/size parameters. E.g.::
 
-            Search().query(...)[0:25]
+            s = Search().query(...)[0:25]
 
         is equivalent to::
 
-            {"query": ...
-             "from": 0, "size": 25}
+            s = Search().query(...).extra(from_=0, size=25)
 
         """
         s = self._clone()
@@ -130,6 +129,10 @@ class Search(object):
         return s
 
     def _clone(self):
+        """
+        Return a clone of the current search request. Performs a shallow copy
+        of all the underlying objects. Used internally by most state modifying APIs.
+        """
         s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
         s._sort = self._sort[:]
         s._extra = self._extra.copy()
@@ -143,6 +146,10 @@ class Search(object):
         return s
 
     def update_from_dict(self, d):
+        """
+        Apply options from a serialized body to the current instance. Modifies
+        the object in-place.
+        """
         d = d.copy()
         self.query._proxied = Q(d.pop('query'))
         if 'post_filter' in d:
@@ -163,6 +170,10 @@ class Search(object):
         self._extra = d
 
     def params(self, **kwargs):
+        """
+        Specify query params to be used when executing the search. All the
+        keyword arguments will override the current values.
+        """
         s = self._clone()
         s._params.update(kwargs)
         return s
@@ -181,13 +192,13 @@ class Search(object):
         """
         Add sorting information to the search request. If called without
         arguments it will remove all sort requirements. Otherwise it will
-        replace them. Acceptable arguments are:
+        replace them. Acceptable arguments are::
 
             'some.field'
             '-some.other.fiels'
             {'different.field': {'any': 'dict'}}
 
-        so for example:
+        so for example::
 
             s = Search().sort(
                 'category',
@@ -225,6 +236,11 @@ class Search(object):
         return s
 
     def doc_type(self, *doc_type):
+        """
+        Set the type to search through. You can supply a single value or a
+        list. If no index is supplied (or an empty value) any information
+        stored on the instance will be erased.
+        """
         # .doc_type() resets
         s = self._clone()
         if not doc_type:
@@ -233,7 +249,13 @@ class Search(object):
             s._doc_type = (self._doc_type or []) + list(doc_type)
         return s
 
-    def to_dict(self, count=False, **kwargs):
+    def to_dict(self, count=False):
+        """
+        Serialize the search into the dictionary that will be sent over as the request's body.
+
+        :arg count: a flag to specify we are interested in a body for count -
+            no aggregations, no pagination bounds etc.
+        """
         if self.filter:
             d = {
               "query": {
@@ -257,15 +279,24 @@ class Search(object):
 
         if not count:
             d.update(self._extra)
-        d.update(kwargs)
         return d
 
     def using(self, client):
+        """
+        Associate the search request with an elasticsearch client. A fresh copy
+        will be returned with current instance remaining unchanged.
+
+        :arg client: and instance of ``elasticsearch.Elasticsearch`` to use
+        """
         s = self._clone()
         s._using = client
         return s
 
     def count(self):
+        """
+        Return the number of hits matching the query and filters. Note that
+        only the actual number is returned.
+        """
         if not self._using:
             raise #XXX
 
@@ -278,6 +309,10 @@ class Search(object):
         )['count']
 
     def execute(self):
+        """
+        Execute the search and return an instance of ``Response`` wrapping all
+        the data.
+        """
         if not self._using:
             raise #XXX
 
