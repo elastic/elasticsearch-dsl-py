@@ -48,6 +48,14 @@ With the low-level client you would write something like this:
               },
               "filter": {"term": {"category": "search"}}
             }
+          },
+          "aggs" : {
+            "per_tag": {
+              "terms": {"field": "tags"},
+              "aggs": {
+                "max_lines": {"max": {"field": "lines"}}
+              }
+            }
           }
         }
     )
@@ -67,21 +75,15 @@ same query as:
         .query("match", title="python")   \
         .query(~Q("match", description="beta"))
 
+    s.aggs.bucket('per_tag', 'terms', field='tags')\
+        .metric('max_lines', 'max', field='lines')
+
     response = s.execute()
     for hit in response:
         print(hit._meta.score, hit.title)
 
-Or, if you want to have absolute control over your queries:
-
-.. code:: python
-
-    from elasticsearch_dsl.query import Bool, Match
-    s = Search(using=es).query(
-      Bool(
-        must=[Match(title="python")],
-        must_not=[Match(description="beta")]
-      )
-    )
+    for b in response.aggregations.per_tags.buckets:
+        print(b.key, b.max_lines.value)
 
 The library will take care of:
 
