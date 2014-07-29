@@ -286,17 +286,18 @@ class Search(object):
         if self.post_filter:
             d['post_filter'] = self.post_filter.to_dict()
 
-        if not count and self.aggs.aggs:
-            d.update(self.aggs.to_dict())
-
-        if not count and self._sort:
-            d['sort'] = self._sort
-
+        # count request doesn't care for sorting and other things
         if not count:
+            if self.aggs.aggs:
+                d.update(self.aggs.to_dict())
+
+            if self._sort:
+                d['sort'] = self._sort
+
             d.update(self._extra)
 
-        if not count and  self._fields:
-            d['fields'] = self._fields
+            if self._fields:
+                d['fields'] = self._fields
 
         d.update(kwargs)
         return d
