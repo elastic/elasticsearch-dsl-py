@@ -9,16 +9,17 @@ def F(name_or_filter, **params):
     # {"term": {...}}
     if isinstance(name_or_filter, dict):
         if params:
-            raise #XXX
+            raise ValueError('F() cannot accept parameters when passing in a dict.')
         if len(name_or_filter) != 1:
-            raise #XXX
+            raise ValueError('F() can only accept dict with a single filter ({"bool": {...}}). '
+                 'Instead it got (%r)' % name_or_filter)
         name, params = name_or_filter.copy().popitem()
         return Filter.get_dsl_class(name)(**params)
 
     # Term(...)
     if isinstance(name_or_filter, Filter):
         if params:
-            raise #XXX
+            raise ValueError('F() cannot accept parameters when passing in a Filter object.')
         return name_or_filter
 
     # 'term', tag='python', ...

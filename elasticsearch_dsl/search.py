@@ -104,7 +104,7 @@ class Search(object):
         if isinstance(n, slice):
             # If negative slicing, abort.
             if n.start and n.start < 0 or n.stop and n.stop < 0:
-                raise #XXX
+                raise ValueError("Search does not support negative slicing.")
             # Elasticsearch won't get all results so we default to size: 10 if
             # stop not given.
             s._extra['from'] = n.start or 0
@@ -113,7 +113,7 @@ class Search(object):
         else:  # This is an index lookup, equivalent to slicing by [n:n+1].
             # If negative index, abort.
             if n < 0:
-                raise #XXX
+                raise ValueError("Search does not support negative indexing.")
             s._extra['from'] = n
             s._extra['size'] = 1
             return s
@@ -249,12 +249,15 @@ class Search(object):
             s._doc_type = (self._doc_type or []) + list(doc_type)
         return s
 
-    def to_dict(self, count=False):
+    def to_dict(self, count=False, **kwargs):
         """
-        Serialize the search into the dictionary that will be sent over as the request's body.
+        Serialize the search into the dictionary that will be sent over as the
+        request's body.
 
         :arg count: a flag to specify we are interested in a body for count -
             no aggregations, no pagination bounds etc.
+
+        All additional keyword arguments will be included into the dictionary.
         """
         if self.filter:
             d = {
@@ -279,6 +282,7 @@ class Search(object):
 
         if not count:
             d.update(self._extra)
+        d.update(kwargs)
         return d
 
     def using(self, client):

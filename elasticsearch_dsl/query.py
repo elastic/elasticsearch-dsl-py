@@ -10,16 +10,17 @@ def Q(name_or_query, **params):
     # {"match": {"title": "python"}}
     if isinstance(name_or_query, dict):
         if params:
-            raise #XXX
+            raise ValueError('Q() cannot accept parameters when passing in a dict.')
         if len(name_or_query) != 1:
-            raise #XXX
+            raise ValueError('Q() can only accept dict with a single query ({"match": {...}}). '
+                 'Instead it got (%r)' % name_or_query)
         name, params = name_or_query.copy().popitem()
         return Query.get_dsl_class(name)(**params)
 
     # MatchAll()
     if isinstance(name_or_query, Query):
         if params:
-            raise #XXX
+            raise ValueError('Q() cannot accept parameters when passing in a Query object.')
         return name_or_query
 
     # "match", title="python"

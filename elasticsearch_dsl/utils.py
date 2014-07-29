@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from six import iteritems
 
+from .exceptions import UnknownDslObject
+
 def _wrap(val):
     if isinstance(val, dict):
         return AttrDict(val)
@@ -55,7 +57,8 @@ class AttrDict(object):
         try:
             return _wrap(self._d_[attr_name])
         except KeyError:
-            raise AttributeError()
+            raise AttributeError(
+                '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
 
     def __getitem__(self, key):
         # don't wrap things whe accessing via __getitem__ for consistency
@@ -143,7 +146,8 @@ class DslBase(object):
 
     def __getattr__(self, name):
         if name.startswith('_'):
-            raise AttributeError()
+            raise AttributeError(
+                '%r object has no attribute %r' % (self.__class__.__name__, name))
 
         value = None
         try:
@@ -158,7 +162,8 @@ class DslBase(object):
                 elif pinfo.get('hash'):
                     value = self._params.setdefault(name, {})
         if value is None:
-            raise AttributeError()
+            raise AttributeError(
+                '%r object has no attribute %r' % (self.__class__.__name__, name))
 
         # wrap nested dicts in AttrDict for convenient access
         if isinstance(value, dict):
@@ -257,14 +262,14 @@ class DslMeta(type):
         try:
             return cls._types[name]
         except KeyError:
-            raise #XXX
+            raise UnknownDslObject('DSL type %s does not exist.' % name)
 
     @classmethod
     def get_dsl_class(cls, name):
         try:
             return cls._classes[name]
         except KeyError:
-            raise #XXX
+            raise UnknownDslObject('DSL class %s does not exist in %s.' % (name, self._type_name))
 
 
 class BoolMixin(object):
