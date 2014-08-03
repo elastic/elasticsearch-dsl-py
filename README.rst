@@ -82,7 +82,7 @@ same query as:
     for hit in response:
         print(hit._meta.score, hit.title)
 
-    for b in response.aggregations.per_tags.buckets:
+    for b in response.aggregations.per_tag.buckets:
         print(b.key, b.max_lines.value)
 
 The library will take care of:
