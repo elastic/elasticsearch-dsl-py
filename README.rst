@@ -6,13 +6,6 @@ running queries against Elasticsearch. It is built on top of the official
 low-level client (``elasticsearch-py``).
 
 
-Warning
--------
-
-This is a work in progress - any part of the library can change or disappear
-with no advance warning, use at your own risk.
-
-
 Philosophy
 ----------
 
