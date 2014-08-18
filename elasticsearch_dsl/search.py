@@ -132,9 +132,11 @@ class Search(object):
     def _clone(self):
         """
         Return a clone of the current search request. Performs a shallow copy
-        of all the underlying objects. Used internally by most state modifying APIs.
+        of all the underlying objects. Used internally by most state modifying
+        APIs.
         """
-        s = Search(using=self._using, index=self._index, doc_type=self._doc_type)
+        s = self.__class__(using=self._using, index=self._index,
+                           doc_type=self._doc_type)
         s._sort = self._sort[:]
         s._fields = self._fields[:]
         s._extra = self._extra.copy()
