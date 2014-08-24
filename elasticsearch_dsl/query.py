@@ -64,9 +64,11 @@ class Term(Query):
 
 class HasChild(Query):
     name = 'has_child'
-    _param_defs = {
-        'query': {'type': 'query'},
-    }
+    _param_defs = {'query': {'type': 'query'}}
+
+class HasParent(Query):
+    name = 'has_parent'
+    _param_defs = {'query': {'type': 'query'}}
 
 class Bool(BoolMixin, Query):
     name = 'bool'
@@ -79,7 +81,7 @@ class Bool(BoolMixin, Query):
 # register this as Bool for Query
 Query._bool = Bool
 
-class FilteredQuery(Query):
+class Filtered(Query):
     name = 'filtered'
     _param_defs = {
         'query': {'type': 'query'},

@@ -1,4 +1,4 @@
-from .query import Q, EMPTY_QUERY, FilteredQuery
+from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
 from .utils import DslBase
@@ -159,7 +159,7 @@ class Search(object):
         if 'post_filter' in d:
             self.post_filter._proxied = F(d.pop('post_filter'))
 
-        if isinstance(self.query._proxied, FilteredQuery):
+        if isinstance(self.query._proxied, Filtered):
             self.filter._proxied = self.query._proxied.filter
             self.query._proxied = self.query._proxied.query
 
