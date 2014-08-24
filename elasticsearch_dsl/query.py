@@ -1,6 +1,6 @@
 from six import add_metaclass
 
-from .utils import DslMeta, DslBase, BoolMixin
+from .utils import DslMeta, DslBase, BoolMixin, _make_dsl_class
 from .function import SF, ScoreFunction
 
 class QueryMeta(DslMeta):
@@ -41,7 +41,6 @@ class MatchAll(Query):
     def __or__(self, other):
         return self
     __ror__ = __or__
-
 EMPTY_QUERY = MatchAll()
 
 class Bool(BoolMixin, Query):
@@ -51,7 +50,6 @@ class Bool(BoolMixin, Query):
         'should': {'type': 'query', 'multi': True},
         'must_not': {'type': 'query', 'multi': True},
     }
-
 # register this as Bool for Query
 Query._bool = Bool
 
@@ -117,17 +115,8 @@ QUERIES = (
     ('wildcard', None),
 )
 
-def _make_query_class(name, params_def=None):
-    """
-    Generate a query class based on the name of the query and it's parameters
-    """
-    attrs = {'name': name}
-    if params_def:
-        attrs['_param_defs'] = params_def
-    cls_name = ''.join(s.title() for s in name.split('_'))
-    globals()[cls_name] = type(cls_name, (Query, ), attrs)
-
 # generate the query classes dynamicaly
 for qname, params_def in QUERIES:
-    _make_query_class(qname, params_def)
+    qclass = _make_dsl_class(Query, qname, params_def)
+    globals()[qclass.__name__] = qclass
 

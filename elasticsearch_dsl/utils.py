@@ -11,6 +11,15 @@ def _wrap(val):
         return AttrList(val)
     return val
 
+def _make_dsl_class(base, name, params_def=None):
+    """
+    Generate a DSL class based on the name of the DSL object and it's parameters
+    """
+    attrs = {'name': name}
+    if params_def:
+        attrs['_param_defs'] = params_def
+    cls_name = ''.join(s.title() for s in name.split('_'))
+    return type(cls_name, (base, ), attrs)
 
 class AttrList(list):
     def __getitem__(self, k):
