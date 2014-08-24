@@ -44,32 +44,6 @@ class MatchAll(Query):
 
 EMPTY_QUERY = MatchAll()
 
-class Match(Query):
-    name = 'match'
-
-class MultiMatch(Query):
-    name = 'multi_match'
-
-class QueryString(Query):
-    name = 'query_string'
-
-class Fuzzy(Query):
-    name = 'fuzzy'
-
-class Prefix(Query):
-    name = 'prefix'
-
-class Term(Query):
-    name = 'term'
-
-class HasChild(Query):
-    name = 'has_child'
-    _param_defs = {'query': {'type': 'query'}}
-
-class HasParent(Query):
-    name = 'has_parent'
-    _param_defs = {'query': {'type': 'query'}}
-
 class Bool(BoolMixin, Query):
     name = 'bool'
     _param_defs = {
@@ -80,13 +54,6 @@ class Bool(BoolMixin, Query):
 
 # register this as Bool for Query
 Query._bool = Bool
-
-class Filtered(Query):
-    name = 'filtered'
-    _param_defs = {
-        'query': {'type': 'query'},
-        'filter': {'type': 'filter'},
-    }
 
 class FunctionScore(Query):
     name = 'function_score'
@@ -105,3 +72,62 @@ class FunctionScore(Query):
                 if name in kwargs:
                     fns.append({name: kwargs.pop(name)})
         super(FunctionScore, self).__init__(**kwargs)
+
+QUERIES = (
+    # compound queries
+    ('boosting', {'positive': {'type': 'query'}, 'negative': {'type': 'query'}}),
+    ('constant_score', {'query': {'type': 'query'}, 'filter': {'type': 'filter'}}),
+    ('dis_max', {'queries': {'type': 'query', 'multi': True}}),
+    ('filtered', {'query': {'type': 'query'}, 'filter': {'type': 'filter'}}),
+    ('indices', {'query': {'type': 'query'}, 'no_match_query': {'type': 'query'}}),
+
+    # relationship queries
+    ('nested', {'query': {'type': 'query'}}),
+    ('has_child', {'query': {'type': 'query'}}),
+    ('has_parent', {'query': {'type': 'query'}}),
+    ('top_children', {'query': {'type': 'query'}}),
+
+    # compount span queries
+    ('span_first', {'match': {'type': 'query'}}),
+    ('span_multi', {'match': {'type': 'query'}}),
+    ('span_near', {'clauses': {'type': 'query', 'multi': True}}),
+    ('span_not', {'exclude': {'type': 'query'}, 'include': {'type': 'query'}}),
+    ('span_or', {'clauses': {'type': 'query', 'multi': True}}),
+
+    # core queries
+    ('common_terms', None),
+    ('fuzzy', None),
+    ('fuzzy_like_this', None),
+    ('fuzzy_like_this_field', None),
+    ('geo_shape', None),
+    ('ids', None),
+    ('match', None),
+    ('more_like_this', None),
+    ('more_like_this_field', None),
+    ('multi_match', None),
+    ('prefix', None),
+    ('query_string', None),
+    ('range', None),
+    ('regexp', None),
+    ('simple_query_string', None),
+    ('span_term', None),
+    ('template', None),
+    ('term', None),
+    ('terms', None),
+    ('wildcard', None),
+)
+
+def _make_query_class(name, params_def=None):
+    """
+    Generate a query class based on the name of the query and it's parameters
+    """
+    attrs = {'name': name}
+    if params_def:
+        attrs['_param_defs'] = params_def
+    cls_name = ''.join(s.title() for s in name.split('_'))
+    globals()[cls_name] = type(cls_name, (Query, ), attrs)
+
+# generate the query classes dynamicaly
+for qname, params_def in QUERIES:
+    _make_query_class(qname, params_def)
+
