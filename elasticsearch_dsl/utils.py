@@ -89,6 +89,13 @@ class DslBase(object):
     """
     _param_defs = {}
 
+    @classmethod
+    def get_dsl_class(cls, name):
+        try:
+            return cls._classes[name]
+        except KeyError:
+            raise UnknownDslObject('DSL class %s does not exist in %s.' % (name, cls._type_name))
+
     def __init__(self, **params):
         self._params = {}
         for pname, pvalue in iteritems(params):
@@ -262,13 +269,6 @@ class DslMeta(type):
             return cls._types[name]
         except KeyError:
             raise UnknownDslObject('DSL type %s does not exist.' % name)
-
-    @classmethod
-    def get_dsl_class(cls, name):
-        try:
-            return cls._classes[name]
-        except KeyError:
-            raise UnknownDslObject('DSL class %s does not exist in %s.' % (name, self._type_name))
 
 
 class BoolMixin(object):
