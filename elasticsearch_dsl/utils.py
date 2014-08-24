@@ -247,15 +247,14 @@ class DslMeta(type):
     For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
     """
     _types = {}
-    def __new__(cls, name, bases, attrs):
-        new_class = super(DslMeta, cls).__new__(cls, name, bases, attrs)
-        if new_class.name is None:
+    def __init__(cls, name, bases, attrs):
+        super(DslMeta, cls).__init__(name, bases, attrs)
+        if cls.name is None:
             # abstract base class, register it's shortcut
-            cls._types[new_class._type_name] = new_class._type_shortcut
+            cls._types[cls._type_name] = cls._type_shortcut
         else:
             # normal class, register it
-            cls._classes[new_class.name] = new_class
-        return new_class
+            cls._classes[cls.name] = cls
 
     @classmethod
     def get_dsl_type(cls, name):
