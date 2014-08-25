@@ -86,14 +86,43 @@ class Bucket(AggBase, Agg):
             d['aggs'] = d[self.name].pop('aggs')
         return d
 
-class Terms(Bucket):
-    name = 'terms'
+AGGS = (
+    (Bucket, 'children', None),
+    (Bucket, 'date_histogram', None),
+    (Bucket, 'date_range', None),
+    (Bucket, 'filter', {'filter': {'type': 'filter'}}),
+    (Bucket, 'filters', {'filters': {'type': 'filter', 'hash': True}}),
+    (Bucket, 'geo_distance', None),
+    (Bucket, 'geo_hashgrid', None),
+    (Bucket, 'global', None),
+    (Bucket, 'histogram', None),
+    (Bucket, 'iprange', None),
+    (Bucket, 'missing', None),
+    (Bucket, 'nested', None),
+    (Bucket, 'range', None),
+    (Bucket, 'reverse_nested', None),
+    (Bucket, 'significant_terms', None),
+    (Bucket, 'terms', None),
 
-class DateHistogram(Bucket):
-    name = 'date_histogram'
+    (Agg, 'avg', None),
+    (Agg, 'cardinality', None),
+    (Agg, 'extended_stats', None),
+    (Agg, 'geo_bounds', None),
+    (Agg, 'max', None),
+    (Agg, 'min', None),
+    (Agg, 'percentile', None),
+    (Agg, 'percentile_rank', None),
+    (Agg, 'scripted_metric', None),
+    (Agg, 'stats', None),
+    (Agg, 'sum', None),
+    (Agg, 'top_hits', None),
+    (Agg, 'value_count', None),
+)
 
-class Max(Agg):
-    name = 'max'
-
-class Avg(Agg):
-    name = 'avg'
+# generate the filter classes dynamicaly
+for base, fname, params_def in AGGS:
+    # don't override the params def from AggBase
+    if params_def:
+        params_def.update(AggBase._param_defs)
+    fclass = _make_dsl_class(base, fname, params_def)
+    globals()[fclass.__name__] = fclass

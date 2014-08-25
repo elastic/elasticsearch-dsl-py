@@ -1,6 +1,4 @@
-from copy import deepcopy
-
-from elasticsearch_dsl import aggs
+from elasticsearch_dsl import aggs, filter
 
 from pytest import raises
 
@@ -117,3 +115,15 @@ def test_nested_buckets_are_settable_as_getitem():
 
     assert a.aggs['per_author'] is b
 
+def test_filters_correctly_identifies_the_hash():
+    a = aggs.A('filters', filters={'group_a': {'term': {'group': 'a'}}, 'group_b': {'term': {'group': 'b'}}})
+
+    assert {
+        'filters': {
+            'filters': {
+                'group_a': {'term': {'group': 'a'}},
+                'group_b': {'term': {'group': 'b'}}
+            }
+        }
+    } == a.to_dict()
+    assert a.filters.group_a == filter.F('term', group='a')
