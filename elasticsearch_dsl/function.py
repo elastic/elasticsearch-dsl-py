@@ -68,3 +68,13 @@ class Random(ScoreFunction):
 
 class FieldValueFactor(ScoreFunction):
     name = 'field_value_factor'
+
+class Linear(ScoreFunction):
+    name = 'linear'
+    
+class Gauss(ScoreFunction):
+    name = 'gauss'
+    
+class Exp(ScoreFunction):
+    name = 'exp'
+    
