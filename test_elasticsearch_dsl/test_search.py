@@ -1,3 +1,4 @@
+from copy import deepcopy
 from mock import Mock
 
 from elasticsearch_dsl import search, query, F, Q
@@ -239,8 +240,12 @@ def test_reverse():
         "size": 5
     }
 
+    d2 = deepcopy(d)
+
     s = search.Search.from_dict(d)
 
+    # make sure we haven't modified anything in place
+    assert d == d2
     assert {"size": 5} == s._extra
     assert d == s.to_dict()
 

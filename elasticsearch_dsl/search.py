@@ -1,3 +1,5 @@
+from six import iteritems
+
 from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
@@ -167,7 +169,7 @@ class Search(object):
         if aggs:
             self.aggs._params = {
                 'aggs': dict(
-                    (name, A({name: value})) for (name, value) in aggs.items())
+                    (name, A(value)) for (name, value) in iteritems(aggs))
             }
         if 'sort' in d:
             self._sort = d.pop('sort')

@@ -149,11 +149,7 @@ class DslBase(object):
 
                 # dict(name -> DslBase), make sure we pickup all the objs
                 elif pinfo.get('hash'):
-                    d = {}
-                    for k, v in iteritems(value):
-                        v = shortcut({k: v})
-                        d[v._name] = v
-                    value = d
+                    value = dict((k, shortcut(v)) for (k, v) in iteritems(value))
 
                 # single value object, just convert
                 else:
@@ -206,10 +202,7 @@ class DslBase(object):
 
                 # squash all the hash values into one dict
                 elif pinfo.get('hash'):
-                    new_value = {}
-                    for v in value.values():
-                        new_value.update(v.to_dict())
-                    value = new_value
+                    value = dict((k, v.to_dict()) for k, v in iteritems(value))
 
                 # serialize single values
                 else:
@@ -217,7 +210,7 @@ class DslBase(object):
 
             # serialize anything with to_dict method
             elif hasattr(value, 'to_dict'):
-                value - value.to_dict()
+                value = value.to_dict()
 
             d[pname] = value
         return {self.name: d}
