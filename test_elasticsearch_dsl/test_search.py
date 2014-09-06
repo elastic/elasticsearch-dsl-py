@@ -1,7 +1,7 @@
 from copy import deepcopy
 from mock import Mock
 
-from elasticsearch_dsl import search, query, F, Q
+from elasticsearch_dsl import search, query, result, F, Q
 
 def test_search_starts_with_empty_query():
     s = search.Search()
@@ -288,3 +288,20 @@ def test_fields_on_clone():
         },
         'fields': ['title']
     } == search.Search().fields('title').filter('term', title='python').to_dict()
+
+class CustomResult(result.Result):
+    pass
+
+class CustomResponse(result.Response):
+    def result_factory(self, doc):
+        return CustomResult(doc)
+
+def test_custom_response_class(dummy_response):
+    client = Mock()
+    client.search.return_value = dummy_response
+
+    s = search.Search(client).response_class(CustomResponse)
+    r = s.execute()
+
+    assert isinstance(r, CustomResponse)
+    assert isinstance(r[0], CustomResult)

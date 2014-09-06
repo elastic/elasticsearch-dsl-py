@@ -88,6 +88,7 @@ class Search(object):
         self._extra = extra or {}
         self._params = {}
         self._fields = []
+        self._response_class = Response
 
     def __getitem__(self, n):
         """
@@ -142,6 +143,7 @@ class Search(object):
         s._sort = self._sort[:]
         s._fields = self._fields[:]
         s._extra = self._extra.copy()
+        s._response_class = self._response_class
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -265,6 +267,14 @@ class Search(object):
             s._doc_type = (self._doc_type or []) + list(doc_type)
         return s
 
+    def response_class(self, cls=None):
+        """
+        Set the response class that will be instantiated by ``execute``.
+        """
+        s = self._clone()
+        s._response_class = cls if cls is not None else Response
+        return s
+
     def to_dict(self, count=False, **kwargs):
         """
         Serialize the search into the dictionary that will be sent over as the
@@ -333,7 +343,7 @@ class Search(object):
             body=d
         )['count']
 
-    def execute(self):
+    def execute(self, response_class=None):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
@@ -341,7 +351,10 @@ class Search(object):
         if not self._using:
             raise #XXX
 
-        return Response(
+        if response_class is None:
+            response_class = self._response_class
+
+        return response_class(
             self._using.search(
                 index=self._index,
                 doc_type=self._doc_type,
@@ -349,4 +362,3 @@ class Search(object):
                 **self._params
             )
         )
-
