@@ -293,8 +293,7 @@ class CustomResult(result.Result):
     pass
 
 class CustomResponse(result.Response):
-    def result_factory(self, doc):
-        return CustomResult(doc)
+    result_class = CustomResult
 
 def test_custom_response_class(dummy_response):
     client = Mock()
