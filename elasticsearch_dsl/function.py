@@ -2,9 +2,6 @@ from six import add_metaclass
 
 from .utils import DslMeta, DslBase
 
-class ScoreFunctionMeta(DslMeta):
-    _classes = {}
-
 def SF(name_or_sf, **params):
     # {"script_score": {"script": "_score"}, "filter": {}}
     if isinstance(name_or_sf, dict):
@@ -33,7 +30,7 @@ def SF(name_or_sf, **params):
     # "script_score", script="_score", filter=F()
     return ScoreFunction.get_dsl_class(name_or_sf)(**params)
 
-@add_metaclass(ScoreFunctionMeta)
+@add_metaclass(DslMeta)
 class ScoreFunction(DslBase):
     _type_name = 'score_function'
     _type_shortcut = staticmethod(SF)

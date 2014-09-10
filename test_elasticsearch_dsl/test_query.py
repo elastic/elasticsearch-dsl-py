@@ -146,15 +146,15 @@ def test_two_bool_queries_append_one_to_should_if_possible():
     assert (q2 | q1) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
 
 def test_queries_are_registered():
-    assert 'match' in query.QueryMeta._classes
-    assert query.QueryMeta._classes['match'] is query.Match
+    assert 'match' in query.Query._classes
+    assert query.Query._classes['match'] is query.Match
 
 def test_defining_query_registers_it():
     class MyQuery(query.Query):
         name = 'my_query'
 
-    assert 'my_query' in query.QueryMeta._classes
-    assert query.QueryMeta._classes['my_query'] is MyQuery
+    assert 'my_query' in query.Query._classes
+    assert query.Query._classes['my_query'] is MyQuery
 
 def test_Q_passes_query_through():
     q = query.Match(f='value1')

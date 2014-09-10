@@ -261,6 +261,9 @@ class DslMeta(type):
         if cls.name is None:
             # abstract base class, register it's shortcut
             cls._types[cls._type_name] = cls._type_shortcut
+            # and create a registry for subclasses
+            if not hasattr(cls, '_classes'):
+                cls._classes = {}
         else:
             # normal class, register it
             cls._classes[cls.name] = cls
