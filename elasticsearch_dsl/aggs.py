@@ -1,6 +1,5 @@
-from six import add_metaclass
 
-from .utils import DslMeta, DslBase, _make_dsl_class
+from .utils import DslBase, _make_dsl_class
 
 def A(name_or_agg, **params):
     # {"terms": {"field": "tags"}, "aggs": {...}}
@@ -29,7 +28,6 @@ def A(name_or_agg, **params):
     # "terms", field="tags"
     return Agg.get_dsl_class(name_or_agg)(**params)
 
-@add_metaclass(DslMeta)
 class Agg(DslBase):
     _type_name = 'agg'
     _type_shortcut = staticmethod(A)

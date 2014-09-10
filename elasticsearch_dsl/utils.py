@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from six import iteritems
+from six import iteritems, add_metaclass
 
 from .exceptions import UnknownDslObject
 
@@ -81,6 +81,43 @@ class AttrDict(object):
         return self._d_
 
 
+class DslMeta(type):
+    """
+    Base Metaclass for DslBase subclasses that builds a registry of all classes
+    for given DslBase subclass (== all the query types for the Query subclass
+    of DslBase).
+
+    It then uses the information from that registry (as well as `name` and
+    `shortcut` attributes from the base class) to construct any subclass based
+    on it's name.
+
+    For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
+    """
+    _types = {}
+    def __init__(cls, name, bases, attrs):
+        super(DslMeta, cls).__init__(name, bases, attrs)
+        # skip for DslBase
+        if not hasattr(cls, '_type_shortcut'):
+            return
+        if cls.name is None:
+            # abstract base class, register it's shortcut
+            cls._types[cls._type_name] = cls._type_shortcut
+            # and create a registry for subclasses
+            if not hasattr(cls, '_classes'):
+                cls._classes = {}
+        else:
+            # normal class, register it
+            cls._classes[cls.name] = cls
+
+    @classmethod
+    def get_dsl_type(cls, name):
+        try:
+            return cls._types[name]
+        except KeyError:
+            raise UnknownDslObject('DSL type %s does not exist.' % name)
+
+
+@add_metaclass(DslMeta)
 class DslBase(object):
     """
     Base class for all DSL objects - queries, filters, aggregations etc. Wraps
@@ -241,39 +278,6 @@ class DslBase(object):
         if hasattr(other, '__rand__'):
             return other.__rand__(self)
         return self._bool(must=[self, other])
-
-
-class DslMeta(type):
-    """
-    Base Metaclass for DslBase subclasses that builds a registry of all classes
-    for given DslBase subclass (== all the query types for the Query subclass
-    of DslBase).
-
-    It then uses the information from that registry (as well as `name` and
-    `shortcut` attributes from the base class) to construct any subclass based
-    on it's name.
-
-    For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
-    """
-    _types = {}
-    def __init__(cls, name, bases, attrs):
-        super(DslMeta, cls).__init__(name, bases, attrs)
-        if cls.name is None:
-            # abstract base class, register it's shortcut
-            cls._types[cls._type_name] = cls._type_shortcut
-            # and create a registry for subclasses
-            if not hasattr(cls, '_classes'):
-                cls._classes = {}
-        else:
-            # normal class, register it
-            cls._classes[cls.name] = cls
-
-    @classmethod
-    def get_dsl_type(cls, name):
-        try:
-            return cls._types[name]
-        except KeyError:
-            raise UnknownDslObject('DSL type %s does not exist.' % name)
 
 
 class BoolMixin(object):

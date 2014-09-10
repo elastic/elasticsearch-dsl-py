@@ -1,6 +1,4 @@
-from six import add_metaclass
-
-from .utils import DslMeta, DslBase, BoolMixin, _make_dsl_class
+from .utils import DslBase, BoolMixin, _make_dsl_class
 
 def F(name_or_filter, filters=None, **params):
     # 'and/or', [F(), F()]
@@ -26,7 +24,6 @@ def F(name_or_filter, filters=None, **params):
     # 'term', tag='python', ...
     return Filter.get_dsl_class(name_or_filter)(**params)
 
-@add_metaclass(DslMeta)
 class Filter(DslBase):
     _type_name = 'filter'
     _type_shortcut = staticmethod(F)

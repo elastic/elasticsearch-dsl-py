@@ -1,6 +1,4 @@
-from six import add_metaclass
-
-from .utils import DslMeta, DslBase, BoolMixin, _make_dsl_class
+from .utils import DslBase, BoolMixin, _make_dsl_class
 from .function import SF, ScoreFunction
 
 def Q(name_or_query, **params):
@@ -23,7 +21,6 @@ def Q(name_or_query, **params):
     # "match", title="python"
     return Query.get_dsl_class(name_or_query)(**params)
 
-@add_metaclass(DslMeta)
 class Query(DslBase):
     _type_name = 'query'
     _type_shortcut = staticmethod(Q)
