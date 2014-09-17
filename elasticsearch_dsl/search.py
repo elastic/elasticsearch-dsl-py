@@ -5,6 +5,7 @@ from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
 from .utils import DslBase
 from .result import Response
+from .connections import connections
 
 
 class BaseProxy(object):
@@ -55,7 +56,7 @@ class AggsProxy(AggBase, DslBase):
 
 
 class Search(object):
-    def __init__(self, using=None, index=None, doc_type=None, extra=None):
+    def __init__(self, using='default', index=None, doc_type=None, extra=None):
         """
         Search request to elasticsearch.
 
@@ -322,12 +323,11 @@ class Search(object):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if not self._using:
-            raise #XXX
+        es = connections.get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
-        return self._using.count(
+        return es.count(
             index=self._index,
             doc_type=self._doc_type,
             body=d
@@ -338,11 +338,10 @@ class Search(object):
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
         """
-        if not self._using:
-            raise #XXX
+        es = connections.get_connection(self._using)
 
         return Response(
-            self._using.search(
+            es.search(
                 index=self._index,
                 doc_type=self._doc_type,
                 body=self.to_dict(),
