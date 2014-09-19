@@ -71,6 +71,9 @@ class AttrDict(object):
             raise AttributeError(
                 '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
 
+    def __contains__(self, key):
+        return key in self._d_
+
     def __getitem__(self, key):
         # don't wrap things whe accessing via __getitem__ for consistency
         return self._d_[key]
