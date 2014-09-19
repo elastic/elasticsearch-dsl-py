@@ -22,6 +22,8 @@ def _make_dsl_class(base, name, params_def=None):
     return type(cls_name, (base, ), attrs)
 
 class AttrList(list):
+    def __iter__(self):
+        return iter([_wrap(l) for l in super(AttrList, self).__iter__()])
     def __getitem__(self, k):
         l = super(AttrList, self).__getitem__(k)
         if isinstance(k, slice):
