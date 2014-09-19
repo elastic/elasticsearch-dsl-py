@@ -2,6 +2,7 @@ from six import iteritems, add_metaclass
 
 from .field import FieldBase
 from .mapping import Mapping
+from .utils import ObjectBase
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
@@ -14,5 +15,5 @@ class DocTypeMeta(type):
         return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
 
 @add_metaclass(DocTypeMeta)
-class DocType(object):
+class DocType(ObjectBase):
     pass

@@ -15,6 +15,15 @@ class Mapping(object):
     def __init__(self, name):
         self.properties = Properties(name)
 
+    def __contains__(self, name):
+        return name in self.properties.properties
+
+    def __getitem__(self, name):
+        return self.properties.properties[name]
+
+    def __iter__(self):
+        return iter(self.properties.properties)
+
     def field(self, *args, **kwargs):
         self.properties.property(*args, **kwargs)
         return self

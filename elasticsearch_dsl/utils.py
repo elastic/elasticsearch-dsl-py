@@ -39,6 +39,9 @@ class AttrDict(object):
         # assign the inner dict manually to prevent __setattr__ from firing
         super(AttrDict, self).__setattr__('_d_', d)
 
+    def __contains__(self, key):
+        return key in self._d_
+
     def __dir__(self):
         # introspection for auto-complete in IPython etc
         return list(self._d_.keys())
@@ -345,3 +348,29 @@ class BoolMixin(object):
         # TODO: should -> must_not.append(self.__class__(should=self.should)) ??
         # queries with should just invert normally
         return super(self.__class__, self).__invert__()
+
+
+class ObjectBase(AttrDict):
+    def __init__(self, **kwargs):
+        super(ObjectBase, self).__init__(kwargs)
+
+    def __getattr__(self, name):
+        try:
+            return super(ObjectBase, self).__getattr__(name)
+        except AttributeError:
+            if name in self._mapping_:
+                f = self._mapping_[name]
+                if hasattr(f, 'empty'):
+                    v = f.empty()
+                    setattr(self, name, v)
+                    return v
+            raise
+
+    def __setattr__(self, name, value):
+        if name in self._mapping_:
+            value = self._mapping_[name].to_python(value)
+        super(ObjectBase, self).__setattr__(name, value)
+
+    def to_dict(self):
+        # TODO: recursive
+        return self._d_

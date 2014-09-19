@@ -1,4 +1,4 @@
-from .utils import DslBase, _make_dsl_class
+from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict
 
 # Field because F is for Filter
 def Field(name_or_field, **params):
@@ -28,19 +28,39 @@ class FieldBase(DslBase):
     _param_defs = {'fields': {'type': 'field', 'hash': True}}
     name = None
 
+    def to_python(self, data):
+        return data
+
     def to_dict(self):
         d = super(FieldBase, self).to_dict()
         name, value = d.popitem()
         value['type'] = name
         return value
 
+class InnerObjectWrapper(ObjectBase):
+    def __init__(self, mapping, **kwargs):
+        super(AttrDict, self).__setattr__('_mapping_', mapping)
+        super(InnerObjectWrapper, self).__init__(**kwargs)
+
+
 class InnerObject(object):
     " Common functionality for nested and object fields. "
+    _doc_class = InnerObjectWrapper
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
 
     def property(self, name, *args, **kwargs):
         self.properties[name] = Field(*args, **kwargs)
         return self
+
+    def empty(self):
+        return self.to_python({})
+
+    def to_python(self, data):
+        # don't wrap already wrapped data
+        if isinstance(data, self._doc_class):
+            return data
+
+        return self._doc_class(self.properties, **data)
 
 class Object(InnerObject, FieldBase):
     name = 'object'
@@ -48,6 +68,7 @@ class Object(InnerObject, FieldBase):
 class Nested(InnerObject, FieldBase):
     name = 'nested'
 
+# TODO: add to_python
 FIELDS = (
     'string',
     'date'
