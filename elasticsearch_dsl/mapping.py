@@ -24,6 +24,10 @@ class Mapping(object):
     def __iter__(self):
         return iter(self.properties.properties)
 
+    @property
+    def doc_type(self):
+        return self.properties.name
+
     def field(self, *args, **kwargs):
         self.properties.property(*args, **kwargs)
         return self

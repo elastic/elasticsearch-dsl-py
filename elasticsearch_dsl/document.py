@@ -1,3 +1,5 @@
+import re
+
 from six import iteritems, add_metaclass
 
 from .field import FieldBase
@@ -6,7 +8,8 @@ from .utils import ObjectBase
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
-        mapping = attrs.pop('mapping', Mapping(name))
+        doc_type = attrs.pop('doc_type', re.sub(r'(.)([A-Z])', r'\1_\2', name).lower())
+        mapping = attrs.pop('mapping', Mapping(doc_type))
         for name, value in list(iteritems(attrs)):
             if isinstance(value, FieldBase):
                 mapping.field(name, value)

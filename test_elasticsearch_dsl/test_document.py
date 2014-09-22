@@ -12,7 +12,7 @@ class MyDoc(document.DocType):
 def test_declarative_mapping_definition():
     assert hasattr(MyDoc, '_mapping_')
     assert {
-        'MyDoc': {
+        'my_doc': {
             'properties': {
                 'created_at': {'type': 'date'},
                 'name': {'type': 'string'},
