@@ -1,5 +1,8 @@
+from six import iteritems
+
 from .utils import DslBase
 from .field import InnerObject
+from .connections import connections
 
 class Properties(InnerObject, DslBase):
     def __init__(self, name):
@@ -14,6 +17,20 @@ class Properties(InnerObject, DslBase):
 class Mapping(object):
     def __init__(self, name):
         self.properties = Properties(name)
+
+    @classmethod
+    def from_es(cls, index, doc_type, using='default'):
+        m = cls(doc_type)
+        m.update_from_es(index, using)
+        return m
+
+    def update_from_es(self, index, using='default'):
+        es = connections.get_connection(using)
+        raw = es.indices.get_mapping(index=index, doc_type=self.doc_type)
+        raw = raw[index]['mappings'][self.doc_type]['properties']
+
+        for name, definition in iteritems(raw):
+            self.field(name, definition)
 
     def __contains__(self, name):
         return name in self.properties.properties

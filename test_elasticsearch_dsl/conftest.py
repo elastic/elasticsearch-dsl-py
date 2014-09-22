@@ -21,7 +21,9 @@ def client(request):
 
     _client_loaded = True
     try:
-        return get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
+        client = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
+        request.addfinalizer(lambda: client.indices.delete('test-*'))
+        return client
     except SkipTest:
         skip()
 
