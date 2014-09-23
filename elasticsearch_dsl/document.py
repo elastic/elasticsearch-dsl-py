@@ -14,6 +14,12 @@ class DocTypeMeta(type):
             if isinstance(value, FieldBase):
                 mapping.field(name, value)
                 del attrs[name]
+
+        # document inheritance
+        for b in bases:
+            if hasattr(b, '_mapping_'):
+                mapping.update(b._mapping_, update_only=True)
+
         attrs['_mapping_'] = mapping
         return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
 

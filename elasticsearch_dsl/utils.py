@@ -80,6 +80,9 @@ class AttrDict(object):
         self._d_[key] = value
     __setattr__ = __setitem__
 
+    def __iter__(self):
+        return iter(self._d_)
+
     def to_dict(self):
         return self._d_
 

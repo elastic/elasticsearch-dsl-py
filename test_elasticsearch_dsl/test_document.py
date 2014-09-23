@@ -8,6 +8,9 @@ class MyDoc(document.DocType):
     created_at = field.Date()
     inner = field.Object(properties={'old_field': field.String()})
 
+class MySubDoc(MyDoc):
+    name = field.String(index='not_analyzed')
+
 
 def test_declarative_mapping_definition():
     assert hasattr(MyDoc, '_mapping_')
@@ -47,3 +50,19 @@ def test_document_can_be_created_dynamicaly():
             'new_field': ['undefined', 'field']
         }
     } == md.to_dict()
+
+def test_document_inheritance():
+    assert hasattr(MySubDoc, '_mapping_')
+    assert {
+        'my_sub_doc': {
+            'properties': {
+                'created_at': {'type': 'date'},
+                'name': {'type': 'string', 'index': 'not_analyzed'},
+                'title': {'index': 'not_analyzed', 'type': 'string'},
+                'inner': {
+                    'type': 'object',
+                    'properties': {'old_field': {'type': 'string'}}
+                }
+            }
+        }
+    } == MySubDoc._mapping_.to_dict()

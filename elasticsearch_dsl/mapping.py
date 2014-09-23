@@ -32,6 +32,12 @@ class Mapping(object):
         for name, definition in iteritems(raw):
             self.field(name, definition)
 
+    def update(self, mapping, update_only=False):
+        for name in mapping:
+            if update_only and name in self:
+                continue
+            self.field(name, mapping[name])
+
     def __contains__(self, name):
         return name in self.properties.properties
 
