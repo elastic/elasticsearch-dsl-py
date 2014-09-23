@@ -11,9 +11,14 @@ class MyDoc(document.DocType):
 class MySubDoc(MyDoc):
     name = field.String(index='not_analyzed')
 
+    class Meta:
+        doc_type = 'my_custom_doc'
+
 
 def test_declarative_mapping_definition():
-    assert hasattr(MyDoc, '_mapping_')
+    assert issubclass(MyDoc, document.DocType)
+    assert hasattr(MyDoc, '_meta')
+    assert 'my_doc' == MyDoc._meta.doc_type
     assert {
         'my_doc': {
             'properties': {
@@ -26,7 +31,7 @@ def test_declarative_mapping_definition():
                 }
             }
         }
-    } == MyDoc._mapping_.to_dict()
+    } == MyDoc._meta.mapping.to_dict()
 
 def test_document_can_be_created_dynamicaly():
     n = datetime.now()
@@ -52,9 +57,12 @@ def test_document_can_be_created_dynamicaly():
     } == md.to_dict()
 
 def test_document_inheritance():
-    assert hasattr(MySubDoc, '_mapping_')
+    assert issubclass(MySubDoc, MyDoc)
+    assert issubclass(MySubDoc, document.DocType)
+    assert hasattr(MySubDoc, '_meta')
+    assert 'my_custom_doc' == MySubDoc._meta.doc_type
     assert {
-        'my_sub_doc': {
+        'my_custom_doc': {
             'properties': {
                 'created_at': {'type': 'date'},
                 'name': {'type': 'string', 'index': 'not_analyzed'},
@@ -65,4 +73,4 @@ def test_document_inheritance():
                 }
             }
         }
-    } == MySubDoc._mapping_.to_dict()
+    } == MySubDoc._meta.mapping.to_dict()

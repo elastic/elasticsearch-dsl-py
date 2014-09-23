@@ -8,20 +8,32 @@ from .utils import ObjectBase
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
-        doc_type = attrs.pop('doc_type', re.sub(r'(.)([A-Z])', r'\1_\2', name).lower())
-        mapping = attrs.pop('mapping', Mapping(doc_type))
+        # DocTypeMeta filters attrs in place
+        attrs['_meta'] = DocTypeOptions(name, bases, attrs)
+        return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+
+
+class DocTypeOptions(object):
+    def __init__(self, name, bases, attrs):
+        meta = attrs.pop('Meta', None)
+
+        doc_type = getattr(meta, 'doc_type', re.sub(r'(.)([A-Z])', r'\1_\2', name).lower())
+        self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
+
         for name, value in list(iteritems(attrs)):
             if isinstance(value, FieldBase):
-                mapping.field(name, value)
+                self.mapping.field(name, value)
                 del attrs[name]
 
         # document inheritance
         for b in bases:
-            if hasattr(b, '_mapping_'):
-                mapping.update(b._mapping_, update_only=True)
+            if hasattr(b, '_meta') and hasattr(b._meta, 'mapping'):
+                self.mapping.update(b._meta.mapping, update_only=True)
 
-        attrs['_mapping_'] = mapping
-        return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+    @property
+    def doc_type(self):
+        return self.mapping.properties.name
+
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):

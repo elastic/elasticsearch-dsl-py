@@ -361,8 +361,8 @@ class ObjectBase(AttrDict):
         try:
             return super(ObjectBase, self).__getattr__(name)
         except AttributeError:
-            if name in self._mapping_:
-                f = self._mapping_[name]
+            if name in self._meta.mapping:
+                f = self._meta.mapping[name]
                 if hasattr(f, 'empty'):
                     v = f.empty()
                     setattr(self, name, v)
@@ -370,8 +370,8 @@ class ObjectBase(AttrDict):
             raise
 
     def __setattr__(self, name, value):
-        if name in self._mapping_:
-            value = self._mapping_[name].to_python(value)
+        if name in self._meta.mapping:
+            value = self._meta.mapping[name].to_python(value)
         super(ObjectBase, self).__setattr__(name, value)
 
     def to_dict(self):
