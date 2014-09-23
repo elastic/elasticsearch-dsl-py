@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import document, field, utils
+from elasticsearch_dsl import document, field
 
 class MyDoc(document.DocType):
     title = field.String(index='not_analyzed')
