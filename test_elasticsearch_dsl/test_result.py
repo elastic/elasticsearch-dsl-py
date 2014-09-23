@@ -7,7 +7,7 @@ def test_interactive_helpers(dummy_response):
     hits = res.hits
     h = hits[0]
 
-    rhits = "[<Result(test-index/company/elasticsearch): %s>, <Result(test-index/employee/42): %s...}>, <Result(test-index/employee/47): %s...}>]" % (
+    rhits = "[<Result(test-index/company/elasticsearch): %s>, <Result(test-index/employee/42): %s...}>, <Result(test-index/employee/47): %s...}>, <Result(test-index/employee/53): {}>]" % (
             repr(dummy_response['hits']['hits'][0]['_source']),
             repr(dummy_response['hits']['hits'][1]['_source'])[:60],
             repr(dummy_response['hits']['hits'][2]['_source'])[:60],
@@ -24,7 +24,7 @@ def test_iterating_over_response_gives_you_hits(dummy_response):
 
     assert res.success()
     assert 123 == res.took
-    assert 3 == len(hits)
+    assert 4 == len(hits)
     assert all(isinstance(h, result.Result) for h in hits)
     h = hits[0]
 
