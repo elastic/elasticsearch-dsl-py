@@ -13,12 +13,13 @@ class MySubDoc(MyDoc):
 
     class Meta:
         doc_type = 'my_custom_doc'
+        index = 'default-index'
 
 
 def test_declarative_mapping_definition():
     assert issubclass(MyDoc, document.DocType)
-    assert hasattr(MyDoc, '_meta')
-    assert 'my_doc' == MyDoc._meta.doc_type
+    assert hasattr(MyDoc, '_doc_type')
+    assert 'my_doc' == MyDoc._doc_type.name
     assert {
         'my_doc': {
             'properties': {
@@ -31,7 +32,7 @@ def test_declarative_mapping_definition():
                 }
             }
         }
-    } == MyDoc._meta.mapping.to_dict()
+    } == MyDoc._doc_type.mapping.to_dict()
 
 def test_document_can_be_created_dynamicaly():
     n = datetime.now()
@@ -59,8 +60,8 @@ def test_document_can_be_created_dynamicaly():
 def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)
     assert issubclass(MySubDoc, document.DocType)
-    assert hasattr(MySubDoc, '_meta')
-    assert 'my_custom_doc' == MySubDoc._meta.doc_type
+    assert hasattr(MySubDoc, '_doc_type')
+    assert 'my_custom_doc' == MySubDoc._doc_type.name
     assert {
         'my_custom_doc': {
             'properties': {
@@ -73,4 +74,16 @@ def test_document_inheritance():
                 }
             }
         }
-    } == MySubDoc._meta.mapping.to_dict()
+    } == MySubDoc._doc_type.mapping.to_dict()
+
+def test_meta_fields_are_stored_in_meta_and_ignored_by_to_dict():
+    md = MySubDoc(_id=42, name='My First doc!')
+
+    assert md.id == 42
+    assert md.index == 'default-index'
+    md.index = 'my-index'
+    assert md.index == 'my-index'
+    assert md._meta.id == 42
+    assert {'name': 'My First doc!'} == md.to_dict()
+    assert {'id': 42, 'index': 'my-index'} == md._meta.to_dict()
+

@@ -39,8 +39,8 @@ class FieldBase(DslBase):
 
 class InnerObjectWrapper(ObjectBase):
     def __init__(self, mapping, **kwargs):
-        # mimic DocType behavior with _meta.mapping
-        super(AttrDict, self).__setattr__('_meta', type('Meta', (), {'mapping': mapping}))
+        # mimic DocType behavior with _doc_type.mapping
+        super(AttrDict, self).__setattr__('_doc_type', type('Meta', (), {'mapping': mapping}))
         super(InnerObjectWrapper, self).__init__(**kwargs)
 
 

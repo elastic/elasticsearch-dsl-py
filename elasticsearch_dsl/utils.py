@@ -355,14 +355,16 @@ class BoolMixin(object):
 
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
-        super(ObjectBase, self).__init__(kwargs)
+        super(ObjectBase, self).__init__({})
+        for (k, v) in iteritems(kwargs):
+            setattr(self, k, v)
 
     def __getattr__(self, name):
         try:
             return super(ObjectBase, self).__getattr__(name)
         except AttributeError:
-            if name in self._meta.mapping:
-                f = self._meta.mapping[name]
+            if name in self._doc_type.mapping:
+                f = self._doc_type.mapping[name]
                 if hasattr(f, 'empty'):
                     v = f.empty()
                     setattr(self, name, v)
@@ -370,8 +372,8 @@ class ObjectBase(AttrDict):
             raise
 
     def __setattr__(self, name, value):
-        if name in self._meta.mapping:
-            value = self._meta.mapping[name].to_python(value)
+        if name in self._doc_type.mapping:
+            value = self._doc_type.mapping[name].to_python(value)
         super(ObjectBase, self).__setattr__(name, value)
 
     def to_dict(self):

@@ -28,10 +28,11 @@ class Response(AttrDict):
 
 
 class ResultMeta(AttrDict):
-    def __init__(self, document):
-        d = dict((k[1:], v) for (k, v) in iteritems(document) if k.startswith('_') and k != '_source')
-        # make sure we are consistent everywhere in python
-        d['doc_type'] = d['type']
+    def __init__(self, document, exclude=('_source', '_fields')):
+        d = dict((k[1:] if k.startswith('_') else k, v) for (k, v) in iteritems(document) if k not in exclude)
+        if 'type' in d:
+            # make sure we are consistent everywhere in python
+            d['doc_type'] = d.pop('type')
         super(ResultMeta, self).__init__(d)
 
 class Result(AttrDict):
