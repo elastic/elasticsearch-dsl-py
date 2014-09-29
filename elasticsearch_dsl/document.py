@@ -8,7 +8,8 @@ from .utils import ObjectBase, AttrDict
 from .result import ResultMeta
 
 META_FIELDS = frozenset((
-    'id', 'index', 'parent', 'percolate', 'routing', 'timestamp', 'ttl', 'type',
+    # Elasticsearch metadata fields, except 'type'
+    'id', 'index', 'parent', 'percolate', 'routing', 'timestamp', 'ttl',
     'version', 'version_type',
 ))
 
@@ -23,18 +24,27 @@ class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
 
-        doc_type = getattr(meta, 'doc_type', re.sub(r'(.)([A-Z])', r'\1_\2', name).lower())
-        self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
-
         # default index, if not overriden by doc._meta
         self.index = getattr(meta, 'index', None)
 
+        # default cluster alias, can be overriden in doc._meta
+        self.using = getattr(meta, 'using', 'default')
+
+        # get doc_type name, if not defined take the name of the class and
+        # tranform it to lower_case
+        doc_type = getattr(meta, 'doc_type',
+                re.sub(r'(.)([A-Z])', r'\1_\2', name).lower())
+
+        # create the mapping instance
+        self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
+
+        # register all declared fields into the mapping
         for name, value in list(iteritems(attrs)):
             if isinstance(value, FieldBase):
                 self.mapping.field(name, value)
                 del attrs[name]
 
-        # document inheritance
+        # document inheritance - include the fields from parents' mappings
         for b in bases:
             if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
                 self.mapping.update(b._doc_type.mapping, update_only=True)
