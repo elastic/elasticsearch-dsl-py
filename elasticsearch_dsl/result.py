@@ -3,6 +3,10 @@ from six import iteritems, u
 from .utils import AttrDict, AttrList
 
 class Response(AttrDict):
+    def __init__(self, response, callbacks=None):
+        super(AttrDict, self).__setattr__('_callbacks', callbacks or {})
+        super(Response, self).__init__(response)
+
     def __iter__(self):
         return iter(self.hits)
 
@@ -16,12 +20,16 @@ class Response(AttrDict):
     def success(self):
         return not (self.timed_out or self._shards.failed)
 
+    def _get_result(self, hit):
+        dt = hit['_type']
+        return self._callbacks.get(dt, Result)(hit)
+
     @property
     def hits(self):
         if not hasattr(self, '_hits'):
             h = self._d_['hits']
             # avoid assigning _hits into self._d_
-            super(AttrDict, self).__setattr__('_hits', AttrList(map(Result, h['hits'])))
+            super(AttrDict, self).__setattr__('_hits', AttrList(map(self._get_result, h['hits'])))
             for k in h:
                 setattr(self._hits, k, h[k])
         return self._hits

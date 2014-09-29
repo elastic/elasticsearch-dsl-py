@@ -76,10 +76,12 @@ class Search(object):
             self._index = [index]
 
         self._doc_type = None
+        self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
-            self._doc_type = list(doc_type)
+            for dt in doc_type:
+                self._add_doc_type(dt)
         elif doc_type:
-            self._doc_type = [doc_type]
+            self._add_doc_type(doc_type)
 
         self.query = ProxyQuery(self, 'query')
         self.filter = ProxyFilter(self, 'filter')
@@ -140,6 +142,7 @@ class Search(object):
         """
         s = self.__class__(using=self._using, index=self._index,
                            doc_type=self._doc_type)
+        s._doc_type_map = self._doc_type_map.copy()
         s._sort = self._sort[:]
         s._fields = self._fields[:]
         s._extra = self._extra.copy()
@@ -252,6 +255,17 @@ class Search(object):
             s._index = (self._index or []) + list(index)
         return s
 
+    def _add_doc_type(self, doc_type):
+        # DocType subclass
+        if hasattr(doc_type, '_doc_type'):
+            dt_name = doc_type._doc_type.name
+            self._doc_type_map[dt_name] = doc_type.from_es
+            doc_type = dt_name
+        if self._doc_type is None:
+            self._doc_type = [doc_type]
+        else:
+            self._doc_type.append(doc_type)
+
     def doc_type(self, *doc_type):
         """
         Set the type to search through. You can supply a single value or a
@@ -262,8 +276,10 @@ class Search(object):
         s = self._clone()
         if not doc_type:
             s._doc_type = None
+            s._doc_type_map = {}
         else:
-            s._doc_type = (self._doc_type or []) + list(doc_type)
+            for dt in doc_type:
+                s._add_doc_type(dt)
         return s
 
     def to_dict(self, count=False, **kwargs):
@@ -346,6 +362,7 @@ class Search(object):
                 doc_type=self._doc_type,
                 body=self.to_dict(),
                 **self._params
-            )
+            ),
+            callbacks=self._doc_type_map
         )
 

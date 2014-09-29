@@ -45,3 +45,11 @@ def test_can_save_to_different_index(client):
 
 def test_search(data_client):
     assert Repos.search().count() == 1
+
+def test_search_returns_proper_doc_classes(data_client):
+    result = Repos.search().execute()
+
+    elasticsearch_repo = result.hits[0]
+
+    assert isinstance(elasticsearch_repo, Repos)
+    assert elasticsearch_repo.owner.name == 'elasticsearch'
