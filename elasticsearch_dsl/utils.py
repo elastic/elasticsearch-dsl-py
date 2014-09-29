@@ -377,5 +377,9 @@ class ObjectBase(AttrDict):
         super(ObjectBase, self).__setattr__(name, value)
 
     def to_dict(self):
-        # TODO: recursive
-        return self._d_
+        out = {}
+        for k, v in iteritems(self._d_):
+            if hasattr(v, 'to_dict'):
+                v = v.to_dict()
+            out[k] = v
+        return out

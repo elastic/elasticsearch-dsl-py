@@ -73,12 +73,13 @@ class DocType(ObjectBase):
         return Search(using=cls._doc_type.using, doc_type=cls._doc_type.name, index=cls._doc_type.index)
 
     @classmethod
-    def get(cls, id, using=None, index=None):
+    def get(cls, id, using=None, index=None, **kwargs):
         es = connections.get_connection(using or cls._doc_type.using)
         doc = es.get(
             index=index or cls._doc_type.index,
             doc_type=cls._doc_type.name,
-            id=id
+            id=id,
+            **kwargs
         )
         return cls.from_es(doc)
 
@@ -88,6 +89,32 @@ class DocType(ObjectBase):
         doc = hit.copy()
         doc.update(doc.pop('_source'))
         return cls(**doc)
+
+    def _get_connection(self, using=None):
+        if using:
+            return connections.get_connection(using)
+        return connections.get_connection(getattr(self._meta, 'using', self._doc_type.using))
+
+    def save(self, using=None, index=None, **kwargs):
+        es = self._get_connection(using)
+        if index is None:
+            index = getattr(self._meta, 'index', self._doc_type.index)
+        if index is None:
+            raise #XXX - no index
+        meta = es.index(
+            index=index,
+            doc_type=self._doc_type.name,
+            id=getattr(self, 'id', None),
+            body=self.to_dict(),
+            **kwargs
+        )
+        # update meta information from ES
+        for k in META_FIELDS:
+            if '_' + k in meta:
+                setattr(self, k, meta['_' + k])
+
+        # return True/False if the document has been created/updated
+        return meta['created']
 
     def __getattr__(self, name):
         if name in META_FIELDS:
