@@ -379,7 +379,9 @@ class ObjectBase(AttrDict):
     def to_dict(self):
         out = {}
         for k, v in iteritems(self._d_):
-            if hasattr(v, 'to_dict'):
-                v = v.to_dict()
+            if isinstance(v, (list, tuple)):
+                v = [i.to_dict() if hasattr(i, 'to_dict') else i for i in v]
+            else:
+                v = v.to_dict() if hasattr(v, 'to_dict') else v
             out[k] = v
         return out

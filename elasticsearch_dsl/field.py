@@ -28,8 +28,13 @@ class FieldBase(DslBase):
     _param_defs = {'fields': {'type': 'field', 'hash': True}}
     name = None
 
-    def to_python(self, data):
+    def _to_python(self, data):
         return data
+    
+    def to_python(self, data):
+        if isinstance(data, (list, tuple)):
+            return [self._to_python(d) for d in data]
+        return self._to_python(data)
 
     def to_dict(self):
         d = super(FieldBase, self).to_dict()
@@ -56,7 +61,7 @@ class InnerObject(object):
     def empty(self):
         return self.to_python({})
 
-    def to_python(self, data):
+    def _to_python(self, data):
         # don't wrap already wrapped data
         if isinstance(data, self._doc_class):
             return data

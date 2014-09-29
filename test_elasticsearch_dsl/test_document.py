@@ -16,6 +16,15 @@ class MySubDoc(MyDoc):
         index = 'default-index'
 
 
+def test_to_dict_is_recursive_and_can_cope_with_multi_values():
+    md = MyDoc(name=['a', 'b', 'c'])
+    md.inner = [{'old_field': 'of1'}, {'old_field': 'of2'}]
+
+    assert {
+        'name': ['a', 'b', 'c'],
+        'inner': [{'old_field': 'of1'}, {'old_field': 'of2'}],
+    } == md.to_dict()
+
 def test_declarative_mapping_definition():
     assert issubclass(MyDoc, document.DocType)
     assert hasattr(MyDoc, '_doc_type')
