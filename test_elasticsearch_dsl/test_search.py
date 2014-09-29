@@ -91,7 +91,7 @@ def test_search_doc_type():
     s = s.doc_type('i2')
     assert s._doc_type == ['i', 'i2']
     s = s.doc_type()
-    assert s._doc_type is None
+    assert s._doc_type == []
     s = search.Search(doc_type=('i', 'i2'))
     assert s._doc_type == ['i', 'i2']
     s = search.Search(doc_type=['i', 'i2'])
@@ -255,7 +255,7 @@ def test_params_being_passed_to_search(mock_client):
     s.execute()
 
     mock_client.search.assert_called_once_with(
-        doc_type=None,
+        doc_type=[],
         index=None,
         body={'query': {'match_all': {}}},
         routing='42'

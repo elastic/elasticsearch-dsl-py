@@ -1,4 +1,5 @@
 from six import iteritems
+from itertools import chain
 
 from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
@@ -75,13 +76,15 @@ class Search(object):
         elif index:
             self._index = [index]
 
-        self._doc_type = None
+        self._doc_type = []
         self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
-            for dt in doc_type:
-                self._add_doc_type(dt)
+            self._doc_type.extend(doc_type)
+        elif isinstance(doc_type, dict):
+            self._doc_type.extend(doc_type.keys())
+            self._doc_type_map.update(doc_type)
         elif doc_type:
-            self._add_doc_type(doc_type)
+            self._doc_type.append(doc_type)
 
         self.query = ProxyQuery(self, 'query')
         self.filter = ProxyFilter(self, 'filter')
@@ -255,18 +258,7 @@ class Search(object):
             s._index = (self._index or []) + list(index)
         return s
 
-    def _add_doc_type(self, doc_type):
-        # DocType subclass
-        if hasattr(doc_type, '_doc_type'):
-            dt_name = doc_type._doc_type.name
-            self._doc_type_map[dt_name] = doc_type.from_es
-            doc_type = dt_name
-        if self._doc_type is None:
-            self._doc_type = [doc_type]
-        else:
-            self._doc_type.append(doc_type)
-
-    def doc_type(self, *doc_type):
+    def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or a
         list. If no index is supplied (or an empty value) any information
@@ -274,12 +266,13 @@ class Search(object):
         """
         # .doc_type() resets
         s = self._clone()
-        if not doc_type:
-            s._doc_type = None
+        if not doc_type and not kwargs:
+            s._doc_type = []
             s._doc_type_map = {}
         else:
-            for dt in doc_type:
-                s._add_doc_type(dt)
+            s._doc_type.extend(doc_type)
+            s._doc_type.extend(kwargs.keys())
+            s._doc_type_map.update(kwargs)
         return s
 
     def to_dict(self, count=False, **kwargs):

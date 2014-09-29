@@ -70,7 +70,7 @@ class DocType(ObjectBase):
     @classmethod
     def search(cls):
         #TODO: register callback for doc_type
-        return Search(using=cls._doc_type.using, doc_type=cls, index=cls._doc_type.index)
+        return Search(using=cls._doc_type.using, doc_type={cls._doc_type.name: cls.from_es}, index=cls._doc_type.index)
 
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
