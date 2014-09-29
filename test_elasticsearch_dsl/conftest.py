@@ -14,6 +14,8 @@ _client_loaded = False
 
 @fixture(scope='session')
 def client(request):
+    # inner import to avoid throwing off coverage
+    from elasticsearch_dsl.connections import connections
     # hack to workaround pytest not caching skip on fixtures (#467)
     global _client_loaded
     if _client_loaded:
@@ -22,7 +24,11 @@ def client(request):
     _client_loaded = True
     try:
         client = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
-        request.addfinalizer(lambda: client.indices.delete('test-*'))
+        connections.add_connection('default', client)
+        def cleanup():
+            client.indices.delete('test-*')
+            connections._conn, connections._kwargs = {}, {}
+        request.addfinalizer(cleanup)
         return client
     except SkipTest:
         skip()

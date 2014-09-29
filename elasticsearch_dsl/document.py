@@ -6,6 +6,8 @@ from .field import FieldBase
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict
 from .result import ResultMeta
+from .search import Search
+from .connections import connections
 
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
@@ -64,6 +66,28 @@ class DocType(ObjectBase):
         super(AttrDict, self).__setattr__('_meta', ResultMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
+
+    @classmethod
+    def search(cls):
+        #TODO: register callback for doc_type
+        return Search(using=cls._doc_type.using, doc_type=cls._doc_type.name, index=cls._doc_type.index)
+
+    @classmethod
+    def get(cls, id, using=None, index=None):
+        es = connections.get_connection(using or cls._doc_type.using)
+        doc = es.get(
+            index=index or cls._doc_type.index,
+            doc_type=cls._doc_type.name,
+            id=id
+        )
+        return cls.from_es(doc)
+
+    @classmethod
+    def from_es(cls, hit):
+        # don't modify in place
+        doc = hit.copy()
+        doc.update(doc.pop('_source'))
+        return cls(**doc)
 
     def __getattr__(self, name):
         if name in META_FIELDS:
