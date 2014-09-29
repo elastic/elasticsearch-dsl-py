@@ -261,12 +261,17 @@ class Search(object):
     def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or
-        multiple. If no index is supplied (or an empty value) any information
-        stored on the instance will be erased.
+        multiple.
+        
+        You can also pass in any keyword arguments, mapping a doc_type to a
+        callback that should be used instead of the Result class.
+
+        If no doc_type is supplied any information stored on the instance will
+        be erased.
 
         Example:
 
-            s = Search().doc_type('product', 'store')
+            s = Search().doc_type('product', 'store', user=User.from_es)
         """
         # .doc_type() resets
         s = self._clone()
