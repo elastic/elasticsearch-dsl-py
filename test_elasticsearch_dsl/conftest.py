@@ -112,6 +112,13 @@ def dummy_response():
               "twitter": "honzakral",
             },
           },
+          {
+            "_index": "test-index",
+            "_type": "employee",
+            "_id": "53",
+            "_score": 16.0,
+            "_parent": "elasticsearch",
+          },
         ],
         "max_score": 12.0,
         "total": 123

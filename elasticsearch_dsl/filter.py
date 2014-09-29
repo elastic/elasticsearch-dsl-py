@@ -3,6 +3,9 @@ from .utils import DslBase, BoolMixin, _make_dsl_class
 def F(name_or_filter, filters=None, **params):
     # 'and/or', [F(), F()]
     if filters is not None:
+        # someone passed in positional argument to F outside of and/or
+        if name_or_filter not in ('and', 'or'):
+            raise ValueError("Filter %r doesn't accept argument 'filters'." % name_or_filter)
         params['filters'] = filters
 
     # {"term": {...}}
