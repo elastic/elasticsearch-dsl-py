@@ -88,7 +88,7 @@ AGGS = (
     (Bucket, 'filter', {'filter': {'type': 'filter'}}),
     (Bucket, 'filters', {'filters': {'type': 'filter', 'hash': True}}),
     (Bucket, 'geo_distance', None),
-    (Bucket, 'geo_hashgrid', None),
+    (Bucket, 'geohash_grid', None),
     (Bucket, 'global', None),
     (Bucket, 'histogram', None),
     (Bucket, 'iprange', None),
