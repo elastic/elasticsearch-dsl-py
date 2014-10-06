@@ -87,7 +87,7 @@ QUERIES = (
     ('span_or', {'clauses': {'type': 'query', 'multi': True}}),
 
     # core queries
-    ('common_terms', None),
+    ('common', None),
     ('fuzzy', None),
     ('fuzzy_like_this', None),
     ('fuzzy_like_this_field', None),
