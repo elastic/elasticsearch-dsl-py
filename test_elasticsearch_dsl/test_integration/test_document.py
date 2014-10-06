@@ -20,15 +20,16 @@ def test_get(data_client):
 
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == 'elasticsearch'
+    assert datetime(2014, 3, 3) == elasticsearch_repo.created_at
 
 def test_save_updates_existing_doc(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
 
-    elasticsearch_repo.created_at = datetime(2014, 1, 1)
+    elasticsearch_repo.new_field = 'testing'
     assert not elasticsearch_repo.save()
 
     new_repo = data_client.get(index='git', doc_type='repos', id='elasticsearch-dsl-py')
-    assert '2014-01-01T00:00:00' == new_repo['_source']['created_at']
+    assert 'testing' == new_repo['_source']['new_field']
 
 def test_can_save_to_different_index(client):
     test_repo = Repository(description='testing', id=42)

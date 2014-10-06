@@ -1,3 +1,6 @@
+from datetime import date
+from dateutil import parser
+
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict
 
 # Field because F is for Filter
@@ -74,10 +77,22 @@ class Object(InnerObject, FieldBase):
 class Nested(InnerObject, FieldBase):
     name = 'nested'
 
+class Date(FieldBase):
+    name = 'date'
+
+    def _to_python(self, data):
+        if isinstance(data, date):
+            return data
+
+        try:
+            # TODO: add format awareness
+            return parser.parse(data)
+        except (TypeError, ValueError):
+            raise #XXX
+
 # TODO: add to_python
 FIELDS = (
     'string',
-    'date'
 )
 
 # generate the query classes dynamicaly
