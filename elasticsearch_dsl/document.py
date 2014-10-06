@@ -9,11 +9,15 @@ from .result import ResultMeta
 from .search import Search
 from .connections import connections
 
+DOC_META_FIELDS = frozenset((
+    'parent', 'routing', 'timestamp', 'ttl', 'version', 'version_type'
+))
+
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
-    'id', 'index', 'parent', 'percolate', 'routing', 'timestamp', 'ttl',
-    'version', 'version_type',
-))
+    'id', 'index', 'using', 'score',
+)).union(DOC_META_FIELDS)
+
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
@@ -69,8 +73,11 @@ class DocType(ObjectBase):
 
     @classmethod
     def search(cls):
-        #TODO: register callback for doc_type
-        return Search(using=cls._doc_type.using, doc_type={cls._doc_type.name: cls.from_es}, index=cls._doc_type.index)
+        return Search(
+            using=cls._doc_type.using,
+            index=cls._doc_type.index,
+            doc_type={cls._doc_type.name: cls.from_es},
+        )
 
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
@@ -91,9 +98,8 @@ class DocType(ObjectBase):
         return cls(**doc)
 
     def _get_connection(self, using=None):
-        if using:
-            return connections.get_connection(using)
-        return connections.get_connection(getattr(self._meta, 'using', self._doc_type.using))
+        return connections.get_connection(using or self.using)
+    connection = property(_get_connection)
 
     def save(self, using=None, index=None, **kwargs):
         es = self._get_connection(using)
@@ -101,12 +107,15 @@ class DocType(ObjectBase):
             index = getattr(self._meta, 'index', self._doc_type.index)
         if index is None:
             raise #XXX - no index
+        # extract parent, routing etc from _meta
+        doc_meta = dict((k, self._meta[k]) for k in DOC_META_FIELDS if k in self._meta)
+        doc_meta.update(kwargs)
         meta = es.index(
             index=index,
             doc_type=self._doc_type.name,
             id=getattr(self, 'id', None),
             body=self.to_dict(),
-            **kwargs
+            **doc_meta
         )
         # update meta information from ES
         for k in META_FIELDS:

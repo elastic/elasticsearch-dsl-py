@@ -33,6 +33,8 @@ def test_save_updates_existing_doc(data_client):
 
 def test_can_save_to_different_index(client):
     test_repo = Repository(description='testing', id=42)
+    test_repo.version_type = 'external'
+    test_repo.version = 3
     assert test_repo.save(index='test-document')
 
     assert {
@@ -40,7 +42,7 @@ def test_can_save_to_different_index(client):
         '_index': 'test-document',
         '_type': 'repos',
         '_id': '42',
-        '_version': 1,
+        '_version': 3,
         '_source': {'description': 'testing'},
     } == client.get(index='test-document', doc_type='repos', id=42)
 
