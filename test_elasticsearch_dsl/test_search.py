@@ -270,13 +270,29 @@ def test_fields():
             'match_all': {}
         },
         'fields': ['title']
-    } == search.Search().fields('title').to_dict()
+    } == search.Search().fields(['title']).to_dict()
     assert {
         'query': {
             'match_all': {}
         },
         'fields': ['id', 'title']
-    } == search.Search().fields('id', 'title').to_dict()
+    } == search.Search().fields(['id', 'title']).to_dict()
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        'fields': []
+    } == search.Search().fields([]).to_dict()
+    assert {
+        'query': {
+            'match_all': {}
+        }
+    } == search.Search().fields().to_dict()
+    assert {
+        'query': {
+            'match_all': {}
+        }
+    } == search.Search().fields(None).to_dict()
 
 def test_fields_on_clone():
     assert {
@@ -287,4 +303,4 @@ def test_fields_on_clone():
             }
         },
         'fields': ['title']
-    } == search.Search().fields('title').filter('term', title='python').to_dict()
+    } == search.Search().fields(['title']).filter('term', title='python').to_dict()

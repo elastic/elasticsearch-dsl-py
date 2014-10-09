@@ -87,7 +87,7 @@ class Search(object):
         self._sort = []
         self._extra = extra or {}
         self._params = {}
-        self._fields = []
+        self._fields = None
 
     def __getitem__(self, n):
         """
@@ -140,7 +140,7 @@ class Search(object):
         s = self.__class__(using=self._using, index=self._index,
                            doc_type=self._doc_type)
         s._sort = self._sort[:]
-        s._fields = self._fields[:]
+        s._fields = self._fields[:] if self._fields is not None else None
         s._extra = self._extra.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
@@ -196,12 +196,18 @@ class Search(object):
         s._extra.update(kwargs)
         return s
 
-    def fields(self, *args):
+    def fields(self, fields=None):
         """
         Selectively load specific stored fields for each document.
+
+        :arg fields: list of fields to return for each document
+
+        If `fields` is None, the entire document will be returned for
+        each hit.  If fields is the empty list, no fields will be
+        returned for each hit, just the _id and _type.
         """
         s = self._clone()
-        s._fields = list(args)
+        s._fields = fields
         return s
 
     def sort(self, *keys):
@@ -304,7 +310,7 @@ class Search(object):
 
             d.update(self._extra)
 
-            if self._fields:
+            if self._fields is not None:
                 d['fields'] = self._fields
 
         d.update(kwargs)
