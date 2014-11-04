@@ -105,7 +105,7 @@ AGGS = (
     (Agg, 'geo_bounds', None),
     (Agg, 'max', None),
     (Agg, 'min', None),
-    (Agg, 'percentile', None),
+    (Agg, 'percentiles', None),
     (Agg, 'percentile_rank', None),
     (Agg, 'scripted_metric', None),
     (Agg, 'stats', None),

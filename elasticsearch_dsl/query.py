@@ -94,6 +94,8 @@ QUERIES = (
     ('geo_shape', None),
     ('ids', None),
     ('match', None),
+    ('match_phrase', None),
+    ('match_phrase_prefix', None),
     ('more_like_this', None),
     ('more_like_this_field', None),
     ('multi_match', None),
