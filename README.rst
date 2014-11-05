@@ -9,8 +9,8 @@ low-level client (``elasticsearch-py``).
 Philosophy
 ----------
 
-The DSL inroduced in this library is trying to stay close to the terminology
-and strucutre of the actual JSON DSL used by Elasticsearch; it doesn't try to
+The DSL introduced in this library is trying to stay close to the terminology
+and structure of the actual JSON DSL used by Elasticsearch; it doesn't try to
 invent a new DSL, instead it aims at providing a more convenient way how to
 write, and manipulate, queries without limiting you to a subset of
 functionality. Since it uses the same terminology and building blocks no
@@ -56,7 +56,7 @@ With the low-level client you would write something like this:
         print(hit['_score'], hit['_source']['title'])
 
 Which could be very hard to modify (imagine adding another filter to that
-query) and is definitely no fun to write. With the python DSL you can write the
+query) and is definitely no fun to write. With the Python DSL you can write the
 same query as:
 
 .. code:: python
