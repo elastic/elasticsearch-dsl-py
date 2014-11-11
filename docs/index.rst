@@ -1,205 +1,186 @@
-Elasticsearch Python DSL
-========================
+Elasticsearch DSL
+=================
 
 Elasticsearch DSL is a high-level library whose aim is to help with writing and
 running queries against Elasticsearch. It is built on top of the official
 low-level client (``elasticsearch-py``).
 
-The DSL inroduced in this library is trying to stay close to the terminology
-and strucutre of the actual JSON DSL used by Elasticsearch; it doesn't try to
-invent a new DSL, instead it aims at providing a more convenient way how to
-write, and manipulate, queries without limiting you to a subset of
-functionality. Since it uses the same terminology and building blocks no
-special knowledge, on top of familiarity with the query DSL, should be
-required.
+It provides a more convenient and idiomatic way to write and manipulate
+queries. It stays close to the Elasticsearch JSON DSL, mirroring its
+terminology and structure. It exposes the whole range of the DSL from Python
+either directly using defined classes or a queryset-like expressions.
 
-Example::
+It also provides an optional wrapper for working with documents as Python
+objects: defining mappings, retrieving and saving documents, wrapping the
+document data in user-defined classes.
+
+To use the other Elasticsearch APIs (eg. cluster health) just use the
+underlying client.
+
+Search Example
+--------------
+
+Let's have a typical search request written directly as a ``dict``:
+
+.. code:: python
+
+    from elasticsearch import Elasticsearch
+    client = Elasticsearch()
+
+    response = client.search(
+        index="my-index",
+        body={
+          "query": {
+            "filtered": {
+              "query": {
+                "bool": {
+                  "must": [{"match": {"title": "python"}}],
+                  "must_not": [{"match": {"description": "beta"}}]
+                }
+              },
+              "filter": {"term": {"category": "search"}}
+            }
+          },
+          "aggs" : {
+            "per_tag": {
+              "terms": {"field": "tags"},
+              "aggs": {
+                "max_lines": {"max": {"field": "lines"}}
+              }
+            }
+          }
+        }
+    )
+
+    for hit in response['hits']['hits']:
+        print(hit['_score'], hit['_source']['title'])
+
+    for tag in response['aggregations']['per_tag']['buckets']:
+        print(tag['key'], tag['max_lines']['value'])
+
+
+
+The problem with this approach is that it is very verbose, prone to syntax
+mistakes like incorrect nesting, hard to modify (eg. adding another filter) and
+definitely not fun to write.
+
+Let's rewrite the example using the Python DSL:
+
+.. code:: python
 
     from elasticsearch import Elasticsearch
     from elasticsearch_dsl import Search, Q
 
-    es = Elasticsearch()
+    client = Elasticsearch()
 
-    s = Search(using=es).index("my-index") \
+    s = Search(using=client, index="my-index") \
         .filter("term", category="search") \
         .query("match", title="python")   \
         .query(~Q("match", description="beta"))
 
-    s.aggs.bucket('per_tag', 'terms', field='tags')\
+    s.aggs.bucket('per_tag', 'terms', field='tags') \
         .metric('max_lines', 'max', field='lines')
 
     response = s.execute()
+
     for hit in response:
         print(hit._meta.score, hit.title)
 
-    for b in response.aggregations.per_tag.buckets:
-        print(b.key, b.max_lines.value)
+    for tag in response.aggregations.per_tag.buckets:
+        print(tag.key, tag.max_lines.value)
+
+As you see, the library took care of:
+
+  * creating appropriate ``Query`` objects by name (eq. "match")
+
+  * composing queries into a compound ``bool`` query
+
+  * creating a ``filtered`` query since ``.filter()`` was used
+
+  * providing a convenient access to response data
+
+  * no curly or square brackets everywhere
 
 
-Search object
--------------
+Persistence Example
+-------------------
 
-``Search`` object represents the entire search request, including the queries,
-filters, aggregations and metadata like the associated client and pagination
-info.
+Let's have a simple Python class representing an article in a blogging system:
 
-The search API is designed to be chainable. With the exception of the
-aggregations functionality this means that the ``Search`` object is immutable -
-all changes to the object will result in a copy being created which contains
-the changes. This means you can safely pass the ``Search`` object to foreign
-code without fear of it modifying your objects.
+.. code:: python
 
-When instantiating the Search object you should pass in an instance of
-``Elasticsearch`` - the low-level client::
+    from datetime import datetime
+    from elasticsearch import Elasticsearch
+    from elasticsearch_dsl import DocType, String, Date, Integer, connections
 
-    form elasticsearch import Elasticsearch
-    from elasticsearch_dsl import Search
+    # Define a default Elasticsearch client
+    connections.add_connection(Elasticsearch())
 
-    s = Search(es)
+    class Article(DocType):
+        title = String(analyzer='snowball', fields={'raw': String(index='not_analyzed')})
+        body = String(analyzer='snowball')
+        tags = String(index='not_analyzed')
+        published_from = Date()
+        lines = Integer()
 
-If you don't do this you can supply the client at later time by using the
-``.using()`` method::
+        class Meta:
+            index = 'blog'
+  
+        def save(self, ** kwargs):
+            self.lines = len(self.body.split())
+            return super().save(** kwargs)
 
-    s = s.using(es)
+        def is_published(self):
+            return datetime.now() < self.published_from
 
+     article = Article(id=42, title='Hello world!', tags=['test'])
+     article.body = ''' looong text '''
+     article.published_from = datetime.now()
+     article.save()
 
-Querying
-~~~~~~~~
+     article = Article.get(id=42)
+     print(article.is_published())
 
-Adding queries to a search is done via the ``.query`` method. By default it
-will combine the query passed in with the query already associated with the
-search. The query accepts any parameter combination that the ``Q`` shortcut
-does:
-
-* name of the query as string and it's parameters as keyword arguments - preferred
-* ``Query`` object
-* ``dict`` representing the query
-
-The call to the ``.query()`` method will always return a copy of the ``Search``
-object thus enabling you to chain any number of calls to this, or other,
-method.
-
-A query will be constructed from the parameters and then combined with the
-query already defined in the ``Search`` object. The operator used for this is
-``+`` which works like logical ``and`` operator with the exception of bool
-queries where it just concatenates all of the internal lists (``must``,
-``must_not`` and ``should``). In typical use case (just adding more query
-conditions) this will produce the most optimal query - a single ``bool`` query
-with all the core queries in the ``must`` list.
-
-If you want to have precise control over the query form feel free to use the
-``Q`` shortcut to directly construct your queries::
-
-    q = Q('bool',
-        must=[Q('match', title='python')],
-        should=[Q(...), Q(...)],
-        minimum_should_match=1
-    )
-    s = Search().query(q)
+     # Display cluster health
+     print(connections.get_connection().cluster.health())
 
 
-Filtering
-~~~~~~~~~
+In this example you can see:
 
-The ``filter`` method is completely analogous to ``query``. By default, if a
-filter is defined, the query will be turned into a ``filtered`` query with the
-query and filter taken from the ``Search`` object.
+  * providing a default Elasticsearch client
 
-If you wish to use the top-level filter, use the ``post_filter`` method.
+  * defining fields with mapping configuration
 
+  * setting index name
 
-Aggregations
-~~~~~~~~~~~~
+  * defining custom methods
 
-You can specify aggregations as part of your search through the ``.aggs``
-property. There are two methods on the property - ``bucket`` and ``metric``::
+  * overriding the built-in ``.save()`` method to hook into the persistence life cycle
 
-    s = Search()
+  * retrieving and saving the object into Elasticsearch
 
-    # define a global metric:
-    s.aggs.metric("max_size", "max", field='size')
+  * accessing the underlying client for other APIs
 
-    # define a bucket aggregation and metrics inside:
-    s.aggs.bucket('per_country', 'terms', field='country_code')\
-        .metric('max_size', 'max', field='size') \
-        .metric('min_size', 'min', field='size')
+Migration from ``elasticsearch-py``
+-----------------------------------
 
-    # you can also retrieve existing bucket and start there:
-    s.aggs['per_country'].bucket('per_city', 'terms', field='city')
-    s.aggs['per_country']['per_city'].metric('...')
+You don't have to port your entire application to get the benefits of the
+Python DSL, you can start gradually by creating a ``Search`` object from your
+existing ``dict``, modifying it using the API and serializing it back to a
+``dict``:
 
-The aggregation methods are chainable to allow you to specify multiple steps in
-a single call. The way that ``bucket`` and ``metric`` behave is slightly
-different though - call to ``bucket`` will return the bucket so any chained
-aggregations will be defined inside the newly created bucket. Calls to
-``metric`` on the other hand will return the metric aggregation's bucket so all
-subsequent chained calls will be defined *next* to the new metric aggregation.
+.. code:: python
 
-Note that defining aggregations is done in-place for ``Search`` objects due to
-the different chaining schema.
+    body = {...} # insert complicated query here
 
-(de)serialization
-~~~~~~~~~~~~~~~~~
+    # Convert to Search object
+    s = Search.from_dict(body)
 
-The search object can be serialized (and will be internally upon execution)
-into a dictionary by using the ``.to_dict()`` method. Reverse process is also
-possible by using the class method ``.from_dict(body)``.
+    # Add some filters, aggregations, queries, ...
+    s.filter("term", tags="python")
 
-This can be most useful when migrating to/from legacy code which uses the
-low-level class and has previously defined all the queries manually using
-python ``dict``\ s. For example if you have an existing query that you wish to
-continue using while maybe adding some filters to it::
-
-    # previously used raw search body
-    query = {'from': 0, 'query': {'filtered': {...}}, 'aggs': {...}}
-
-    # create the search object and associate the client to it
-    s = Search.from_dict(query).using(es)
-    # now you can add filters/aggregations etc without problems
-    s.filter('term', category='python')
-    # and use the .execute() method to get access to the result class
-    response = s.execute()
-
-
-Response
---------
-
-You can execute your search by calling the ``execute()`` method that will retun
-a ``Response`` object.
-
-
-Hits
-~~~~
-
-If you want access to the hits returned by the search, just iterate over the
-response or access the ``hits`` property. It contains both the hits and the
-associated metadata like ``total`` and ``max_score``::
-
-    s = Search()
-    response = s.execute()
-    print('Total %d hits found.' % response.hits.total)
-    for h in response:
-        print(h.title, h.body)
-
-
-Result
-~~~~~~
-
-All individual hits (as well as the entire response) is wrapped in a
-convenience class that allows attribute access to the keys in the returned
-dictionary. All the metadata for the results are accessible via ``_meta``
-(without the leading ``_``)::
-
-    h = response.hits[0]
-    print('/%s/%s/%s returned with score %f' % (
-        h._meta.index, h._meta.doc_type, h._meta.id, h._meta.score))
-
-
-Aggregations
-~~~~~~~~~~~~
-
-Aggregation results are presented as-is with only the attribute access added
-for convenience.
+    # Convert back to dict to plug back into existing code
+    body = s.to_dict()
 
 
 License
@@ -219,18 +200,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-
 Contents
 --------
 
 .. toctree::
    :maxdepth: 2
 
+   search_dsl
    Changelog
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
 
