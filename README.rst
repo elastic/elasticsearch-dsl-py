@@ -5,30 +5,29 @@ Elasticsearch DSL is a high-level library whose aim is to help with writing and
 running queries against Elasticsearch. It is built on top of the official
 low-level client (``elasticsearch-py``).
 
+It provides a more convenient and idiomatic way to write and manipulate
+queries. It stays close to the Elasticsearch JSON DSL, mirroring its
+terminology and structure. It exposes the whole range of the DSL from Python
+either directly using defined classes or a queryset-like expressions.
 
-Philosophy
-----------
+It also provides an optional wrapper for working with documents as Python
+objects: defining mappings, retrieving and saving documents, wrapping the
+document data in user-defined classes.
 
-The DSL inroduced in this library is trying to stay close to the terminology
-and strucutre of the actual JSON DSL used by Elasticsearch; it doesn't try to
-invent a new DSL, instead it aims at providing a more convenient way how to
-write, and manipulate, queries without limiting you to a subset of
-functionality. Since it uses the same terminology and building blocks no
-special knowledge, on top of familiarity with the query DSL, should be
-required.
+To use the other Elasticsearch APIs (eg. cluster health) just use the
+underlying client.
 
+Search Example
+--------------
 
-Example
--------
-
-With the low-level client you would write something like this:
+Let's have a typical search request written directly as a ``dict``:
 
 .. code:: python
 
     from elasticsearch import Elasticsearch
-    es = Elasticsearch()
+    client = Elasticsearch()
 
-    response = es.search(
+    response = client.search(
         index="my-index",
         body={
           "query": {
@@ -52,65 +51,136 @@ With the low-level client you would write something like this:
           }
         }
     )
+
     for hit in response['hits']['hits']:
         print(hit['_score'], hit['_source']['title'])
 
-Which could be very hard to modify (imagine adding another filter to that
-query) and is definitely no fun to write. With the python DSL you can write the
-same query as:
+    for tag in response['aggregations']['per_tag']['buckets']:
+        print(tag['key'], tag['max_lines']['value'])
+
+
+
+The problem with this approach is that it is very verbose, prone to syntax
+mistakes like incorrect nesting, hard to modify (eg. adding another filter) and
+definitely not fun to write.
+
+Let's rewrite the example using the Python DSL:
 
 .. code:: python
 
+    from elasticsearch import Elasticsearch
     from elasticsearch_dsl import Search, Q
 
-    s = Search(using=es).index("my-index") \
+    client = Elasticsearch()
+
+    s = Search(using=client, index="my-index") \
         .filter("term", category="search") \
         .query("match", title="python")   \
         .query(~Q("match", description="beta"))
 
-    s.aggs.bucket('per_tag', 'terms', field='tags')\
+    s.aggs.bucket('per_tag', 'terms', field='tags') \
         .metric('max_lines', 'max', field='lines')
 
     response = s.execute()
+
     for hit in response:
         print(hit._meta.score, hit.title)
 
-    for b in response.aggregations.per_tag.buckets:
-        print(b.key, b.max_lines.value)
+    for tag in response.aggregations.per_tag.buckets:
+        print(tag.key, tag.max_lines.value)
 
-The library will take care of:
+As you see, the library took care of:
 
-  * composing queries/filters into compound queries/filters
+  * creating appropriate ``Query`` objects by name (eq. "match")
 
-  * creating filtered queries when ``.filter()`` has been used
+  * composing queries into a compound ``bool`` query
 
-  * providing a convenient wrapper around responses
+  * creating a ``filtered`` query since ``.filter()`` was used
 
-  * no curly or square brackets everywhere!
+  * providing a convenient access to response data
+
+  * no curly or square brackets everywhere
 
 
-Migration
----------
+Persistence Example
+-------------------
 
-If you already have existing code using the ``elasticsearch-py`` library you
-can easily start using this DSL without committing to porting your entire
-application. You can create the ``Search`` object from current query dict, work
-with it and, at the end, serialize it back to dict to send over the wire:
+Let's have a simple Python class representing an article in a blogging system:
+
+.. code:: python
+
+    from datetime import datetime
+    from elasticsearch import Elasticsearch
+    from elasticsearch_dsl import DocType, String, Date, Integer, connections
+
+    # Define a default Elasticsearch client
+    connections.add_connection(Elasticsearch())
+
+    class Article(DocType):
+        title = String(analyzer='snowball', fields={'raw': String(index='not_analyzed')})
+        body = String(analyzer='snowball')
+        tags = String(index='not_analyzed')
+        published_from = Date()
+        lines = Integer()
+
+        class Meta:
+            index = 'blog'
+  
+        def save(self, ** kwargs):
+            self.lines = len(self.body.split())
+            return super().save(** kwargs)
+
+        def is_published(self):
+            return datetime.now() < self.published_from
+
+     article = Article(id=42, title='Hello world!', tags=['test'])
+     article.body = ''' looong text '''
+     article.published_from = datetime.now()
+     article.save()
+
+     article = Article.get(id=42)
+     print(article.is_published())
+
+     # Display cluster health
+     print(connections.get_connection().cluster.health())
+
+
+In this example you can see:
+
+  * providing a default Elasticsearch client
+
+  * defining fields with mapping configuration
+
+  * setting index name
+
+  * defining custom methods
+
+  * overriding the built-in ``.save()`` method to hook into the persistence life cycle
+
+  * retrieving and saving the object into Elasticsearch
+
+  * accessing the underlying client for other APIs
+
+Migration from ``elasticsearch-py``
+-----------------------------------
+
+You don't have to port your entire application to get the benefits of the
+Python DSL, you can start gradually by creating a ``Search`` object from your
+existing ``dict``, modifying it using the API and serializing it back to a
+``dict``:
 
 .. code:: python
 
     body = {...} # insert complicated query here
-    # convert to search
-    s = Search.from_dict(body)
-    # add some filters, aggregations, queries, ...
-    s.filter("term", tags="python")
-    # optionally convert back to dict to plug back into existing code
-    body = s.to_dict()
 
-Since the DSL is built on top of the low-level client there should be nothing
-stopping you from using your existing code or just dropping down to the low
-level API whenever required; for example for all the APIs not (yet) covered by
-the DSL.
+    # Convert to Search object
+    s = Search.from_dict(body)
+
+    # Add some filters, aggregations, queries, ...
+    s.filter("term", tags="python")
+
+    # Convert back to dict to plug back into existing code
+    body = s.to_dict()
 
 
 License
