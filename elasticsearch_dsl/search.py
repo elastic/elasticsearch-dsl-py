@@ -217,7 +217,7 @@ class Search(object):
         replace them. Acceptable arguments are::
 
             'some.field'
-            '-some.other.fiels'
+            '-some.other.field'
             {'different.field': {'any': 'dict'}}
 
         so for example::
