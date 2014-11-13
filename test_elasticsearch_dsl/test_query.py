@@ -167,6 +167,11 @@ def test_Q_constructs_query_by_name():
     assert isinstance(q, query.Match)
     assert {'f': 'value'} == q._params
 
+def test_Q_translates_double_underscore_to_dots_in_param_names():
+    q = query.Q('match', comment__author='honza')
+
+    assert {'comment.author': 'honza'} == q._params
+
 def test_Q_constructs_simple_query_from_dict():
     q = query.Q({'match': {'f': 'value'}})
 

@@ -145,6 +145,8 @@ class DslBase(object):
     def __init__(self, **params):
         self._params = {}
         for pname, pvalue in iteritems(params):
+            if '__' in pname:
+                pname = pname.replace('__', '.')
             self._setattr(pname, pvalue)
 
     def _repr_params(self):
