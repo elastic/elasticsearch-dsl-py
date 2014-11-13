@@ -87,13 +87,15 @@ QUERIES = (
     ('span_or', {'clauses': {'type': 'query', 'multi': True}}),
 
     # core queries
-    ('common_terms', None),
+    ('common', None),
     ('fuzzy', None),
     ('fuzzy_like_this', None),
     ('fuzzy_like_this_field', None),
     ('geo_shape', None),
     ('ids', None),
     ('match', None),
+    ('match_phrase', None),
+    ('match_phrase_prefix', None),
     ('more_like_this', None),
     ('more_like_this_field', None),
     ('multi_match', None),
