@@ -132,6 +132,11 @@ def test_or_produces_bool_with_should():
     q = q1|q2
     assert q == query.Bool(should=[q1, q2])
 
+def test_or_bool_doesnt_loop_infinitely_issue_37():
+    q = query.Match(f=42) | ~ query.Match(f=47)
+
+    assert q == query.Bool(should=[query.Bool(must_not=[query.Match(f=47)]), query.Match(f=42)])
+
 def test_bool_with_only_should_will_append_another_query_with_or():
     qb = query.Bool(should=[query.Match(f='v')])
     q = query.Match(g=42)
