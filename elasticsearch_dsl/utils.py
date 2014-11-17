@@ -334,7 +334,7 @@ class BoolMixin(object):
             q.should.append(self)
             return q
 
-        return super(self.__class__, self).__or__(other)
+        return super(BoolMixin, self).__or__(other)
     __ror__ = __or__
 
     def __invert__(self):
@@ -350,7 +350,7 @@ class BoolMixin(object):
 
         # TODO: should -> must_not.append(self.__class__(should=self.should)) ??
         # queries with should just invert normally
-        return super(self.__class__, self).__invert__()
+        return super(BoolMixin, self).__invert__()
 
 
 class ObjectBase(AttrDict):
