@@ -29,7 +29,6 @@ def test_iterating_over_response_gives_you_hits(dummy_response):
     h = hits[0]
 
     assert 'test-index' == h._meta.index
-    assert 'company' == h._meta.type
     assert 'company' == h._meta.doc_type
     assert 'elasticsearch' == h._meta.id
     assert 12 == h._meta.score

@@ -39,6 +39,9 @@ class AttrDict(object):
         # assign the inner dict manually to prevent __setattr__ from firing
         super(AttrDict, self).__setattr__('_d_', d)
 
+    def __contains__(self, key):
+        return key in self._d_
+
     def __dir__(self):
         # introspection for auto-complete in IPython etc
         return list(self._d_.keys())
@@ -76,6 +79,9 @@ class AttrDict(object):
     def __setitem__(self, key, value):
         self._d_[key] = value
     __setattr__ = __setitem__
+
+    def __iter__(self):
+        return iter(self._d_)
 
     def to_dict(self):
         return self._d_
@@ -347,3 +353,37 @@ class BoolMixin(object):
         # TODO: should -> must_not.append(self.__class__(should=self.should)) ??
         # queries with should just invert normally
         return super(BoolMixin, self).__invert__()
+
+
+class ObjectBase(AttrDict):
+    def __init__(self, **kwargs):
+        super(ObjectBase, self).__init__({})
+        for (k, v) in iteritems(kwargs):
+            setattr(self, k, v)
+
+    def __getattr__(self, name):
+        try:
+            return super(ObjectBase, self).__getattr__(name)
+        except AttributeError:
+            if name in self._doc_type.mapping:
+                f = self._doc_type.mapping[name]
+                if hasattr(f, 'empty'):
+                    v = f.empty()
+                    setattr(self, name, v)
+                    return v
+            raise
+
+    def __setattr__(self, name, value):
+        if name in self._doc_type.mapping:
+            value = self._doc_type.mapping[name].to_python(value)
+        super(ObjectBase, self).__setattr__(name, value)
+
+    def to_dict(self):
+        out = {}
+        for k, v in iteritems(self._d_):
+            if isinstance(v, (list, tuple)):
+                v = [i.to_dict() if hasattr(i, 'to_dict') else i for i in v]
+            else:
+                v = v.to_dict() if hasattr(v, 'to_dict') else v
+            out[k] = v
+        return out

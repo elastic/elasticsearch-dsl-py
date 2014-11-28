@@ -1,7 +1,7 @@
 from copy import deepcopy
-from mock import Mock
 
 from elasticsearch_dsl import search, query, F, Q
+from elasticsearch_dsl.connections import connections
 
 def test_search_starts_with_empty_query():
     s = search.Search()
@@ -91,7 +91,7 @@ def test_search_doc_type():
     s = s.doc_type('i2')
     assert s._doc_type == ['i', 'i2']
     s = s.doc_type()
-    assert s._doc_type is None
+    assert s._doc_type == []
     s = search.Search(doc_type=('i', 'i2'))
     assert s._doc_type == ['i', 'i2']
     s = search.Search(doc_type=['i', 'i2'])
@@ -249,16 +249,13 @@ def test_reverse():
     assert {"size": 5} == s._extra
     assert d == s.to_dict()
 
-def test_params_being_passed_to_search(dummy_response):
-    client = Mock()
-    client.search.return_value = dummy_response
-
-    s = search.Search(client)
+def test_params_being_passed_to_search(mock_client):
+    s = search.Search('mock')
     s = s.params(routing='42')
     s.execute()
 
-    client.search.assert_called_once_with(
-        doc_type=None,
+    mock_client.search.assert_called_once_with(
+        doc_type=[],
         index=None,
         body={'query': {'match_all': {}}},
         routing='42'

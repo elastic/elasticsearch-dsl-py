@@ -1,10 +1,12 @@
 from six import iteritems
+from itertools import chain
 
 from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
 from .utils import DslBase
 from .result import Response
+from .connections import connections
 
 
 class BaseProxy(object):
@@ -55,7 +57,7 @@ class AggsProxy(AggBase, DslBase):
 
 
 class Search(object):
-    def __init__(self, using=None, index=None, doc_type=None, extra=None):
+    def __init__(self, using='default', index=None, doc_type=None, extra=None):
         """
         Search request to elasticsearch.
 
@@ -74,11 +76,15 @@ class Search(object):
         elif index:
             self._index = [index]
 
-        self._doc_type = None
+        self._doc_type = []
+        self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
-            self._doc_type = list(doc_type)
+            self._doc_type.extend(doc_type)
+        elif isinstance(doc_type, dict):
+            self._doc_type.extend(doc_type.keys())
+            self._doc_type_map.update(doc_type)
         elif doc_type:
-            self._doc_type = [doc_type]
+            self._doc_type.append(doc_type)
 
         self.query = ProxyQuery(self, 'query')
         self.filter = ProxyFilter(self, 'filter')
@@ -139,6 +145,7 @@ class Search(object):
         """
         s = self.__class__(using=self._using, index=self._index,
                            doc_type=self._doc_type)
+        s._doc_type_map = self._doc_type_map.copy()
         s._sort = self._sort[:]
         s._fields = self._fields[:] if self._fields is not None else None
         s._extra = self._extra.copy()
@@ -257,22 +264,30 @@ class Search(object):
             s._index = (self._index or []) + list(index)
         return s
 
-    def doc_type(self, *doc_type):
+    def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or
-        multiple. If no index is supplied (or an empty value) any information
-        stored on the instance will be erased.
+        multiple.
+        
+        You can also pass in any keyword arguments, mapping a doc_type to a
+        callback that should be used instead of the Result class.
+
+        If no doc_type is supplied any information stored on the instance will
+        be erased.
 
         Example:
 
-            s = Search().doc_type('product', 'store')
+            s = Search().doc_type('product', 'store', user=User.from_es)
         """
         # .doc_type() resets
         s = self._clone()
-        if not doc_type:
-            s._doc_type = None
+        if not doc_type and not kwargs:
+            s._doc_type = []
+            s._doc_type_map = {}
         else:
-            s._doc_type = (self._doc_type or []) + list(doc_type)
+            s._doc_type.extend(doc_type)
+            s._doc_type.extend(kwargs.keys())
+            s._doc_type_map.update(kwargs)
         return s
 
     def to_dict(self, count=False, **kwargs):
@@ -332,12 +347,11 @@ class Search(object):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if not self._using:
-            raise #XXX
+        es = connections.get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
-        return self._using.count(
+        return es.count(
             index=self._index,
             doc_type=self._doc_type,
             body=d
@@ -348,15 +362,15 @@ class Search(object):
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
         """
-        if not self._using:
-            raise #XXX
+        es = connections.get_connection(self._using)
 
         return Response(
-            self._using.search(
+            es.search(
                 index=self._index,
                 doc_type=self._doc_type,
                 body=self.to_dict(),
                 **self._params
-            )
+            ),
+            callbacks=self._doc_type_map
         )
 

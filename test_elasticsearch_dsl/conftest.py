@@ -6,6 +6,7 @@ from elasticsearch.helpers.test import get_test_client, SkipTest
 from elasticsearch.helpers import bulk
 
 from pytest import fixture, skip
+from mock import Mock
 
 from .test_integration.test_data import DATA, create_git_index
 
@@ -13,6 +14,8 @@ _client_loaded = False
 
 @fixture(scope='session')
 def client(request):
+    # inner import to avoid throwing off coverage
+    from elasticsearch_dsl.connections import connections
     # hack to workaround pytest not caching skip on fixtures (#467)
     global _client_loaded
     if _client_loaded:
@@ -20,9 +23,31 @@ def client(request):
 
     _client_loaded = True
     try:
-        return get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
+        client = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
+        connections.add_connection('default', client)
+        def cleanup():
+            client.indices.delete('test-*')
+            connections._conn, connections._kwargs = {}, {}
+        request.addfinalizer(cleanup)
+        return client
     except SkipTest:
         skip()
+
+@fixture
+def mock_client(request):
+    # inner import to avoid throwing off coverage
+    from elasticsearch_dsl.connections import connections
+
+    def reset_connections():
+        c = connections
+        c._conn = {}
+        c._kwargs = {}
+    request.addfinalizer(reset_connections)
+
+    client = Mock()
+    client.search.return_value = dummy_response()
+    connections.add_connection('mock', client)
+    return client
 
 @fixture(scope='session')
 def data_client(request, client):
