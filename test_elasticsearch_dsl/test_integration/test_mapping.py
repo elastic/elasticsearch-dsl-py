@@ -18,8 +18,8 @@ def test_mapping_gets_updated_from_es(client):
                         'created_at': {'type': 'date'},
                         'comments': {
                             'type': 'nested',
-                            'created': {'type': 'date'},
                             'properties': {
+                                'created': {'type': 'date'},
                                 'author': {
                                     'type': 'string',
                                     'analyzer': 'snowball',
@@ -44,6 +44,7 @@ def test_mapping_gets_updated_from_es(client):
                 'comments': {
                     'type': 'nested',
                     'properties': {
+                        'created': {'type': 'date', 'format': 'dateOptionalTime'},
                         'author': {'analyzer': 'snowball', 'fields': {'raw': {'index': 'not_analyzed', 'type': 'string'}}, 'type': 'string'}
                     },
                 },
