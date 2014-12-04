@@ -25,7 +25,6 @@ class DocTypeMeta(type):
         attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
         return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
 
-
 class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
@@ -59,6 +58,8 @@ class DocTypeOptions(object):
     def name(self):
         return self.mapping.properties.name
 
+    def init(self, index=None, using=None):
+        self.mapping.save(index or self.index, using=using or self.using)
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):
@@ -70,6 +71,10 @@ class DocType(ObjectBase):
         super(AttrDict, self).__setattr__('_meta', ResultMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
+
+    @classmethod
+    def init(cls, index=None, using=None):
+        cls._doc_type.init(index, using)
 
     @classmethod
     def search(cls):
@@ -98,7 +103,7 @@ class DocType(ObjectBase):
         return cls(**doc)
 
     def _get_connection(self, using=None):
-        return connections.get_connection(using or self.using)
+        return connections.get_connection(using or self._doc_type.using)
     connection = property(_get_connection)
 
     def save(self, using=None, index=None, **kwargs):

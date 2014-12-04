@@ -25,13 +25,16 @@ def client(request):
     try:
         client = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
         connections.add_connection('default', client)
-        def cleanup():
-            client.indices.delete('test-*')
-            connections._conn, connections._kwargs = {}, {}
-        request.addfinalizer(cleanup)
         return client
     except SkipTest:
         skip()
+
+@fixture
+def write_client(request, client):
+    def cleanup():
+        client.indices.delete('test-*')
+    request.addfinalizer(cleanup)
+    return client
 
 @fixture
 def mock_client(request):

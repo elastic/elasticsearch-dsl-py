@@ -1,7 +1,39 @@
 from elasticsearch_dsl import mapping
 
-def test_mapping_gets_updated_from_es(client):
-    client.indices.create(
+def test_mapping_saved_into_es(write_client):
+    m = mapping.Mapping('test-type')
+    m.field('name', 'string').field('tags', 'string', index='not_analyzed')
+    m.save('test-mapping', using=write_client)
+
+    m = mapping.Mapping('other-type')
+    m.field('title', 'string').field('categories', 'string', index='not_analyzed')
+
+    m.save('test-mapping', using=write_client)
+
+
+    assert write_client.indices.exists_type(index='test-mapping', doc_type='test-type')
+    assert {
+        'test-mapping': {
+            'mappings': {
+                'test-type': {
+                    'properties': {
+                        'name': {'type': 'string'},
+                        'tags': {'index': 'not_analyzed', 'type': 'string'}
+                    }
+                },
+                'other-type': {
+                    'properties': {
+                        'title': {'type': 'string'},
+                        'categories': {'index': 'not_analyzed', 'type': 'string'}
+                    }
+                }
+            }
+        }
+    } == write_client.indices.get_mapping(index='test-mapping')
+
+
+def test_mapping_gets_updated_from_es(write_client):
+    write_client.indices.create(
         index='test-mapping',
         body={
             'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
@@ -35,7 +67,7 @@ def test_mapping_gets_updated_from_es(client):
         }
     )
     
-    m = mapping.Mapping.from_es('test-mapping', 'my_doc', using=client)
+    m = mapping.Mapping.from_es('test-mapping', 'my_doc', using=write_client)
 
     assert ['comments', 'created_at', 'title'] == list(sorted(m.properties.properties._d_.keys()))
     assert {

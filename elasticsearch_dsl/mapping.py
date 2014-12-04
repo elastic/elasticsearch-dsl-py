@@ -24,6 +24,14 @@ class Mapping(object):
         m.update_from_es(index, using)
         return m
 
+    def save(self, index, using='default'):
+        # TODO: analyzers, ...
+        es = connections.get_connection(using)
+        if not es.indices.exists(index=index):
+            es.indices.create(index=index, body={'mappings': self.to_dict()})
+        else:
+            es.indices.put_mapping(index=index, doc_type=self.doc_type, body=self.to_dict())
+
     def update_from_es(self, index, using='default'):
         es = connections.get_connection(using)
         raw = es.indices.get_mapping(index=index, doc_type=self.doc_type)
