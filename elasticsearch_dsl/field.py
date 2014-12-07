@@ -3,30 +3,29 @@ from dateutil import parser
 
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict
 
-# Field because F is for Filter
-def Field(name_or_field, **params):
+def construct_field(name_or_field, **params):
     # {"type": "string", "index": "not_analyzed"}
     if isinstance(name_or_field, dict):
         if params:
-            raise ValueError('Field() cannot accept parameters when passing in a dict.')
+            raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
         if 'type' not in name_or_field:
-            raise ValueError('Field() needs to have a "type" key.')
+            raise ValueError('construct_field() needs to have a "type" key.')
         params = name_or_field.copy()
         name = params.pop('type')
-        return FieldBase.get_dsl_class(name)(**params)
+        return Field.get_dsl_class(name)(**params)
 
     # String()
-    if isinstance(name_or_field, FieldBase):
+    if isinstance(name_or_field, Field):
         if params:
-            raise ValueError('Field() cannot accept parameters when passing in a Field object.')
+            raise ValueError('construct_field() cannot accept parameters when passing in a construct_field object.')
         return name_or_field
 
     # "string", index="not_analyzed"
-    return FieldBase.get_dsl_class(name_or_field)(**params)
+    return Field.get_dsl_class(name_or_field)(**params)
 
-class FieldBase(DslBase):
+class Field(DslBase):
     _type_name = 'field'
-    _type_shortcut = staticmethod(Field)
+    _type_shortcut = staticmethod(construct_field)
     # all fields can be multifields
     _param_defs = {'fields': {'type': 'field', 'hash': True}}
     name = None
@@ -40,7 +39,7 @@ class FieldBase(DslBase):
         return self._to_python(data)
 
     def to_dict(self):
-        d = super(FieldBase, self).to_dict()
+        d = super(Field, self).to_dict()
         name, value = d.popitem()
         value['type'] = name
         return value
@@ -58,7 +57,7 @@ class InnerObject(object):
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
 
     def property(self, name, *args, **kwargs):
-        self.properties[name] = Field(*args, **kwargs)
+        self.properties[name] = construct_field(*args, **kwargs)
         return self
 
     def empty(self):
@@ -71,13 +70,13 @@ class InnerObject(object):
 
         return self._doc_class(self.properties, **data)
 
-class Object(InnerObject, FieldBase):
+class Object(InnerObject, Field):
     name = 'object'
 
-class Nested(InnerObject, FieldBase):
+class Nested(InnerObject, Field):
     name = 'nested'
 
-class Date(FieldBase):
+class Date(Field):
     name = 'date'
 
     def _to_python(self, data):
@@ -97,7 +96,7 @@ FIELDS = (
 
 # generate the query classes dynamicaly
 for f in FIELDS:
-    fclass = _make_dsl_class(FieldBase, f)
+    fclass = _make_dsl_class(Field, f)
     globals()[fclass.__name__] = fclass
 
 

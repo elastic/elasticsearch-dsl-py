@@ -2,7 +2,7 @@ import re
 
 from six import iteritems, add_metaclass
 
-from .field import FieldBase
+from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict
 from .result import ResultMeta
@@ -45,7 +45,7 @@ class DocTypeOptions(object):
 
         # register all declared fields into the mapping
         for name, value in list(iteritems(attrs)):
-            if isinstance(value, FieldBase):
+            if isinstance(value, Field):
                 self.mapping.field(name, value)
                 del attrs[name]
 

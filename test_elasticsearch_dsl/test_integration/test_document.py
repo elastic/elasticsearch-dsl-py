@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Field
+from elasticsearch_dsl import DocType, Date, String, construct_field
 
-user_field = Field('object')
-user_field.property('name', 'string', fields={'raw': Field('string', index='not_analyzed')})
+user_field = construct_field('object')
+user_field.property('name', 'string', fields={'raw': construct_field('string', index='not_analyzed')})
 
 class Repository(DocType):
     owner = user_field
-    created_at = Field('date')
-    description = Field('string', analyzer='snowball')
-    tags = Field('string', index='not_analyzed')
+    created_at = Date()
+    description = String(analyzer='snowball')
+    tags = String(index='not_analyzed')
 
     class Meta:
         index = 'git'
