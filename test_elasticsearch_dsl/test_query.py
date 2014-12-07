@@ -222,6 +222,11 @@ def test_function_score_with_functions():
 
     assert {'function_score': {'functions': [{'script_score': {'script': "doc['comment_count'] * _score"}}]}} == q.to_dict()
 
+def test_function_score_with_no_function_is_boost_factor():
+    q = query.Q('function_score', functions=[query.SF({'weight': 20, 'filter': filter.F('term', f=42)})])
+
+    assert {'function_score': {'functions': [{'filter': {'term': {'f': 42}}, 'weight': 20}]}} == q.to_dict()
+
 def test_function_score_to_dict():
     q = query.Q(
         'function_score',
