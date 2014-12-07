@@ -3,6 +3,8 @@ from dateutil import parser
 
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict
 
+__all__ = ['construct_field', 'Object', 'Nested', 'Date']
+
 def construct_field(name_or_field, **params):
     # {"type": "string", "index": "not_analyzed"}
     if isinstance(name_or_field, dict):
@@ -98,5 +100,6 @@ FIELDS = (
 for f in FIELDS:
     fclass = _make_dsl_class(Field, f)
     globals()[fclass.__name__] = fclass
+    __all__.append(fclass.__name__)
 
 
