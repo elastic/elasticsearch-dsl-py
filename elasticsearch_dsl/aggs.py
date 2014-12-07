@@ -5,14 +5,15 @@ def A(name_or_agg, **params):
     # {"terms": {"field": "tags"}, "aggs": {...}}
     if isinstance(name_or_agg, dict):
         if params:
-            raise #XXX
+            raise ValueError('A() cannot accept parameters when passing in a dict.')
         # copy to avoid modifying in-place
         agg = name_or_agg.copy()
         # pop out nested aggs
         aggs = agg.pop('aggs', None)
         # should be {"terms": {"fied": "tags"}}
         if len(agg) != 1:
-            raise #XXX
+            raise ValueError('A() can only accept dict with an aggregation ({"terms": {...}}). '
+                 'Instead it got (%r)' % name_or_agg)
         agg_type, params = agg.popitem()
         if aggs:
             params = params.copy()
@@ -22,7 +23,7 @@ def A(name_or_agg, **params):
     # Terms(...) just return the nested agg
     elif isinstance(name_or_agg, Agg):
         if params:
-            raise #XXX
+            raise ValueError('A() cannot accept parameters when passing in an Agg object.')
         return name_or_agg
 
     # "terms", field="tags"

@@ -91,7 +91,6 @@ class Date(Field):
         except (TypeError, ValueError):
             raise #XXX
 
-# TODO: add to_python
 FIELDS = (
     'string',
 )
@@ -101,5 +100,4 @@ for f in FIELDS:
     fclass = _make_dsl_class(Field, f)
     globals()[fclass.__name__] = fclass
     __all__.append(fclass.__name__)
-
 

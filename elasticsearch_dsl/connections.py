@@ -50,7 +50,7 @@ class Connections(object):
             conn = self._conns[alias] = Elasticsearch(**self._kwargs[alias])
         except KeyError:
             # no connection and no kwargs to set one up
-            raise #XXX
+            raise KeyError('There is no connection with alias %r.' % alias)
         else:
             return conn
 
