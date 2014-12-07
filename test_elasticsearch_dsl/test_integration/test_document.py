@@ -62,3 +62,17 @@ def test_search_returns_proper_doc_classes(data_client):
 
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == 'elasticsearch'
+
+def test_refresh_mapping(data_client):
+    class Commit(DocType):
+        class Meta:
+            doc_type = 'commits'
+            index = 'git'
+
+    Commit._doc_type.refresh()
+
+    assert 'stats' in Commit._doc_type.mapping
+    assert 'committer' in Commit._doc_type.mapping
+    assert 'description' in Commit._doc_type.mapping
+    assert 'committed_date' in Commit._doc_type.mapping
+    assert isinstance(Commit._doc_type.mapping['committed_date'], Date)

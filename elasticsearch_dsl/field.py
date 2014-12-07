@@ -10,10 +10,15 @@ def construct_field(name_or_field, **params):
     if isinstance(name_or_field, dict):
         if params:
             raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
-        if 'type' not in name_or_field:
-            raise ValueError('construct_field() needs to have a "type" key.')
         params = name_or_field.copy()
-        name = params.pop('type')
+        if 'type' not in params:
+            # inner object can be implicitly defined
+            if 'properties' in params:
+                name = 'object'
+            else:
+                raise ValueError('construct_field() needs to have a "type" key.')
+        else:
+            name = params.pop('type')
         return Field.get_dsl_class(name)(**params)
 
     # String()
@@ -93,6 +98,7 @@ class Date(Field):
 
 FIELDS = (
     'string',
+    'long',
 )
 
 # generate the query classes dynamicaly

@@ -61,6 +61,10 @@ class DocTypeOptions(object):
     def init(self, index=None, using=None):
         self.mapping.save(index or self.index, using=using or self.using)
 
+    def refresh(self, index=None, using=None):
+        self.mapping.update_from_es(index or self.index, using=using or self.using)
+
+
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):
     def __init__(self, **kwargs):
