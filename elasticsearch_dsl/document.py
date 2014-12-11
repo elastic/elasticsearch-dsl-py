@@ -110,6 +110,22 @@ class DocType(ObjectBase):
         return connections.get_connection(using or self._doc_type.using)
     connection = property(_get_connection)
 
+    def delete(self, using=None, index=None, **kwargs):
+        es = self._get_connection(using)
+        if index is None:
+            index = getattr(self._meta, 'index', self._doc_type.index)
+        if index is None:
+            raise #XXX - no index
+        # extract parent, routing etc from _meta
+        doc_meta = dict((k, self._meta[k]) for k in DOC_META_FIELDS if k in self._meta)
+        doc_meta.update(kwargs)
+        es.delete(
+            index=index,
+            doc_type=self._doc_type.name,
+            id=self.id,
+            **doc_meta
+        )
+
     def save(self, using=None, index=None, **kwargs):
         es = self._get_connection(using)
         if index is None:

@@ -51,6 +51,22 @@ def test_can_save_to_different_index(write_client):
         '_source': {'description': 'testing'},
     } == write_client.get(index='test-document', doc_type='repos', id=42)
 
+def test_delete(write_client):
+    write_client.create(
+        index='test-document',
+        doc_type='repos',
+        id='elasticsearch-dsl-py',
+        body={'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}}
+    )
+
+    test_repo = Repository(id='elasticsearch-dsl-py', index='test-document')
+    test_repo.delete()
+    
+    assert not write_client.exists(
+        index='test-document',
+        doc_type='repos',
+        id='elasticsearch-dsl-py',
+    )
 
 def test_search(data_client):
     assert Repository.search().count() == 1
