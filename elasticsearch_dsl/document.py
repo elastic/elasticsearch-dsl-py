@@ -29,11 +29,17 @@ class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
 
+        # some Meta attributes should be inherited from parents' Meta, if possible
+        base_meta = None
+        for b in bases:
+            if hasattr(b, '_doc_type'):
+                base_meta = b._doc_type
+
         # default index, if not overriden by doc._meta
-        self.index = getattr(meta, 'index', None)
+        self.index = getattr(meta, 'index', getattr(base_meta, 'index', None))
 
         # default cluster alias, can be overriden in doc._meta
-        self.using = getattr(meta, 'using', 'default')
+        self.using = getattr(meta, 'using', getattr(base_meta, 'using', 'default'))
 
         # get doc_type name, if not defined take the name of the class and
         # tranform it to lower_case
