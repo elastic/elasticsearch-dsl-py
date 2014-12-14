@@ -33,7 +33,7 @@ class DocTypeOptions(object):
         self.index = getattr(meta, 'index', None)
 
         # default cluster alias, can be overriden in doc._meta
-        self.using = getattr(meta, 'using', 'default')
+        self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined take the name of the class and
         # tranform it to lower_case
@@ -49,10 +49,17 @@ class DocTypeOptions(object):
                 self.mapping.field(name, value)
                 del attrs[name]
 
-        # document inheritance - include the fields from parents' mappings
+        # document inheritance - include the fields from parents' mappings and
+        # index/using values
         for b in bases:
             if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
                 self.mapping.update(b._doc_type.mapping, update_only=True)
+                self._using = self._using or b._doc_type._using
+                self.index = self.index or b._doc_type.index
+
+    @property
+    def using(self):
+        return self._using or 'default'
 
     @property
     def name(self):
