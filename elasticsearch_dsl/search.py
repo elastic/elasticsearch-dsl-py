@@ -1,5 +1,4 @@
-from six import iteritems
-from itertools import chain
+from six import iteritems, string_types
 
 from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
@@ -243,7 +242,7 @@ class Search(object):
         s = self._clone()
         s._sort = []
         for k in keys:
-            if isinstance(k, str) and k.startswith('-'):
+            if isinstance(k, string_types) and k.startswith('-'):
                 k = {k[1:]: {"order": "desc"}}
             s._sort.append(k)
         return s
