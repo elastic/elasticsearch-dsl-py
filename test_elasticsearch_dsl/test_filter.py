@@ -20,3 +20,8 @@ def test_not_doesnt_have_to_wrap_filter():
     assert f.filter == filter.F('term', field='value')
     assert f == filter.Not(filter.F('term', field='value'))
 
+def test_and_filter_must_convert_nested_filters():
+    f = filter.F('and', [filter.F('term', field='value')])
+
+    assert isinstance(f, filter.And)
+    assert {'and': {'filters': [{'term': {'field': 'value'}}]}} == f.to_dict()
