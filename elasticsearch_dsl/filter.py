@@ -57,16 +57,27 @@ class Not(Filter):
     name = 'not'
     _param_defs = {'filter': {'type': 'filter'}}
 
-    def __init__(self, **kwargs):
-        if 'filter' not in kwargs:
-            kwargs = {'filter': kwargs}
-        super(Not, self).__init__(**kwargs)
+    def __init__(self, filter=None, **kwargs):
+        if filter is None:
+            filter, kwargs = kwargs, {}
+        super(Not, self).__init__(filter=filter, **kwargs)
+
+class AndOrFilter(object):
+    _param_defs = {'filters': {'type': 'filter', 'multi': True}}
+
+    def __init__(self, filters=None, **kwargs):
+        if filters is not None:
+            kwargs['filters'] = filters
+        super(AndOrFilter, self).__init__(**kwargs)
+
+    # compound filters
+class And(AndOrFilter, Filter):
+    name = 'and'
+
+class Or(AndOrFilter, Filter):
+    name = 'or'
 
 FILTERS = (
-    # compound filters
-    ('and', {'filters': {'type': 'filter', 'multi': True}}),
-    ('or', {'filters': {'type': 'filter', 'multi': True}}),
-
     # relationships
     ('nested', {'filter': {'type': 'filter'}}),
     ('has_child', {'filter': {'type': 'filter'}}),
