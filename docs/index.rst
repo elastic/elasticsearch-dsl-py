@@ -111,7 +111,7 @@ Let's have a simple Python class representing an article in a blogging system:
 
     from datetime import datetime
     from elasticsearch import Elasticsearch
-    from elasticsearch_dsl import DocType, String, Date, Integer, connections
+    from elasticsearch_dsl import DocType, String, Date, Long, connections
 
     # Define a default Elasticsearch client
     connections.add_connection(Elasticsearch())
@@ -121,7 +121,7 @@ Let's have a simple Python class representing an article in a blogging system:
         body = String(analyzer='snowball')
         tags = String(index='not_analyzed')
         published_from = Date()
-        lines = Integer()
+        lines = Long()
 
         class Meta:
             index = 'blog'
