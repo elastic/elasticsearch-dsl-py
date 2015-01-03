@@ -99,6 +99,10 @@ class Date(Field):
 FIELDS = (
     'string',
     'long',
+    'integer',
+    'float',
+    'double',
+    'boolean',
 )
 
 # generate the query classes dynamicaly
