@@ -70,6 +70,19 @@ class InnerObject(object):
     def empty(self):
         return self.to_python({})
 
+    def update(self, other_object):
+        if not hasattr(other_object, 'properties'):
+            # not an inner/nested object, no merge possible
+            return
+
+        our, other = self.properties, other_object.properties
+        for name in other:
+            if name in our:
+                if hasattr(our[name], 'update'):
+                    our[name].update(other[name])
+                continue
+            our[name] = other[name]
+
     def _to_python(self, data):
         # don't wrap already wrapped data
         if isinstance(data, self._doc_class):

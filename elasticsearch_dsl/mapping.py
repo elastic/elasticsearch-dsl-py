@@ -43,6 +43,9 @@ class Mapping(object):
     def update(self, mapping, update_only=False):
         for name in mapping:
             if update_only and name in self:
+                # nested and inner objects, merge recursively
+                if hasattr(self[name], 'update'):
+                    self[name].update(mapping[name])
                 continue
             self.field(name, mapping[name])
 
