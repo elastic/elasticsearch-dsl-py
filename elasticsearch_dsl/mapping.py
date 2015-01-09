@@ -17,6 +17,7 @@ class Properties(InnerObject, DslBase):
 class Mapping(object):
     def __init__(self, name):
         self.properties = Properties(name)
+        self._meta = {}
 
     @classmethod
     def from_es(cls, index, doc_type, using='default'):
@@ -35,10 +36,15 @@ class Mapping(object):
     def update_from_es(self, index, using='default'):
         es = connections.get_connection(using)
         raw = es.indices.get_mapping(index=index, doc_type=self.doc_type)
-        raw = raw[index]['mappings'][self.doc_type]['properties']
+        raw = raw[index]['mappings'][self.doc_type]
 
-        for name, definition in iteritems(raw):
+        for name, definition in iteritems(raw['properties']):
             self.field(name, definition)
+
+        # metadata like _all etc
+        for name, value in iteritems(raw):
+            if name.startswith('_'):
+                self.meta(name, **value)
 
     def update(self, mapping, update_only=False):
         for name in mapping:
@@ -48,6 +54,13 @@ class Mapping(object):
                     self[name].update(mapping[name])
                 continue
             self.field(name, mapping[name])
+
+        if update_only:
+            for name in mapping._meta:
+                if name not in self._meta:
+                    self._meta[name] = mapping._meta[name]
+        else:
+            self._meta.update(mapping._meta)
 
     def __contains__(self, name):
         return name in self.properties.properties
@@ -66,5 +79,14 @@ class Mapping(object):
         self.properties.property(*args, **kwargs)
         return self
 
+    def meta(self, name, **kwargs):
+        if not kwargs:
+            if name in self._meta:
+                del self._meta[name]
+        else:
+            self._meta[name] = kwargs
+
     def to_dict(self):
-        return self.properties.to_dict()
+        d = self.properties.to_dict()
+        d[self.doc_type].update(self._meta)
+        return d
