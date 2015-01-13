@@ -85,6 +85,7 @@ class Mapping(object):
                 del self._meta[name]
         else:
             self._meta[name] = kwargs
+        return self
 
     def to_dict(self):
         d = self.properties.to_dict()
