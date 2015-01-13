@@ -3,7 +3,9 @@ from dateutil import parser
 
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict
 
-__all__ = ['construct_field', 'Object', 'Nested', 'Date']
+__all__ = ['construct_field', 'Object', 'Nested', 'Date', 'String', 'Float',
+    'Double', 'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
+    'GeoPoint', 'GeoShape', ]
 
 def construct_field(name_or_field, **params):
     # {"type": "string", "index": "not_analyzed"}
@@ -111,11 +113,17 @@ class Date(Field):
 
 FIELDS = (
     'string',
-    'long',
-    'integer',
     'float',
     'double',
+    'byte',
+    'short',
+    'integer',
+    'long',
     'boolean',
+    'ip',
+    'attachment',
+    'geo_point',
+    'geo_shape',
 )
 
 # generate the query classes dynamicaly
