@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from six import iteritems, add_metaclass
+from six.moves import map
 
 from .exceptions import UnknownDslObject
 
@@ -28,6 +29,9 @@ class AttrList(list):
             return AttrList(l)
         return _wrap(l)
 
+    def __iter__(self):
+        return map(_wrap, super(AttrList, self).__iter__())
+
 
 class AttrDict(object):
     """
@@ -41,6 +45,10 @@ class AttrDict(object):
 
     def __contains__(self, key):
         return key in self._d_
+
+    def __nonzero__(self):
+        return bool(self._d_)
+    __bool__ = __nonzero__
 
     def __dir__(self):
         # introspection for auto-complete in IPython etc

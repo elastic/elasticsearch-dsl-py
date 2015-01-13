@@ -14,6 +14,10 @@ class Response(AttrDict):
         # for slicing etc
         return self.hits[key]
 
+    def __nonzero__(self):
+        return bool(self.hits)
+    __bool__ = __nonzero__
+
     def __repr__(self):
         return '<Response: %r>' % self.hits
 

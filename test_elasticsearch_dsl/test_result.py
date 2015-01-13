@@ -13,10 +13,17 @@ def test_interactive_helpers(dummy_response):
             repr(dummy_response['hits']['hits'][2]['_source'])[:60],
             )
 
+    assert res
     assert '<Response: %s>' % rhits == repr(res)
     assert rhits == repr(hits)
     assert ['_meta', 'city', 'name'] == dir(h)
     assert "<Result(test-index/company/elasticsearch): %r>" % dummy_response['hits']['hits'][0]['_source'] == repr(h)
+
+def test_enpty_response_is_false(dummy_response):
+    dummy_response['hits']['hits'] = []
+    res = result.Response(dummy_response)
+
+    assert not res
 
 def test_iterating_over_response_gives_you_hits(dummy_response):
     res = result.Response(dummy_response)
