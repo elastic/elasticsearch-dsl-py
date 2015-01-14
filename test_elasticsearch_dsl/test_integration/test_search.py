@@ -18,7 +18,7 @@ def test_scan_respects_doc_types(data_client):
     assert isinstance(repos[0], Repository)
 
 def test_scan_iterates_through_all_docs(data_client):
-    s = Search(index='git', doc_type='commits')
+    s = Search(index='git').filter('term', _type='commits')
 
     commits = list(s.scan())
 
