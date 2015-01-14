@@ -1,10 +1,12 @@
 from six import iteritems, string_types
 
+from elasticsearch.helpers import scan
+
 from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
 from .utils import DslBase
-from .result import Response
+from .result import Response, Result
 from .connections import connections
 
 
@@ -373,3 +375,14 @@ class Search(object):
             callbacks=self._doc_type_map
         )
 
+    def scan(self):
+        es = connections.get_connection(self._using)
+
+        for hit in scan(
+                es,
+                query=self.to_dict(),
+                index=self._index,
+                doc_type=self._doc_type,
+                **self._params
+            ):
+            yield self._doc_type_map.get(hit['_type'], Result)(hit)
