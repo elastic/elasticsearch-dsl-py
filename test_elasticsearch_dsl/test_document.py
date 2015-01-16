@@ -15,6 +15,14 @@ class MySubDoc(MyDoc):
         doc_type = 'my_custom_doc'
         index = 'default-index'
 
+    def failing_method(self):
+        raise Exception('failing method')
+
+    @property
+    def failing_property(self):
+        raise Exception('failing property')
+
+
 class MyDoc2(document.DocType):
     extra = field.Long()
 
@@ -125,3 +133,16 @@ def test_meta_inheritance():
             }
         }
     } == MyMultiSubDoc._doc_type.mapping.to_dict()
+
+def test_failing_property_or_method_gives_sane_exception():
+    md = MySubDoc()
+    try:
+        md.failing_property
+    except Exception as e:
+        assert e.message == 'failing property'
+    try:
+        md.failing_method()
+    except Exception as e:
+        assert e.message == 'failing method'
+
+
