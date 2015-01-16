@@ -73,12 +73,13 @@ class AttrDict(object):
         except KeyError:
             return default
 
-    def __getattr__(self, attr_name):
+    def __getattr__(self, key):
         try:
-            return _wrap(self._d_[attr_name])
-        except KeyError:
-            raise AttributeError(
-                '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
+            return super(AttrDict, self).__getattribute__(key)
+        except AttributeError:
+            if key in self._d_:
+                return _wrap(self._d_[key])
+            raise
 
     def __getitem__(self, key):
         # don't wrap things whe accessing via __getitem__ for consistency
