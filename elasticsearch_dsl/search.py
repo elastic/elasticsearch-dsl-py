@@ -95,6 +95,7 @@ class Search(object):
         self._extra = extra or {}
         self._params = {}
         self._fields = None
+        self._highlight = {}
 
     def __getitem__(self, n):
         """
@@ -150,6 +151,7 @@ class Search(object):
         s._sort = self._sort[:]
         s._fields = self._fields[:] if self._fields is not None else None
         s._extra = self._extra.copy()
+        s._highlight = self._highlight.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -183,6 +185,9 @@ class Search(object):
             self._sort = d.pop('sort')
         if 'fields' in d:
             self._fields = d.pop('fields')
+        if 'highlight' in d:
+            high = d.pop('highlight')
+            self._highlight = high['fields']
         self._extra = d
 
     def params(self, **kwargs):
@@ -247,6 +252,19 @@ class Search(object):
             if isinstance(k, string_types) and k.startswith('-'):
                 k = {k[1:]: {"order": "desc"}}
             s._sort.append(k)
+        return s
+
+    def highlight(self, field, **kwargs):
+        """
+        Request highliting of a field. All keyword arguments passed in will be
+        used as parameters. Example::
+
+            Search().highlight('title', fragment_size=50)
+
+        :arg field: name of the field to be highlighted
+        """
+        s = self._clone()
+        s._highlight[field] = kwargs
         return s
 
     def index(self, *index):
@@ -328,6 +346,9 @@ class Search(object):
 
             if self._fields is not None:
                 d['fields'] = self._fields
+
+            if self._highlight:
+                d['highlight'] = {'fields': self._highlight}
 
         d.update(kwargs)
         return d

@@ -163,6 +163,8 @@ def test_complex_example():
 
     s.query.minimum_should_match = 2
 
+    s = s.highlight('title', fragment_size=50)
+
     assert {
         'query': {
             'filtered': {
@@ -192,6 +194,11 @@ def test_complex_example():
                 'aggs': {
                     'avg_attendees': {'avg': {'field': 'attendees'}}
                 }
+            }
+        },
+        "highlight": {
+            'fields': {
+                'title': {'fragment_size': 50}
             }
         }
     } == s.to_dict()
@@ -237,7 +244,12 @@ def test_reverse():
             "category",
             "title"
         ],
-        "size": 5
+        "size": 5,
+        "highlight": {
+            'fields': {
+                'title': {'fragment_size': 50}
+            }
+        }
     }
 
     d2 = deepcopy(d)
