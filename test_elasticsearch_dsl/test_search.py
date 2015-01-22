@@ -163,7 +163,7 @@ def test_complex_example():
 
     s.query.minimum_should_match = 2
 
-    s = s.highlight('title', fragment_size=50)
+    s = s.highlight_options(order='score').highlight('title', fragment_size=50)
 
     assert {
         'query': {
@@ -197,6 +197,7 @@ def test_complex_example():
             }
         },
         "highlight": {
+            'order': 'score',
             'fields': {
                 'title': {'fragment_size': 50}
             }
@@ -246,6 +247,7 @@ def test_reverse():
         ],
         "size": 5,
         "highlight": {
+            'order': 'score',
             'fields': {
                 'title': {'fragment_size': 50}
             }

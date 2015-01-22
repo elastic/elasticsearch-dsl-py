@@ -96,6 +96,7 @@ class Search(object):
         self._params = {}
         self._fields = None
         self._highlight = {}
+        self._highlight_opts = {}
 
     def __getitem__(self, n):
         """
@@ -152,6 +153,7 @@ class Search(object):
         s._fields = self._fields[:] if self._fields is not None else None
         s._extra = self._extra.copy()
         s._highlight = self._highlight.copy()
+        s._highlight_opts = self._highlight_opts.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -186,8 +188,9 @@ class Search(object):
         if 'fields' in d:
             self._fields = d.pop('fields')
         if 'highlight' in d:
-            high = d.pop('highlight')
-            self._highlight = high['fields']
+            high = d.pop('highlight').copy()
+            self._highlight = high.pop('fields')
+            self._highlight_opts = high
         self._extra = d
 
     def params(self, **kwargs):
@@ -252,6 +255,11 @@ class Search(object):
             if isinstance(k, string_types) and k.startswith('-'):
                 k = {k[1:]: {"order": "desc"}}
             s._sort.append(k)
+        return s
+
+    def highlight_options(self, **kwargs):
+        s = self._clone()
+        s._highlight_opts.update(kwargs)
         return s
 
     def highlight(self, field, **kwargs):
@@ -349,6 +357,7 @@ class Search(object):
 
             if self._highlight:
                 d['highlight'] = {'fields': self._highlight}
+                d['highlight'].update(self._highlight_opts)
 
         d.update(kwargs)
         return d
