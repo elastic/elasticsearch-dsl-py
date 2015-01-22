@@ -217,6 +217,20 @@ To specify the from/size parameters, use the Python slicing API::
   # {"from": 10, "size": 10}
 
 
+Highlighting
+~~~~~~~~~~~~
+
+To set common attributes for highlighting use the ``highlight_options`` method::
+
+    s = s.highlight_options(order='score')
+
+Enabling highlighting for individual fields is done using the ``highlight`` method::
+
+    s = s.highlight('title')
+    # or, including parameters:
+    s = s.highlight('title', fragment_size=50)
+
+
 Extra properties and parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
