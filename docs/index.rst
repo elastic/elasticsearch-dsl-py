@@ -147,7 +147,7 @@ Let's have a simple Python class representing an article in a blogging system:
 
 In this example you can see:
 
-  * providing a default Elasticsearch client
+  * providing a :ref:`default connection`
 
   * defining fields with mapping configuration
 
@@ -206,6 +206,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   configuration
    search_dsl
    Changelog
 
