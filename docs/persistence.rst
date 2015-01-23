@@ -180,5 +180,5 @@ metadata for your document:
 
         class Meta:
             mapping = Mapping('post')
-            mapping = mapping.meta('_all', enabled=False)
+            mapping.meta('_all', enabled=False)
 
