@@ -29,6 +29,9 @@ The mapping definition follows a similar pattern to the query dsl:
 
     # and attach it to the mapping
     m = m.field('comments', comment)
+
+    # you can also define mappings for the meta fields
+    m = m.meta('_all', enabled=False)
  
     # save the mapping into index 'my-index'
     m.save('my-index')
@@ -166,5 +169,16 @@ metadata for your document:
 
 ``mapping``
   optional instance of ``Mapping`` class to use as base for the mappings
-  created from the fields on the document class itself
+  created from the fields on the document class itself. This can be useful if
+  you want to define additional parameters for the mapping, for example meta
+  field mappings:
+
+.. code:: python
+
+    class Post(DocType):
+        title = String()
+
+        class Meta:
+            mapping = Mapping('post')
+            mapping = mapping.meta('_all', enabled=False)
 
