@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import document, field
+from elasticsearch_dsl import document, field, Mapping
 
 class MyDoc(document.DocType):
     title = field.String(index='not_analyzed')
@@ -58,6 +58,21 @@ def test_declarative_mapping_definition():
             }
         }
     } == MyDoc._doc_type.mapping.to_dict()
+
+def test_you_can_supply_own_mapping_instance():
+    class MyD(document.DocType):
+        title = field.String()
+
+        class Meta:
+            mapping = Mapping('my_d')
+            mapping = mapping.meta('_all', enabled=False)
+
+    assert {
+        'my_d': {
+            '_all': {'enabled': False},
+            'properties': {'title': {'type': 'string'}}
+        }
+    } == MyD._doc_type.mapping.to_dict()
 
 def test_document_can_be_created_dynamicaly():
     n = datetime.now()
