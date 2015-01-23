@@ -21,6 +21,17 @@ class MyDoc2(document.DocType):
 class MyMultiSubDoc(MyDoc2, MySubDoc):
     pass
 
+class DocWithNested(document.DocType):
+    comments = field.Nested(properties={'title': field.String()})
+
+def test_nested_defaults_to_list_and_can_be_updated():
+    md = DocWithNested()
+
+    assert [] == md.comments
+
+    md.comments.append({'title': 'hello World!'})
+    assert {'comments': [{'title': 'hello World!'}]} == md.to_dict()
+
 def test_to_dict_is_recursive_and_can_cope_with_multi_values():
     md = MyDoc(name=['a', 'b', 'c'])
     md.inner = [{'old_field': 'of1'}, {'old_field': 'of2'}]

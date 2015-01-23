@@ -43,8 +43,9 @@ class Field(DslBase):
         return data
     
     def to_python(self, data):
-        if isinstance(data, (list, tuple)):
-            return [self._to_python(d) for d in data]
+        if isinstance(data, list):
+            data[:] = map(self._to_python, data)
+            return data
         return self._to_python(data)
 
     def to_dict(self):
@@ -70,7 +71,7 @@ class InnerObject(object):
         return self
 
     def empty(self):
-        return self.to_python({})
+        return {}
 
     def update(self, other_object):
         if not hasattr(other_object, 'properties'):
@@ -90,6 +91,10 @@ class InnerObject(object):
         if isinstance(data, self._doc_class):
             return data
 
+        if isinstance(data, list):
+            data[:] = list(map(self._to_python, data))
+            return data
+
         return self._doc_class(self.properties, **data)
 
 class Object(InnerObject, Field):
@@ -97,6 +102,9 @@ class Object(InnerObject, Field):
 
 class Nested(InnerObject, Field):
     name = 'nested'
+
+    def empty(self):
+        return []
 
 class Date(Field):
     name = 'date'

@@ -22,15 +22,40 @@ def _make_dsl_class(base, name, params_def=None):
     cls_name = str(''.join(s.title() for s in name.split('_')))
     return type(cls_name, (base, ), attrs)
 
-class AttrList(list):
+class AttrList(object):
+    def __init__(self, l):
+        # make iteables into lists
+        if not isinstance(l, list):
+            l = list(l)
+        self._l_ = l
+
+    def __repr__(self):
+        return repr(self._l_)
+
+    def __eq__(self, other):
+        if isinstance(other, AttrList):
+            return other._l_ == self._l_
+        # make sure we still equal to a dict with the same data
+        return other == self._l_
+
     def __getitem__(self, k):
-        l = super(AttrList, self).__getitem__(k)
+        l = self._l_[k]
         if isinstance(k, slice):
             return AttrList(l)
         return _wrap(l)
 
     def __iter__(self):
-        return map(_wrap, super(AttrList, self).__iter__())
+        return map(_wrap, self._l_)
+
+    def __len__(self):
+        return len(self._l_)
+
+    def __nonzero__(self):
+        return bool(self._l_)
+    __bool__ = __nonzero__
+
+    def __getattr__(self, name):
+        return getattr(self._l_, name)
 
 
 class AttrDict(object):
@@ -376,9 +401,8 @@ class ObjectBase(AttrDict):
             if name in self._doc_type.mapping:
                 f = self._doc_type.mapping[name]
                 if hasattr(f, 'empty'):
-                    v = f.empty()
-                    setattr(self, name, v)
-                    return v
+                    setattr(self, name, f.empty())
+                    return getattr(self, name)
             raise
 
     def __setattr__(self, name, value):
