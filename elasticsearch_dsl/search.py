@@ -262,17 +262,28 @@ class Search(object):
         s._highlight_opts.update(kwargs)
         return s
 
-    def highlight(self, field, **kwargs):
+    def highlight(self, *fields, **kwargs):
         """
-        Request highliting of a field. All keyword arguments passed in will be
+        Request highliting of some fields. All keyword arguments passed in will be
         used as parameters. Example::
 
-            Search().highlight('title', fragment_size=50)
+            Search().highlight('title', 'body', fragment_size=50)
 
-        :arg field: name of the field to be highlighted
+        will produce the equivalent of::
+
+            {
+                "highlight": {
+                    "fields": {
+                        "body": {"fragment_size": 50},
+                        "title": {"fragment_size": 50}
+                    }
+                }
+            }
+
         """
         s = self._clone()
-        s._highlight[field] = kwargs
+        for f in fields:
+            s._highlight[f] = kwargs
         return s
 
     def index(self, *index):
