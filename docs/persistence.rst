@@ -19,19 +19,19 @@ The mapping definition follows a similar pattern to the query dsl:
     m = Mapping('my-type')
 
     # add fields
-    m = m.field('title', 'string')
+    m.field('title', 'string')
 
     # you can use multi-fields easily
-    m = m.field('category', 'string', fields={'raw': String(index='not_analyzed')})
+    m.field('category', 'string', fields={'raw': String(index='not_analyzed')})
 
     # you can also create a field manually
     comment = Nested().field('author', 'string').field('created_at', 'date')
 
     # and attach it to the mapping
-    m = m.field('comments', comment)
+    m.field('comments', comment)
 
     # you can also define mappings for the meta fields
-    m = m.meta('_all', enabled=False)
+    m.meta('_all', enabled=False)
  
     # save the mapping into index 'my-index'
     m.save('my-index')
