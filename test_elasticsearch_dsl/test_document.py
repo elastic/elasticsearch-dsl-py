@@ -65,7 +65,7 @@ def test_you_can_supply_own_mapping_instance():
 
         class Meta:
             mapping = Mapping('my_d')
-            mapping = mapping.meta('_all', enabled=False)
+            mapping.meta('_all', enabled=False)
 
     assert {
         'my_d': {
