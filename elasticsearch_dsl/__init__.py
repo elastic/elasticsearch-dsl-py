@@ -7,6 +7,6 @@ from .field import *
 from .document import DocType
 from .mapping import Mapping
 
-VERSION = (0, 0, 2)
+VERSION = (0, 0, 3)
 __version__ = VERSION
 __versionstr__ = '.'.join(map(str, VERSION))
