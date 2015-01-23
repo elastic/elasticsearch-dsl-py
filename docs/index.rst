@@ -161,6 +161,8 @@ In this example you can see:
 
   * accessing the underlying client for other APIs
 
+You can see more in the :ref:`persistence` chapter.
+
 Migration from ``elasticsearch-py``
 -----------------------------------
 
@@ -208,5 +210,6 @@ Contents
 
    configuration
    search_dsl
+   persistence
    Changelog
 
