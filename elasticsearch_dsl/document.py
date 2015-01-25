@@ -10,12 +10,12 @@ from .search import Search
 from .connections import connections
 
 DOC_META_FIELDS = frozenset((
-    'parent', 'routing', 'timestamp', 'ttl', 'version', 'version_type'
+    'id', 'parent', 'routing', 'timestamp', 'ttl', 'version', 'version_type'
 ))
 
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
-    'id', 'index', 'using', 'score',
+    'index', 'using', 'score',
 )).union(DOC_META_FIELDS)
 
 
@@ -129,7 +129,6 @@ class DocType(ObjectBase):
         es.delete(
             index=index,
             doc_type=self._doc_type.name,
-            id=self.id,
             **doc_meta
         )
 
@@ -145,20 +144,19 @@ class DocType(ObjectBase):
         meta = es.index(
             index=index,
             doc_type=self._doc_type.name,
-            id=getattr(self, 'id', None),
             body=self.to_dict(),
             **doc_meta
         )
         # update meta information from ES
         for k in META_FIELDS:
             if '_' + k in meta:
-                setattr(self, k, meta['_' + k])
+                setattr(self._meta, k, meta['_' + k])
 
         # return True/False if the document has been created/updated
         return meta['created']
 
     def __getattr__(self, name):
-        if name in META_FIELDS:
+        if name in DOC_META_FIELDS:
             try:
                 return getattr(self._meta, name)
             except AttributeError:
@@ -166,7 +164,7 @@ class DocType(ObjectBase):
         return super(DocType, self).__getattr__(name)
 
     def __setattr__(self, name, value):
-        if name in META_FIELDS:
+        if name in DOC_META_FIELDS:
             return setattr(self._meta, name, value)
         return super(DocType, self).__setattr__(name, value)
 

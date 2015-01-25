@@ -59,7 +59,8 @@ def test_delete(write_client):
         body={'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}}
     )
 
-    test_repo = Repository(id='elasticsearch-dsl-py', index='test-document')
+    test_repo = Repository(id='elasticsearch-dsl-py')
+    test_repo._meta.index='test-document'
     test_repo.delete()
     
     assert not write_client.exists(

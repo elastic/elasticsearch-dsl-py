@@ -117,13 +117,11 @@ def test_document_inheritance():
     } == MySubDoc._doc_type.mapping.to_dict()
 
 def test_meta_fields_are_stored_in_meta_and_ignored_by_to_dict():
-    md = MySubDoc(_id=42, name='My First doc!')
+    md = MySubDoc(id=42, name='My First doc!')
 
+    md._meta.index = 'my-index'
+    assert md._meta.index == 'my-index'
     assert md.id == 42
-    assert md.index == 'default-index'
-    md.index = 'my-index'
-    assert md.index == 'my-index'
-    assert md._meta.id == 42
     assert {'name': 'My First doc!'} == md.to_dict()
     assert {'id': 42, 'index': 'my-index'} == md._meta.to_dict()
 
