@@ -131,13 +131,14 @@ To search for this document type, use the ``search`` class method:
     for posts in results:
         print(post._meta.score, post.title)
 
-Alternatively you can just take a ``Search`` object and restrict it to return
-our document type, wrapped in correct class:
+Alternatively you can just take a ``Search`` object and register the
+``from_es`` method of you document class as a callback for certain document
+types:
 
 .. code:: python
 
     s = Search()
-    s = s.doc_type(Post)
+    s = s.doc_type(post=Post.from_es)
 
 You can also combine document classes with standard doc types (just strings),
 which will be treated as before. You can also pass in multiple ``DocType``
