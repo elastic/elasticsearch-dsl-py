@@ -83,7 +83,7 @@ FILTERS = (
     ('has_child', {'filter': {'type': 'filter'}}),
     ('has_parent', {'filter': {'type': 'filter'}}),
 
-    ('query', {'query': {'type': 'query'}}),
+    ('fquery', {'query': {'type': 'query'}}),
 
     # core filters
     ('exists', None),
