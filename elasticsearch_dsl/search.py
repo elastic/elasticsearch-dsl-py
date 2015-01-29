@@ -98,6 +98,7 @@ class Search(object):
         self._fields = None
         self._highlight = {}
         self._highlight_opts = {}
+        self._suggest = {}
 
     def __getitem__(self, n):
         """
@@ -155,6 +156,7 @@ class Search(object):
         s._extra = self._extra.copy()
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
+        s._suggest = self._suggest.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -192,6 +194,12 @@ class Search(object):
             high = d.pop('highlight').copy()
             self._highlight = high.pop('fields')
             self._highlight_opts = high
+        if 'suggest' in d:
+            self._suggest = d.pop('suggest')
+            if 'text' in self._suggest:
+                text = self._suggest.pop('text')
+                for s in self._suggest.values():
+                    s.setdefault('text', text)
         self._extra = d
 
     def params(self, **kwargs):
@@ -287,6 +295,12 @@ class Search(object):
             s._highlight[f] = kwargs
         return s
 
+    def suggest(self, name, text, **kwargs):
+        s = self._clone()
+        s._suggest[name] = {'text': text}
+        s._suggest[name].update(kwargs)
+        return s
+
     def index(self, *index):
         """
         Set the index for the search. If called empty it will rmove all information.
@@ -377,6 +391,9 @@ class Search(object):
             if self._highlight:
                 d['highlight'] = {'fields': self._highlight}
                 d['highlight'].update(self._highlight_opts)
+
+            if self._suggest:
+                d['suggest'] = self._suggest
 
         d.update(kwargs)
         return d

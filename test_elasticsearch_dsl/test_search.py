@@ -265,6 +265,15 @@ def test_reverse():
             'fields': {
                 'title': {'fragment_size': 50}
             }
+        },
+        "suggest": {
+            "my-title-suggestions-1" : {
+                "text" : "devloping distibutd saerch engies",
+                "term" : {
+                    "size" : 3,
+                    "field" : "title"
+                }
+            }
         }
     }
 
@@ -329,3 +338,45 @@ def test_fields_on_clone():
         },
         'fields': ['title']
     } == search.Search().fields(['title']).filter('term', title='python').to_dict()
+
+def test_suggest_accepts_global_text():
+    s = search.Search.from_dict({
+        "query": {"match_all": {}},
+        "suggest" : {
+            "text" : "the amsterdma meetpu",
+            "my-suggest-1" : {
+                "term" : {"field" : "title"}
+            },
+            "my-suggest-2" : {
+                "text": "other",
+                "term" : {"field" : "body"}
+            }
+        }
+    })
+
+    assert {
+        'query': {'match_all': {}},
+        'suggest': {
+            'my-suggest-1': {
+                'term': {'field': 'title'},
+                'text': 'the amsterdma meetpu'
+            },
+            'my-suggest-2': {
+                'term': {'field': 'body'},
+                'text': 'other'}
+        }
+    } == s.to_dict()
+
+def test_suggest():
+    s = search.Search()
+    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
+
+    assert {
+        'query': {'match_all': {}},
+        'suggest': {
+            'my_suggestion': {
+                'term': {'field': 'title'},
+                'text': 'pyhton'
+            }
+        }
+    } == s.to_dict()

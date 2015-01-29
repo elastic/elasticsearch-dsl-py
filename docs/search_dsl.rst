@@ -283,6 +283,18 @@ Enabling highlighting for individual fields is done using the ``highlight`` meth
     # or, including parameters:
     s = s.highlight('title', fragment_size=50)
 
+Suggestions
+~~~~~~~~~~~
+
+To specify a suggest request on your ``Search`` object use the ``suggest`` method:
+
+.. code:: python
+
+    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
+
+The first argument is the name of the suggestions (name under which it will be
+returned), second is the actual text you wish the suggester to work on and the
+keyword arguments will be added to the suggest's json as-is.
 
 Extra properties and parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
