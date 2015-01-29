@@ -80,12 +80,13 @@ class Search(object):
         self._doc_type = []
         self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
-            self._doc_type.extend(doc_type)
+            for dt in doc_type:
+                self._add_doc_type(dt)
         elif isinstance(doc_type, dict):
             self._doc_type.extend(doc_type.keys())
             self._doc_type_map.update(doc_type)
         elif doc_type:
-            self._doc_type.append(doc_type)
+            self._add_doc_type(doc_type)
 
         self.query = ProxyQuery(self, 'query')
         self.filter = ProxyFilter(self, 'filter')
@@ -302,10 +303,16 @@ class Search(object):
             s._index = (self._index or []) + list(index)
         return s
 
+    def _add_doc_type(self, doc_type):
+        if hasattr(doc_type, '_doc_type'):
+            self._doc_type_map[doc_type._doc_type.name] = doc_type.from_es
+            doc_type = doc_type._doc_type.name
+        self._doc_type.append(doc_type)
+
     def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or
-        multiple.
+        multiple. Values can be strings or subclasses of ``DocType``.
         
         You can also pass in any keyword arguments, mapping a doc_type to a
         callback that should be used instead of the Result class.
@@ -315,7 +322,7 @@ class Search(object):
 
         Example:
 
-            s = Search().doc_type('product', 'store', user=User.from_es)
+            s = Search().doc_type('product', 'store', User, custom=my_callback)
         """
         # .doc_type() resets
         s = self._clone()
@@ -323,7 +330,8 @@ class Search(object):
             s._doc_type = []
             s._doc_type_map = {}
         else:
-            s._doc_type.extend(doc_type)
+            for dt in doc_type:
+                s._add_doc_type(dt)
             s._doc_type.extend(kwargs.keys())
             s._doc_type_map.update(kwargs)
         return s

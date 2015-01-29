@@ -1,7 +1,6 @@
 from copy import deepcopy
 
-from elasticsearch_dsl import search, query, F, Q
-from elasticsearch_dsl.connections import connections
+from elasticsearch_dsl import search, query, F, Q, DocType
 
 def test_search_starts_with_empty_query():
     s = search.Search()
@@ -102,6 +101,20 @@ def test_search_doc_type():
     s2 = s.doc_type('i3')
     assert s._doc_type == ['i', 'i2']
     assert s2._doc_type == ['i', 'i2', 'i3']
+
+
+def test_doc_type_can_be_document_class():
+    class MyDocType(DocType):
+        pass
+
+    s = search.Search(doc_type=MyDocType)
+    assert s._doc_type == ['my_doc_type']
+    assert s._doc_type_map == {'my_doc_type': MyDocType.from_es}
+
+    s = search.Search().doc_type(MyDocType)
+    assert s._doc_type == ['my_doc_type']
+    assert s._doc_type_map == {'my_doc_type': MyDocType.from_es}
+
 
 def test_sort():
     s = search.Search()
