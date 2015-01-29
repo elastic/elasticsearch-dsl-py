@@ -58,6 +58,13 @@ statement:
 
     s = Search().using(client).query("match", title="python")
 
+.. note::
+
+    In some cases this approach is not possible due to python's restriction on
+    identifiers - for example if your field is called ``@timestamp``. In that
+    case you have to fall back to unpacking a dictionary: ``s.query('range', **
+    {'@timestamp': {'lt': 'now'}})``
+
 To send the request to Elasticsearch:
 
 .. code:: python
