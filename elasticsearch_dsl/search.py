@@ -9,8 +9,12 @@ from .utils import DslBase
 from .result import Response, Result
 from .connections import connections
 
-
 class BaseProxy(object):
+    """
+    Simple proxy around DSL objects (queries and filters) that can be called
+    (to add query/filter) and also allows attribute access which is proxied to
+    the wrapped query/filter.
+    """
     def __init__(self, search, attr_name):
         self._search = search
         self._proxied = self._empty
@@ -37,6 +41,25 @@ class BaseProxy(object):
         super(BaseProxy, self).__setattr__(attr_name, value)
 
 
+class ProxyDesriptor(object):
+    """
+    Simple descriptor to enable setting of queries and filters as:
+
+        s = Search()
+        s.query = Q(...)
+
+    """
+    def __init__(self, name):
+        self._attr_name = '_%s_proxy' % name
+
+    def __get__(self, instance, owner):
+        return getattr(instance, self._attr_name)
+
+    def __set__(self, instance, value):
+        proxy = getattr(instance, self._attr_name)
+        proxy._proxied = proxy._shortcut(value)
+
+
 class ProxyQuery(BaseProxy):
     _empty = EMPTY_QUERY
     _shortcut = staticmethod(Q)
@@ -58,6 +81,10 @@ class AggsProxy(AggBase, DslBase):
 
 
 class Search(object):
+    query = ProxyDesriptor('query')
+    filter = ProxyDesriptor('filter')
+    post_filter = ProxyDesriptor('post_filter')
+
     def __init__(self, using='default', index=None, doc_type=None, extra=None):
         """
         Search request to elasticsearch.
@@ -88,9 +115,6 @@ class Search(object):
         elif doc_type:
             self._add_doc_type(doc_type)
 
-        self.query = ProxyQuery(self, 'query')
-        self.filter = ProxyFilter(self, 'filter')
-        self.post_filter = ProxyFilter(self, 'post_filter')
         self.aggs = AggsProxy(self)
         self._sort = []
         self._extra = extra or {}
@@ -99,6 +123,10 @@ class Search(object):
         self._highlight = {}
         self._highlight_opts = {}
         self._suggest = {}
+
+        self._query_proxy = ProxyQuery(self, 'query')
+        self._filter_proxy = ProxyFilter(self, 'filter')
+        self._post_filter_proxy = ProxyFilter(self, 'post_filter')
 
     def __getitem__(self, n):
         """

@@ -113,6 +113,12 @@ The method also accepts all the parameters as the ``Q`` shortcut:
 
     s = s.query('match', query='python django', field='title', operator='or')
 
+If you already have a query object, or a ``dict`` representing one, you can
+just override the query used in the ``Search`` object:
+
+.. code:: python
+
+    s.query = Q('bool', must=[Q('match', title='python'), Q('match', body='best')])
 
 Query combination
 ^^^^^^^^^^^^^^^^^

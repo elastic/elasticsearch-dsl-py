@@ -18,6 +18,14 @@ def test_search_query_combines_query():
     assert s2.query._proxied == query.Match(f=42)
     assert s3.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
+def test_query_can_be_assigned_to():
+    s = search.Search()
+
+    q = Q('match', title='python')
+    s.query = q
+
+    assert s.query._proxied is q
+
 def test_using():
     o = object()
     o2 = object()
