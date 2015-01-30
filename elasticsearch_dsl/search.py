@@ -41,7 +41,7 @@ class BaseProxy(object):
         super(BaseProxy, self).__setattr__(attr_name, value)
 
 
-class ProxyDesriptor(object):
+class ProxyDescriptor(object):
     """
     Simple descriptor to enable setting of queries and filters as:
 
@@ -81,9 +81,9 @@ class AggsProxy(AggBase, DslBase):
 
 
 class Search(object):
-    query = ProxyDesriptor('query')
-    filter = ProxyDesriptor('filter')
-    post_filter = ProxyDesriptor('post_filter')
+    query = ProxyDescriptor('query')
+    filter = ProxyDescriptor('filter')
+    post_filter = ProxyDescriptor('post_filter')
 
     def __init__(self, using='default', index=None, doc_type=None, extra=None):
         """
