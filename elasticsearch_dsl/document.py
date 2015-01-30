@@ -74,14 +74,22 @@ class DocTypeOptions(object):
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):
-    def __init__(self, **kwargs):
-        meta = {}
+    def __init__(self, id = None, **kwargs):
+        meta = {'id': id}
         for k in list(kwargs):
             if k.startswith('_'):
                 meta[k] = kwargs.pop(k)
         super(AttrDict, self).__setattr__('_meta', ResultMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
+
+    @property
+    def id(self):
+        return self._meta.get('id', None)
+
+    @id.setter
+    def id(self, value):
+        self._meta['id'] = value
 
     @classmethod
     def init(cls, index=None, using=None):
@@ -111,7 +119,7 @@ class DocType(ObjectBase):
         # don't modify in place
         doc = hit.copy()
         doc.update(doc.pop('_source'))
-        return cls(**doc)
+        return cls(id=doc.pop('_id'), **doc)
 
     def _get_connection(self, using=None):
         return connections.get_connection(using or self._doc_type.using)
@@ -154,17 +162,4 @@ class DocType(ObjectBase):
 
         # return True/False if the document has been created/updated
         return meta['created']
-
-    def __getattr__(self, name):
-        if name in DOC_META_FIELDS:
-            try:
-                return getattr(self._meta, name)
-            except AttributeError:
-                return getattr(self._doc_type, name)
-        return super(DocType, self).__getattr__(name)
-
-    def __setattr__(self, name, value):
-        if name in DOC_META_FIELDS:
-            return setattr(self._meta, name, value)
-        return super(DocType, self).__setattr__(name, value)
 
