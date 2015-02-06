@@ -74,7 +74,7 @@ class DocTypeOptions(object):
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):
-    def __init__(self, id = None, **kwargs):
+    def __init__(self, id=None, **kwargs):
         meta = {'id': id}
         for k in list(kwargs):
             if k.startswith('_'):
