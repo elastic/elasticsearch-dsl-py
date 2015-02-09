@@ -23,4 +23,4 @@ def test_scan_iterates_through_all_docs(data_client):
     commits = list(s.scan())
 
     assert 52 == len(commits)
-    assert set(d['_id'] for d in DATA if d['_type'] == 'commits') == set(c._meta.id for c in commits)
+    assert set(d['_id'] for d in DATA if d['_type'] == 'commits') == set(c.meta.id for c in commits)

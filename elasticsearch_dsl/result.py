@@ -56,13 +56,13 @@ class Result(AttrDict):
             data.update(document['fields'])
 
         super(Result, self).__init__(data)
-        # assign _meta as attribute and not as key in self._d_
-        super(AttrDict, self).__setattr__('_meta', ResultMeta(document))
+        # assign meta as attribute and not as key in self._d_
+        super(AttrDict, self).__setattr__('meta', ResultMeta(document))
 
     def __dir__(self):
-        # be sure to expose _meta in dir(self)
-        return super(Result, self).__dir__() + ['_meta']
+        # be sure to expose meta in dir(self)
+        return super(Result, self).__dir__() + ['meta']
 
     def __repr__(self):
         return u('<Result(%s/%s/%s): %s>') % (
-            self._meta.index, self._meta.doc_type, self._meta.id, super(Result, self).__repr__())
+            self.meta.index, self.meta.doc_type, self.meta.id, super(Result, self).__repr__())

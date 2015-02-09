@@ -16,7 +16,7 @@ def test_interactive_helpers(dummy_response):
     assert res
     assert '<Response: %s>' % rhits == repr(res)
     assert rhits == repr(hits)
-    assert ['_meta', 'city', 'name'] == dir(h)
+    assert set(['meta', 'city', 'name']) == set(dir(h))
     assert "<Result(test-index/company/elasticsearch): %r>" % dummy_response['hits']['hits'][0]['_source'] == repr(h)
 
 def test_enpty_response_is_false(dummy_response):
@@ -35,12 +35,12 @@ def test_iterating_over_response_gives_you_hits(dummy_response):
     assert all(isinstance(h, result.Result) for h in hits)
     h = hits[0]
 
-    assert 'test-index' == h._meta.index
-    assert 'company' == h._meta.doc_type
-    assert 'elasticsearch' == h._meta.id
-    assert 12 == h._meta.score
+    assert 'test-index' == h.meta.index
+    assert 'company' == h.meta.doc_type
+    assert 'elasticsearch' == h.meta.id
+    assert 12 == h.meta.score
 
-    assert hits[1]._meta.parent == 'elasticsearch'
+    assert hits[1].meta.parent == 'elasticsearch'
 
 def test_hits_get_wrapped_to_contain_additional_attrs(dummy_response):
     res = result.Response(dummy_response)
