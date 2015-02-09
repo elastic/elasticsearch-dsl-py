@@ -149,3 +149,12 @@ def test_meta_inheritance():
             }
         }
     } == MyMultiSubDoc._doc_type.mapping.to_dict()
+
+def test_meta_fields_can_be_accessed_directly_with_underscore():
+    p = object()
+    md = MyDoc(_id=42, title='Hello World!')
+    md._parent = p
+
+    assert md.meta.id == 42
+    assert md._id == 42
+    assert md.meta.parent is md._parent is p

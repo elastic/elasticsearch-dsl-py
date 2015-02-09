@@ -129,7 +129,7 @@ To search for this document type, use the ``search`` class method:
 
     # when you execute the search the results are wrapped in your document class (Post)
     for posts in results:
-        print(post._meta.score, post.title)
+        print(post.meta.score, post.title)
 
 Alternatively you can just take a ``Search`` object and restrict it to return
 our document type, wrapped in correct class:

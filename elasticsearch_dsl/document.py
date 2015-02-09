@@ -83,6 +83,16 @@ class DocType(ObjectBase):
 
         super(DocType, self).__init__(**kwargs)
 
+    def __getattr__(self, name):
+        if name.startswith('_') and name[1:] in META_FIELDS:
+            return getattr(self.meta, name[1:])
+        return super(DocType, self).__getattr__(name)
+
+    def __setattr__(self, name, value):
+        if name.startswith('_') and name[1:] in META_FIELDS:
+            return setattr(self.meta, name[1:], value)
+        return super(DocType, self).__setattr__(name, value)
+
     @classmethod
     def init(cls, index=None, using=None):
         cls._doc_type.init(index, using)
