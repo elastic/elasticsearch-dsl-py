@@ -29,10 +29,10 @@ class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
 
-        # default index, if not overriden by doc._meta
+        # default index, if not overriden by doc.meta
         self.index = getattr(meta, 'index', None)
 
-        # default cluster alias, can be overriden in doc._meta
+        # default cluster alias, can be overriden in doc.meta
         self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined take the name of the class and
@@ -74,22 +74,14 @@ class DocTypeOptions(object):
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):
-    def __init__(self, id=None, **kwargs):
-        meta = {'id': id}
+    def __init__(self, meta=None, **kwargs):
+        meta = meta or {}
         for k in list(kwargs):
             if k.startswith('_'):
                 meta[k] = kwargs.pop(k)
-        super(AttrDict, self).__setattr__('_meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
-
-    @property
-    def id(self):
-        return self._meta.get('id', None)
-
-    @id.setter
-    def id(self, value):
-        self._meta['id'] = value
 
     @classmethod
     def init(cls, index=None, using=None):
@@ -117,9 +109,9 @@ class DocType(ObjectBase):
     @classmethod
     def from_es(cls, hit):
         # don't modify in place
-        doc = hit.copy()
-        doc.update(doc.pop('_source'))
-        return cls(id=doc.pop('_id'), **doc)
+        meta = hit.copy()
+        doc = meta.pop('_source')
+        return cls(meta=meta, **doc)
 
     def _get_connection(self, using=None):
         return connections.get_connection(using or self._doc_type.using)
@@ -128,11 +120,11 @@ class DocType(ObjectBase):
     def delete(self, using=None, index=None, **kwargs):
         es = self._get_connection(using)
         if index is None:
-            index = getattr(self._meta, 'index', self._doc_type.index)
+            index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
             raise #XXX - no index
-        # extract parent, routing etc from _meta
-        doc_meta = dict((k, self._meta[k]) for k in DOC_META_FIELDS if k in self._meta)
+        # extract parent, routing etc from meta
+        doc_meta = dict((k, self.meta[k]) for k in DOC_META_FIELDS if k in self.meta)
         doc_meta.update(kwargs)
         es.delete(
             index=index,
@@ -143,11 +135,11 @@ class DocType(ObjectBase):
     def save(self, using=None, index=None, **kwargs):
         es = self._get_connection(using)
         if index is None:
-            index = getattr(self._meta, 'index', self._doc_type.index)
+            index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
             raise #XXX - no index
-        # extract parent, routing etc from _meta
-        doc_meta = dict((k, self._meta[k]) for k in DOC_META_FIELDS if k in self._meta)
+        # extract parent, routing etc from meta
+        doc_meta = dict((k, self.meta[k]) for k in DOC_META_FIELDS if k in self.meta)
         doc_meta.update(kwargs)
         meta = es.index(
             index=index,
@@ -158,7 +150,7 @@ class DocType(ObjectBase):
         # update meta information from ES
         for k in META_FIELDS:
             if '_' + k in meta:
-                setattr(self._meta, k, meta['_' + k])
+                setattr(self.meta, k, meta['_' + k])
 
         # return True/False if the document has been created/updated
         return meta['created']

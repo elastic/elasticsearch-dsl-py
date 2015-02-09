@@ -37,9 +37,9 @@ def test_save_updates_existing_doc(data_client):
     assert 'testing' == new_repo['_source']['new_field']
 
 def test_can_save_to_different_index(write_client):
-    test_repo = Repository(description='testing', id=42)
-    test_repo._meta.version_type = 'external'
-    test_repo._meta.version = 3
+    test_repo = Repository(description='testing', meta={'id': 42})
+    test_repo.meta.version_type = 'external'
+    test_repo.meta.version = 3
     assert test_repo.save(index='test-document')
 
     assert {
@@ -59,8 +59,8 @@ def test_delete(write_client):
         body={'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}}
     )
 
-    test_repo = Repository(id='elasticsearch-dsl-py')
-    test_repo._meta.index='test-document'
+    test_repo = Repository(meta={'id': 'elasticsearch-dsl-py'})
+    test_repo.meta.index='test-document'
     test_repo.delete()
     
     assert not write_client.exists(
