@@ -110,11 +110,11 @@ Let's have a simple Python class representing an article in a blogging system:
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch import Elasticsearch
-    from elasticsearch_dsl import DocType, String, Date, Integer, connections
+    from elasticsearch_dsl import DocType, String, Date, Integer
+    from elasticsearch_dsl.connections import connections
 
     # Define a default Elasticsearch client
-    connections.add_connection(Elasticsearch())
+    connections.create_connection(hosts=['localhost'])
 
     class Article(DocType):
         title = String(analyzer='snowball', fields={'raw': String(index='not_analyzed')})
@@ -125,7 +125,7 @@ Let's have a simple Python class representing an article in a blogging system:
 
         class Meta:
             index = 'blog'
-  
+
         def save(self, ** kwargs):
             self.lines = len(self.body.split())
             return super().save(** kwargs)
@@ -133,21 +133,25 @@ Let's have a simple Python class representing an article in a blogging system:
         def is_published(self):
             return datetime.now() < self.published_from
 
-     article = Article(id=42, title='Hello world!', tags=['test'])
-     article.body = ''' looong text '''
-     article.published_from = datetime.now()
-     article.save()
+    # create the mappings in elasticsearch
+    Article.init()
 
-     article = Article.get(id=42)
-     print(article.is_published())
+    # create and save and article
+    article = Article(id=42, title='Hello world!', tags=['test'])
+    article.body = ''' looong text '''
+    article.published_from = datetime.now()
+    article.save()
 
-     # Display cluster health
-     print(connections.get_connection().cluster.health())
+    article = Article.get(id=42)
+    print(article.is_published())
+
+    # Display cluster health
+    print(connections.get_connection().cluster.health())
 
 
 In this example you can see:
 
-  * providing a default Elasticsearch client
+  * providing a :ref:`default connection`
 
   * defining fields with mapping configuration
 
@@ -155,11 +159,14 @@ In this example you can see:
 
   * defining custom methods
 
-  * overriding the built-in ``.save()`` method to hook into the persistence life cycle
+  * overriding the built-in ``.save()`` method to hook into the persistence
+    life cycle
 
   * retrieving and saving the object into Elasticsearch
 
   * accessing the underlying client for other APIs
+
+You can see more in the :ref:`persistence` chapter.
 
 Migration from ``elasticsearch-py``
 -----------------------------------
@@ -199,4 +206,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
