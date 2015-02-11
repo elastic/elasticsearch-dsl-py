@@ -6,6 +6,7 @@ from .search import Search
 from .field import *
 from .document import DocType
 from .mapping import Mapping
+from .index import Index
 
 VERSION = (0, 0, 4, 'dev')
 __version__ = VERSION
