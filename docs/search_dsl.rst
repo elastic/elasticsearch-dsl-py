@@ -367,14 +367,19 @@ Result
 
 The individual hits is wrapped in a convenience class that allows attribute
 access to the keys in the returned dictionary. All the metadata for the results
-are accessible via ``_meta`` (without the leading ``_``):
+are accessible via ``meta`` (without the leading ``_``):
 
 .. code:: python
 
     response = s.execute()
     h = response.hits[0]
     print('/%s/%s/%s returned with score %f' % (
-        h._meta.index, h._meta.doc_type, h._meta.id, h._meta.score))
+        h.meta.index, h.meta.doc_type, h.meta.id, h.meta.score))
+
+.. note::
+
+    If your document has a field called ``meta`` you have to access it using
+    the get item syntax: ``hit['meta']``.
 
 
 Aggregations

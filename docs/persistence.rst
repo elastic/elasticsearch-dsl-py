@@ -98,11 +98,34 @@ explicitly:
     first = Post(title='My First Blog Post, yay!', published=True)
     # assign some field values, can be values or lists of values
     first.category = ['everything', 'nothing']
-    # every document has an id
-    first.id = 42
+    # every document has an id in meta
+    first.meta.id = 47
+
 
     # save the document into the cluster
     first.save()
+
+
+All the metadata fields (``id``, ``parent``, ``routing``, ``index`` etc) can be
+accessed (and set) via a ``meta`` attribute or directly using the underscored
+variant:
+
+.. code:: python
+
+    post = Post(meta={'id': 42})
+
+    # prints 42, same as post._id
+    print(post.meta.id) 
+
+    # override default index
+    post._index = 'my-blog'
+
+.. note::
+
+    Having all metadata accesible through ``meta`` means that this name is
+    reserved and you shouldn't have a field called ``meta`` on your document.
+    If you, however, need it you can still access the data using the get item
+    (as opposed to attribute) syntax: ``post['meta']``.
 
 To retrieve an existing document use the ``get`` class method:
 
