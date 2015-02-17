@@ -87,7 +87,7 @@ The library provides classes for all Elasticsearch query types. Pass all the par
 
 .. code:: python
 
-    from elasticsearch_dsl import Match
+    from elasticsearch_dsl.query import Match
 
     # {"match": {"query": "python django", "field": "title", "operator": "or"}}
     Match(query='python django', field='title', operator='or')
