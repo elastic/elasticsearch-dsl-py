@@ -107,7 +107,7 @@ AGGS = (
     (Agg, 'max', None),
     (Agg, 'min', None),
     (Agg, 'percentiles', None),
-    (Agg, 'percentile_rank', None),
+    (Agg, 'percentile_ranks', None),
     (Agg, 'scripted_metric', None),
     (Agg, 'stats', None),
     (Agg, 'sum', None),
