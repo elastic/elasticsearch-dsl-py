@@ -132,6 +132,7 @@ FIELDS = (
     'attachment',
     'geo_point',
     'geo_shape',
+    'completion',
 )
 
 # generate the query classes dynamicaly
