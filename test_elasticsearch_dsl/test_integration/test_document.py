@@ -1,6 +1,7 @@
 from datetime import datetime
+from pytz import timezone
 
-from elasticsearch_dsl import DocType, Date, String, construct_field
+from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
 
 user_field = construct_field('object')
 user_field.property('name', 'string', fields={'raw': construct_field('string', index='not_analyzed')})
@@ -15,6 +16,15 @@ class Repository(DocType):
         index = 'git'
         doc_type = 'repos'
 
+class Commit(DocType):
+    committed_date = Date()
+    authored_date = Date()
+
+    class Meta:
+        index = 'git'
+        mapping = Mapping('commits')
+        mapping.meta('_parent', type='repos')
+
 def test_init(write_client):
     Repository.init(index='test-git')
 
@@ -26,6 +36,12 @@ def test_get(data_client):
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == 'elasticsearch'
     assert datetime(2014, 3, 3) == elasticsearch_repo.created_at
+
+def test_get_with_tz_date(data_client):
+    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
+
+    tzinfo = timezone('Europe/Prague')
+    assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19)) == first_commit.authored_date
 
 def test_save_updates_existing_doc(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')

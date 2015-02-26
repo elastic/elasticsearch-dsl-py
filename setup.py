@@ -19,7 +19,8 @@ install_requires = [
 tests_require = [
     "mock",
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "pytz"
 ]
 
 # use external unittest for 2.6
