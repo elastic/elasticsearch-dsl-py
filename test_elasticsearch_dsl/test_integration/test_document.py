@@ -19,6 +19,7 @@ class Repository(DocType):
 class Commit(DocType):
     committed_date = Date()
     authored_date = Date()
+    description = String(analyzer='snowball')
 
     class Meta:
         index = 'git'
@@ -76,9 +77,9 @@ def test_delete(write_client):
     )
 
     test_repo = Repository(meta={'id': 'elasticsearch-dsl-py'})
-    test_repo.meta.index='test-document'
+    test_repo.meta.index = 'test-document'
     test_repo.delete()
-    
+
     assert not write_client.exists(
         index='test-document',
         doc_type='repos',
@@ -109,3 +110,11 @@ def test_refresh_mapping(data_client):
     assert 'description' in Commit._doc_type.mapping
     assert 'committed_date' in Commit._doc_type.mapping
     assert isinstance(Commit._doc_type.mapping['committed_date'], Date)
+
+def test_highlight_in_meta(data_client):
+    commit = Commit.search().query('match', description='inverting').highlight('description').execute()[0]
+
+    assert isinstance(commit, Commit)
+    assert 'description' in commit.meta.highlight
+    assert isinstance(commit.meta.highlight['description'], list)
+    assert len(commit.meta.highlight['description']) > 0
