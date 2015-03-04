@@ -2,6 +2,8 @@ import re
 
 from six import iteritems, add_metaclass
 
+from elasticsearch.exceptions import NotFoundError
+
 from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict
@@ -108,12 +110,15 @@ class DocType(ObjectBase):
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
         es = connections.get_connection(using or cls._doc_type.using)
-        doc = es.get(
+        try:
+            doc = es.get(
             index=index or cls._doc_type.index,
             doc_type=cls._doc_type.name,
             id=id,
             **kwargs
         )
+        except NotFoundError:
+            return None
         return cls.from_es(doc)
 
     @classmethod
