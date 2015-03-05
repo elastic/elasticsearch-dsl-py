@@ -155,6 +155,8 @@ class DocType(ObjectBase):
             index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
             raise #XXX - no index
+        if not getattr(self.meta, "version", None):
+            kwargs["op_type"] = "create"
         # extract parent, routing etc from meta
         doc_meta = dict((k, self.meta[k]) for k in DOC_META_FIELDS if k in self.meta)
         doc_meta.update(kwargs)
