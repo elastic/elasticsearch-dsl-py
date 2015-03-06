@@ -120,8 +120,6 @@ class DocType(ObjectBase):
     def from_es(cls, hit):
         # don't modify in place
         meta = hit.copy()
-        # make sure highlighting information ends up in meta
-        meta['_highlight'] = meta.pop('highlight', {})
         doc = meta.pop('_source')
         return cls(meta=meta, **doc)
 
