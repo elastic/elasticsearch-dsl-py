@@ -26,6 +26,33 @@ def test_query_can_be_assigned_to():
 
     assert s.query._proxied is q
 
+def test_query_can_be_wrapped():
+    s = search.Search().query('match', title='python')
+
+    s.query = Q('function_score', query=s.query, field_value_factor={'field': 'rating'})
+
+    assert {
+        'query': {
+            'function_score': {
+                'functions': [{'field_value_factor': {'field': 'rating'}}],
+                'query': {'match': {'title': 'python'}}
+            }
+        }
+    }== s.to_dict()
+
+def test_filter_can_be_overriden():
+    s = search.Search().filter('term', tag='python')
+    s.filter = ~F(s.filter)
+
+    assert {
+        "query": {
+            "filtered": {
+                "query": {"match_all": {}},
+                "filter": {"bool": {"must_not": [{"term": {"tag": "python"}}]}}
+            }
+        }
+    } == s.to_dict()
+
 def test_using():
     o = object()
     o2 = object()

@@ -18,6 +18,10 @@ def Q(name_or_query, **params):
             raise ValueError('Q() cannot accept parameters when passing in a Query object.')
         return name_or_query
 
+    # s.query = Q('filtered', query=s.query)
+    if hasattr(name_or_query, '_proxied'):
+        return name_or_query._proxied
+
     # "match", title="python"
     return Query.get_dsl_class(name_or_query)(**params)
 

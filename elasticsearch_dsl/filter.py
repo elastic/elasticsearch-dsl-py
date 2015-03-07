@@ -24,6 +24,10 @@ def F(name_or_filter, filters=None, **params):
             raise ValueError('F() cannot accept parameters when passing in a Filter object.')
         return name_or_filter
 
+    # s.filter = ~F(s.filter)
+    if hasattr(name_or_filter, '_proxied'):
+        return name_or_filter._proxied
+
     # 'term', tag='python', ...
     return Filter.get_dsl_class(name_or_filter)(**params)
 
