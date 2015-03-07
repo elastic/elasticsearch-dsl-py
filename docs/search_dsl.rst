@@ -87,31 +87,31 @@ The library provides classes for all Elasticsearch query types. Pass all the par
 
 .. code:: python
 
-    from elasticsearch_dsl import Match
+    from elasticsearch_dsl.query import MultiMatch
 
-    # {"match": {"query": "python django", "field": "title", "operator": "or"}}
-    Match(query='python django', field='title', operator='or')
+    # {"multi_match": {"query": "python django", "fields": ["title", "body"]}
+    MultiMatch(query='python django', fields=['title', 'body'])
 
 You can use the ``Q`` shortcut to construct the instance using a name with
 parameters or the raw ``dict``:
 
 .. code:: python
 
-    Q("match", query='python django', field='title', operator='or')
-    Q({"match": {"query": "python django", "field": "title", "operator": "or"}})
+    Q("multi_match", query='python django', fields=['title', 'body'])
+    Q({"multi_match": {"query": "python django", "fields": ["title", "body"]})
 
 To add the query to the ``Search`` object, use the ``.query()`` method:
 
 .. code:: python
 
-    q = Q("match", query='python django', field='title', operator='or')
+    q = Q("multi_match", query='python django', fields=['title', 'body'])
     s = s.query(q)
 
 The method also accepts all the parameters as the ``Q`` shortcut:
 
 .. code:: python
 
-    s = s.query('match', query='python django', field='title', operator='or')
+    s = s.query("multi_match", query='python django', fields=['title', 'body'])
 
 If you already have a query object, or a ``dict`` representing one, you can
 just override the query used in the ``Search`` object:
