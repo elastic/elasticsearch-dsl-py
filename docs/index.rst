@@ -84,7 +84,7 @@ Let's rewrite the example using the Python DSL:
     response = s.execute()
 
     for hit in response:
-        print(hit._meta.score, hit.title)
+        print(hit.meta.score, hit.title)
 
     for tag in response.aggregations.per_tag.buckets:
         print(tag.key, tag.max_lines.value)
