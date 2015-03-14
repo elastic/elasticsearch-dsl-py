@@ -372,7 +372,7 @@ class BoolMixin(object):
             q.should.append(self)
             return q
 
-        return super(BoolMixin, self).__or__(other)
+        return self.__class__(should=[self, other])
     __ror__ = __or__
 
     def __invert__(self):
