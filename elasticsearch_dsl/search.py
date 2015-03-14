@@ -200,7 +200,8 @@ class Search(object):
         the object in-place.
         """
         d = d.copy()
-        self.query._proxied = Q(d.pop('query'))
+        if 'query' in d:
+            self.query._proxied = Q(d.pop('query'))
         if 'post_filter' in d:
             self.post_filter._proxied = F(d.pop('post_filter'))
 

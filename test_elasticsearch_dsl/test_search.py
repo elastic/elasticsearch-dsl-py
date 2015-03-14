@@ -321,6 +321,14 @@ def test_reverse():
     assert {"size": 5} == s._extra
     assert d == s.to_dict()
 
+def test_from_dict_doesnt_need_query():
+    s = search.Search.from_dict({"size": 5})
+
+    assert {
+        "query": {"match_all": {}},
+        "size": 5
+    } == s.to_dict()
+
 def test_params_being_passed_to_search(mock_client):
     s = search.Search('mock')
     s = s.params(routing='42')
