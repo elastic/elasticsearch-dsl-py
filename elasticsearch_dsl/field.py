@@ -1,7 +1,7 @@
 from datetime import date
 from dateutil import parser
 
-from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict
+from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 
 __all__ = ['construct_field', 'Object', 'Nested', 'Date', 'String', 'Float',
     'Double', 'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
@@ -43,7 +43,7 @@ class Field(DslBase):
         return data
     
     def to_python(self, data):
-        if isinstance(data, list):
+        if isinstance(data, (list, AttrList)):
             data[:] = map(self._to_python, data)
             return data
         return self._to_python(data)
@@ -91,7 +91,7 @@ class InnerObject(object):
         if isinstance(data, self._doc_class):
             return data
 
-        if isinstance(data, list):
+        if isinstance(data, (list, AttrList)):
             data[:] = list(map(self._to_python, data))
             return data
 

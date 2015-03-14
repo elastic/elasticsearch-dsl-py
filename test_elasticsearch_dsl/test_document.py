@@ -24,6 +24,13 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+def test_nested_can_be_assigned_to():
+    d1 = DocWithNested(comments=[{'title': 'First!'}])
+    d2 = DocWithNested()
+
+    d2.comments = d1.comments
+    assert d2.comments == [{'title': 'First!'}]
+
 def test_nested_defaults_to_list_and_can_be_updated():
     md = DocWithNested()
 

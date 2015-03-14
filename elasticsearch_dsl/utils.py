@@ -8,7 +8,7 @@ from .exceptions import UnknownDslObject
 def _wrap(val):
     if isinstance(val, dict):
         return AttrDict(val)
-    if isinstance(val, list) and not isinstance(val, AttrList):
+    if isinstance(val, list):
         return AttrList(val)
     return val
 
@@ -43,6 +43,9 @@ class AttrList(object):
         if isinstance(k, slice):
             return AttrList(l)
         return _wrap(l)
+
+    def __setitem__(self, k, value):
+        self._l_[k] = value
 
     def __iter__(self):
         return map(_wrap, self._l_)
@@ -413,7 +416,7 @@ class ObjectBase(AttrDict):
     def to_dict(self):
         out = {}
         for k, v in iteritems(self._d_):
-            if isinstance(v, (list, tuple)):
+            if isinstance(v, (AttrList, list, tuple)):
                 v = [i.to_dict() if hasattr(i, 'to_dict') else i for i in v]
             else:
                 v = v.to_dict() if hasattr(v, 'to_dict') else v
