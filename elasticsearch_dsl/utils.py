@@ -193,20 +193,17 @@ class DslBase(object):
 
     def _repr_params(self):
         """ Produce a repr of all our parameters to be used in __repr__. """
-        params = ', '.join(
+        return  ', '.join(
             '%s=%r' % (n, v)
             for (n, v) in sorted(iteritems(self._params))
             # make sure we don't include empty typed params
             if 'type' not in self._param_defs.get(n, {}) or v
         )
-        if params:
-            params = ', ' + params
-        return params
 
     def __repr__(self):
-        return '%s(%r%s)' % (
-            self._type_shortcut.__name__,
-            self.name, self._repr_params()
+        return '%s(%s)' % (
+            self.__class__.__name__,
+            self._repr_params()
         )
 
     def __eq__(self, other):

@@ -25,7 +25,7 @@ def test_bool_to_dict():
 def test_repr():
     bool = query.Bool(must=[query.Match(f='value')], should=[])
 
-    assert "Q('bool', must=[Q('match', f='value')])" == repr(bool)
+    assert "Bool(must=[Match(f='value')])" == repr(bool)
 
 def test_query_clone():
     bool = query.Bool(must=[query.Match(x=42)], should=[query.Match(g="v2")], must_not=[query.Match(title='value')])

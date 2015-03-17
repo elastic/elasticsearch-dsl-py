@@ -6,7 +6,7 @@ def test_repr():
     max_score = aggs.Max(field='score')
     a = aggs.A('terms', field='tags', aggs={'max_score': max_score})
 
-    assert "A('terms', aggs={'max_score': A('max', field='score')}, field='tags')" == repr(a)
+    assert "Terms(aggs={'max_score': Max(field='score')}, field='tags')" == repr(a)
 
 def test_A_creates_proper_agg():
     a = aggs.A('terms', field='tags')

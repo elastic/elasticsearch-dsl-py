@@ -9,6 +9,9 @@ class Properties(InnerObject, DslBase):
         self._name = name
         super(Properties, self).__init__()
 
+    def __repr__(self):
+        return 'Properties(%r)' % self._name
+
     @property
     def name(self):
         return self._name
@@ -18,6 +21,9 @@ class Mapping(object):
     def __init__(self, name):
         self.properties = Properties(name)
         self._meta = {}
+
+    def __repr__(self):
+        return 'Mapping(%r)' % self.doc_type
 
     @classmethod
     def from_es(cls, index, doc_type, using='default'):
