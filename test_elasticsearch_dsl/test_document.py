@@ -28,6 +28,20 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+def test_meta_field_mapping():
+    class User(document.DocType):
+        username = field.String()
+        class Meta:
+            all = document.MetaField(enabled=False)
+
+    assert {
+        'user': {
+            'properties': {
+                'username': {'type': 'string'}
+            },
+            '_all': {'enabled': False}
+        }
+    } == User._doc_type.mapping.to_dict()
 def test_docs_with_properties():
     class User(document.DocType):
         pwd_hash = field.String()

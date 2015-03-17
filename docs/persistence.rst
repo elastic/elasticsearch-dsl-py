@@ -192,9 +192,12 @@ metadata for your document:
 
 ``mapping``
   optional instance of ``Mapping`` class to use as base for the mappings
-  created from the fields on the document class itself. This can be useful if
-  you want to define additional parameters for the mapping, for example meta
-  field mappings:
+  created from the fields on the document class itself.
+  
+Any attribues on the ``Meta`` class that are instance of ``MetaField`` will be
+used to control the mapping of the mata fields (``_all``, ``_parent`` etc).
+Just name the parameter (without the leading underscore) as the field you wish
+to map and pass any parameters to the ``MetaField`` class:
 
 .. code:: python
 
@@ -202,6 +205,6 @@ metadata for your document:
         title = String()
 
         class Meta:
-            mapping = Mapping('post')
-            mapping.meta('_all', enabled=False)
+            all = MetaField(enabled=False)
+            parent = MetaField(type='blog')
 
