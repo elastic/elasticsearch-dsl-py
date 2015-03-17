@@ -4,3 +4,7 @@ class ElasticsearchDslException(Exception):
 
 class UnknownDslObject(ElasticsearchDslException):
     pass
+
+
+class ValidationException(ValueError, ElasticsearchDslException):
+    pass

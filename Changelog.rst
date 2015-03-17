@@ -14,6 +14,7 @@ Changelog
  * ``suggest`` method added to ``Search``
  * ``Search.doc_type`` now accepts ``DocType`` subclasses directly
  * ``Properties.property`` method renamed to ``field`` for consistency
+ * Date field now raises ``ValidationException`` on incorrect data
 
 0.0.3 (2015-01-23)
 ------------------

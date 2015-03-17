@@ -2,6 +2,7 @@ from datetime import date
 from dateutil import parser
 
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
+from .exceptions import ValidationException
 
 __all__ = ['construct_field', 'Object', 'Nested', 'Date', 'String', 'Float',
     'Double', 'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
@@ -118,8 +119,8 @@ class Date(Field):
         try:
             # TODO: add format awareness
             return parser.parse(data)
-        except (TypeError, ValueError):
-            raise #XXX
+        except Exception as e:
+            raise ValidationException('Could not parse date from the value (%r)' % data, e)
 
 FIELDS = (
     'string',

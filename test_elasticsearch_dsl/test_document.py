@@ -2,6 +2,7 @@ from hashlib import md5
 from datetime import datetime
 
 from elasticsearch_dsl import document, field, Mapping
+from elasticsearch_dsl.exceptions import ValidationException
 
 from pytest import raises
 
@@ -133,6 +134,11 @@ def test_document_can_be_created_dynamicaly():
             'new_field': ['undefined', 'field']
         }
     } == md.to_dict()
+
+def test_invalid_date_will_raise_exception():
+    md = MyDoc()
+    with raises(ValidationException):
+        md.created_at = None
 
 def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)
