@@ -1,6 +1,9 @@
+from hashlib import md5
 from datetime import datetime
 
 from elasticsearch_dsl import document, field, Mapping
+
+from pytest import raises
 
 class MyDoc(document.DocType):
     title = field.String(index='not_analyzed')
@@ -23,6 +26,33 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
+
+def test_docs_with_properties():
+    class User(document.DocType):
+        pwd_hash = field.String()
+
+        def check_password(self, pwd):
+            return md5(pwd).hexdigest() == self.pwd_hash
+
+        @property
+        def password(self):
+            raise AttributeError('readonly')
+
+        @password.setter
+        def password(self, pwd):
+            self.pwd_hash = md5(pwd).hexdigest()
+
+    u = User(pwd_hash=md5(b'secret').hexdigest())
+    assert u.check_password(b'secret')
+    assert not u.check_password(b'not-secret')
+
+    u.password = b'not-secret'
+    assert 'password' not in u._d_
+    assert not u.check_password(b'secret')
+    assert u.check_password(b'not-secret')
+
+    with raises(AttributeError):
+        u.password
 
 def test_nested_can_be_assigned_to():
     d1 = DocWithNested(comments=[{'title': 'First!'}])

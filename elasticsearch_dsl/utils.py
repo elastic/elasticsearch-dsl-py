@@ -114,7 +114,13 @@ class AttrDict(object):
 
     def __setitem__(self, key, value):
         self._d_[key] = value
-    __setattr__ = __setitem__
+
+    def __setattr__(self, name, value):
+        if name in self._d_ or name not in super(AttrDict, self).__dir__():
+            self._d_[name] = value
+        else:
+            # there is an attribute on the class (could be property, ..) - don't add it as field
+            super(AttrDict, self).__setattr__(name, value)
 
     def __iter__(self):
         return iter(self._d_)
