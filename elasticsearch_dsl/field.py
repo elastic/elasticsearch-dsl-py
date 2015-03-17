@@ -66,9 +66,11 @@ class InnerObject(object):
     _doc_class = InnerObjectWrapper
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
 
-    def property(self, name, *args, **kwargs):
+    def field(self, name, *args, **kwargs):
         self.properties[name] = construct_field(*args, **kwargs)
         return self
+    # XXX: backwards compatible, will be removed
+    property = field
 
     def empty(self):
         return {}

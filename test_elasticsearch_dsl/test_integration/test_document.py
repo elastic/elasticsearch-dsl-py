@@ -4,7 +4,7 @@ from pytz import timezone
 from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
 
 user_field = construct_field('object')
-user_field.property('name', 'string', fields={'raw': construct_field('string', index='not_analyzed')})
+user_field.field('name', 'string', fields={'raw': construct_field('string', index='not_analyzed')})
 
 class Repository(DocType):
     owner = user_field

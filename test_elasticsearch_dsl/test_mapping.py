@@ -18,7 +18,7 @@ def test_mapping_update_is_recursive():
     m1 = mapping.Mapping('article')
     m1.field('title', 'string')
     m1.field('author', 'object')
-    m1['author'].property('name', 'string')
+    m1['author'].field('name', 'string')
     m1.meta('_all', enabled=False)
 
     m2 = mapping.Mapping('article')
@@ -27,7 +27,7 @@ def test_mapping_update_is_recursive():
     m2.field('title', 'string')
     m2.field('lang', 'string', index='not_analyzed')
     m2.meta('_analyzer', path='lang')
-    m2['author'].property('email', 'string')
+    m2['author'].field('email', 'string')
 
     m1.update(m2, update_only=True)
 

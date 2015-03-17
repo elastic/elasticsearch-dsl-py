@@ -28,7 +28,7 @@ def test_multi_fields_are_accepted_and_parsed():
 
 def test_modifying_nested():
     f = field.Nested()
-    f = f.property('name', 'string', index='not_analyzed')
+    f = f.field('name', 'string', index='not_analyzed')
 
     assert {
         'type': 'nested',

@@ -82,7 +82,7 @@ class Mapping(object):
         return self.properties.name
 
     def field(self, *args, **kwargs):
-        self.properties.property(*args, **kwargs)
+        self.properties.field(*args, **kwargs)
         return self
 
     def meta(self, name, **kwargs):

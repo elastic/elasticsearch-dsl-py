@@ -13,6 +13,7 @@ Changelog
  * query on Search can now be directly assigned
  * ``suggest`` method added to ``Search``
  * ``Search.doc_type`` now accepts ``DocType`` subclasses directly
+ * ``Properties.property`` method renamed to ``field`` for consistency
 
 0.0.3 (2015-01-23)
 ------------------
