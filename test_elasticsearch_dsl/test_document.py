@@ -42,6 +42,17 @@ def test_meta_field_mapping():
             '_all': {'enabled': False}
         }
     } == User._doc_type.mapping.to_dict()
+
+def test_multi_value_fields():
+    class Blog(document.DocType):
+        tags = field.String(multi=True, index='not_analyzed')
+
+    b = Blog()
+    assert [] == b.tags
+    b.tags.append('search')
+    b.tags.append('python')
+    assert ['search', 'python'] == b.tags
+
 def test_docs_with_properties():
     class User(document.DocType):
         pwd_hash = field.String()

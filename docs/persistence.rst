@@ -25,7 +25,9 @@ The mapping definition follows a similar pattern to the query dsl:
     m.field('category', 'string', fields={'raw': String(index='not_analyzed')})
 
     # you can also create a field manually
-    comment = Nested().field('author', 'string').field('created_at', 'date')
+    comment = Nested()
+    comment.field('author', String())
+    comment.field('created_at', Date())
 
     # and attach it to the mapping
     m.field('comments', comment)
@@ -35,6 +37,15 @@ The mapping definition follows a similar pattern to the query dsl:
  
     # save the mapping into index 'my-index'
     m.save('my-index')
+
+.. note::
+
+    By default all fields (with the exception of ``Nested``) will expect single
+    values. You can always override this expectation during the field
+    creation/definition by passing in ``multi=True`` into the constructor
+    (``m.field('tags', String(index='not_analyzed', multi=True))``). Then the
+    value of the field, even if the field hasn't been set, will be an empty
+    list enabling you to write ``doc.tags.append('search')``.
 
 Especially if you are using dynamic mappings it might be useful to update the
 mapping based on an existing type in Elasticsearch, or create the mapping
@@ -87,6 +98,10 @@ If you want to create a model-like wrapper around your documents, use the
             self.created_at = datetime.now()
             return super().save(** kwargs)
 
+
+Dcoument life cycle
+~~~~~~~~~~~~~~~~~~~
+
 To create a new ``Post`` document just instantiate the class and pass in any
 fields you wish to set, you can then use standard attribute setting to
 change/add more fields. Note that you are not limitted to the fields defined
@@ -138,6 +153,9 @@ To retrieve an existing document use the ``get`` class method:
     # and save the changes into the cluster again
     first.save()
  
+Search
+~~~~~~
+
 To search for this document type, use the ``search`` class method:
 
 .. code:: python

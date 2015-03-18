@@ -40,8 +40,20 @@ class Field(DslBase):
     _param_defs = {'fields': {'type': 'field', 'hash': True}}
     name = None
 
+    def __init__(self, *args, **kwargs):
+        self._multi = kwargs.pop('multi', False)
+        super(Field, self).__init__(*args, **kwargs)
+
     def _to_python(self, data):
         return data
+
+    def _empty(self):
+        return None
+
+    def empty(self):
+        if self._multi:
+            return []
+        return self._empty()
     
     def to_python(self, data):
         if isinstance(data, (list, AttrList)):
@@ -73,7 +85,7 @@ class InnerObject(object):
     # XXX: backwards compatible, will be removed
     property = field
 
-    def empty(self):
+    def _empty(self):
         return {}
 
     def update(self, other_object):
@@ -106,8 +118,10 @@ class Object(InnerObject, Field):
 class Nested(InnerObject, Field):
     name = 'nested'
 
-    def empty(self):
-        return []
+    def __init__(self, *args, **kwargs):
+        # change the default for Nested fields
+        kwargs.setdefault('multi', True)
+        super(Nested, self).__init__(*args, **kwargs)
 
 class Date(Field):
     name = 'date'

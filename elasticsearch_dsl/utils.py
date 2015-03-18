@@ -407,8 +407,10 @@ class ObjectBase(AttrDict):
             if name in self._doc_type.mapping:
                 f = self._doc_type.mapping[name]
                 if hasattr(f, 'empty'):
-                    setattr(self, name, f.empty())
-                    return getattr(self, name)
+                    value = f.empty()
+                    if value is not None:
+                        setattr(self, name, value)
+                        return getattr(self, name)
             raise
 
     def __setattr__(self, name, value):
