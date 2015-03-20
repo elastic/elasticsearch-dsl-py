@@ -14,3 +14,10 @@ def test_attrlist_items_get_wrapped_during_iteration():
 
     assert isinstance(l[2], utils.AttrList)
     assert isinstance(l[3], utils.AttrDict)
+
+def test_parent_dir():
+    class MyAttrDict(utils.AttrDict):
+        pass
+
+    ad = MyAttrDict({'title': 'Title'})
+    ad.title = 'Another title'

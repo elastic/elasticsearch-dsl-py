@@ -116,7 +116,7 @@ class AttrDict(object):
         self._d_[key] = value
 
     def __setattr__(self, name, value):
-        if name in self._d_ or name not in super(AttrDict, self).__dir__():
+        if name in self._d_ or name not in dir(super(AttrDict, self)):
             self._d_[name] = value
         else:
             # there is an attribute on the class (could be property, ..) - don't add it as field
