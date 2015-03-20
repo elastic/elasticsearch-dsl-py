@@ -55,7 +55,7 @@ Let's have a typical search request written directly as a ``dict``:
     for hit in response['hits']['hits']:
         print(hit['_score'], hit['_source']['title'])
 
-    for tag in response['aggregations']['per_tag']['buckets']:
+    for tag in response.aggregations['per_tag']['buckets']:
         print(tag['key'], tag['max_lines']['value'])
 
 
