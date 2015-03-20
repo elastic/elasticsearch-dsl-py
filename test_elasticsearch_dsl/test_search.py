@@ -341,6 +341,16 @@ def test_params_being_passed_to_search(mock_client):
         routing='42'
     )
 
+def test_can_pass_extra_body_params_as_dict_to_execute(mock_client):
+    s = search.Search('mock')
+    s.execute(**{'from': 42, 'size': 10})
+
+    mock_client.search.assert_called_once_with(
+        doc_type=[],
+        index=None,
+        body={'query': {'match_all': {}}, 'from': 42, 'size': 10},
+    )
+
 def test_fields():
     assert {
         'query': {
