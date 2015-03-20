@@ -453,7 +453,7 @@ class Search(object):
             body=d
         )['count']
 
-    def execute(self):
+    def execute(self, **kwargs):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
@@ -464,7 +464,7 @@ class Search(object):
             es.search(
                 index=self._index,
                 doc_type=self._doc_type,
-                body=self.to_dict(),
+                body=self.to_dict(**kwargs),
                 **self._params
             ),
             callbacks=self._doc_type_map
