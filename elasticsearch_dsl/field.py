@@ -88,6 +88,9 @@ class InnerObject(object):
     def _empty(self):
         return {}
 
+    def __getitem__(self, name):
+        return self.properties[name]
+
     def update(self, other_object):
         if not hasattr(other_object, 'properties'):
             # not an inner/nested object, no merge possible
