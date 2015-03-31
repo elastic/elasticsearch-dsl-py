@@ -511,3 +511,61 @@ class Search(object):
                 **self._params
             ):
             yield self._doc_type_map.get(hit['_type'], Result)(hit)
+
+
+class FacetedSearch(object):
+    index = '_all'
+    doc_types = ['_all']
+    fields = ('*', )
+    facets = {}
+
+    def __init__(self, query=None, filters={}):
+        self._query = query
+        self._filters = {}
+        for name, value in iteritems(filters):
+            self.add_filter(name, value)
+
+    def add_filter(self, name, value):
+        # TODOL validation, (date_)histogram, ...
+        self._filters[name] = F('term', **{name: value})
+
+    def search(self):
+        return Search(doc_type=self.doc_types, index=self.index)
+
+    def query(self, search):
+        return search.query('multi_match', fields=self.fields, query=self._query)
+
+    def aggregate(self, search):
+        for f, agg in self.facets:
+            agg_filter = F('match_all')
+            for field, filter in iteritems(self._filters):
+                if f == field:
+                    continue
+                agg_filter &= filter
+            search.aggs.bucket(
+                '_filter_' + f,
+                'filter',
+                filter=agg_filter
+            ).bucket(f, agg)
+                
+
+    def filter(self, search):
+        return search.post_filter('bool', must=list(itervalues(self._filters)))
+
+    def execute(self):
+        if not hasattr(self, '_response'):
+            s = self.search()
+            s = self.query(s)
+            self.aggregate(s)
+            s = self.filter(s)
+            self._response = s.execute()
+
+        return self._response
+
+class ScoutSearch(FacetedSearch):
+    doc_types = []
+    fields = ('title', 'body', )
+
+    facets = {
+        'category': A('terms', field='category.raw')
+    }
