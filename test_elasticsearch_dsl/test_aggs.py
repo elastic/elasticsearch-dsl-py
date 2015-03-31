@@ -115,6 +115,17 @@ def test_nested_buckets_are_settable_as_getitem():
 
     assert a.aggs['per_author'] is b
 
+def test_filter_can_be_instantiated_using_positional_args():
+    a = aggs.Filter(filter.F('term', f=42))
+
+    assert {
+        'filter': {
+            'term': {'f': 42}
+        }
+    } == a.to_dict()
+
+    assert a == aggs.A('filter', filter.F('term', f=42))
+
 def test_filters_correctly_identifies_the_hash():
     a = aggs.A('filters', filters={'group_a': {'term': {'group': 'a'}}, 'group_b': {'term': {'group': 'b'}}})
 

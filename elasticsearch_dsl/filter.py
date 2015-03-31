@@ -5,7 +5,7 @@ def F(name_or_filter, filters=None, **params):
     if filters is not None:
         # someone passed in positional argument to F outside of and/or
         if name_or_filter not in ('and', 'or'):
-            raise ValueError("Filter %r doesn't accept argument 'filters'." % name_or_filter)
+            raise ValueError("Filter %r doesn't accept positional argument 'filters'." % name_or_filter)
         params['filters'] = filters
 
     # {"term": {...}}

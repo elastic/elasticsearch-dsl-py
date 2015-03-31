@@ -1,7 +1,12 @@
 
 from .utils import DslBase, _make_dsl_class
 
-def A(name_or_agg, **params):
+def A(name_or_agg, filter=None, **params):
+    if filter is not None:
+        if name_or_agg != 'filter':
+            raise ValueError("Aggregation %r doesn't accept positional argument 'filter'." % name_or_agg)
+        params['filter'] = filter
+
     # {"terms": {"field": "tags"}, "aggs": {...}}
     if isinstance(name_or_agg, dict):
         if params:
@@ -82,11 +87,27 @@ class Bucket(AggBase, Agg):
             d['aggs'] = d[self.name].pop('aggs')
         return d
 
+class Filter(Bucket):
+    name = 'filter'
+    _param_defs = {
+        'filter': {'type': 'filter'},
+        'aggs': {'type': 'agg', 'hash': True},
+    }
+
+    def __init__(self, filter=None, **params):
+        if filter is not None:
+            params['filter'] = filter
+        super(Filter, self).__init__(**params)
+
+    def to_dict(self):
+        d = super(AggBase, self).to_dict()
+        d[self.name].update(d[self.name].pop('filter', {}))
+        return d
+
 AGGS = (
     (Bucket, 'children', None),
     (Bucket, 'date_histogram', None),
     (Bucket, 'date_range', None),
-    (Bucket, 'filter', {'filter': {'type': 'filter'}}),
     (Bucket, 'filters', {'filters': {'type': 'filter', 'hash': True}}),
     (Bucket, 'geo_distance', None),
     (Bucket, 'geohash_grid', None),
@@ -115,7 +136,7 @@ AGGS = (
     (Agg, 'value_count', None),
 )
 
-# generate the filter classes dynamicaly
+# generate the aggregation classes dynamicaly
 for base, fname, params_def in AGGS:
     # don't override the params def from AggBase
     if params_def:
