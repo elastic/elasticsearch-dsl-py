@@ -97,6 +97,17 @@ def test_search_returns_proper_doc_classes(data_client):
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == 'elasticsearch'
 
+def test_search_with_fields(data_client):
+    s = Commit.search()
+    s = s.filter('term', _id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037')
+    s = s.fields(['_parent', 'parent_shas'])
+    results = s.execute()
+
+    commit = results.hits[0]
+    assert 'elasticsearch-dsl-py' == commit.meta.parent
+    assert ['eb3e543323f189fd7b698e66295427204fff5755'] == commit.parent_shas
+
+
 def test_refresh_mapping(data_client):
     class Commit(DocType):
         class Meta:

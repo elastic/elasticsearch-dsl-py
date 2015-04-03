@@ -127,7 +127,17 @@ class DocType(ObjectBase):
     def from_es(cls, hit):
         # don't modify in place
         meta = hit.copy()
-        doc = meta.pop('_source')
+        doc = meta.pop('_source', {})
+
+        if 'fields' in meta:
+            for k, v in iteritems(meta.pop('fields')):
+                if k == '_source':
+                    doc.update(v)
+                if k.startswith('_'):
+                    meta[k] = v
+                else:
+                    doc[k] = v
+
         return cls(meta=meta, **doc)
 
     def _get_connection(self, using=None):
