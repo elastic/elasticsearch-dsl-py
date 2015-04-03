@@ -1,8 +1,11 @@
-from elasticsearch_dsl import mapping
+from elasticsearch_dsl import mapping, analysis, exceptions
+
+from pytest import raises
 
 def test_mapping_saved_into_es(write_client):
     m = mapping.Mapping('test-type')
-    m.field('name', 'string').field('tags', 'string', index='not_analyzed')
+    m.field('name', 'string', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
+    m.field('tags', 'string', index='not_analyzed')
     m.save('test-mapping', using=write_client)
 
     m = mapping.Mapping('other-type')
@@ -17,7 +20,7 @@ def test_mapping_saved_into_es(write_client):
             'mappings': {
                 'test-type': {
                     'properties': {
-                        'name': {'type': 'string'},
+                        'name': {'type': 'string', 'analyzer': 'my_analyzer'},
                         'tags': {'index': 'not_analyzed', 'type': 'string'}
                     }
                 },
@@ -31,6 +34,30 @@ def test_mapping_saved_into_es(write_client):
         }
     } == write_client.indices.get_mapping(index='test-mapping')
 
+def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
+    m = mapping.Mapping('test-type')
+    m.field('name', 'string', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
+    write_client.indices.create(index='test-mapping')
+
+    with raises(exceptions.IllegalOperation):
+        m.save('test-mapping', using=write_client)
+
+    write_client.cluster.health(index='test-mapping', wait_for_status='yellow')
+    write_client.indices.close(index='test-mapping')
+    m.save('test-mapping', using=write_client)
+
+
+    assert {
+        'test-mapping': {
+            'mappings': {
+                'test-type': {
+                    'properties': {
+                        'name': {'type': 'string', 'analyzer': 'my_analyzer'},
+                    }
+                }
+            }
+        }
+    } == write_client.indices.get_mapping(index='test-mapping')
 
 def test_mapping_gets_updated_from_es(write_client):
     write_client.indices.create(

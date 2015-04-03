@@ -34,18 +34,26 @@ class Index(object):
         )
 
     def _get_mappings(self):
-        mappings = {}
+        analysis, mappings = {}, {}
         for mapping in self._mappings.values():
             mappings.update(mapping.to_dict())
-        return mappings
+            a = mapping._collect_analysis()
+            # merge the defintion
+            # TODO: conflict detection/resolution
+            for key in a:
+                analysis.setdefault(key, {}).update(a[key])
+
+        return mappings, analysis
 
     def to_dict(self):
         out = {}
         if self._settings:
             out['settings'] = self._settings
-        mappings = self._get_mappings()
+        mappings, analysis = self._get_mappings()
         if mappings:
             out['mappings'] = mappings
+        if analysis:
+            out.setdefault('settings', {})['analysis'] = analysis
         return out
 
     def create(self):

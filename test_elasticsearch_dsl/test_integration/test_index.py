@@ -1,7 +1,7 @@
-from elasticsearch_dsl import DocType, Index, String, Date
+from elasticsearch_dsl import DocType, Index, String, Date, analysis
 
 class Post(DocType):
-    title = String()
+    title = String(analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
     published_from = Date()
 
 class User(DocType):
@@ -20,7 +20,7 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
             'mappings': {
                 'post': {
                     'properties': {
-                        'title': {'type': 'string'},
+                        'title': {'type': 'string', 'analyzer': 'my_analyzer'},
                         'published_from': {'type': 'date', 'format': 'dateOptionalTime',},
                     }
                 },
@@ -37,6 +37,14 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
     settings = write_client.indices.get_settings(index='test-blog')
     assert settings['test-blog']['settings']['index']['number_of_replicas'] == '0'
     assert settings['test-blog']['settings']['index']['number_of_shards'] == '1'
+    assert settings['test-blog']['settings']['index']['analysis'] == {
+        'analyzer': {
+            'my_analyzer': {
+                'type': 'custom',
+                'tokenizer': 'keyword'
+            }
+        }
+    }
 
 def test_delete(write_client):
     write_client.indices.create(

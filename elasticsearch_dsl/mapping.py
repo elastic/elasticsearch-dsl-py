@@ -3,6 +3,7 @@ from six import iteritems
 from .utils import DslBase
 from .field import InnerObject
 from .connections import connections
+from .exceptions import IllegalOperation
 
 class Properties(InnerObject, DslBase):
     def __init__(self, name):
@@ -52,11 +53,18 @@ class Mapping(object):
         return analysis
 
     def save(self, index, using='default'):
-        # TODO: analyzers, ...
+        # TODO: replace with creating an Index instance to avoid duplication
         es = connections.get_connection(using)
         if not es.indices.exists(index=index):
-            es.indices.create(index=index, body={'mappings': self.to_dict()})
+            es.indices.create(index=index, body={'mappings': self.to_dict(), 'settings': {'analysis': self._collect_analysis()}})
         else:
+            analysis = self._collect_analysis()
+            if analysis:
+                if es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] != 'close':
+                    # TODO: check if the analysis config is already there
+                    raise IllegalOperation(
+                        'You cannot update analysis configuration on an open index, you need to close index %s first.' % index)
+                es.indices.put_settings(index=index, body={'analysis': analysis})
             es.indices.put_mapping(index=index, doc_type=self.doc_type, body=self.to_dict())
 
     def update_from_es(self, index, using='default'):

@@ -8,3 +8,7 @@ class UnknownDslObject(ElasticsearchDslException):
 
 class ValidationException(ValueError, ElasticsearchDslException):
     pass
+
+
+class IllegalOperation(ElasticsearchDslException):
+    pass
