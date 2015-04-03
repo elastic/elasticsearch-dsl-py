@@ -1,4 +1,4 @@
-from elasticsearch_dsl import mapping, String, Nested, Date
+from elasticsearch_dsl import mapping, String, Nested, analysis
 
 
 def test_mapping_can_has_fields():
@@ -57,3 +57,39 @@ def test_properties_can_iterate_over_all_the_fields():
             'f4': String(test_attr='f4')}))
 
     assert set(('f1', 'f2', 'f3', 'f4')) == set(f.test_attr for f in m.properties._collect_fields())
+
+def test_mapping_can_collect_all_analyzers():
+    a1 = analysis.analyzer('my_analyzer1',
+        tokenizer='keyword',
+        filter=['lower', analysis.token_filter('my_filter1', 'stop', stopwords=['a', 'b'])],
+    )
+    a2 = analysis.analyzer('english')
+    a3 = analysis.analyzer('unknown_custom')
+    a4 = analysis.analyzer('my_analyzer2', 
+        tokenizer=analysis.tokenizer('trigram', 'ngram', min_gram=3, max_gram=3),
+        filter=[analysis.token_filter('my_filter2', 'stop', stopwords=['c', 'd'])],
+    )
+
+    m = mapping.Mapping('article')
+    m.field('title', 'string', analyzer=a1,
+        fields={
+            'english': String(analyzer=a2),
+            'unknown': String(analyzer=a3),
+        }
+    )
+    m.field('comments', Nested(properties={
+        'author': String(analyzer=a4)
+    }))
+
+    assert {
+        'analyzer': {
+            'my_analyzer1': {'filter': ['lower', 'my_filter1'], 'tokenizer': 'keyword', 'type': 'custom'},
+            'my_analyzer2': {'filter': ['my_filter2'], 'tokenizer': 'trigram', 'type': 'custom'}},
+        'filter': {
+            'my_filter1': {'stopwords': ['a', 'b'], 'type': 'stop'},
+            'my_filter2': {'stopwords': ['c', 'd'], 'type': 'stop'},
+        },
+        'tokenizer': {
+            'trigram': {'max_gram': 3, 'min_gram': 3, 'type': 'ngram'},
+        }
+    } == m._collect_analysis()

@@ -28,7 +28,7 @@ class AnalysisBase(object):
     def definition(self):
         d = super(AnalysisBase, self).to_dict()
         d[self.name]['type'] = self.name
-        return {self._name: d[self.name]}
+        return d[self.name]
 
     @classmethod
     def _type_shortcut(cls, name_or_instance, type=None, **kwargs):
@@ -62,17 +62,27 @@ class CustomAnalyzer(Analyzer):
         'char_filter': {'type': 'char_filter', 'multi': True},
         'tokenizer': {'type': 'tokenizer'},
     }
-    def get_custom_tokenizer(self):
+
+    def get_analysis_definition(self):
+        d = self.definition()
+        if d == {'type': 'custom'}:
+            return {}
+        out = {'analyzer': {self._name: d}}
+
         t = getattr(self, 'tokenizer', None)
         if t is not None and not isinstance(t, BuiltinTokenizer):
-            return {t._name: t}
-        return {}
+            out['tokenizer'] = {t._name: t.definition()}
 
-    def get_custom_filters(self):
-        return dict((f._name, f) for f in self.filter if not isinstance(f, BuiltinTokenFilter))
+        filters = dict((f._name, f.definition())
+                for f in self.filter if not isinstance(f, BuiltinTokenFilter))
+        if filters:
+            out['filter'] = filters
 
-    def get_custom_char_filters(self):
-        return dict((f._name, f) for f in self.char_filter if not isinstance(f, BuiltinCharFilter))
+        char_filters = dict((f._name, f.definition())
+                for f in self.char_filter if not isinstance(f, BuiltinCharFilter))
+        if char_filters:
+            out['char_filter'] = char_filters
+        return out
 
 
 class Tokenizer(AnalysisBase, DslBase):

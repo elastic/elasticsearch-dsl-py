@@ -31,6 +31,26 @@ class Mapping(object):
         m.update_from_es(index, using)
         return m
 
+    def _collect_analysis(self):
+        analysis = {}
+        for f in self.properties._collect_fields():
+            if not hasattr(f, 'analyzer'):
+                continue
+            analyzer = f.analyzer
+            if analyzer.name != 'custom':
+                continue
+            d = analyzer.get_analysis_definition()
+            # empty custom analyzer, probably already defined out of our control
+            if not d:
+                continue
+
+            # merge the defintion
+            # TODO: conflict detection/resolution
+            for key in d:
+                analysis.setdefault(key, {}).update(d[key])
+
+        return analysis
+
     def save(self, index, using='default'):
         # TODO: analyzers, ...
         es = connections.get_connection(using)
