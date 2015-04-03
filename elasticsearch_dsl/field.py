@@ -1,5 +1,6 @@
 from datetime import date
 from dateutil import parser
+from six import itervalues
 
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
@@ -93,6 +94,19 @@ class InnerObject(object):
 
     def __contains__(self, name):
         return name in self.properties
+
+    def _collect_fields(self):
+        " Iterate over all Field objects within, including multi fields. "
+        for f in itervalues(self.properties.to_dict()):
+            yield f
+            # multi fields
+            if hasattr(f, 'fields'):
+                for inner_f in itervalues(f.fields.to_dict()):
+                    yield inner_f
+            # nested and inner objects
+            if hasattr(f, '_collect_fields'):
+                for inner_f in f._collect_fields():
+                    yield inner_f
 
     def update(self, other_object):
         if not hasattr(other_object, 'properties'):

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import mapping
+from elasticsearch_dsl import mapping, String, Nested, Date
 
 
 def test_mapping_can_has_fields():
@@ -49,3 +49,11 @@ def test_mapping_update_is_recursive():
             }
         }
     } == m1.to_dict()
+
+def test_properties_can_iterate_over_all_the_fields():
+    m = mapping.Mapping('testing')
+    m.field('f1', 'string', test_attr='f1', fields={'f2': String(test_attr='f2')})
+    m.field('f3', Nested(test_attr='f3', properties={
+            'f4': String(test_attr='f4')}))
+
+    assert set(('f1', 'f2', 'f3', 'f4')) == set(f.test_attr for f in m.properties._collect_fields())
