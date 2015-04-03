@@ -7,6 +7,7 @@ from .field import *
 from .document import DocType
 from .mapping import Mapping
 from .index import Index
+from .analysis import analyzer, token_filter, char_filter, tokenizer
 
 VERSION = (0, 0, 4, 'dev')
 __version__ = VERSION
