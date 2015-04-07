@@ -56,8 +56,8 @@ class Index(object):
             out.setdefault('settings', {})['analysis'] = analysis
         return out
 
-    def create(self):
-        self.connection.indices.create(index=self._name, body=self.to_dict())
+    def create(self, **kwargs):
+        self.connection.indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
-    def delete(self):
-        self.connection.indices.delete(index=self._name)
+    def delete(self, **kwargs):
+        self.connection.indices.delete(index=self._name, **kwargs)
