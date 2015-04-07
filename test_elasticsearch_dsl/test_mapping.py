@@ -61,7 +61,7 @@ def test_properties_can_iterate_over_all_the_fields():
 def test_mapping_can_collect_all_analyzers():
     a1 = analysis.analyzer('my_analyzer1',
         tokenizer='keyword',
-        filter=['lower', analysis.token_filter('my_filter1', 'stop', stopwords=['a', 'b'])],
+        filter=['lowercase', analysis.token_filter('my_filter1', 'stop', stopwords=['a', 'b'])],
     )
     a2 = analysis.analyzer('english')
     a3 = analysis.analyzer('unknown_custom')
@@ -83,7 +83,7 @@ def test_mapping_can_collect_all_analyzers():
 
     assert {
         'analyzer': {
-            'my_analyzer1': {'filter': ['lower', 'my_filter1'], 'tokenizer': 'keyword', 'type': 'custom'},
+            'my_analyzer1': {'filter': ['lowercase', 'my_filter1'], 'tokenizer': 'keyword', 'type': 'custom'},
             'my_analyzer2': {'filter': ['my_filter2'], 'tokenizer': 'trigram', 'type': 'custom'}},
         'filter': {
             'my_filter1': {'stopwords': ['a', 'b'], 'type': 'stop'},

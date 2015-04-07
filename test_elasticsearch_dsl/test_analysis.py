@@ -9,13 +9,13 @@ def test_analyzer_has_definition():
     a = analysis.CustomAnalyzer(
         'my_analyzer',
         tokenizer='keyword',
-        filter=['lower']
+        filter=['lowercase']
     )
 
     assert {
         'type': 'custom',
         'tokenizer': 'keyword',
-        'filter': ["lower"],
+        'filter': ["lowercase"],
     } == a.definition()
 
 def test_tokenizer():
@@ -36,7 +36,7 @@ def test_custom_analyzer_can_collect_custom_items():
     a = analysis.analyzer(
         'my_analyzer',
         tokenizer=trigram,
-        filter=['lower', my_stop],
+        filter=['lowercase', my_stop],
         char_filter=['html_strip', umlauts]
     )
 
@@ -46,7 +46,7 @@ def test_custom_analyzer_can_collect_custom_items():
             'my_analyzer': {
                 'type': 'custom',
                 'tokenizer': 'trigram',
-                'filter': ['lower', 'my_stop'],
+                'filter': ['lowercase', 'my_stop'],
                 'char_filter': ['html_strip', 'umlauts']
             }
         },

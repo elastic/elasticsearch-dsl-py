@@ -9,7 +9,7 @@ TOKENIZERS = frozenset((
 ))
 
 TOKEN_FILTERS = frozenset((
-    'lower', 
+    'lowercase', 'standard', 'snowball', 'stop'
 ))
 
 CHAR_FILTERS = frozenset((
