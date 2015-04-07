@@ -4,7 +4,7 @@ from .aggs import A
 from .function import SF
 from .search import Search
 from .field import *
-from .document import DocType
+from .document import DocType, MetaField
 from .mapping import Mapping
 from .index import Index
 from .analysis import analyzer, token_filter, char_filter, tokenizer
