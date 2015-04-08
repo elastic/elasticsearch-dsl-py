@@ -50,7 +50,7 @@ Any keyword arguments (``hosts`` and ``timeout`` in our example) will be passed
 to the ``Elasticsearch`` class.
 
 Multiple clusters
-------------------
+-----------------
 
 You can define multiple connections to multiple clusters, either at the same
 time using the ``configure`` method:
@@ -58,7 +58,7 @@ time using the ``configure`` method:
 .. code:: python
 
     from elasticsearch_dsl import connections
-     
+
     connections.configure(
         default={'hosts': 'localhost'},
         dev={'hosts': ['esdev1.example.com:9200'], sniff_on_start=True}
