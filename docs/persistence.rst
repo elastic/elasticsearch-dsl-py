@@ -34,7 +34,7 @@ The mapping definition follows a similar pattern to the query dsl:
 
     # you can also define mappings for the meta fields
     m.meta('_all', enabled=False)
- 
+
     # save the mapping into index 'my-index'
     m.save('my-index')
 
@@ -99,17 +99,17 @@ If you want to create a model-like wrapper around your documents, use the
             return super().save(** kwargs)
 
 
-Dcoument life cycle
+Document life cycle
 ~~~~~~~~~~~~~~~~~~~
 
 To create a new ``Post`` document just instantiate the class and pass in any
 fields you wish to set, you can then use standard attribute setting to
-change/add more fields. Note that you are not limitted to the fields defined
+change/add more fields. Note that you are not limited to the fields defined
 explicitly:
 
 .. code:: python
 
-    # instatiate the document
+    # instantiate the document
     first = Post(title='My First Blog Post, yay!', published=True)
     # assign some field values, can be values or lists of values
     first.category = ['everything', 'nothing']
@@ -130,14 +130,14 @@ variant:
     post = Post(meta={'id': 42})
 
     # prints 42, same as post._id
-    print(post.meta.id) 
+    print(post.meta.id)
 
     # override default index
     post._index = 'my-blog'
 
 .. note::
 
-    Having all metadata accesible through ``meta`` means that this name is
+    Having all metadata accessible through ``meta`` means that this name is
     reserved and you shouldn't have a field called ``meta`` on your document.
     If you, however, need it you can still access the data using the get item
     (as opposed to attribute) syntax: ``post['meta']``.
@@ -152,7 +152,7 @@ To retrieve an existing document use the ``get`` class method:
     first.add_comment('me', 'This is nice!')
     # and save the changes into the cluster again
     first.save()
- 
+
 Search
 ~~~~~~
 
@@ -162,7 +162,7 @@ To search for this document type, use the ``search`` class method:
 
     # by calling .search we get back a standard Search object
     s = Post.search()
-    # the search is already limitted to the index and doc_type of our document
+    # the search is already limited to the index and doc_type of our document
     s = s.filter('term', published=True).query('match', title='first')
 
 
@@ -211,8 +211,8 @@ metadata for your document:
 ``mapping``
   optional instance of ``Mapping`` class to use as base for the mappings
   created from the fields on the document class itself.
-  
-Any attribues on the ``Meta`` class that are instance of ``MetaField`` will be
+
+Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
 used to control the mapping of the mata fields (``_all``, ``_parent`` etc).
 Just name the parameter (without the leading underscore) as the field you wish
 to map and pass any parameters to the ``MetaField`` class:
