@@ -1,5 +1,6 @@
-from elasticsearch_dsl.faceted_search import FacetedSearch
-from elasticsearch_dsl import A
+from datetime import datetime
+from elasticsearch_dsl.faceted_search import FacetedSearch, agg_to_filter
+from elasticsearch_dsl import A, F
 
 class BlogSearch(FacetedSearch):
     doc_types = ['user', 'post']
@@ -10,6 +11,12 @@ class BlogSearch(FacetedSearch):
         'tags': A('terms', field='tags'),
     }
 
+
+def test_agg_filter_for_date_histograms():
+    a = A('date_histogram', field='published_date', interval='month')
+    f = agg_to_filter(a, datetime(2014, 12, 1))
+
+    assert f == F('range', published_date={'gte': datetime(2014, 12, 1), 'lt': datetime(2015, 1, 1)})
 
 def test_query_is_created_properly():
     bs = BlogSearch('python search')

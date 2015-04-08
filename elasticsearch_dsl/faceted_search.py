@@ -1,7 +1,25 @@
+from datetime import timedelta
 from six import iteritems, itervalues
 
 from .search import Search
 from .filter import F
+from .aggs import Terms, DateHistogram
+
+DATE_INTERVALS = {
+    'month': lambda d: (d+timedelta(days=32)).replace(day=1),
+    'week': lambda d: d+timedelta(days=7),
+    'day': lambda d: d+timedelta(days=1),
+    'hour': lambda d: d+timedelta(hours=1),
+
+}
+
+AGG_TO_FILTER = {
+    Terms: lambda a, v: F('term', **{a.field: v}),
+    DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}})
+}
+
+def agg_to_filter(agg, value):
+    return AGG_TO_FILTER[agg.__class__](agg, value)
 
 class FacetedSearch(object):
     index = '_all'
@@ -16,8 +34,8 @@ class FacetedSearch(object):
             self.add_filter(name, value)
 
     def add_filter(self, name, value):
-        # TODOL validation, (date_)histogram, ...
-        self._filters[name] = F('term', **{self.facets[name].field: value})
+        agg = self.facets[name]
+        self._filters[name] = agg_to_filter(agg, value)
 
     def search(self):
         return Search(doc_type=self.doc_types, index=self.index)
