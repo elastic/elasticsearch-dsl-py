@@ -3,7 +3,7 @@ from six import iteritems, itervalues
 
 from .search import Search
 from .filter import F
-from .aggs import Terms, DateHistogram
+from .aggs import Terms, DateHistogram, Histogram
 
 DATE_INTERVALS = {
     'month': lambda d: (d+timedelta(days=32)).replace(day=1),
@@ -15,7 +15,8 @@ DATE_INTERVALS = {
 
 AGG_TO_FILTER = {
     Terms: lambda a, v: F('term', **{a.field: v}),
-    DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}})
+    DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
+    Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
 }
 
 def agg_to_filter(agg, value):

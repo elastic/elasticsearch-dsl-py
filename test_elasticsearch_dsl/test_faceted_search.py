@@ -12,6 +12,12 @@ class BlogSearch(FacetedSearch):
     }
 
 
+def test_agg_filter_for_histograms():
+    a = A('histogram', field='comment_count', interval=2)
+    f = agg_to_filter(a, 0)
+
+    assert f == F('range', comment_count={'gte': 0, 'lt': 2})
+
 def test_agg_filter_for_date_histograms():
     a = A('date_histogram', field='published_date', interval='month')
     f = agg_to_filter(a, datetime(2014, 12, 1))
