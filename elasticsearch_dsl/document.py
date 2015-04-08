@@ -54,7 +54,7 @@ class DocTypeOptions(object):
         # add all the mappings for meta fields
         for name in dir(meta):
             if isinstance(getattr(meta, name, None), MetaField):
-                self.mapping.meta('_' + name, **getattr(meta, name))
+                self.mapping.meta('_' + name if not name.startswith('_') else name, **getattr(meta, name))
 
         # document inheritance - include the fields from parents' mappings and
         # index/using values

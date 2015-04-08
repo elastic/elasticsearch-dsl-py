@@ -33,13 +33,15 @@ def test_meta_field_mapping():
         username = field.String()
         class Meta:
             all = document.MetaField(enabled=False)
+            _index = document.MetaField(enabled=True)
 
     assert {
         'user': {
             'properties': {
                 'username': {'type': 'string'}
             },
-            '_all': {'enabled': False}
+            '_all': {'enabled': False},
+            '_index': {'enabled': True},
         }
     } == User._doc_type.mapping.to_dict()
 
