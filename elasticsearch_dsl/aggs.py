@@ -100,7 +100,7 @@ class Filter(Bucket):
         super(Filter, self).__init__(**params)
 
     def to_dict(self):
-        d = super(AggBase, self).to_dict()
+        d = super(Filter, self).to_dict()
         d[self.name].update(d[self.name].pop('filter', {}))
         return d
 
