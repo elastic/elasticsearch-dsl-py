@@ -102,6 +102,8 @@ class Filter(Bucket):
     def to_dict(self):
         d = super(Filter, self).to_dict()
         d[self.name].update(d[self.name].pop('filter', {}))
+        if 'aggs' in d[self.name]:
+            d['aggs'] = d[self.name].pop('aggs')
         return d
 
 AGGS = (
