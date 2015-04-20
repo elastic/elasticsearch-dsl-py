@@ -28,6 +28,13 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+def test_meta_is_accessible_even_on_empty_doc():
+    d = MyDoc()
+    d.meta
+
+    d = MyDoc(title='aaa')
+    d.meta
+
 def test_meta_field_mapping():
     class User(document.DocType):
         username = field.String()

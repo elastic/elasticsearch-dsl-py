@@ -126,6 +126,19 @@ def test_filter_can_be_instantiated_using_positional_args():
 
     assert a == aggs.A('filter', filter.F('term', f=42))
 
+def test_filter_aggregation_with_nested_aggs():
+    a = aggs.Filter(filter.F('term', f=42))
+    a.bucket('testing', 'terms', field='tags')
+
+    assert {
+        'filter': {
+            'term': {'f': 42}
+        },
+        'aggs': {
+            'testing': {'terms': {'field': 'tags'}}
+        }
+    } == a.to_dict()
+
 def test_filters_correctly_identifies_the_hash():
     a = aggs.A('filters', filters={'group_a': {'term': {'group': 'a'}}, 'group_b': {'term': {'group': 'b'}}})
 
