@@ -1,19 +1,41 @@
-from .utils import DslBase
+from .utils import DslBase, _make_dsl_class
 
 ANALYZERS = frozenset((
-    'standard', 'snowball', 'english'
+    'standard', 'simple', 'whitespace', 'stop', 'keyword', 'pattern', 'snowball',
+
+    # lang analyzers:
+    'arabic', 'armenian', 'basque', 'brazilian', 'bulgarian', 'catalan', 'chinese',
+    'cjk', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french', 'galician',
+    'german', 'greek', 'hindi', 'hungarian', 'indonesian', 'irish', 'italian',
+    'latvian', 'norwegian', 'persian', 'portuguese', 'romanian', 'russian',
+    'sorani', 'spanish', 'swedish', 'turkish', 'thai',
 ))
 
 TOKENIZERS = frozenset((    
-    'keyword', 'standard'
+    'standard', 'edgeNGram', 'keyword', 'letter', 'lowercase', 'nGram',
+    'whitespace', 'pattern', 'uax_url_email', 'path_hierarchy', 'classic',
+    'thai',
 ))
 
 TOKEN_FILTERS = frozenset((
-    'lowercase', 'standard', 'snowball', 'stop'
+    'standard', 'asciifolding', 'length', 'lowercase', 'uppercase', 'nGram',
+    'edgeNGram', 'porter_stem', 'shingle', 'stop', 'word_delimiter', 'stemmer',
+    'stemmer_override', 'keyword_marker', 'keyword_repeat', 'kstem',
+    'snowball', 'synonym', 'dictionary_decompounder',
+    'hyphenation_decompounder', 'reverse', 'elision', 'truncate', 'unique',
+    'pattern_capture', 'pattern_replace', 'trim', 'limit', 'hunspell',
+    'common_grams', 'cjk_width', 'cjk_bigram', 'delimited_payload_filter',
+    'keep', 'keep_types', 'classic', 'apostrophe',
+
+    # language normalizations
+    'arabic_normalization', 'german_normalization', 'hindi_normalization',
+    'indic_normalization', 'sorani_normalization', 'persian_normalization',
+    'scandinavian_normalization', 'scandinavian_folding ',
 ))
 
+
 CHAR_FILTERS = frozenset((
-    'html_strip',
+    'html_strip', 'mapping', 'pattern_replace',
 ))
 
 class AnalysisBase(object):
@@ -37,8 +59,8 @@ class AnalysisBase(object):
                 raise ValueError('%s() cannot accept parameters.' % cls.__name__)
             return name_or_instance
         
-        if name_or_instance in cls._builtins:
-            if type or kwargs:
+        if name_or_instance in cls._builtins and not type:
+            if kwargs:
                 raise ValueError('Builtin %s doesn\'t accept any parameters.' & cls.__name__)
             type = 'builtin'
 
@@ -93,12 +115,11 @@ class Tokenizer(AnalysisBase, DslBase):
 class BuiltinTokenizer(Tokenizer):
     name = 'builtin'
 
-class NGram(Tokenizer):
-    name = 'ngram'
+class NGramTokenizer(Tokenizer):
+    name = 'nGram'
 
-class Keyword(Tokenizer):
-    name = 'keyword'
-
+class EdgeNGramTokenizer(Tokenizer):
+    name = 'edgeNGram'
 
 class TokenFilter(AnalysisBase, DslBase):
     _type_name = 'token_filter'
@@ -108,11 +129,11 @@ class TokenFilter(AnalysisBase, DslBase):
 class BuiltinTokenFilter(TokenFilter):
     name = 'builtin'
 
-class Stop(TokenFilter):
-    name = 'stop'
+class NGramTokenFilter(TokenFilter):
+    name = 'nGram'
 
-class Lower(TokenFilter):
-    name = 'lower'
+class EdgeNGramTokenFilter(TokenFilter):
+    name = 'edgeNGram'
 
 
 class CharFilter(AnalysisBase, DslBase):
@@ -123,15 +144,20 @@ class CharFilter(AnalysisBase, DslBase):
 class BuiltinCharFilter(CharFilter):
     name = 'builtin'
 
-class Mapping(CharFilter):
-    name = 'mapping'
-
-class PatternReplace(CharFilter):
-    name = 'pattern_replace'
-
 
 # shortcuts for direct use
 analyzer = Analyzer._type_shortcut
 tokenizer = Tokenizer._type_shortcut
 token_filter = TokenFilter._type_shortcut
 char_filter = CharFilter._type_shortcut
+
+
+# dynamically create all analysis classes:
+for base in (Tokenizer, TokenFilter, CharFilter, Analyzer):
+    for name in base._builtins:
+        # skip manually defined classes
+        if name in base._classes:
+            continue
+
+        analysis_class = _make_dsl_class(base, name, suffix=base.__name__)
+        globals()[analysis_class.__name__] = analysis_class

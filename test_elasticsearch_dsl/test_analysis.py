@@ -20,18 +20,18 @@ def test_analyzer_has_definition():
     } == a.definition()
 
 def test_tokenizer():
-    t = analysis.tokenizer('trigram', 'ngram', min_gram=3, max_gram=3)
+    t = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
 
     assert t.to_dict() == 'trigram'
     assert {
-        'type': 'ngram',
+        'type': 'nGram',
         'min_gram': 3,
         'max_gram': 3
     } == t.definition()
-    assert t == analysis.NGram('trigram', min_gram=3, max_gram=3)
+    assert t == analysis.NGramTokenizer('trigram', min_gram=3, max_gram=3)
 
 def test_custom_analyzer_can_collect_custom_items():
-    trigram = analysis.tokenizer('trigram', 'ngram', min_gram=3, max_gram=3)
+    trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
     my_stop = analysis.token_filter('my_stop', 'stop', stopwords=['a', 'b'])
     umlauts = analysis.char_filter('umlauts', 'pattern_replace', mappings=['ü=>ue'])
     a = analysis.analyzer(

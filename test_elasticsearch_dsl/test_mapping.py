@@ -66,7 +66,7 @@ def test_mapping_can_collect_all_analyzers():
     a2 = analysis.analyzer('english')
     a3 = analysis.analyzer('unknown_custom')
     a4 = analysis.analyzer('my_analyzer2', 
-        tokenizer=analysis.tokenizer('trigram', 'ngram', min_gram=3, max_gram=3),
+        tokenizer=analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
         filter=[analysis.token_filter('my_filter2', 'stop', stopwords=['c', 'd'])],
     )
 
@@ -90,6 +90,6 @@ def test_mapping_can_collect_all_analyzers():
             'my_filter2': {'stopwords': ['c', 'd'], 'type': 'stop'},
         },
         'tokenizer': {
-            'trigram': {'max_gram': 3, 'min_gram': 3, 'type': 'ngram'},
+            'trigram': {'max_gram': 3, 'min_gram': 3, 'type': 'nGram'},
         }
     } == m._collect_analysis()

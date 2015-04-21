@@ -77,13 +77,13 @@ handle its creation:
     from elasticsearch_dsl import analyzer, tokenizer
 
     my_analyzer = analyzer('my_analyzer',
-        tokenizer=tokenizer('trigram', 'ngram', min_gram=3, max_gram=3),
+        tokenizer=tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
         filter=['lowercase']
     )
 
 Each analysis object needs to have a name (``my_analyzer`` and ``trigram`` in
 our example) and tokenizers, token filters and char filters also need to
-specify type (``ngram`` in our example).
+specify type (``nGram`` in our example).
 
 .. note::
 
