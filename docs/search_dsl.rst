@@ -83,7 +83,8 @@ Queries
 
 
 
-The library provides classes for all Elasticsearch query types. Pass all the parameters as keyword arguments:
+The library provides classes for all Elasticsearch query types. Pass all the
+parameters as keyword arguments:
 
 .. code:: python
 
@@ -201,8 +202,15 @@ To nest aggregations, you can use the ``.bucket()`` and ``.metric()`` methods:
     a = A('terms', field='category')
     # {'terms': {'field': 'category'}}
 
-    a.metric('clicks_per_category', 'sum', field='clicks').bucket('tags_per_category', 'terms', field='tags')
-    # {'terms': {'field': 'category'}, 'aggs': {'clicks_per_category': {'sum': {'field': 'clicks'}}, 'tags_per_category': {'terms': {'field': 'tags'}}}}
+    a.metric('clicks_per_category', 'sum', field='clicks')\
+        .bucket('tags_per_category', 'terms', field='tags')
+    # {
+    #   'terms': {'field': 'category'},
+    #   'aggs': {
+    #     'clicks_per_category': {'sum': {'field': 'clicks'}},
+    #     'tags_per_category': {'terms': {'field': 'tags'}}
+    #   }
+    # }
 
 To add aggregations to the ``Search`` object, use the ``.aggs`` property, which
 acts as a top-level aggregation:
@@ -210,10 +218,22 @@ acts as a top-level aggregation:
 .. code:: python
 
     s = Search()
-    s.aggs.bucket('per_category', 'terms', field='category').metric('clicks_per_category', 'sum', field='clicks').bucket('tags_per_category', 'terms', field='tags')
+    s.aggs.bucket('per_category', 'terms', field='category')\
+        .metric('clicks_per_category', 'sum', field='clicks')\
+        .bucket('tags_per_category', 'terms', field='tags')
 
     s.to_dict()
-    # {'aggs': {'per_category': {'terms': {'field': 'category'}, 'aggs': {'clicks_per_category': {'sum': {'field': 'clicks'}}, 'tags_per_category': {'terms': {'field': 'tags'}}}}}}
+    # {
+    #   'aggs': {
+    #     'per_category': {
+    #       'terms': {'field': 'category'},
+    #       'aggs': {
+    #         'clicks_per_category': {'sum': {'field': 'clicks'}},
+    #         'tags_per_category': {'terms': {'field': 'tags'}}
+    #       }
+    #     }
+    #   }
+    # }
 
 
 You can access an existing bucket by its name:

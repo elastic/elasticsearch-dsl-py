@@ -251,7 +251,7 @@ metadata for your document:
   created from the fields on the document class itself.
 
 Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
-used to control the mapping of the mata fields (``_all``, ``_parent`` etc).
+used to control the mapping of the meta fields (``_all``, ``_parent`` etc).
 Just name the parameter (without the leading underscore) as the field you wish
 to map and pass any parameters to the ``MetaField`` class:
 
