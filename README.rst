@@ -189,6 +189,10 @@ existing ``dict``, modifying it using the API and serializing it back to a
     # Convert back to dict to plug back into existing code
     body = s.to_dict()
 
+Documentation
+-------------
+
+Documentation is available at https://elasticsearch-dsl.readthedocs.org.
 
 License
 -------
