@@ -19,7 +19,7 @@ def _make_dsl_class(base, name, params_def=None, suffix=''):
     attrs = {'name': name}
     if params_def:
         attrs['_param_defs'] = params_def
-    cls_name = str(''.join(s.title() for s in name.split('_'))) + suffix
+    cls_name = str(''.join(s.title() for s in name.split('_')) + suffix)
     return type(cls_name, (base, ), attrs)
 
 class AttrList(object):
