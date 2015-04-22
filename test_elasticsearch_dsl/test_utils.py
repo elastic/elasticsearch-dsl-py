@@ -19,6 +19,7 @@ def test_attrlist_items_get_wrapped_during_iteration():
 
 
 def test_make_dsl_class():
-    t = utils._make_dsl_class(object, 'X')
+    XY = utils._make_dsl_class(object, 'X', suffix='Y')
 
-    assert t.__name__ == 'X'
+    assert XY.__name__ == 'XY'
+    assert XY.__bases__ == (object, )
