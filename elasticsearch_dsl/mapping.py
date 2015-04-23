@@ -114,6 +114,9 @@ class Mapping(object):
         return self
 
     def meta(self, name, **kwargs):
+        if not name.startswith('_'):
+            name = '_' + name
+
         if not kwargs:
             if name in self._meta:
                 del self._meta[name]
