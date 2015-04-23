@@ -191,6 +191,30 @@ To retrieve an existing document use the ``get`` class method:
     # and save the changes into the cluster again
     first.save()
 
+All the information about the ``DocType``, including its ``Mapping`` can be
+accessed through the ``_doc_type`` attribute of the class:
+
+.. code:: python
+
+    # name of the type and index in elasticsearch
+    Post._doc_type.name
+    Post._doc_type.index
+    
+    # the raw Mapping object
+    Post._doc_type.mapping
+
+    # the optional name of the parent type (if defined)
+    Post._doc_type.parent
+
+The ``_doc_type`` attribute is also home to the ``refresh`` method which will
+update the mapping on the ``DocType`` from elasticsearch. This is very useful
+if you use dynamic mappings and want the class to be aware of those fields (for
+example if you wish the ``Date`` fields to be properly (de)serialized):
+
+.. code:: python
+
+    Post._doc_type.refresh()
+
 Search
 ~~~~~~
 
