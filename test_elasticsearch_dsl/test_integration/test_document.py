@@ -26,6 +26,10 @@ class Commit(DocType):
         mapping = Mapping('commits')
         mapping.meta('_parent', type='repos')
 
+def test_parent_type_is_exposed():
+    assert Commit._doc_type.parent == 'repos'
+    assert Repository._doc_type.parent is None
+
 def test_init(write_client):
     Repository.init(index='test-git')
 

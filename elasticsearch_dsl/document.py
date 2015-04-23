@@ -72,6 +72,12 @@ class DocTypeOptions(object):
     def name(self):
         return self.mapping.properties.name
 
+    @property
+    def parent(self):
+        if '_parent' in self.mapping._meta:
+            return self.mapping._meta['_parent']['type']
+        return
+
     def init(self, index=None, using=None):
         self.mapping.save(index or self.index, using=using or self.using)
 
