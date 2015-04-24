@@ -3,8 +3,8 @@
 Changelog
 =========
 
-0.0.4 (dev)
------------
+0.0.4 (2015-04-24)
+------------------
 
  * Metadata fields (such as id, parent, index, version etc) must be stored (and
    retrieved) using the ``meta`` attribute (#58) on both ``Result`` and
