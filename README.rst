@@ -151,7 +151,7 @@ Let's have a simple Python class representing an article in a blogging system:
 
 In this example you can see:
 
-  * providing a :ref:`default connection`
+  * providing a default connection
 
   * defining fields with mapping configuration
 
@@ -166,7 +166,7 @@ In this example you can see:
 
   * accessing the underlying client for other APIs
 
-You can see more in the :ref:`persistence` chapter.
+You can see more in the persistence chapter of the documentation.
 
 Migration from ``elasticsearch-py``
 -----------------------------------
