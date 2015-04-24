@@ -9,6 +9,6 @@ from .mapping import Mapping
 from .index import Index
 from .analysis import analyzer, token_filter, char_filter, tokenizer
 
-VERSION = (0, 0, 4)
+VERSION = (0, 0, 5, 'dev')
 __version__ = VERSION
 __versionstr__ = '.'.join(map(str, VERSION))
