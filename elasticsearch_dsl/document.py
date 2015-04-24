@@ -96,6 +96,14 @@ class DocType(ObjectBase):
 
         super(DocType, self).__init__(**kwargs)
 
+    def __getstate__(self):
+        return (self._d_, self.meta._d_)
+
+    def __setstate__(self, state):
+        data, meta = state
+        super(AttrDict, self).__setattr__('_d_', data)
+        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return getattr(self.meta, name[1:])
