@@ -35,7 +35,7 @@ class Mapping(object):
     def _collect_analysis(self):
         analysis = {}
         for f in self.properties._collect_fields():
-            for analyzer_name in {'analyzer', 'index_analyzer', 'search_analyzer'}:
+            for analyzer_name in ('analyzer', 'index_analyzer', 'search_analyzer'):
                 if not hasattr(f, analyzer_name):
                     continue
                 analyzer = getattr(f, analyzer_name)
