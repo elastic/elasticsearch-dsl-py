@@ -1,7 +1,8 @@
-from pytest import raises
+from pytest import raises, mark
 
 from elasticsearch_dsl import result
 
+@mark.xfail
 def test_interactive_helpers(dummy_response):
     res = result.Response(dummy_response)
     hits = res.hits
@@ -17,6 +18,7 @@ def test_interactive_helpers(dummy_response):
     assert '<Response: %s>' % rhits == repr(res)
     assert rhits == repr(hits)
     assert set(['meta', 'city', 'name']) == set(dir(h))
+    assert h._meta
     assert "<Result(test-index/company/elasticsearch): %r>" % dummy_response['hits']['hits'][0]['_source'] == repr(h)
 
 def test_enpty_response_is_false(dummy_response):
