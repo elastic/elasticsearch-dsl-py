@@ -1,7 +1,11 @@
 from datetime import datetime
 from pytz import timezone
 
+from elasticsearch import ConflictError
+
 from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
+
+from pytest import raises
 
 user_field = construct_field('object')
 user_field.field('name', 'string', fields={'raw': construct_field('string', index='not_analyzed')})
@@ -52,10 +56,21 @@ def test_save_updates_existing_doc(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
 
     elasticsearch_repo.new_field = 'testing'
+    v = elasticsearch_repo.meta.version
     assert not elasticsearch_repo.save()
+
+    # assert version has been updated
+    assert elasticsearch_repo.meta.version == v + 1
 
     new_repo = data_client.get(index='git', doc_type='repos', id='elasticsearch-dsl-py')
     assert 'testing' == new_repo['_source']['new_field']
+
+def test_save_automatially_uses_versions(data_client):
+    elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
+    elasticsearch_repo.meta.version += 1
+
+    with raises(ConflictError):
+        elasticsearch_repo.save()
 
 def test_can_save_to_different_index(write_client):
     test_repo = Repository(description='testing', meta={'id': 42})
