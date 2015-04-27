@@ -1,4 +1,4 @@
-from elasticsearch_dsl import filter
+from elasticsearch_dsl import filter, Q
 
 from pytest import raises
 
@@ -20,3 +20,8 @@ def test_not_doesnt_have_to_wrap_filter():
     assert f.filter == filter.F('term', field='value')
     assert f == filter.Not(filter.F('term', field='value'))
 
+def test_query_can_use_positional_arg():
+    f = filter.F('query', Q('match_all'))
+
+    assert f.query == Q('match_all')
+    assert {'query': {'match_all': {}}} == f.to_dict()

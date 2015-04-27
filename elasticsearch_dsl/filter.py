@@ -3,10 +3,13 @@ from .utils import DslBase, BoolMixin, _make_dsl_class
 def F(name_or_filter, filters=None, **params):
     # 'and/or', [F(), F()]
     if filters is not None:
-        # someone passed in positional argument to F outside of and/or
-        if name_or_filter not in ('and', 'or'):
-            raise ValueError("Filter %r doesn't accept positional argument 'filters'." % name_or_filter)
-        params['filters'] = filters
+        # someone passed in positional argument to F outside of and/or or query
+        if name_or_filter in ('and', 'or'):
+            params['filters'] = filters
+        elif name_or_filter == 'query':
+            params['query'] = filters
+        else:
+            raise ValueError("Filter %r doesn't accept positional argument." % name_or_filter)
 
     # {"term": {...}}
     if isinstance(name_or_filter, dict):
@@ -81,6 +84,21 @@ class And(AndOrFilter, Filter):
 class Or(AndOrFilter, Filter):
     name = 'or'
 
+class Query(Filter):
+    name = 'query'
+    _param_defs = {'query': {'type': 'query'}}
+
+    def __init__(self, query=None, **kwargs):
+        if query is not None:
+            kwargs['query'] = query
+        super(Query, self).__init__(**kwargs)
+
+    def to_dict(self):
+        d = super(Query, self).to_dict()
+        d[self.name].update(d[self.name].pop('query', {}))
+        return d
+
+
 FILTERS = (
     # relationships
     ('nested', {'filter': {'type': 'filter'}}),
@@ -88,7 +106,6 @@ FILTERS = (
     ('has_parent', {'filter': {'type': 'filter'}}),
 
     ('fquery', {'query': {'type': 'query'}}),
-    ('query', {'query': {'type': 'query'}}),
 
     # core filters
     ('exists', None),
