@@ -43,3 +43,26 @@ def test_nested_provides_direct_access_to_its_fields():
 
     assert 'name' in f
     assert f['name'] == field.String(index='not_analyzed')
+
+
+def test_field_supports_multiple_analyzers():
+    f = field.String(index_analyzer='snowball', search_analyzer='keyword')
+    assert {'index_analyzer': 'snowball', 'search_analyzer': 'keyword', 'type': 'string'} == f.to_dict()
+
+
+def test_multifield_supports_multiple_analyzers():
+    f = field.String(fields={
+        'f1': field.String(search_analyzer='keyword', index_analyzer='snowball'),
+        'f2': field.String(analyzer='keyword')
+    })
+    assert {
+       'fields': {
+           'f1': {'index_analyzer': 'snowball',
+                  'search_analyzer': 'keyword',
+                  'type': 'string'
+           },
+           'f2': {
+               'analyzer': 'keyword', 'type': 'string'}
+       },
+       'type': 'string'
+    } == f.to_dict()
