@@ -5,6 +5,7 @@ Changelog
 
 0.0.5 (dev)
 -----------
+ * added support for (index/search)_analyzer via #143, thanks @wkiser!
 
 0.0.4 (2015-04-24)
 ------------------
