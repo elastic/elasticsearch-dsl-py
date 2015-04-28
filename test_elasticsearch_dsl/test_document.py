@@ -92,6 +92,16 @@ def test_multi_value_fields():
     b.tags.append('python')
     assert ['search', 'python'] == b.tags
 
+def test_blank_enabled_fields():
+    class Blog(document.DocType):
+        published = field.Date(blank=True)
+        published_not_blank = field.Date()
+
+    b = Blog()
+    with raises(AttributeError):
+        b.published_not_blank
+    assert None is b.published
+
 def test_docs_with_properties():
     class User(document.DocType):
         pwd_hash = field.String()

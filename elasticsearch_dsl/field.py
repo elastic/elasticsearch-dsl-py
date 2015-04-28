@@ -43,6 +43,7 @@ class Field(DslBase):
 
     def __init__(self, *args, **kwargs):
         self._multi = kwargs.pop('multi', False)
+        self._allow_blank = kwargs.pop('blank', self._multi)
         super(Field, self).__init__(*args, **kwargs)
 
     def _to_python(self, data):
@@ -79,6 +80,11 @@ class InnerObject(object):
     " Common functionality for nested and object fields. "
     _doc_class = InnerObjectWrapper
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
+
+    def __init__(self, *args, **kwargs):
+        # change the default for Object fields
+        super(InnerObject, self).__init__(*args, **kwargs)
+
 
     def field(self, name, *args, **kwargs):
         self.properties[name] = construct_field(*args, **kwargs)
@@ -135,6 +141,11 @@ class InnerObject(object):
 class Object(InnerObject, Field):
     name = 'object'
 
+    def __init__(self, *args, **kwargs):
+        # change the default for Object fields
+        kwargs.setdefault('blank', True)
+        super(Object, self).__init__(*args, **kwargs)
+
 class Nested(InnerObject, Field):
     name = 'nested'
 
@@ -164,6 +175,9 @@ class String(Field):
         'search_analyzer': {'type': 'analyzer'},
     }
     name = 'string'
+
+    def _empty(self):
+        return ''
 
 FIELDS = (
     'float',

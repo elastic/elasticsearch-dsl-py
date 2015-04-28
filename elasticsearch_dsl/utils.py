@@ -415,11 +415,12 @@ class ObjectBase(AttrDict):
         except AttributeError:
             if name in self._doc_type.mapping:
                 f = self._doc_type.mapping[name]
-                if hasattr(f, 'empty'):
+                if hasattr(f, 'empty') and f._allow_blank:
                     value = f.empty()
                     if value is not None:
                         setattr(self, name, value)
-                        return getattr(self, name)
+                        value = getattr(self, name)
+                    return value
             raise
 
     def __setattr__(self, name, value):
