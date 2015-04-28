@@ -149,6 +149,8 @@ class Date(Field):
     def _to_python(self, data):
         if isinstance(data, date):
             return data
+        elif not data:
+            return None
 
         try:
             # TODO: add format awareness
