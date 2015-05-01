@@ -167,6 +167,7 @@ def test_slice():
     assert {'query': {'match_all': {}}, 'from': 3, 'size': 7} == s[3:10].to_dict()
     assert {'query': {'match_all': {}}, 'from': 0, 'size': 5} == s[:5].to_dict()
     assert {'query': {'match_all': {}}, 'from': 3, 'size': 10} == s[3:].to_dict()
+    assert {'query': {'match_all': {}}, 'from': 0, 'size': 0} == s[0:0].to_dict()
 
 def test_index():
     s = search.Search()

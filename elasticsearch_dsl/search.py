@@ -150,7 +150,7 @@ class Search(object):
             # Elasticsearch won't get all results so we default to size: 10 if
             # stop not given.
             s._extra['from'] = n.start or 0
-            s._extra['size'] = n.stop - (n.start or 0) if n.stop else 10
+            s._extra['size'] = n.stop - (n.start or 0) if n.stop is not None else 10
             return s
         else:  # This is an index lookup, equivalent to slicing by [n:n+1].
             # If negative index, abort.
