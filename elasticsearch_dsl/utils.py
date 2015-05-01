@@ -188,7 +188,7 @@ class DslBase(object):
         try:
             return cls._classes[name]
         except KeyError:
-            raise UnknownDslObject('DSL class %s does not exist in %s.' % (name, cls._type_name))
+            raise UnknownDslObject('DSL class `%s` does not exist in %s.' % (name, cls._type_name))
 
     def __init__(self, **params):
         self._params = {}
