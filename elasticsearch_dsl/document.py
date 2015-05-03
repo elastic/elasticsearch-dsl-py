@@ -2,6 +2,8 @@ import re
 
 from six import iteritems, add_metaclass
 
+from elasticsearch.exceptions import NotFoundError
+
 from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict
@@ -129,12 +131,15 @@ class DocType(ObjectBase):
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
         es = connections.get_connection(using or cls._doc_type.using)
-        doc = es.get(
+        try:
+            doc = es.get(
             index=index or cls._doc_type.index,
             doc_type=cls._doc_type.name,
             id=id,
             **kwargs
         )
+        except NotFoundError:
+            return None
         return cls.from_es(doc)
 
     @classmethod
@@ -179,6 +184,8 @@ class DocType(ObjectBase):
             index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
             raise #XXX - no index
+        if not getattr(self.meta, "version", None):
+            kwargs["op_type"] = "create"
         # extract parent, routing etc from meta
         doc_meta = dict((k, self.meta[k]) for k in DOC_META_FIELDS if k in self.meta)
         doc_meta.update(kwargs)
