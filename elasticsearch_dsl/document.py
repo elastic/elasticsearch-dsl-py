@@ -119,11 +119,12 @@ class DocType(ObjectBase):
         cls._doc_type.init(index, using)
 
     @classmethod
-    def search(cls):
+    def search(cls, **extra):
         return Search(
             using=cls._doc_type.using,
             index=cls._doc_type.index,
             doc_type={cls._doc_type.name: cls.from_es},
+            extra=extra
         )
 
     @classmethod
