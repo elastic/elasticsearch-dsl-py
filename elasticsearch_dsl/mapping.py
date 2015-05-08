@@ -1,6 +1,6 @@
 from six import iteritems
 
-from .utils import DslBase
+from .utils import DslBase, stringer
 from .field import InnerObject
 from .connections import connections
 from .exceptions import IllegalOperation
@@ -61,11 +61,17 @@ class Mapping(object):
         else:
             analysis = self._collect_analysis()
             if analysis:
-                if es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] != 'close':
-                    # TODO: check if the analysis config is already there
+                original_analysis = es.indices.get_settings(index=index)[index]['settings']['index'].get('analysis', {})
+                # The settings dictionary we get back from ES has stringified
+                # values. To compare it against the custom analysis (which may
+                # use numeric types to specify some things), it needs to be
+                # stringified.
+                changed = original_analysis != stringer(analysis)
+                if changed and es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] != 'close':
                     raise IllegalOperation(
                         'You cannot update analysis configuration on an open index, you need to close index %s first.' % index)
-                es.indices.put_settings(index=index, body={'analysis': analysis})
+                elif changed:
+                    es.indices.put_settings(index=index, body={'analysis': analysis})
             es.indices.put_mapping(index=index, doc_type=self.doc_type, body=self.to_dict())
 
     def update_from_es(self, index, using='default'):
