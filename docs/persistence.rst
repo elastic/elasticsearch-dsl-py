@@ -191,6 +191,15 @@ To retrieve an existing document use the ``get`` class method:
     # and save the changes into the cluster again
     first.save()
 
+If the document is not found in elasticsearch an exception
+(``elasticsearch.NotFoundError``) will be raised. If you wish to return
+``None`` instead just pass in ``ignore=404`` to supress the exception:
+
+.. code:: python
+
+    p = Post.get(id='not-in-es', ignore=404)
+    p is None
+
 All the information about the ``DocType``, including its ``Mapping`` can be
 accessed through the ``_doc_type`` attribute of the class:
 
