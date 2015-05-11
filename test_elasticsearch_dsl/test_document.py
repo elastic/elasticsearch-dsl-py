@@ -29,6 +29,14 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+def test_attribute_can_be_removed():
+    d = MyDoc(title='hello')
+
+    del d.title
+    assert 'title' not in d._d_
+    with raises(AttributeError):
+        d.title
+
 def test_doc_type_can_be_correctly_pickled():
     d = MyDoc(title='Hello World!', meta={'id': 42})
     s = pickle.dumps(d)

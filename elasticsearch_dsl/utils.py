@@ -108,12 +108,22 @@ class AttrDict(object):
             raise AttributeError(
                 '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
 
+    def __delattr__(self, attr_name):
+        try:
+            del self._d_[attr_name]
+        except KeyError:
+            raise AttributeError(
+                '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
+
     def __getitem__(self, key):
         # don't wrap things whe accessing via __getitem__ for consistency
         return self._d_[key]
 
     def __setitem__(self, key, value):
         self._d_[key] = value
+
+    def __delitem__(self, key):
+        del self._d_[key]
 
     def __setattr__(self, name, value):
         if name in self._d_ or not hasattr(self.__class__, name):
