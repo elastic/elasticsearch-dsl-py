@@ -6,7 +6,7 @@ class Index(object):
         self._name = name
         self._doc_types = {}
         self._mappings = {}
-        self._using = 'default'
+        self._using = using
         self._settings = {}
 
     def _get_connection(self):
