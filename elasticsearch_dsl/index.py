@@ -8,6 +8,7 @@ class Index(object):
         self._mappings = {}
         self._using = using
         self._settings = {}
+        self._aliases = {}
 
     def _get_connection(self):
         return connections.get_connection(self._using)
@@ -24,6 +25,10 @@ class Index(object):
 
     def settings(self, **kwargs):
         self._settings.update(kwargs)
+        return self
+
+    def aliases(self, **kwargs):
+        self._aliases.update(kwargs)
         return self
 
     def search(self):
@@ -49,6 +54,8 @@ class Index(object):
         out = {}
         if self._settings:
             out['settings'] = self._settings
+        if self._aliases:
+            out['aliases'] = self._aliases
         mappings, analysis = self._get_mappings()
         if mappings:
             out['mappings'] = mappings
