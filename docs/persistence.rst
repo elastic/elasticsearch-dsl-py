@@ -320,6 +320,11 @@ in a migration:
         number_of_replicas=0
     )
 
+    # define aliases
+    blogs.aliases(
+        old_blogs={}
+    )
+
     # register a doc_type with the index
     blogs.doc_type(Post)
 
