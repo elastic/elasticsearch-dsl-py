@@ -1,7 +1,7 @@
 from datetime import datetime
 from pytz import timezone
 
-from elasticsearch import ConflictError
+from elasticsearch import ConflictError, NotFoundError
 
 from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
 
@@ -38,6 +38,10 @@ def test_init(write_client):
     Repository.init(index='test-git')
 
     assert write_client.indices.exists_type(index='test-git', doc_type='repos')
+
+def test_get_raises_404_on_non_existent_id(data_client):
+    with raises(NotFoundError):
+        Repository.get('elasticsearch-dsl-php')
 
 def test_get(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
