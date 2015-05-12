@@ -112,3 +112,9 @@ def test_mapping_gets_updated_from_es(write_client):
             }
         }
     } == m.to_dict()
+
+    # test same with alias
+    write_client.indices.put_alias(index='test-mapping', name='test-alias')
+
+    m2 = mapping.Mapping.from_es('test-alias', 'my_doc', using=write_client)
+    assert m2.to_dict() == m.to_dict()

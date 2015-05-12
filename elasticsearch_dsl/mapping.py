@@ -71,7 +71,8 @@ class Mapping(object):
     def update_from_es(self, index, using='default'):
         es = connections.get_connection(using)
         raw = es.indices.get_mapping(index=index, doc_type=self.doc_type)
-        raw = raw[index]['mappings'][self.doc_type]
+        _, raw = raw.popitem()
+        raw = raw['mappings'][self.doc_type]
 
         for name, definition in iteritems(raw['properties']):
             self.field(name, definition)
