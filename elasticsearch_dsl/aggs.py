@@ -58,8 +58,8 @@ class AggBase(object):
     def __setitem__(self, agg_name, agg):
         self.aggs[agg_name] = A(agg)
 
-    def _agg(self, bucket, name, agg_type, **params):
-        agg = self[name] = A(agg_type, **params)
+    def _agg(self, bucket, name, agg_type, *args,**params):
+        agg = self[name] = A(agg_type, *args, **params)
 
         # For chaining - when creating new buckets return them...
         if bucket:
@@ -68,11 +68,11 @@ class AggBase(object):
         else:
             return self._base
 
-    def metric(self, name, agg_type, **params):
-        return self._agg(False, name, agg_type, **params)
+    def metric(self, name, agg_type, *args, **params):
+        return self._agg(False, name, agg_type, *args, **params)
 
-    def bucket(self, name, agg_type, **params):
-        return self._agg(True, name, agg_type, **params)
+    def bucket(self, name, agg_type, *args, **params):
+        return self._agg(True, name, agg_type, *args, **params)
 
 
 class Bucket(AggBase, Agg):
