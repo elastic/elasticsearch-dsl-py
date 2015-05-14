@@ -4,6 +4,7 @@ from pytz import timezone
 from elasticsearch import ConflictError, NotFoundError
 
 from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
+from elasticsearch_dsl.utils import AttrList
 
 from pytest import raises
 
@@ -153,5 +154,5 @@ def test_highlight_in_meta(data_client):
 
     assert isinstance(commit, Commit)
     assert 'description' in commit.meta.highlight
-    assert isinstance(commit.meta.highlight['description'], list)
+    assert isinstance(commit.meta.highlight['description'], AttrList)
     assert len(commit.meta.highlight['description']) > 0

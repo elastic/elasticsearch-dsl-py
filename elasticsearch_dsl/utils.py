@@ -116,8 +116,7 @@ class AttrDict(object):
                 '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
 
     def __getitem__(self, key):
-        # don't wrap things whe accessing via __getitem__ for consistency
-        return self._d_[key]
+        return _wrap(self._d_[key])
 
     def __setitem__(self, key, value):
         self._d_[key] = value
