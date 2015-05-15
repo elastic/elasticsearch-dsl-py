@@ -29,6 +29,18 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+def test_to_dict_with_meta():
+    d = MyDoc(title='hello')
+    d.meta.parent = 'some-parent'
+    d.meta.index = 'other-index'
+
+    assert {
+        '_index': 'other-index',
+        '_parent': 'some-parent',
+        '_type': 'my_doc',
+        '_source': {'title': 'hello'},
+    } == d.to_dict(True)
+
 def test_attribute_can_be_removed():
     d = MyDoc(title='hello')
 

@@ -167,13 +167,30 @@ class DocType(ObjectBase):
         if index is None:
             raise #XXX - no index
         # extract parent, routing etc from meta
-        doc_meta = dict((k, self.meta[k]) for k in DOC_META_FIELDS if k in self.meta)
+        doc_meta = dict(
+            (k, self.meta[k])
+            for k in META_FIELDS
+            if k in self.meta and k != 'index'
+        )
         doc_meta.update(kwargs)
         es.delete(
             index=index,
             doc_type=self._doc_type.name,
             **doc_meta
         )
+
+    def to_dict(self, include_meta=False):
+        d = super(DocType, self).to_dict()
+        if include_meta:
+            meta = dict(
+                ('_' + k, self.meta[k])
+                for k in META_FIELDS
+                if k in self.meta
+            )
+            meta['_type'] = self._doc_type.name
+            meta['_source'] = d
+            d = meta
+        return d
 
     def save(self, using=None, index=None, **kwargs):
         es = self._get_connection(using)
@@ -182,7 +199,11 @@ class DocType(ObjectBase):
         if index is None:
             raise #XXX - no index
         # extract parent, routing etc from meta
-        doc_meta = dict((k, self.meta[k]) for k in DOC_META_FIELDS if k in self.meta)
+        doc_meta = dict(
+            (k, self.meta[k])
+            for k in META_FIELDS
+            if k in self.meta and k != 'index'
+        )
         doc_meta.update(kwargs)
         meta = es.index(
             index=index,
