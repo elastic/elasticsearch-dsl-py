@@ -187,6 +187,8 @@ class DocType(ObjectBase):
                 for k in META_FIELDS
                 if k in self.meta
             )
+            if 'index' not in meta and self._doc_type.index:
+                meta['_index'] = self._doc_type.index
             meta['_type'] = self._doc_type.name
             meta['_source'] = d
             d = meta

@@ -30,14 +30,13 @@ class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
 def test_to_dict_with_meta():
-    d = MyDoc(title='hello')
+    d = MySubDoc(title='hello')
     d.meta.parent = 'some-parent'
-    d.meta.index = 'other-index'
 
     assert {
-        '_index': 'other-index',
+        '_index': 'default-index',
         '_parent': 'some-parent',
-        '_type': 'my_doc',
+        '_type': 'my_custom_doc',
         '_source': {'title': 'hello'},
     } == d.to_dict(True)
 
