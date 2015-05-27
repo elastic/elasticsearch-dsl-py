@@ -2,6 +2,12 @@ from elasticsearch_dsl import query, function, filter
 
 from pytest import raises
 
+def test_empty_Q_is_match_all():
+    q = query.Q()
+
+    assert isinstance(q, query.MatchAll)
+    assert query.MatchAll() == q
+
 def test_match_to_dict():
     assert {"match": {"f": "value"}} == query.Match(f='value').to_dict()
 

@@ -1,6 +1,6 @@
 from .utils import DslBase, BoolMixin, _make_dsl_class
 
-def F(name_or_filter, filters=None, **params):
+def F(name_or_filter='match_all', filters=None, **params):
     # 'and/or', [F(), F()]
     if filters is not None:
         # someone passed in positional argument to F outside of and/or or query

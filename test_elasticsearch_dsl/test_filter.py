@@ -2,6 +2,12 @@ from elasticsearch_dsl import filter, Q
 
 from pytest import raises
 
+def test_empty_F_is_match_all():
+    f = filter.F()
+
+    assert isinstance(f, filter.MatchAll)
+    assert filter.MatchAll() == f
+
 def test_and_can_be_created_with_a_list():
     f = filter.F('and', [filter.F('term', field='value')])
 

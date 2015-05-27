@@ -1,7 +1,7 @@
 from .utils import DslBase, BoolMixin, _make_dsl_class
 from .function import SF, ScoreFunction
 
-def Q(name_or_query, **params):
+def Q(name_or_query='match_all', **params):
     # {"match": {"title": "python"}}
     if isinstance(name_or_query, dict):
         if params:
