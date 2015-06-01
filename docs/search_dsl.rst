@@ -220,7 +220,6 @@ acts as a top-level aggregation:
     s = Search()
     a = A('terms', field='category')
     s.aggs.bucket('category_terms', a)
-    s.to_dict()
     # {
     #   'aggs': {
     #     'category_terms': {
