@@ -218,6 +218,24 @@ acts as a top-level aggregation:
 .. code:: python
 
     s = Search()
+    a = A('terms', field='category')
+    s.aggs.bucket('category_terms', a)
+    s.to_dict()
+    # {
+    #   'aggs': {
+    #     'category_terms': {
+    #       'terms': {
+    #         'field': 'category'
+    #       }
+    #     }
+    #   }
+    # }
+    
+or
+
+.. code:: python
+
+    s = Search()
     s.aggs.bucket('per_category', 'terms', field='category')\
         .metric('clicks_per_category', 'sum', field='clicks')\
         .bucket('tags_per_category', 'terms', field='tags')
