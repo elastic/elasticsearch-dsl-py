@@ -265,3 +265,13 @@ def test_meta_fields_can_be_accessed_directly_with_underscore():
     assert md.meta.id == 42
     assert md._id == 42
     assert md.meta.parent is md._parent is p
+
+def test_save_no_index(mock_client):
+    md = MyDoc()
+    with raises(ValidationException):
+        md.save(using='mock')
+
+def test_delete_no_index(mock_client):
+    md = MyDoc()
+    with raises(ValidationException):
+        md.delete(using='mock')
