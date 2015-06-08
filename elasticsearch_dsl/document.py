@@ -8,6 +8,7 @@ from .utils import ObjectBase, AttrDict
 from .result import ResultMeta
 from .search import Search
 from .connections import connections
+from .exceptions import ValidationException
 
 DOC_META_FIELDS = frozenset((
     'id', 'parent', 'routing', 'timestamp', 'ttl', 'version', 'version_type'
@@ -165,7 +166,7 @@ class DocType(ObjectBase):
         if index is None:
             index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
-            raise #XXX - no index
+            raise ValidationException('No index')
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
@@ -199,7 +200,7 @@ class DocType(ObjectBase):
         if index is None:
             index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
-            raise #XXX - no index
+            raise ValidationException('No index')
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
