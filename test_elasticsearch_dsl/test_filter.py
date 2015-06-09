@@ -2,6 +2,11 @@ from elasticsearch_dsl import filter, Q
 
 from pytest import raises
 
+def test_repr():
+    f = filter.F('terms', **{'some.path': 'value'})
+
+    assert "Terms(some__path='value')" == repr(f)
+
 def test_empty_F_is_match_all():
     f = filter.F()
 

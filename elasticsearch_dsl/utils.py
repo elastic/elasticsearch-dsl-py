@@ -209,7 +209,7 @@ class DslBase(object):
     def _repr_params(self):
         """ Produce a repr of all our parameters to be used in __repr__. """
         return  ', '.join(
-            '%s=%r' % (n, v)
+            '%s=%r' % (n.replace('.', '__'), v)
             for (n, v) in sorted(iteritems(self._params))
             # make sure we don't include empty typed params
             if 'type' not in self._param_defs.get(n, {}) or v
