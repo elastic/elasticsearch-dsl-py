@@ -7,6 +7,11 @@ def test_repr():
 
     assert "Terms(some__path='value')" == repr(f)
 
+def test_and_can_be_created_from_list():
+    f = filter.F({'and': [{'term': {'f': 'v'}}, {'term': {'f2': 42}}]})
+
+    assert f == filter.And([filter.F('term', f='v'), filter.F('term', f2=42)])
+
 def test_empty_F_is_match_all():
     f = filter.F()
 

@@ -19,7 +19,11 @@ def F(name_or_filter='match_all', filters=None, **params):
             raise ValueError('F() can only accept dict with a single filter ({"bool": {...}}). '
                  'Instead it got (%r)' % name_or_filter)
         name, params = name_or_filter.copy().popitem()
-        return Filter.get_dsl_class(name)(**params)
+        if isinstance(params, dict):
+            return Filter.get_dsl_class(name)(**params)
+        else:
+            # and filter can have list
+            return Filter.get_dsl_class(name)(params)
 
     # Term(...)
     if isinstance(name_or_filter, Filter):
