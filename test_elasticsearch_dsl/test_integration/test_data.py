@@ -2,7 +2,18 @@ from __future__ import unicode_literals
 
 # FIXME: copy-pasted from elasticsearch-py/example/load.py 
 def create_git_index(client, index):
-    # create empty index
+    # we will use user on several places
+    user_mapping = {
+      'properties': {
+        'name': {
+          'type': 'string',
+          'fields': {
+            'raw': {'type' : 'string', 'index' : 'not_analyzed'},
+          }
+        }
+      }
+    }
+
     client.indices.create(
         index=index,
         body={
@@ -21,66 +32,41 @@ def create_git_index(client, index):
                 }
               }
             }
+          },
+          'mappings': {
+            'commits': {
+              '_parent': {
+                'type': 'repos'
+              },
+              'properties': {
+                'author': user_mapping,
+                'authored_date': {'type': 'date'},
+                'committer': user_mapping,
+                'committed_date': {'type': 'date'},
+                'parent_shas': {'type': 'string', 'index' : 'not_analyzed'},
+                'description': {'type': 'string', 'analyzer': 'snowball'},
+                'files': {'type': 'string', 'analyzer': 'file_path'}
+              }
+            },
+            'repos': {
+              'properties': {
+                'owner': user_mapping,
+                'created_at': {'type': 'date'},
+                'description': {
+                  'type': 'string',
+                  'analyzer': 'snowball',
+                },
+                'tags': {
+                  'type': 'string',
+                  'index': 'not_analyzed'
+                }
+              }
+            }
           }
         },
         # ignore already existing index
         ignore=400
     )
-
-    # we will use user on several places
-    user_mapping = {
-      'properties': {
-        'name': {
-          'type': 'string',
-          'fields': {
-            'raw': {'type' : 'string', 'index' : 'not_analyzed'},
-          }
-        }
-      }
-    }
-
-    client.indices.put_mapping(
-        index=index,
-        doc_type='repos',
-        body={
-          'repos': {
-            'properties': {
-              'owner': user_mapping,
-              'created_at': {'type': 'date'},
-              'description': {
-                'type': 'string',
-                'analyzer': 'snowball',
-              },
-              'tags': {
-                'type': 'string',
-                'index': 'not_analyzed'
-              }
-            }
-          }
-        }
-    )
-
-    client.indices.put_mapping(
-        index=index,
-        doc_type='commits',
-        body={
-          'commits': {
-            '_parent': {
-              'type': 'repos'
-            },
-            'properties': {
-              'author': user_mapping,
-              'authored_date': {'type': 'date'},
-              'committer': user_mapping,
-              'committed_date': {'type': 'date'},
-              'parent_shas': {'type': 'string', 'index' : 'not_analyzed'},
-              'description': {'type': 'string', 'analyzer': 'snowball'},
-              'files': {'type': 'string', 'analyzer': 'file_path'}
-            }
-          }
-        }
-    )
-
 
 DATA = [
     # repository
