@@ -81,11 +81,6 @@ class InnerObject(object):
     _doc_class = InnerObjectWrapper
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
 
-    def __init__(self, *args, **kwargs):
-        # change the default for Object fields
-        super(InnerObject, self).__init__(*args, **kwargs)
-
-
     def field(self, name, *args, **kwargs):
         self.properties[name] = construct_field(*args, **kwargs)
         return self
