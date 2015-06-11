@@ -49,7 +49,7 @@ def test_attribute_can_be_removed():
         d.title
 
 def test_doc_type_can_be_correctly_pickled():
-    d = MyDoc(title='Hello World!', meta={'id': 42})
+    d = DocWithNested(title='Hello World!', comments=[{'title': 'hellp'}], meta={'id': 42})
     s = pickle.dumps(d)
 
     d2 = pickle.loads(s)
@@ -57,6 +57,7 @@ def test_doc_type_can_be_correctly_pickled():
     assert d2 == d
     assert 42 == d2.meta.id
     assert 'Hello World!' == d2.title
+    assert [{'title': 'hellp'}] == d2.comments
 
 def test_meta_is_accessible_even_on_empty_doc():
     d = MyDoc()

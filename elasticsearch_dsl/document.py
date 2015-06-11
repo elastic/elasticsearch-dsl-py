@@ -98,7 +98,7 @@ class DocType(ObjectBase):
         super(DocType, self).__init__(**kwargs)
 
     def __getstate__(self):
-        return (self._d_, self.meta._d_)
+        return (self.to_dict(), self.meta._d_)
 
     def __setstate__(self, state):
         data, meta = state
