@@ -137,7 +137,7 @@ Let's have a simple Python class representing an article in a blogging system:
     Article.init()
 
     # create and save and article
-    article = Article(id=42, title='Hello world!', tags=['test'])
+    article = Article(meta={'id': 42}, title='Hello world!', tags=['test'])
     article.body = ''' looong text '''
     article.published_from = datetime.now()
     article.save()
