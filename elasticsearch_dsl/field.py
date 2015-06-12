@@ -157,6 +157,9 @@ class Date(Field):
             return data
 
         try:
+            if data is None and self._allow_blank:
+                return
+
             # TODO: add format awareness
             return parser.parse(data)
         except Exception as e:
