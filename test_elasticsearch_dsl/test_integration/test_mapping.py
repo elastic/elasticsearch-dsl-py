@@ -1,4 +1,4 @@
-from elasticsearch_dsl import mapping, analysis, exceptions
+from elasticsearch_dsl import mapping, analysis, exceptions, token_filter
 
 from pytest import raises
 
@@ -58,6 +58,40 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
             }
         }
     } == write_client.indices.get_mapping(index='test-mapping')
+
+def test_unchanged_mapping_is_not_updated(write_client):
+    m = mapping.Mapping('test-type')
+    m.field('name', 'string', analyzer=analysis.analyzer("my_analyzer",
+        tokenizer="standard",
+        filter=[
+            token_filter("simple_edge",
+                type="edgeNGram",
+                min_gram=2,
+                max_gram=3
+            )]
+        )
+    )
+
+
+    m.save('test-mapping', using=write_client)
+    # this should not trigger an error since the mapping didn't change
+    m.save('test-mapping', using=write_client)
+
+
+    # change the mapping just a little bit
+    m.field('name', 'string', analyzer=analysis.analyzer("my_analyzer",
+        tokenizer="standard",
+        filter=[
+            token_filter("simple_edge",
+                type="edgeNGram",
+                min_gram=2,
+                max_gram=4 # changed from 3 to 4
+            )]
+        )
+    )
+
+    with raises(exceptions.IllegalOperation):
+        m.save('test-mapping', using=write_client)
 
 def test_mapping_gets_updated_from_es(write_client):
     write_client.indices.create(

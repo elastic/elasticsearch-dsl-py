@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from six import iteritems, add_metaclass
+from six import iteritems, add_metaclass, string_types, text_type
 from six.moves import map
 
 from .exceptions import UnknownDslObject
@@ -437,3 +437,16 @@ class ObjectBase(AttrDict):
                 v = v.to_dict() if hasattr(v, 'to_dict') else v
             out[k] = v
         return out
+
+
+def stringer(x):
+    """
+    Takes an object and makes it stringy
+    """
+    if isinstance(x, string_types):
+        return x
+    if isinstance(x, (list, tuple)):
+        return [stringer(y) for y in x]
+    if isinstance(x, dict):
+        return dict((stringer(a), stringer(b)) for a, b in x.items())
+    return text_type(x)
