@@ -73,12 +73,12 @@ def test_mapping_can_collect_all_analyzers():
     m = mapping.Mapping('article')
     m.field('title', 'string', analyzer=a1,
         fields={
-            'english': String(analyzer=a2),
-            'unknown': String(analyzer=a3),
+            'english': String(index_analyzer=a2),
+            'unknown': String(search_analyzer=a3),
         }
     )
     m.field('comments', Nested(properties={
-        'author': String(analyzer=a4)
+        'author': String(index_analyzer=a4)
     }))
 
     assert {
