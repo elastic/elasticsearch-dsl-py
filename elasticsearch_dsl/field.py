@@ -78,8 +78,11 @@ class InnerObjectWrapper(ObjectBase):
 
 class InnerObject(object):
     " Common functionality for nested and object fields. "
-    _doc_class = InnerObjectWrapper
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
+
+    def __init__(self, *args, **kwargs):
+        self._doc_class = kwargs.pop('doc_class', InnerObjectWrapper)
+        super(InnerObject, self).__init__(*args, **kwargs)
 
     def field(self, name, *args, **kwargs):
         self.properties[name] = construct_field(*args, **kwargs)
@@ -88,7 +91,12 @@ class InnerObject(object):
     property = field
 
     def _empty(self):
-        return {}
+        return self._doc_class(self.properties)
+
+    def empty(self):
+        if self._multi:
+            return AttrList([], lambda d: self._doc_class(self.properties, **d))
+        return self._empty()
 
     def __getitem__(self, name):
         return self.properties[name]

@@ -5,9 +5,9 @@ from six.moves import map
 
 from .exceptions import UnknownDslObject
 
-def _wrap(val):
+def _wrap(val, obj_wrapper=None):
     if isinstance(val, dict):
-        return AttrDict(val)
+        return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
         return AttrList(val)
     return val
@@ -23,11 +23,12 @@ def _make_dsl_class(base, name, params_def=None, suffix=''):
     return type(cls_name, (base, ), attrs)
 
 class AttrList(object):
-    def __init__(self, l):
+    def __init__(self, l, obj_wrapper=None):
         # make iteables into lists
         if not isinstance(l, list):
             l = list(l)
         self._l_ = l
+        self._obj_wrapper = obj_wrapper
 
     def __repr__(self):
         return repr(self._l_)
@@ -42,13 +43,13 @@ class AttrList(object):
         l = self._l_[k]
         if isinstance(k, slice):
             return AttrList(l)
-        return _wrap(l)
+        return _wrap(l, self._obj_wrapper)
 
     def __setitem__(self, k, value):
         self._l_[k] = value
 
     def __iter__(self):
-        return map(_wrap, self._l_)
+        return map(lambda i: _wrap(i, self._obj_wrapper), self._l_)
 
     def __len__(self):
         return len(self._l_)

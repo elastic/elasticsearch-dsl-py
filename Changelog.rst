@@ -8,6 +8,8 @@ Changelog
  * added support for (index/search)_analyzer via #143, thanks @wkiser!
  * even keys accessed via ``['field']`` on ``AttrDict`` will be wrapped in
    ``Attr[Dict|List]`` for consistency
+ * Added a convenient option to specify a custom ``doc_class`` to wrap
+   inner/Nested documents
 
 0.0.4 (2015-04-24)
 ------------------

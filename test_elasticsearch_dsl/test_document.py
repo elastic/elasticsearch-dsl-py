@@ -7,11 +7,14 @@ from elasticsearch_dsl.exceptions import ValidationException
 
 from pytest import raises
 
+class MyInner(field.InnerObjectWrapper):
+    pass
+
 class MyDoc(document.DocType):
     title = field.String(index='not_analyzed')
     name = field.String()
     created_at = field.Date()
-    inner = field.Object(properties={'old_field': field.String()})
+    inner = field.Object(properties={'old_field': field.String()}, doc_class=MyInner)
 
 class MySubDoc(MyDoc):
     name = field.String(index='not_analyzed')
@@ -155,6 +158,8 @@ def test_nested_defaults_to_list_and_can_be_updated():
 def test_to_dict_is_recursive_and_can_cope_with_multi_values():
     md = MyDoc(name=['a', 'b', 'c'])
     md.inner = [{'old_field': 'of1'}, {'old_field': 'of2'}]
+
+    assert isinstance(md.inner[0], MyInner)
 
     assert {
         'name': ['a', 'b', 'c'],
