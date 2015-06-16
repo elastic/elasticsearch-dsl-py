@@ -195,7 +195,10 @@ class DocType(ObjectBase):
             d = meta
         return d
 
-    def save(self, using=None, index=None, **kwargs):
+    def save(self, using=None, index=None, validate=True, **kwargs):
+        if validate:
+            self.full_clean()
+
         es = self._get_connection(using)
         if index is None:
             index = getattr(self.meta, 'index', self._doc_type.index)

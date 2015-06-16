@@ -43,7 +43,7 @@ class Field(DslBase):
 
     def __init__(self, *args, **kwargs):
         self._multi = kwargs.pop('multi', False)
-        self._allow_blank = kwargs.pop('blank', self._multi)
+        self._required = kwargs.pop('required', False)
         super(Field, self).__init__(*args, **kwargs)
 
     def _to_python(self, data):
@@ -54,14 +54,22 @@ class Field(DslBase):
 
     def empty(self):
         if self._multi:
-            return []
+            return AttrList([])
         return self._empty()
     
     def to_python(self, data):
+        if not data:
+            return data
         if isinstance(data, (list, AttrList)):
             data[:] = map(self._to_python, data)
             return data
         return self._to_python(data)
+
+    def clean(self, data):
+        data = self.to_python(data)
+        if not data and self._required:
+            raise ValidationException("Value required for this field.")
+        return data
 
     def to_dict(self):
         d = super(Field, self).to_dict()
@@ -139,15 +147,23 @@ class InnerObject(object):
             data[:] = list(map(self._to_python, data))
             return data
 
+        if isinstance(data, AttrDict):
+            data = data._d_
+
         return self._doc_class(self.properties, **data)
+
+    def clean(self, data):
+        data = super(InnerObject, self).clean(data)
+        if isinstance(data, (list, AttrList)):
+            for d in data:
+                d.full_clean()
+        else:
+            data.full_clean()
+        return data
+
 
 class Object(InnerObject, Field):
     name = 'object'
-
-    def __init__(self, *args, **kwargs):
-        # change the default for Object fields
-        kwargs.setdefault('blank', True)
-        super(Object, self).__init__(*args, **kwargs)
 
 class Nested(InnerObject, Field):
     name = 'nested'

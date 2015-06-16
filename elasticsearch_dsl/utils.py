@@ -3,7 +3,9 @@ from __future__ import unicode_literals
 from six import iteritems, add_metaclass
 from six.moves import map
 
-from .exceptions import UnknownDslObject
+from .exceptions import UnknownDslObject, ValidationException
+
+SKIP_VALUES = ('', None)
 
 def _wrap(val, obj_wrapper=None):
     if isinstance(val, dict):
@@ -416,9 +418,9 @@ class ObjectBase(AttrDict):
         except AttributeError:
             if name in self._doc_type.mapping:
                 f = self._doc_type.mapping[name]
-                if hasattr(f, 'empty') and f._allow_blank:
+                if hasattr(f, 'empty'):
                     value = f.empty()
-                    if value is not None:
+                    if value not in SKIP_VALUES:
                         setattr(self, name, value)
                         value = getattr(self, name)
                     return value
@@ -436,5 +438,32 @@ class ObjectBase(AttrDict):
                 v = [i.to_dict() if hasattr(i, 'to_dict') else i for i in v]
             else:
                 v = v.to_dict() if hasattr(v, 'to_dict') else v
+
+            # don't serialize empty values
+            # careful not to include numeric zeros
+            if not isinstance(v, (int, float)) and not v:
+                continue
+
             out[k] = v
         return out
+
+    def clean_fields(self):
+        errors = {}
+        for name in self._doc_type.mapping:
+            field = self._doc_type.mapping[name]
+            data = getattr(self, name, None)
+            try:
+                data = field.clean(data)
+            except ValidationException as e:
+                errors.setdefault(name, []).append(e)
+
+        if errors:
+            raise ValidationException(errors)
+
+    def clean(self):
+        pass
+
+    def full_clean(self):
+        self.clean_fields()
+        self.clean()
+

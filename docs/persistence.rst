@@ -67,9 +67,8 @@ Common field options:
 ``multi``
   If set to ``True`` the field's value will be set to ``[]`` at first access.
 
-``blank``
-  Defaults to ``False`` and if eneabled will cause access to a field with no
-  value to return the field's empty value (``''`` or ``None``).
+``required``
+  Indicates if a field requires a value for the document to be valid.
 
 Analysis
 --------

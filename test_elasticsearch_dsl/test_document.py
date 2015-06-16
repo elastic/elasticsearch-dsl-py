@@ -55,8 +55,6 @@ def test_attribute_can_be_removed():
 
     del d.title
     assert 'title' not in d._d_
-    with raises(AttributeError):
-        d.title
 
 def test_doc_type_can_be_correctly_pickled():
     d = DocWithNested(title='Hello World!', comments=[{'title': 'hellp'}], meta={'id': 42})
@@ -102,16 +100,6 @@ def test_multi_value_fields():
     b.tags.append('search')
     b.tags.append('python')
     assert ['search', 'python'] == b.tags
-
-def test_blank_enabled_fields():
-    class Blog(document.DocType):
-        published = field.Date(blank=True)
-        published_not_blank = field.Date()
-
-    b = Blog()
-    with raises(AttributeError):
-        b.published_not_blank
-    assert None is b.published
 
 def test_docs_with_properties():
     class User(document.DocType):
@@ -225,7 +213,7 @@ def test_document_can_be_created_dynamicaly():
 def test_invalid_date_will_raise_exception():
     md = MyDoc()
     with raises(ValidationException):
-        md.created_at = None
+        md.created_at = 'not-a-date'
 
 def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)
