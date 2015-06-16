@@ -10,6 +10,10 @@ Changelog
    ``Attr[Dict|List]`` for consistency
  * Added a convenient option to specify a custom ``doc_class`` to wrap
    inner/Nested documents
+ * ``blank`` option has been removed
+ * ``AttributeError`` is no longer raised when accessing an empty field.
+ * added ``required`` flag to fields and validation hooks to fields and
+   (sub)documents
 
 0.0.4 (2015-04-24)
 ------------------
