@@ -5,6 +5,11 @@ from .field import InnerObject
 from .connections import connections
 from .exceptions import IllegalOperation
 
+META_FIELDS = frozenset((
+    'dynamic', 'transform', 'dynamic_date_formats', 'date_detection',
+    'numeric_detection', 'dynamic_templates'
+))
+
 class Properties(InnerObject, DslBase):
     def __init__(self, name):
         self._name = name
@@ -115,15 +120,14 @@ class Mapping(object):
         self.properties.field(*args, **kwargs)
         return self
 
-    def meta(self, name, **kwargs):
-        if not name.startswith('_'):
+    def meta(self, name, params=None, **kwargs):
+        if not name.startswith('_') and name not in META_FIELDS:
             name = '_' + name
 
-        if not kwargs:
-            if name in self._meta:
-                del self._meta[name]
-        else:
-            self._meta[name] = kwargs
+        if params and kwargs:
+            raise ValueError('Meta configs cannot have both value and a dictionary.')
+
+        self._meta[name] = params or kwargs
         return self
 
     def to_dict(self):

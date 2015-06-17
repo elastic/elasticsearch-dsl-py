@@ -20,6 +20,7 @@ def test_mapping_update_is_recursive():
     m1.field('author', 'object')
     m1['author'].field('name', 'string')
     m1.meta('_all', enabled=False)
+    m1.meta('dynamic', 'strict')
 
     m2 = mapping.Mapping('article')
     m2.field('published_from', 'date')
@@ -35,6 +36,7 @@ def test_mapping_update_is_recursive():
         'article': {
             '_all': {'enabled': False},
             '_analyzer': {'path': 'lang'},
+            'dynamic': 'strict',
             'properties': {
                 'published_from': {'type': 'date'},
                 'title': {'type': 'string'},
