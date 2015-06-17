@@ -205,7 +205,8 @@ def test_complex_example():
     s = s.query('match', title='python') \
         .query(~Q('match', title='ruby')) \
         .filter(F('term', category='meetup') | F('term', category='conference')) \
-        .post_filter('terms', tags=['prague', 'czech'])
+        .post_filter('terms', tags=['prague', 'czech']) \
+        .script_fields(more_attendees="doc['attendees'].value + 42")
 
     s.aggs.bucket('per_country', 'terms', field='country')\
         .metric('avg_attendees', 'avg', field='attendees')
@@ -251,6 +252,9 @@ def test_complex_example():
                 'title': {'fragment_size': 50},
                 'body': {'fragment_size': 50}
             }
+        },
+        'script_fields': {
+            'more_attendees': {'script': "doc['attendees'].value + 42"}
         }
     } == s.to_dict()
 
@@ -310,6 +314,9 @@ def test_reverse():
                     "field" : "title"
                 }
             }
+        },
+        'script_fields': {
+            'more_attendees': {'script': "doc['attendees'].value + 42"}
         }
     }
 

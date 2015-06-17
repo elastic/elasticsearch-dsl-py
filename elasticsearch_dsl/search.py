@@ -123,6 +123,7 @@ class Search(object):
         self._highlight = {}
         self._highlight_opts = {}
         self._suggest = {}
+        self._script_fields = {}
 
         self._query_proxy = ProxyQuery(self, 'query')
         self._filter_proxy = ProxyFilter(self, 'filter')
@@ -185,6 +186,7 @@ class Search(object):
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
+        s._script_fields = self._script_fields.copy()
         for x in ('query', 'filter', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -229,7 +231,32 @@ class Search(object):
                 text = self._suggest.pop('text')
                 for s in self._suggest.values():
                     s.setdefault('text', text)
+        if 'script_fields' in d:
+            self._script_fields = d.pop('script_fields')
         self._extra = d
+
+    def script_fields(self, **kwargs):
+        """
+        Define script fields to be calculated on hits.
+
+        Example::
+
+            s = Search()
+            s = s.script_fields(times_two="doc['field'].value * 2")
+            s = s.script_fields(
+                times_three={
+                    'script': "doc['field'].value * n",
+                    'params': {'n': 3}
+                }
+            )
+        
+        """
+        s = self._clone()
+        for name in kwargs:
+            if isinstance(kwargs[name], string_types):
+                kwargs[name] = {'script': kwargs[name]}
+        s._script_fields.update(kwargs)
+        return s
 
     def params(self, **kwargs):
         """
@@ -423,6 +450,9 @@ class Search(object):
 
             if self._suggest:
                 d['suggest'] = self._suggest
+
+            if self._script_fields:
+                d['script_fields'] = self._script_fields
 
         d.update(kwargs)
         return d
