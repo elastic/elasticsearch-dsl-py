@@ -34,14 +34,14 @@ def test_query_is_created_properly():
             '_filter_tags': {
                 'filter': {
                     'match_all': {},
-                    'aggs': {'tags': {'terms': {'field': 'tags'}}},
-                }
+                },
+                'aggs': {'tags': {'terms': {'field': 'tags'}}},
             },
             '_filter_category': {
                 'filter': {
                     'match_all': {},
-                    'aggs': {'category': {'terms': {'field': 'category.raw'}}},
-                }
+                },
+                'aggs': {'category': {'terms': {'field': 'category.raw'}}},
             },
         },
         'query': {
@@ -58,14 +58,14 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
             '_filter_tags': {
                 'filter': {
                     'term': {'category.raw': 'elastic'},
-                    'aggs': {'tags': {'terms': {'field': 'tags'}}},
-                }
+                },
+                'aggs': {'tags': {'terms': {'field': 'tags'}}},
             },
             '_filter_category': {
                 'filter': {
                     'match_all': {},
-                    'aggs': {'category': {'terms': {'field': 'category.raw'}}},
-                }
+                },
+                'aggs': {'category': {'terms': {'field': 'category.raw'}}},
             }
         },
         'post_filter': {
@@ -80,31 +80,31 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
     bs = BlogSearch('python search', filters={'category': 'elastic', 'tags': 'python'})
     s = bs.build_search()
 
+    d = s.to_dict()
+    post_filter = d.pop('post_filter')
+
+    # do not rely on order
+    assert 2 == len(post_filter['bool']['must'])
+    assert {'term': {'category.raw': 'elastic'}} in post_filter['bool']['must']
+    assert {'term': {'tags': 'python'}} in post_filter['bool']['must']
+
     assert {
         'aggs': {
             '_filter_tags': {
                 'filter': {
                     'term': {'category.raw': 'elastic'},
-                    'aggs': {'tags': {'terms': {'field': 'tags'}}},
-                }
+                },
+                'aggs': {'tags': {'terms': {'field': 'tags'}}},
             },
             '_filter_category': {
                 'filter': {
                     'term': {'tags': 'python'},
-                    'aggs': {'category': {'terms': {'field': 'category.raw'}}},
-                }
-            }
-        },
-        'post_filter': {
-            'bool': {
-                'must': [
-                    {'term': {'tags': 'python'}},
-                    {'term': {'category.raw': 'elastic'}},
-                ]
+                },
+                'aggs': {'category': {'terms': {'field': 'category.raw'}}},
             }
         },
         'query': {
             'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
         }
-    } == s.to_dict()
+    } == d
 

@@ -14,7 +14,7 @@ DATE_INTERVALS = {
 }
 
 AGG_TO_FILTER = {
-    Terms: lambda a, v: F('term', **{a.field: v}),
+    Terms: lambda a, v: F('terms' if isinstance(v, (list, tuple)) else 'term', **{a.field: v}),
     DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
     Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
 }
