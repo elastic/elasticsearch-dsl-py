@@ -1,10 +1,12 @@
 from datetime import timedelta, datetime
 from six import iteritems, itervalues
+from functools import partial
 
 from .search import Search
 from .filter import F
 from .aggs import Terms, DateHistogram, Histogram
 from .utils import AttrDict
+from .result import Response
 
 DATE_INTERVALS = {
     'month': lambda d: (d+timedelta(days=32)).replace(day=1),
@@ -29,23 +31,23 @@ def agg_to_filter(agg, value):
     return AGG_TO_FILTER[agg.__class__](agg, value)
 
 
-class FacetedResponse(object):
-    def __init__(self, search, response):
-        self._search = search
-        self.hits = response.hits
-        self._response = response
+class FacetedResponse(Response):
+    def __init__(self, search, *args, **kwargs):
+        super(FacetedResponse, self).__init__(*args, **kwargs)
+        super(AttrDict, self).__setattr__('_search', search)
 
     @property
     def facets(self):
         if not hasattr(self, '_facets'):
-            self._facets = AttrDict({})
+            super(AttrDict, self).__setattr__('_facets', AttrDict({}))
             for name, agg in iteritems(self._search.facets):
                 buckets = self._facets[name] = []
-                data = self._response.aggregations['_filter_' + name][name]['buckets']
+                data = self.aggregations['_filter_' + name][name]['buckets']
                 filter = self._search._raw_filters.get(name, None)
                 for b in data:
                     buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
         return self._facets
+
 
 
 class FacetedSearch(object):
@@ -103,7 +105,7 @@ class FacetedSearch(object):
     def execute(self):
         if not hasattr(self, '_response'):
             s = self.build_search()
-            self._response = FacetedResponse(self, s.execute())
+            self._response = s.execute(response_class=partial(FacetedResponse, self))
 
         return self._response
 
