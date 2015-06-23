@@ -1,9 +1,10 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from six import iteritems, itervalues
 
 from .search import Search
 from .filter import F
 from .aggs import Terms, DateHistogram, Histogram
+from .utils import AttrDict
 
 DATE_INTERVALS = {
     'month': lambda d: (d+timedelta(days=32)).replace(day=1),
@@ -19,8 +20,33 @@ AGG_TO_FILTER = {
     Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
 }
 
+BUCKET_TO_DATA = {
+    Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] == filter),
+    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] == filter)
+}
+
 def agg_to_filter(agg, value):
     return AGG_TO_FILTER[agg.__class__](agg, value)
+
+
+class FacetedResponse(object):
+    def __init__(self, search, response):
+        self._search = search
+        self.hits = response.hits
+        self._response = response
+
+    @property
+    def facets(self):
+        if not hasattr(self, '_facets'):
+            self._facets = AttrDict({})
+            for name, agg in iteritems(self._search.facets):
+                buckets = self._facets[name] = []
+                data = self._response.aggregations['_filter_' + name][name]['buckets']
+                filter = self._search._raw_filters.get(name, None)
+                for b in data:
+                    buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
+        return self._facets
+
 
 class FacetedSearch(object):
     index = '_all'
@@ -30,6 +56,7 @@ class FacetedSearch(object):
 
     def __init__(self, query=None, filters={}):
         self._query = query
+        self._raw_filters = filters
         self._filters = {}
         for name, value in iteritems(filters):
             self.add_filter(name, value)
@@ -76,7 +103,7 @@ class FacetedSearch(object):
     def execute(self):
         if not hasattr(self, '_response'):
             s = self.build_search()
-            self._response = s.execute()
+            self._response = FacetedResponse(self, s.execute())
 
         return self._response
 
