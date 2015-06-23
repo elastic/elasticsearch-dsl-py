@@ -227,6 +227,9 @@ class DslBase(object):
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()
 
+    def __ne__(self, other):
+        return not self == other
+
     def __setattr__(self, name, value):
         if name.startswith('_'):
             return super(DslBase, self).__setattr__(name, value)
