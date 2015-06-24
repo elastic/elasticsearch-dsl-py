@@ -212,7 +212,7 @@ class DocType(ObjectBase):
         doc_meta = dict(
             (k, self.meta[k])
             for k in META_FIELDS
-            if k in self.meta and k != 'index'
+            if k in self.meta and k not in ['index', 'score']
         )
         meta = es.update(
             index=self._get_index(index),
