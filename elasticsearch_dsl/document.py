@@ -165,12 +165,15 @@ class DocType(ObjectBase):
         return connections.get_connection(using or self._doc_type.using)
     connection = property(_get_connection)
 
-    def delete(self, using=None, index=None, **kwargs):
-        es = self._get_connection(using)
+    def _get_index(self, index=None):
         if index is None:
             index = getattr(self.meta, 'index', self._doc_type.index)
         if index is None:
             raise ValidationException('No index')
+        return index
+
+    def delete(self, using=None, index=None, **kwargs):
+        es = self._get_connection(using)
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
@@ -179,7 +182,7 @@ class DocType(ObjectBase):
         )
         doc_meta.update(kwargs)
         es.delete(
-            index=index,
+            index=self._get_index(index),
             doc_type=self._doc_type.name,
             **doc_meta
         )
@@ -204,10 +207,6 @@ class DocType(ObjectBase):
             self.full_clean()
 
         es = self._get_connection(using)
-        if index is None:
-            index = getattr(self.meta, 'index', self._doc_type.index)
-        if index is None:
-            raise ValidationException('No index')
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
@@ -216,7 +215,7 @@ class DocType(ObjectBase):
         )
         doc_meta.update(kwargs)
         meta = es.index(
-            index=index,
+            index=self._get_index(index),
             doc_type=self._doc_type.name,
             body=self.to_dict(),
             **doc_meta
