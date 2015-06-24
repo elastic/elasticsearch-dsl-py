@@ -205,11 +205,8 @@ class DocType(ObjectBase):
     def update(self, using=None, index=None, **fields):
         es = self._get_connection(using)
 
-        # construct the fields dics:
-        doc = {}
-        for f, value in iteritems(fields):
-            merge(self._d_, {f: value})
-            doc[f] = value
+        # update the data locally
+        merge(self._d_, fields)
 
         # extract parent, routing etc from meta
         doc_meta = dict(
@@ -220,7 +217,7 @@ class DocType(ObjectBase):
         meta = es.update(
             index=self._get_index(index),
             doc_type=self._doc_type.name,
-            body={'doc': doc},
+            body={'doc': fields},
             **doc_meta
         )
         # update meta information from ES
