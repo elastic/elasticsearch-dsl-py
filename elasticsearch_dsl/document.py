@@ -4,7 +4,7 @@ from six import iteritems, add_metaclass
 
 from .field import Field
 from .mapping import Mapping
-from .utils import ObjectBase, AttrDict
+from .utils import ObjectBase, AttrDict, merge
 from .result import ResultMeta
 from .search import Search
 from .connections import connections
@@ -201,6 +201,32 @@ class DocType(ObjectBase):
             meta['_source'] = d
             d = meta
         return d
+
+    def update(self, using=None, index=None, **fields):
+        es = self._get_connection(using)
+
+        # construct the fields dics:
+        doc = {}
+        for f, value in iteritems(fields):
+            merge(self._d_, {f: value})
+            doc[f] = value
+
+        # extract parent, routing etc from meta
+        doc_meta = dict(
+            (k, self.meta[k])
+            for k in META_FIELDS
+            if k in self.meta and k != 'index'
+        )
+        meta = es.update(
+            index=self._get_index(index),
+            doc_type=self._doc_type.name,
+            body={'doc': doc},
+            **doc_meta
+        )
+        # update meta information from ES
+        for k in META_FIELDS:
+            if '_' + k in meta:
+                setattr(self.meta, k, meta['_' + k])
 
     def save(self, using=None, index=None, validate=True, **kwargs):
         if validate:

@@ -467,3 +467,15 @@ class ObjectBase(AttrDict):
         self.clean_fields()
         self.clean()
 
+def merge(data, new_data):
+    if not (isinstance(data, (AttrDict, dict))
+            and isinstance(new_data, (AttrDict, dict))):
+        raise ValueError('You can only merge two dicts! Got %r and %r instead.' % (data, new_data))
+
+    for key, value in iteritems(new_data):
+        if key in data and isinstance(data[key], (AttrDict, dict)):
+            merge(data[key], value)
+        else:
+            data[key] = value
+
+

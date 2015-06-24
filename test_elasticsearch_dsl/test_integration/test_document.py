@@ -60,10 +60,28 @@ def test_get_with_tz_date(data_client):
     tzinfo = timezone('Europe/Prague')
     assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19)) == first_commit.authored_date
 
+def test_update(data_client):
+    elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
+    v = elasticsearch_repo.meta.version
+
+    elasticsearch_repo.update(owner={'new_name': 'elastic'}, new_field='testing-update')
+
+    assert 'elastic' == elasticsearch_repo.owner.new_name
+    assert 'testing-update' == elasticsearch_repo.new_field
+
+    # assert version has been updated
+    assert elasticsearch_repo.meta.version == v + 1
+
+    new_version = Repository.get('elasticsearch-dsl-py')
+    assert 'testing-update' == new_version.new_field
+    assert 'elastic' == new_version.owner.new_name
+    assert 'elasticsearch' == new_version.owner.name
+
+
 def test_save_updates_existing_doc(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
 
-    elasticsearch_repo.new_field = 'testing'
+    elasticsearch_repo.new_field = 'testing-save'
     v = elasticsearch_repo.meta.version
     assert not elasticsearch_repo.save()
 
@@ -71,7 +89,7 @@ def test_save_updates_existing_doc(data_client):
     assert elasticsearch_repo.meta.version == v + 1
 
     new_repo = data_client.get(index='git', doc_type='repos', id='elasticsearch-dsl-py')
-    assert 'testing' == new_repo['_source']['new_field']
+    assert 'testing-save' == new_repo['_source']['new_field']
 
 def test_save_automatially_uses_versions(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')

@@ -199,6 +199,10 @@ To retrieve an existing document use the ``get`` class method:
     # and save the changes into the cluster again
     first.save()
 
+    # you can also update just individual fields which will call the update API
+    # and also update the document in place
+    first.update(published=True, published_by='me')
+
 If the document is not found in elasticsearch an exception
 (``elasticsearch.NotFoundError``) will be raised. If you wish to return
 ``None`` instead just pass in ``ignore=404`` to supress the exception:
