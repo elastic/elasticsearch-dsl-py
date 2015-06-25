@@ -177,8 +177,8 @@ class DocType(ObjectBase):
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
-            for k in META_FIELDS
-            if k in self.meta and k != 'index'
+            for k in DOC_META_FIELDS
+            if k in self.meta
         )
         doc_meta.update(kwargs)
         es.delete(
@@ -192,7 +192,7 @@ class DocType(ObjectBase):
         if include_meta:
             meta = dict(
                 ('_' + k, self.meta[k])
-                for k in META_FIELDS
+                for k in DOC_META_FIELDS
                 if k in self.meta
             )
             if 'index' not in meta and self._doc_type.index:
@@ -211,8 +211,8 @@ class DocType(ObjectBase):
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
-            for k in META_FIELDS
-            if k in self.meta and k != 'index'
+            for k in DOC_META_FIELDS
+            if k in self.meta
         )
         meta = es.update(
             index=self._get_index(index),
@@ -233,8 +233,8 @@ class DocType(ObjectBase):
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
-            for k in META_FIELDS
-            if k in self.meta and k != 'index'
+            for k in DOC_META_FIELDS
+            if k in self.meta
         )
         doc_meta.update(kwargs)
         meta = es.index(

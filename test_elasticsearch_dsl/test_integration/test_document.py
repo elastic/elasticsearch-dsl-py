@@ -60,6 +60,16 @@ def test_get_with_tz_date(data_client):
     tzinfo = timezone('Europe/Prague')
     assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19)) == first_commit.authored_date
 
+def test_update_works_from_search_response(data_client):
+    elasticsearch_repo = Repository.search().execute()[0]
+
+    elasticsearch_repo.update(owner={'other_name': 'elastic'})
+    assert 'elastic' == elasticsearch_repo.owner.other_name
+
+    new_version = Repository.get('elasticsearch-dsl-py')
+    assert 'elastic' == new_version.owner.other_name
+    assert 'elasticsearch' == new_version.owner.name
+
 def test_update(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
     v = elasticsearch_repo.meta.version
