@@ -97,13 +97,6 @@ class AttrDict(object):
             r = r[:60] + '...}'
         return r
 
-    def get(self, key, default=None):
-        # Don't confuse `obj.get('...')` as `obj['get']`.
-        try:
-            return self._d_[key]
-        except KeyError:
-            return default
-
     def __getattr__(self, attr_name):
         try:
             return _wrap(self._d_[attr_name])

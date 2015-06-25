@@ -55,7 +55,6 @@ def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
 
     assert 'Elasticsearch' == h.name
     assert 'Elasticsearch' == h['name']
-    assert 'Elasticsearch' == h.get('name')
 
     assert 'Honza' == res.hits[2].name.first
 

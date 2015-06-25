@@ -14,6 +14,8 @@ Changelog
  * ``AttributeError`` is no longer raised when accessing an empty field.
  * added ``required`` flag to fields and validation hooks to fields and
    (sub)documents
+ * removed ``get`` method from ``AttrDict``. Use ``getattr(d, key, default)``
+   instead.
 
 0.0.4 (2015-04-24)
 ------------------
