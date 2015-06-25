@@ -195,11 +195,6 @@ search class to simplify searching and filtering.
             'publishing_frequency': DateHistogram(field='published_from', interval='month')
         }
 
-        def search(self):
-            # override methods to add custom pieces
-            s = super().search()
-            return s.range('range', publish_from={'lte': 'now/h'})
-
     # empty search
     bs = BlogSearch()
     response = bs.execute()

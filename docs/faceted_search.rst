@@ -99,7 +99,7 @@ Example
         def search(self):
             # override methods to add custom pieces
             s = super().search()
-            return s.range('range', publish_from={'lte': 'now/h'})
+            return s.filter('range', publish_from={'lte': 'now/h'})
 
     bs = BlogSearch('python web', {'publishing_frequency': date(2015, 6)})
     response = bs.execute()
