@@ -87,7 +87,6 @@ class FacetedSearch(object):
                 'filter',
                 filter=agg_filter
             ).bucket(f, agg)
-                
 
     def filter(self, search):
         post_filter = F('match_all')
