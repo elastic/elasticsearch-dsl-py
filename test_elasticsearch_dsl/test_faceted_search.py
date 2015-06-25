@@ -77,16 +77,11 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
     } == s.to_dict()
 
 def test_filters_are_applied_to_search_ant_relevant_facets():
-    bs = BlogSearch('python search', filters={'category': 'elastic', 'tags': 'python'})
+    bs = BlogSearch('python search', filters={'category': 'elastic', 'tags': ['python', 'django']})
     s = bs.build_search()
 
     d = s.to_dict()
-    post_filter = d.pop('post_filter')
 
-    # do not rely on order
-    assert 2 == len(post_filter['bool']['must'])
-    assert {'term': {'category.raw': 'elastic'}} in post_filter['bool']['must']
-    assert {'term': {'tags': 'python'}} in post_filter['bool']['must']
 
     assert {
         'aggs': {
@@ -98,13 +93,29 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
             },
             '_filter_category': {
                 'filter': {
-                    'term': {'tags': 'python'},
+                    'bool': {
+                        'should': [
+                            {'term': {'tags': 'python'}},
+                            {'term': {'tags': 'django'}}
+                        ]
+                    }
                 },
                 'aggs': {'category': {'terms': {'field': 'category.raw'}}},
             }
         },
         'query': {
             'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
+        },
+        'post_filter': {
+            'bool': {
+                'must': [
+                    {'term': {'category.raw': 'elastic'}} 
+                ],
+                'should': [
+                    {'term': {'tags': 'python'}},
+                    {'term': {'tags': 'django'}},
+                ]
+            }
         }
     } == d
 

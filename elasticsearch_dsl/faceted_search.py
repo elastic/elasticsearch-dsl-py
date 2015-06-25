@@ -17,7 +17,7 @@ DATE_INTERVALS = {
 }
 
 AGG_TO_FILTER = {
-    Terms: lambda a, v: F('terms' if isinstance(v, (list, tuple)) else 'term', **{a.field: v}),
+    Terms: lambda a, v: F('term', **{a.field: v}),
     DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
     Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
 }
@@ -65,7 +65,10 @@ class FacetedSearch(object):
 
     def add_filter(self, name, value):
         agg = self.facets[name]
-        self._filters[name] = agg_to_filter(agg, value)
+        if isinstance(value, list):
+            self._filters[name] = F('bool', should=[agg_to_filter(agg, v) for v in value])
+        else:
+            self._filters[name] = agg_to_filter(agg, value)
 
     def search(self):
         return Search(doc_type=self.doc_types, index=self.index)
