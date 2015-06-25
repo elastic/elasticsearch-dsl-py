@@ -168,6 +168,49 @@ In this example you can see:
 
 You can see more in the :ref:`persistence` chapter.
 
+
+Pre-built Faceted Search
+------------------------
+
+If you have your ``DocType``\ s defined you can very easily create a faceted
+search class to simplify searching and filtering:
+
+.. code:: python
+
+    from elasticsearch_dsl import FacetedSearch
+    from elasticsearch_dsl.aggs import Terms, DateHistogram
+
+    class BlogSearch(FacetedSearch):
+        doc_types = [Article, ]
+        # fields that should be searched
+        fields = ['tags', 'title', 'body']
+
+        facets = {
+            # use bucket aggregations to define facets
+            'tags': Terms(field='tags'),
+            'publishing_frequency': DateHistogram(field='published_from', interval='month')
+        }
+
+        def search(self):
+            # override methods to add custom pieces
+            s = super().search()
+            return s.range('range', publish_from={'lte': 'now/h'})
+
+    # empty search
+    bs = BlogSearch()
+    response = bs.execute()
+
+    for hit in response:
+        print(hit.meta.score, hit.title)
+
+    for (tag, count, selected) in response.facets.tags:
+        print(tag, ' (SELECTED):' if selected else ':', count)
+
+    for (month, count, selected) in response.facets.publishing_frequency:
+        print(month.strftime('%B %Y'), ' (SELECTED):' if selected else ':', count)
+
+You can find more details in the :ref:`faceted_search` chapter.
+
 Migration from ``elasticsearch-py``
 -----------------------------------
 
@@ -216,5 +259,6 @@ Contents
    configuration
    search_dsl
    persistence
+   faceted_search
    Changelog
 

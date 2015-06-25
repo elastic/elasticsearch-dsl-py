@@ -429,6 +429,7 @@ class Search(object):
             d = {"query": self.query.to_dict()}
 
         if self.post_filter:
+            print(self.post_filter._proxied == self.post_filter._empty, self.post_filter._proxied != self.post_filter._empty, bool(self.post_filter))
             d['post_filter'] = self.post_filter.to_dict()
 
         # count request doesn't care for sorting and other things
@@ -483,14 +484,14 @@ class Search(object):
             body=d
         )['count']
 
-    def execute(self):
+    def execute(self, response_class=Response):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
         """
         es = connections.get_connection(self._using)
 
-        return Response(
+        return response_class(
             es.search(
                 index=self._index,
                 doc_type=self._doc_type,
@@ -511,3 +512,4 @@ class Search(object):
                 **self._params
             ):
             yield self._doc_type_map.get(hit['_type'], Result)(hit)
+
