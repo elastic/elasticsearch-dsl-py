@@ -173,7 +173,11 @@ Pre-built Faceted Search
 ------------------------
 
 If you have your ``DocType``\ s defined you can very easily create a faceted
-search class to simplify searching and filtering:
+search class to simplify searching and filtering.
+
+.. note::
+
+    This feature is experimental and may be subject to change.
 
 .. code:: python
 
