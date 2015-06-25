@@ -195,8 +195,13 @@ class DocType(ObjectBase):
                 for k in DOC_META_FIELDS
                 if k in self.meta
             )
-            if 'index' not in meta and self._doc_type.index:
+
+            # in case of to_dict include the index unlike save/update/delete
+            if 'index' in self.meta:
+                meta['_index'] = self.meta.index
+            elif self._doc_type.index:
                 meta['_index'] = self._doc_type.index
+
             meta['_type'] = self._doc_type.name
             meta['_source'] = d
             d = meta

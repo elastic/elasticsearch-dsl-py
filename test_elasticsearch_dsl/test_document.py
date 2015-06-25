@@ -50,6 +50,16 @@ def test_to_dict_with_meta():
         '_source': {'title': 'hello'},
     } == d.to_dict(True)
 
+def test_to_dict_with_meta_includes_custom_index():
+    d = MySubDoc(title='hello')
+    d.meta.index = 'other-index'
+
+    assert {
+        '_index': 'other-index',
+        '_type': 'my_custom_doc',
+        '_source': {'title': 'hello'},
+    } == d.to_dict(True)
+
 def test_attribute_can_be_removed():
     d = MyDoc(title='hello')
 
