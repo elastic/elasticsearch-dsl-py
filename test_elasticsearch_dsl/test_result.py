@@ -64,8 +64,6 @@ def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
     with raises(AttributeError):
         h.not_there
 
-    assert None == h.get('not_there')
-
 def test_slicing_on_response_slices_on_hits(dummy_response):
     res = result.Response(dummy_response)
 
