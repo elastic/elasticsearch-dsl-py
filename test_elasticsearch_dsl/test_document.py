@@ -296,3 +296,11 @@ def test_delete_no_index(mock_client):
     md = MyDoc()
     with raises(ValidationException):
         md.delete(using='mock')
+
+def test_search_with_custom_alias_and_index(mock_client):
+    search_object = MyDoc.search(
+      using="staging",
+      index=["custom_index1", "custom_index2"])
+    
+    assert search_object._using == "staging"
+    assert search_object._index == ["custom_index1", "custom_index2"]
