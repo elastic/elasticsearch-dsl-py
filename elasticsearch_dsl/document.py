@@ -124,10 +124,10 @@ class DocType(ObjectBase):
         cls._doc_type.init(index, using)
 
     @classmethod
-    def search(cls):
+    def search(cls, using=None, index=None):
         return Search(
-            using=cls._doc_type.using,
-            index=cls._doc_type.index,
+            using=using or cls._doc_type.using,
+            index=index or cls._doc_type.index,
             doc_type={cls._doc_type.name: cls.from_es},
         )
 
