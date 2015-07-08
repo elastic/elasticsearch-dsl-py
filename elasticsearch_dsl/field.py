@@ -6,8 +6,8 @@ from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
 
 __all__ = ['construct_field', 'Object', 'Nested', 'Date', 'String', 'Float',
-    'Double', 'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
-    'GeoPoint', 'GeoShape', ]
+           'Double', 'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip',
+           'Attachment', 'GeoPoint', 'GeoShape', ]
 
 def construct_field(name_or_field, **params):
     # {"type": "string", "index": "not_analyzed"}
