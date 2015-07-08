@@ -1,5 +1,13 @@
-
 from .utils import DslBase, _make_dsl_class
+
+__all__ = ['A', 'Agg', 'AggBase', 'Filter', 'Bucket', 'Children',
+           'DateHistogram', 'Filters', 'GeoDistance', 'GeohashGrid', 'Global',
+           'Histogram', 'Iprange', 'Missing', 'Nested', 'Range',
+           'ReverseNested', 'SignificantTerms', 'Terms', 'Avg', 'Cardinality',
+           'ExtendedStats', 'GeoBounds', 'Max', 'Min', 'Percentiles',
+           'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits',
+           'ValueCount']
+
 
 def A(name_or_agg, filter=None, **params):
     if filter is not None:
