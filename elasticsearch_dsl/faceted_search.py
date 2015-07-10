@@ -97,11 +97,18 @@ class FacetedSearch(object):
             post_filter &= f
         return search.post_filter(post_filter)
 
+    def highlight(self, search):
+        """
+        Add highlighting for all the fields
+        """
+        return search.highlight(*self.fields)
+
     def build_search(self):
         s = self.search()
         s = self.query(s)
         self.aggregate(s)
         s = self.filter(s)
+        s = self.highlight(s)
         return s
 
     def execute(self):
