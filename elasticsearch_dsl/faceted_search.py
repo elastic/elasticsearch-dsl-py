@@ -23,8 +23,8 @@ AGG_TO_FILTER = {
 }
 
 BUCKET_TO_DATA = {
-    Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] == filter),
-    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] == filter)
+    Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] in filter),
+    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] in filter)
 }
 
 def agg_to_filter(agg, value):
@@ -43,7 +43,7 @@ class FacetedResponse(Response):
             for name, agg in iteritems(self._search.facets):
                 buckets = self._facets[name] = []
                 data = self.aggregations['_filter_' + name][name]['buckets']
-                filter = self._search._raw_filters.get(name, None)
+                filter = self._search._raw_filters.get(name, ())
                 for b in data:
                     buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
         return self._facets
@@ -58,7 +58,7 @@ class FacetedSearch(object):
 
     def __init__(self, query=None, filters={}):
         self._query = query
-        self._raw_filters = filters
+        self._raw_filters = {}
         self._filters = {}
         for name, value in iteritems(filters):
             self.add_filter(name, value)
@@ -67,8 +67,10 @@ class FacetedSearch(object):
         agg = self.facets[name]
         if isinstance(value, list):
             self._filters[name] = F('bool', should=[agg_to_filter(agg, v) for v in value])
+            self._raw_filters[name] = value
         else:
             self._filters[name] = agg_to_filter(agg, value)
+            self._raw_filters[name] = (value, )
 
     def search(self):
         return Search(doc_type=self.doc_types, index=self.index)
