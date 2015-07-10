@@ -90,6 +90,10 @@ class FacetedSearch(object):
         return search
 
     def aggregate(self, search):
+        """
+        Add aggregations representing the facets selected, including potential
+        filters.
+        """
         for f, agg in iteritems(self.facets):
             agg_filter = F('match_all')
             for field, filter in iteritems(self._filters):
@@ -103,6 +107,10 @@ class FacetedSearch(object):
             ).bucket(f, agg)
 
     def filter(self, search):
+        """
+        Add a ``post_filter`` to the search request narrowing the results based
+        on the facet filters.
+        """
         post_filter = F('match_all')
         for f in itervalues(self._filters):
             post_filter &= f
