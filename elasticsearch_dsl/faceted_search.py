@@ -75,9 +75,14 @@ class FacetedSearch(object):
     def search(self):
         return Search(doc_type=self.doc_types, index=self.index)
 
-    def query(self, search):
-        if self._query:
-            return search.query('multi_match', fields=self.fields, query=self._query)
+    def query(self, search, query):
+        """
+        Add query part to ``search``.
+
+        Override this if you wish to customize the query used.
+        """
+        if query:
+            return search.query('multi_match', fields=self.fields, query=query)
         return search
 
     def aggregate(self, search):
@@ -106,11 +111,14 @@ class FacetedSearch(object):
         return search.highlight(*self.fields)
 
     def build_search(self):
+        """
+        Construct the ``Search`` object.
+        """
         s = self.search()
-        s = self.query(s)
-        self.aggregate(s)
+        s = self.query(s, self._query)
         s = self.filter(s)
         s = self.highlight(s)
+        self.aggregate(s)
         return s
 
     def execute(self):
