@@ -37,6 +37,10 @@ class FacetedResponse(Response):
         super(AttrDict, self).__setattr__('_search', search)
 
     @property
+    def query_string(self):
+        return self._search._query
+
+    @property
     def facets(self):
         if not hasattr(self, '_facets'):
             super(AttrDict, self).__setattr__('_facets', AttrDict({}))
