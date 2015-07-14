@@ -4,7 +4,7 @@ from functools import partial
 
 from .search import Search
 from .filter import F
-from .aggs import Terms, DateHistogram, Histogram
+from .aggs import Terms, DateHistogram, Histogram, Range
 from .utils import AttrDict
 from .result import Response
 
@@ -20,11 +20,13 @@ AGG_TO_FILTER = {
     Terms: lambda a, v: F('term', **{a.field: v}),
     DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
     Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
+    Range: lambda a, v: F('range', **{a.field: v})
 }
 
 BUCKET_TO_DATA = {
     Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] == filter),
-    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] == filter)
+    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] == filter),
+    Range: lambda bucket_key, bucket, filter: (bucket_key, bucket['doc_count'], bucket_key == filter)
 }
 
 def agg_to_filter(agg, value):
@@ -43,9 +45,21 @@ class FacetedResponse(Response):
             for name, agg in iteritems(self._search.facets):
                 buckets = self._facets[name] = []
                 data = self.aggregations['_filter_' + name][name]['buckets']
-                filter = self._search._raw_filters.get(name, None)
+                filter = self._search._raw_filters.get(name, {})
                 for b in data:
-                    buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
+                    agg_class = agg.__class__
+                    if agg_class == Range:
+                        if getattr(agg, 'keyed', False):
+                            bucket_key = b
+                            bucket = data[b]
+                            range_filter = filter
+                        else:
+                            bucket_key = b['key']
+                            bucket = b
+                            range_filter = '%s-%s' % (filter.get('from', '*'), filter.get('to', '*'))
+                        buckets.append(BUCKET_TO_DATA[agg_class](bucket_key, bucket, range_filter))
+                    else:
+                        buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
         return self._facets
 
 
