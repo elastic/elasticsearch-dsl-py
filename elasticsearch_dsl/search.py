@@ -429,7 +429,6 @@ class Search(object):
             d = {"query": self.query.to_dict()}
 
         if self.post_filter:
-            print(self.post_filter._proxied == self.post_filter._empty, self.post_filter._proxied != self.post_filter._empty, bool(self.post_filter))
             d['post_filter'] = self.post_filter.to_dict()
 
         # count request doesn't care for sorting and other things
