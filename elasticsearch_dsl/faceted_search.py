@@ -4,7 +4,7 @@ from functools import partial
 
 from .search import Search
 from .filter import F
-from .aggs import Terms, DateHistogram, Histogram
+from .aggs import Terms, DateHistogram, Histogram, Range
 from .utils import AttrDict
 from .result import Response
 
@@ -18,14 +18,23 @@ DATE_INTERVALS = {
 
 AGG_TO_FILTER = {
     Terms: lambda a, v: F('term', **{a.field: v}),
-    DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
-    Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
+    DateHistogram: lambda a, v: F(
+        'range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
+    Histogram: lambda a, v:  F(
+        'range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
+    Range: lambda a, v: F('range', **{a.field: v})
 }
 
 BUCKET_TO_DATA = {
-    Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] in filter),
-    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] in filter)
+    Terms: lambda bucket, filter: (
+        bucket['key'], bucket['doc_count'], bucket['key'] in filter),
+    DateHistogram: lambda bucket, filter: (
+        datetime.utcfromtimestamp(int(bucket['key']) / 1000),
+        bucket['doc_count'], bucket['key'] in filter),
+    Range: lambda bucket_key, bucket, filter: (
+        bucket_key, bucket['doc_count'], bucket_key in filter)
 }
+
 
 def agg_to_filter(agg, value):
     return AGG_TO_FILTER[agg.__class__](agg, value)
@@ -47,11 +56,26 @@ class FacetedResponse(Response):
             for name, agg in iteritems(self._search.facets):
                 buckets = self._facets[name] = []
                 data = self.aggregations['_filter_' + name][name]['buckets']
-                filter = self._search._raw_filters.get(name, ())
+                filter = self._search._raw_filters.get(name, {})
                 for b in data:
-                    buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
+                    agg_class = agg.__class__
+                    if agg_class == Range:
+                        if getattr(agg, 'keyed', False):
+                            bucket_key = b
+                            bucket = data[b]
+                            range_filter = filter
+                        else:
+                            bucket_key = b['key']
+                            bucket = b
+                            range_filter = (
+                                '%s-%s' % (f.get('from', '*'),
+                                           f.get('to', '*')) for f in filter)
+                        buckets.append(
+                            BUCKET_TO_DATA[agg_class](
+                                bucket_key, bucket, range_filter))
+                    else:
+                        buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
         return self._facets
-
 
 
 class FacetedSearch(object):
@@ -70,7 +94,8 @@ class FacetedSearch(object):
     def add_filter(self, name, value):
         agg = self.facets[name]
         if isinstance(value, list):
-            self._filters[name] = F('bool', should=[agg_to_filter(agg, v) for v in value])
+            self._filters[name] = F(
+                'bool', should=[agg_to_filter(agg, v) for v in value])
             self._raw_filters[name] = value
         else:
             self._filters[name] = agg_to_filter(agg, value)
@@ -136,7 +161,7 @@ class FacetedSearch(object):
     def execute(self):
         if not hasattr(self, '_response'):
             s = self.build_search()
-            self._response = s.execute(response_class=partial(FacetedResponse, self))
+            self._response = s.execute(
+                response_class=partial(FacetedResponse, self))
 
         return self._response
-
