@@ -101,11 +101,11 @@ def test_bool_and_bool():
 
     q1 = query.Bool(must=[qt1], should=[qt2])
     q2 = query.Bool(must_not=[qt3])
-    assert q1 & q2 == query.Bool(must=[qt1], must_not=[qt3], should=[qt2])
+    assert q1 & q2 == query.Bool(must=[qt1], must_not=[qt3], should=[qt2], minimum_should_match=0)
 
     q1 = query.Bool(must=[qt1], should=[qt1, qt2])
     q2 = query.Bool(should=[qt3])
-    assert q1 & q2 == query.Bool(must=[qt1], should=[query.Bool(should=[qt1, qt2]), qt3])
+    assert q1 & q2 == query.Bool(must=[qt1, qt3], should=[qt1, qt2], minimum_should_match=0)
 
 def test_inverted_query_becomes_bool_with_must_not():
     q = query.Match(f=42)
