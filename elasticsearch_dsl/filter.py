@@ -80,12 +80,9 @@ class Bool(BoolMixin, Filter):
             if self.should and other.should:
                 selfshould, othershould = self.should[:], other.should[:]
                 # required subfilter, move to must
-                if len(selfshould) == 1:
-                    f.must.append(selfshould.pop())
-
-                # required subfilter, move to must
-                if len(othershould) == 1:
-                    f.must.append(othershould.pop())
+                for s in (selfshould, othershould):
+                    if len(s) == 1:
+                        f.must.append(s.pop())
 
                 # we have leftover lists, nothing to do but add to must as bool(should)
                 if selfshould and othershould:
