@@ -22,9 +22,13 @@ AGG_TO_FILTER = {
     Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
 }
 
+def _date_histogram_to_data(bucket, filter):
+    d = datetime.utcfromtimestamp(int(bucket['key']) / 1000)
+    return (d, bucket['doc_count'], d in filter)
+
 BUCKET_TO_DATA = {
     Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] in filter),
-    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] in filter)
+    DateHistogram: _date_histogram_to_data,
 }
 
 def agg_to_filter(agg, value):
