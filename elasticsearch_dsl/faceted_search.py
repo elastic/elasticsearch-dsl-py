@@ -72,13 +72,20 @@ class FacetedSearch(object):
             self.add_filter(name, value)
 
     def add_filter(self, name, value):
+        if not isinstance(value, (tuple, list)):
+            if value in (None, ''):
+                return
+            value = (value, )
+
+        if not value:
+            return
+
         agg = self.facets[name]
-        if isinstance(value, list):
-            self._filters[name] = F('bool', should=[agg_to_filter(agg, v) for v in value])
-            self._raw_filters[name] = value
-        else:
-            self._filters[name] = agg_to_filter(agg, value)
-            self._raw_filters[name] = (value, )
+        f = agg_to_filter(agg, value[0])
+        for v in value[1:]:
+            f |= agg_to_filter(agg, v)
+        self._filters[name] = f
+        self._raw_filters[name] = value
 
     def search(self):
         return Search(doc_type=self.doc_types, index=self.index)
