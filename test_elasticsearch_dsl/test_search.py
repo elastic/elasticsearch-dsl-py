@@ -337,6 +337,12 @@ def test_from_dict_doesnt_need_query():
         "size": 5
     } == s.to_dict()
 
+
+def test_from_dict_accepts_additional_parameters():
+    s = search.Search.from_dict({"size": 5}, index='superCoolIndex')
+    assert(s._index == ['superCoolIndex'])
+
+
 def test_params_being_passed_to_search(mock_client):
     s = search.Search('mock')
     s = s.params(routing='42')
