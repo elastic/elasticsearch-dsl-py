@@ -162,24 +162,39 @@ class Search(object):
             return s
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d, *args, **kwargs):
         """
-        Construct a `Search` instance from a raw dict containing the search
-        body. Useful when migrating from raw dictionaries.
+        Construct a new `Search` instance from a raw dictionary containing
+        the search body. Useful when migrating from raw dictionaries.
+
+        Any additional positional or keyword parameters to this function,
+        aside from the raw query dictionary, will be passed to the
+        `Search` constructor.
 
         Example::
 
-            s = Search.from_dict({
-                "query": {
-                    "bool": {
-                        "must": [...]
+            raw_query = {
+                "query" : {
+                    "filtered" : {
+                        "query" : {
+                            "match_all" : {}
+                        },
+                        "filter" : {
+                            "term" : {
+                                "price" : 20
+                            }
+                        }
                     }
-                },
-                "aggs": {...}
-            })
+                }
+            }
+
+            client = Elasticsearch()
+            s = Search.from_dict(raw_query, using=client, index='products')
             s = s.filter('term', published=True)
+            print(s.execute())
+
         """
-        s = cls()
+        s = cls(*args, **kwargs)
         s.update_from_dict(d)
         return s
 
@@ -263,7 +278,7 @@ class Search(object):
                     'params': {'n': 3}
                 }
             )
-        
+
         """
         s = self._clone()
         for name in kwargs:
@@ -424,7 +439,7 @@ class Search(object):
         """
         Set the type to search through. You can supply a single value or
         multiple. Values can be strings or subclasses of ``DocType``.
-        
+
         You can also pass in any keyword arguments, mapping a doc_type to a
         callback that should be used instead of the Result class.
 
