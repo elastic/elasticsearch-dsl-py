@@ -243,7 +243,7 @@ def test_function_score_to_dict():
         'function_score',
         query=query.Q('match', title='python'),
         functions=[
-            query.SF('random'),
+            query.SF('random_score'),
             query.SF('field_value_factor', field='comment_count', filter=filter.F('term', tags='python'))
         ]
     )
@@ -252,7 +252,7 @@ def test_function_score_to_dict():
       'function_score': {
         'query': {'match': {'title': 'python'}},
         'functions': [
-          {'random': {}},
+          {'random_score': {}},
           {
             'filter': {'term': {'tags': 'python'}},
             'field_value_factor': {

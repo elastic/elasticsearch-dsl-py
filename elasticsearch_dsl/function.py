@@ -69,18 +69,18 @@ class BoostFactor(ScoreFunction):
             del d[self.name]
         return d
 
-class Random(ScoreFunction):
-    name = 'random'
+class RandomScore(ScoreFunction):
+    name = 'random_score'
 
 class FieldValueFactor(ScoreFunction):
     name = 'field_value_factor'
 
 class Linear(ScoreFunction):
     name = 'linear'
-    
+
 class Gauss(ScoreFunction):
     name = 'gauss'
-    
+
 class Exp(ScoreFunction):
     name = 'exp'
-    
+
