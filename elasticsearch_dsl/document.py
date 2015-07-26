@@ -19,8 +19,9 @@ META_FIELDS = frozenset((
     'index', 'using', 'score',
 )).union(DOC_META_FIELDS)
 
-class MetaField(dict):
-    pass
+class MetaField(object):
+    def __init__(self, *args, **kwargs):
+        self.args, self.kwargs = args, kwargs
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
@@ -56,10 +57,7 @@ class DocTypeOptions(object):
         for name in dir(meta):
             if isinstance(getattr(meta, name, None), MetaField):
                 params = getattr(meta, name)
-                if isinstance(params, dict):
-                    self.mapping.meta(name, **params)
-                else:
-                    self.mapping.meta(name, params)
+                self.mapping.meta(name, *params.args, **params.kwargs)
 
         # document inheritance - include the fields from parents' mappings and
         # index/using values

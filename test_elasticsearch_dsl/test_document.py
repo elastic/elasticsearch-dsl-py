@@ -90,6 +90,8 @@ def test_meta_field_mapping():
         class Meta:
             all = document.MetaField(enabled=False)
             _index = document.MetaField(enabled=True)
+            dynamic = document.MetaField('strict')
+            dynamic_templates = document.MetaField([42])
 
     assert {
         'user': {
@@ -98,6 +100,8 @@ def test_meta_field_mapping():
             },
             '_all': {'enabled': False},
             '_index': {'enabled': True},
+            'dynamic': 'strict',
+            'dynamic_templates': [42]
         }
     } == User._doc_type.mapping.to_dict()
 

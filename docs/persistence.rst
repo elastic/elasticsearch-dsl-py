@@ -308,6 +308,7 @@ to map and pass any parameters to the ``MetaField`` class:
         class Meta:
             all = MetaField(enabled=False)
             parent = MetaField(type='blog')
+            dynamic = MetaField('strict')
 
 .. _index:
 
