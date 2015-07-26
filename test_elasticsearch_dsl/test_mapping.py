@@ -130,3 +130,17 @@ def test_mapping_can_collect_multiple_analyzers():
            'my_filter2': {'stopwords': ['c', 'd'], 'type': 'stop'}},
        'tokenizer': {'trigram': {'max_gram': 3, 'min_gram': 3, 'type': 'nGram'}}
     } == m._collect_analysis()
+
+def test_even_non_custom_analyzers_can_have_params():
+    a1 = analysis.analyzer('whitespace', type='pattern', pattern=r'\\s+')
+    m = mapping.Mapping('some_type')
+    m.field('title', 'string', analyzer=a1)
+
+    assert {
+        "analyzer": {
+            "whitespace": {
+                "type": "pattern",
+                "pattern": r"\\s+"
+            }
+            }
+    } == m._collect_analysis()

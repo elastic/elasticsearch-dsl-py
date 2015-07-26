@@ -115,8 +115,16 @@ class Analyzer(AnalysisBase, DslBase):
     _builtins = ANALYZERS
     name = None
 
+    def get_analysis_definition(self):
+        d = self.definition()
+        # empty definition, assume external
+        if len(d) == 1 and 'type' in d:
+            return {}
+        return {'analyzer': {self._name: d}}
+
 class BuiltinAnalyzer(Analyzer):
     name = 'builtin'
+
 
 class CustomAnalyzer(Analyzer):
     name = 'custom'
@@ -127,10 +135,10 @@ class CustomAnalyzer(Analyzer):
     }
 
     def get_analysis_definition(self):
-        d = self.definition()
-        if d == {'type': 'custom'}:
-            return {}
-        out = {'analyzer': {self._name: d}}
+        out = super(CustomAnalyzer, self).get_analysis_definition()
+        # empty definition, assume external
+        if not out:
+            return out
 
         t = getattr(self, 'tokenizer', None)
         if t is not None and not isinstance(t, BuiltinTokenizer):
