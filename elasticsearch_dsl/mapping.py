@@ -127,7 +127,7 @@ class Mapping(object):
         if params and kwargs:
             raise ValueError('Meta configs cannot have both value and a dictionary.')
 
-        self._meta[name] = params or kwargs
+        self._meta[name] = kwargs if params is None else params
         return self
 
     def to_dict(self):
