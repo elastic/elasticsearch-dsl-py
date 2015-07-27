@@ -42,6 +42,7 @@ class Field(DslBase):
     # all fields can be multifields
     _param_defs = {'fields': {'type': 'field', 'hash': True}}
     name = None
+    _coerce = False
 
     def __init__(self, *args, **kwargs):
         self._multi = kwargs.pop('multi', False)
@@ -89,6 +90,7 @@ class InnerObjectWrapper(ObjectBase):
 class InnerObject(object):
     " Common functionality for nested and object fields. "
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
+    _coerce = True
 
     def __init__(self, *args, **kwargs):
         self._doc_class = kwargs.pop('doc_class', InnerObjectWrapper)
@@ -177,6 +179,7 @@ class Nested(InnerObject, Field):
 
 class Date(Field):
     name = 'date'
+    _coerce = True
 
     def _to_python(self, data):
         if isinstance(data, date):

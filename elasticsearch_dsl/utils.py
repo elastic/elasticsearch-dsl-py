@@ -387,8 +387,11 @@ class BoolMixin(object):
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
         super(ObjectBase, self).__init__({})
-        for (k, v) in iteritems(kwargs):
-            setattr(self, k, v)
+        m = self._doc_type.mapping
+        for k in m:
+            if k in kwargs and m[k]._coerce:
+                setattr(self, k, kwargs.pop(k))
+        self._d_.update(kwargs)
 
     def __getattr__(self, name):
         try:
