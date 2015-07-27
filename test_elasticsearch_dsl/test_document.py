@@ -168,6 +168,12 @@ def test_to_dict_is_recursive_and_can_cope_with_multi_values():
         'inner': [{'old_field': 'of1'}, {'old_field': 'of2'}],
     } == md.to_dict()
 
+def test_to_dict_ignores_empty_collections():
+    md = MyDoc(name='', address={}, count=0, valid=False, tags=[])
+
+    assert {'name': '', 'count': 0, 'valid': False} == md.to_dict()
+
+
 def test_declarative_mapping_definition():
     assert issubclass(MyDoc, document.DocType)
     assert hasattr(MyDoc, '_doc_type')

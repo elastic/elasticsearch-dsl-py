@@ -285,7 +285,7 @@ class DslBase(object):
             # typed param
             if pinfo and 'type' in pinfo:
                 # don't serialize empty lists and dicts for typed fields
-                if not value:
+                if value in ({}, []):
                     continue
 
                 # multi-values are serialized as list of dicts
@@ -419,7 +419,7 @@ class ObjectBase(AttrDict):
 
             # don't serialize empty values
             # careful not to include numeric zeros
-            if not isinstance(v, (int, float)) and not v:
+            if v in ([], {}, None):
                 continue
 
             out[k] = v
