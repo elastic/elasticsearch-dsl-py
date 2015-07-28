@@ -71,6 +71,7 @@ def test_mapping_can_collect_all_analyzers():
         tokenizer=analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
         filter=[analysis.token_filter('my_filter2', 'stop', stopwords=['c', 'd'])],
     )
+    a5 = analysis.analyzer('my_analyzer3', tokenizer='keyword')
 
     m = mapping.Mapping('article')
     m.field('title', 'string', analyzer=a1,
@@ -82,11 +83,14 @@ def test_mapping_can_collect_all_analyzers():
     m.field('comments', Nested(properties={
         'author': String(index_analyzer=a4)
     }))
+    m.meta('_all', analyzer=a5)
 
     assert {
         'analyzer': {
             'my_analyzer1': {'filter': ['lowercase', 'my_filter1'], 'tokenizer': 'keyword', 'type': 'custom'},
-            'my_analyzer2': {'filter': ['my_filter2'], 'tokenizer': 'trigram', 'type': 'custom'}},
+            'my_analyzer2': {'filter': ['my_filter2'], 'tokenizer': 'trigram', 'type': 'custom'},
+            'my_analyzer3': {'tokenizer': 'keyword', 'type': 'custom'},
+        },
         'filter': {
             'my_filter1': {'stopwords': ['a', 'b'], 'type': 'stop'},
             'my_filter2': {'stopwords': ['c', 'd'], 'type': 'stop'},

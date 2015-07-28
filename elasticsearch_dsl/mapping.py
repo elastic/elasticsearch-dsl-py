@@ -1,7 +1,8 @@
 from six import iteritems
+from itertools import chain
 
 from .utils import DslBase
-from .field import InnerObject
+from .field import InnerObject, String
 from .connections import connections
 from .exceptions import IllegalOperation
 
@@ -39,7 +40,11 @@ class Mapping(object):
 
     def _collect_analysis(self):
         analysis = {}
-        for f in self.properties._collect_fields():
+        fields = []
+        if '_all' in self._meta:
+            fields.append(String(**self._meta['_all']))
+
+        for f in chain(fields, self.properties._collect_fields()):
             for analyzer_name in ('analyzer', 'index_analyzer', 'search_analyzer'):
                 if not hasattr(f, analyzer_name):
                     continue
