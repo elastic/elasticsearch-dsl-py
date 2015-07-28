@@ -70,7 +70,11 @@ Or just add them one by one:
 
 .. code:: python
 
-    connections.add_connection('qa', hosts=['esqa1.example.com'], sniff_on_start=True)
+    # if you have configuration to be passed to Elasticsearch.__init__
+    connections.create_connection('qa', hosts=['esqa1.example.com'], sniff_on_start=True)
+
+    # if you already have an Elasticsearch instance ready
+    connections.add_connection('qa', my_client)
 
 Using aliases
 ~~~~~~~~~~~~~
