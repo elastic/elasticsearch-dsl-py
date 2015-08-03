@@ -16,13 +16,27 @@ DATE_INTERVALS = {
 
 }
 
+
+def range_to_filter(aggregation, value):
+    aggregation_range = [r for r in aggregation.ranges if r['key'] == value]
+    if not aggregation_range:
+        return {}
+    aggregation_range = aggregation_range[0]
+    kwargs = {aggregation.field: {}}
+    if aggregation_range.get('from') is not None:
+        kwargs[aggregation.field]['gte'] = aggregation_range['from']
+    if aggregation_range.get('to') is not None:
+        kwargs[aggregation.field]['lt'] = aggregation_range['to']
+    return F('range', **kwargs)
+
+
 AGG_TO_FILTER = {
     Terms: lambda a, v: F('term', **{a.field: v}),
     DateHistogram: lambda a, v: F(
         'range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
     Histogram: lambda a, v:  F(
         'range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
-    Range: lambda a, v: F('range', **{a.field: v})
+    Range: range_to_filter
 }
 
 BUCKET_TO_DATA = {
