@@ -84,3 +84,5 @@ class Gauss(ScoreFunction):
 class Exp(ScoreFunction):
     name = 'exp'
     
+class Filter(ScoreFunction):
+    name = 'filter'
