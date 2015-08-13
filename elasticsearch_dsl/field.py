@@ -61,8 +61,6 @@ class Field(DslBase):
         return self._empty()
     
     def to_python(self, data):
-        if not data:
-            return data
         if isinstance(data, (list, AttrList)):
             data[:] = map(self._to_python, data)
             return data
@@ -70,6 +68,7 @@ class Field(DslBase):
 
     def clean(self, data):
         data = self.to_python(data)
+        # FIXME: numeric 0
         if not data and self._required:
             raise ValidationException("Value required for this field.")
         return data
@@ -182,6 +181,8 @@ class Date(Field):
     _coerce = True
 
     def _to_python(self, data):
+        if not data:
+            return None
         if isinstance(data, date):
             return data
 

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Nested, String, Date
+from elasticsearch_dsl import DocType, Nested, String, Date, Object
 from elasticsearch_dsl.field import InnerObjectWrapper
 from elasticsearch_dsl.exceptions import ValidationException
 
@@ -19,6 +19,13 @@ class BlogPost(DocType):
         }
     )
     created = Date()
+    inner = Object()
+
+def test_empty_object():
+    d = BlogPost(authors=[{'name': 'Honza', 'email': 'honza@elastic.co'}])
+    d.inner = {}
+
+    d.full_clean()
 
 def test_missing_required_field_raises_validation_exception():
     d = BlogPost()
