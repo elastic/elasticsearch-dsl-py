@@ -38,7 +38,8 @@ __all__ = [
     'RussianAnalyzer', 'ThaiAnalyzer', 'CjkAnalyzer',
     'GermanNormalizationTokenFilter', 'LetterTokenizer', 'ScandinavianFolding',
     'TokenFilter', 'ThaiTokenizer', 'CjkBigramTokenFilter', 'GreekAnalyzer',
-    'LimitTokenFilter', 'ScandinavianNormalizationTokenFilter', 'TokenFilter'
+    'LimitTokenFilter', 'ScandinavianNormalizationTokenFilter', 'TokenFilter',
+    'NoStemTokenFilter'
 ]
 
 ANALYZERS = frozenset((
@@ -66,7 +67,7 @@ TOKEN_FILTERS = frozenset((
     'hyphenation_decompounder', 'reverse', 'elision', 'truncate', 'unique',
     'pattern_capture', 'pattern_replace', 'trim', 'limit', 'hunspell',
     'common_grams', 'cjk_width', 'cjk_bigram', 'delimited_payload_filter',
-    'keep', 'keep_types', 'classic', 'apostrophe',
+    'keep', 'keep_types', 'classic', 'apostrophe', 'no_stem',
 
     # language normalizations
     'arabic_normalization', 'german_normalization', 'hindi_normalization',
