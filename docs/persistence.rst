@@ -108,7 +108,7 @@ If you want to create a model-like wrapper around your documents, use the
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch_dsl import DocType, String, Date, Nested, Boolean, analysis
+    from elasticsearch_dsl import DocType, String, Date, Nested, Boolean, analyzer
 
     html_strip = analyzer('html_strip',
         tokenizer="standard",
