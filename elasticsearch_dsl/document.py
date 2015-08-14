@@ -10,9 +10,13 @@ from .search import Search
 from .connections import connections
 from .exceptions import ValidationException
 
-DOC_META_FIELDS = frozenset((
-    'id', 'parent', 'routing', 'timestamp', 'ttl', 'version', 'version_type'
+DELETE_META_FIELDS = frozenset((
+    'id', 'parent', 'routing', 'version', 'version_type'
 ))
+
+DOC_META_FIELDS = frozenset((
+    'timestamp', 'ttl'
+)).union(DELETE_META_FIELDS)
 
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
@@ -175,7 +179,7 @@ class DocType(ObjectBase):
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
-            for k in DOC_META_FIELDS
+            for k in DELETE_META_FIELDS
             if k in self.meta
         )
         doc_meta.update(kwargs)
