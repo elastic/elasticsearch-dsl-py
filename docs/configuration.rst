@@ -29,7 +29,7 @@ already associated with:
 
 .. code:: python
 
-    s = s.using(Elasticsearch('otherhost:9200')
+    s = s.using(Elasticsearch('otherhost:9200'))
 
 
 .. _default connection:
