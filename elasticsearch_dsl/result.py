@@ -21,6 +21,9 @@ class Response(AttrDict):
     def __repr__(self):
         return '<Response: %r>' % self.hits
 
+    def __len__(self):
+        return len(self.hits)
+
     def success(self):
         return not (self.timed_out or self._shards.failed)
 
