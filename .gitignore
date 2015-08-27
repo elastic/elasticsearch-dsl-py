@@ -4,6 +4,7 @@
 .coverage
 *.egg-info
 dist
+build
 *.egg
 coverage.xml
 junit.xml
