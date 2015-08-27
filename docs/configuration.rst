@@ -6,6 +6,13 @@ option, and most useful, is to just define one default connection that will be
 used every time an API call is made without explicitly passing in other
 connection.
 
+When using ``elasticsearch_dsl`` it is highly recommended to use the attached
+serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
+your objects are correctly serialized into json every time. The
+``create_connection`` method that is described here (and that ``configure``
+method uses under the hood) will do that automatically for you, unless you
+explicitly specify your own serializer.
+
 .. note::
 
     Unless you want to access multiple clusters from your application it is

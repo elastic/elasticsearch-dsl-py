@@ -1,6 +1,6 @@
 from elasticsearch import Elasticsearch
 
-from elasticsearch_dsl import connections
+from elasticsearch_dsl import connections, serializer
 
 from pytest import raises
 
@@ -61,3 +61,9 @@ def test_create_connection_constructs_client():
 
     con = c.get_connection('testing')
     assert [{'host': 'es.com'}] == con.transport.hosts
+
+def test_create_connection_adds_our_serializer():
+    c = connections.Connections()
+    c.create_connection('testing', hosts=['es.com'])
+
+    assert c.get_connection('testing').transport.serializer is serializer.serializer

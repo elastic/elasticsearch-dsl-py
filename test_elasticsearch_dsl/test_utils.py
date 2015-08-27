@@ -1,4 +1,4 @@
-from elasticsearch_dsl import utils
+from elasticsearch_dsl import utils, serializer
 
 def test_merge():
     a = {'a': {'b': 42, 'c': 47}}
@@ -30,3 +30,8 @@ def test_make_dsl_class():
 
     assert XY.__name__ == 'XY'
     assert XY.__bases__ == (object, )
+
+def test_serializer_deals_with_Attr_versions():
+    d = utils.AttrDict({'key': utils.AttrList([1, 2, 3])})
+
+    assert serializer.serializer.dumps(d) == '{"key": [1, 2, 3]}'

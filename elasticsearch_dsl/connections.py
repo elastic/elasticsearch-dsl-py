@@ -2,6 +2,8 @@ from six import string_types
 
 from elasticsearch import Elasticsearch
 
+from .serializer import serializer
+
 class Connections(object):
     """
     Class responsible for holding connections to different clusters. Used as a
@@ -60,6 +62,7 @@ class Connections(object):
         Construct an instance of ``elasticsearch.Elasticsearch`` and register
         it under given alias.
         """
+        kwargs.setdefault('serializer', serializer)
         conn = self._conns[alias] = Elasticsearch(**kwargs)
         return conn
 
@@ -85,11 +88,9 @@ class Connections(object):
 
         # if not, try to create it
         try:
-            conn = self._conns[alias] = Elasticsearch(**self._kwargs[alias])
+            return self.create_connection(alias, **self._kwargs[alias])
         except KeyError:
             # no connection and no kwargs to set one up
             raise KeyError('There is no connection with alias %r.' % alias)
-        else:
-            return conn
 
 connections = Connections()
