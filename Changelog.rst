@@ -3,7 +3,7 @@
 Changelog
 =========
 
-0.0.7 (2015-08-28)
+0.0.8 (2015-08-28)
 ------------------
  * ``0.0.5`` and ``0.0.6`` was released with broken .tar.gz on pypi, just a build fix
 
