@@ -1,4 +1,4 @@
-from .query import Q
+7rom .query import Q
 from .filter import F
 from .aggs import A
 from .function import SF
