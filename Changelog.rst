@@ -3,6 +3,10 @@
 Changelog
 =========
 
+0.0.6 (2015-08-28)
+------------------
+ * ``0.0.5`` was released with broken .tar.gz on pypi, just a build fix
+
 0.0.5 (2015-08-27)
 ------------------
  * added support for (index/search)_analyzer via #143, thanks @wkiser!
