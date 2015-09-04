@@ -59,6 +59,7 @@ class Bool(BoolMixin, Query):
         'must': {'type': 'query', 'multi': True},
         'should': {'type': 'query', 'multi': True},
         'must_not': {'type': 'query', 'multi': True},
+        'filter': {'type': 'query', 'multi': True},
     }
 
     def __and__(self, other):
