@@ -321,18 +321,17 @@ class Search(object):
         """
         Control which part of the fields to extract from the `_source` document
 
-        :arg partial: dict specifying which fields to extract from the source
+        :kwargs partial: dict specifying which fields to extract from the source
 
-        ``partial`` should have the format:
-            {
-                'some_id': {
-                        'include': ['field', 'some.nested.field'],
-                        'exclude': ['another_field']
-                },
-                'some_other_id': {
-                        'include': ['some.field']
-                }
-            }
+        An example usage would be:
+
+            s = Search().partial_fields(authors_data={
+                    'include': ['authors.*'],
+                    'exclude': ['authors.name']
+                })
+
+        which will include all fields from the `authors` nested property except for
+        each authors `name`
 
         If ``partial`` is not provided, the whole `_source` will be fetched. Calling this multiple
         times will override the previous values with the new ones.
