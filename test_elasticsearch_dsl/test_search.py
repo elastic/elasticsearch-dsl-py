@@ -390,6 +390,88 @@ def test_fields_on_clone():
         'fields': ['title']
     } == search.Search().fields(['title']).filter('term', title='python').to_dict()
 
+def test_partial_fields():
+    assert {
+        'query': {
+            'match_all': {}
+        },
+    } == search.Search().partial_fields().to_dict()
+
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        'partial_fields': {
+            'foo': {
+                'include': ['foo.bar.*'],
+                'exclude': ['foo.one']
+            }
+        }
+    } == search.Search().partial_fields(foo={
+        'include': ['foo.bar.*'],
+        'exclude': ['foo.one']
+    }).to_dict()
+
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        'partial_fields': {
+            'foo': {
+                'include': ['foo.bar.*'],
+                'exclude': ['foo.one'],
+            },
+            'bar': {
+                'include': ['bar.bar.*'],
+            }
+        }
+    } == search.Search().partial_fields(foo={
+        'include': ['foo.bar.*'],
+        'exclude': ['foo.one']
+    }, bar={
+        'include': ['bar.bar.*']
+    }).to_dict()
+
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        'partial_fields': {
+            'bar': {
+                'include': ['bar.*'],
+            }
+        }
+    } == search.Search().partial_fields(foo={
+        'include': ['foo.bar.*']
+    }).partial_fields(bar={
+        'include': ['bar.*']
+    }).to_dict()
+
+def test_partial_fields_on_clone():
+    assert {
+        'query': {
+            'filtered': {
+                'filter': {
+                    'term': {
+                        'title': 'python',
+                    }
+                },
+                'query': {
+                    'match_all': {},
+                }
+            }
+        },
+        'partial_fields': {
+            'foo': {
+                'include': ['foo.bar.*'],
+                'exclude': ['foo.one']
+            }
+        }
+    } == search.Search().partial_fields(foo={
+        'include': ['foo.bar.*'],
+        'exclude': ['foo.one']
+    }).filter('term', title='python').to_dict()
+
 def test_suggest_accepts_global_text():
     s = search.Search.from_dict({
         "query": {"match_all": {}},

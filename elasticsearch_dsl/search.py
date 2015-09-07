@@ -120,6 +120,7 @@ class Search(object):
         self._extra = extra or {}
         self._params = {}
         self._fields = None
+        self._partial_fields = {}
         self._highlight = {}
         self._highlight_opts = {}
         self._suggest = {}
@@ -194,6 +195,7 @@ class Search(object):
         s._doc_type_map = self._doc_type_map.copy()
         s._sort = self._sort[:]
         s._fields = self._fields[:] if self._fields is not None else None
+        s._partial_fields = self._partial_fields.copy()
         s._extra = self._extra.copy()
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
@@ -233,6 +235,8 @@ class Search(object):
             self._sort = d.pop('sort')
         if 'fields' in d:
             self._fields = d.pop('fields')
+        if 'partial_fields' in d:
+            self._partial_fields = d.pop('partial_fields')
         if 'highlight' in d:
             high = d.pop('highlight').copy()
             self._highlight = high.pop('fields')
@@ -311,6 +315,30 @@ class Search(object):
         """
         s = self._clone()
         s._fields = fields
+        return s
+
+    def partial_fields(self, **partial):
+        """
+        Control which part of the fields to extract from the `_source` document
+
+        :arg partial: dict specifying which fields to extract from the source
+
+        ``partial`` should have the format:
+            {
+                'some_id': {
+                        'include': ['field', 'some.nested.field'],
+                        'exclude': ['another_field']
+                },
+                'some_other_id': {
+                        'include': ['some.field']
+                }
+            }
+
+        If ``partial`` is not provided, the whole `_source` will be fetched. Calling this multiple
+        times will override the previous values with the new ones.
+        """
+        s = self._clone()
+        s._partial_fields = partial
         return s
 
     def sort(self, *keys):
@@ -484,6 +512,9 @@ class Search(object):
 
             if self._fields is not None:
                 d['fields'] = self._fields
+
+            if self._partial_fields:
+                d['partial_fields'] = self._partial_fields
 
             if self._highlight:
                 d['highlight'] = {'fields': self._highlight}
