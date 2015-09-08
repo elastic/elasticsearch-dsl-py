@@ -59,7 +59,7 @@ class Field(DslBase):
         if self._multi:
             return AttrList([])
         return self._empty()
-    
+
     def to_python(self, data):
         if isinstance(data, (list, AttrList)):
             data[:] = map(self._to_python, data)
@@ -67,7 +67,8 @@ class Field(DslBase):
         return self._to_python(data)
 
     def clean(self, data):
-        data = self.to_python(data)
+        if data is not None:
+            data = self.to_python(data)
         # FIXME: numeric 0
         if not data and self._required:
             raise ValidationException("Value required for this field.")
@@ -157,6 +158,8 @@ class InnerObject(object):
 
     def clean(self, data):
         data = super(InnerObject, self).clean(data)
+        if data is None:
+            return None
         if isinstance(data, (list, AttrList)):
             for d in data:
                 d.full_clean()

@@ -158,7 +158,7 @@ class DslMeta(type):
             # and create a registry for subclasses
             if not hasattr(cls, '_classes'):
                 cls._classes = {}
-        else:
+        elif cls.name not in cls._classes:
             # normal class, register it
             cls._classes[cls.name] = cls
 
@@ -431,9 +431,10 @@ class ObjectBase(AttrDict):
         errors = {}
         for name in self._doc_type.mapping:
             field = self._doc_type.mapping[name]
-            data = getattr(self, name, None)
+            data = self._d_.get(name, None)
             try:
-                data = field.clean(data)
+                # save the cleaned value
+                self._d_[name] = field.clean(data)
             except ValidationException as e:
                 errors.setdefault(name, []).append(e)
 
