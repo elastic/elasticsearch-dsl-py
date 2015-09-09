@@ -105,8 +105,6 @@ class Bucket(AggBase, Agg):
             d['aggs'] = d[self.name].pop('aggs')
         return d
 
-    def to_data(self):
-        pass
 
 class Filter(Bucket):
     name = 'filter'
@@ -125,22 +123,62 @@ class Filter(Bucket):
         d[self.name].update(d[self.name].pop('filter', {}))
         return d
 
+
+FacetResults = namedtuple('FacetResults', 'value doc_count is_active')
+
+
+class Terms(Bucket):
+    name = 'terms'
+
+    def to_filter(self, value):
+        return F('term', **{self.field: value})
+
+    def to_python(self, bucket, bucket_filter):
+        return FacetResults(bucket['key'], bucket['doc_count'],
+                            bucket['key'] in bucket_filter)
+
+
+class Histogram(Bucket):
+    name = 'histogram'
+
+    def to_filter(self, value):
+        filter_body = {'gte': value, 'lt': value+self.interval}
+        return F('range', **{self.field: filter_body})
+
+
+class DateHistogram(Bucket):
+    DATE_INTERVALS = {
+        'month': lambda d: (d+timedelta(days=32)).replace(day=1),
+        'week': lambda d: d+timedelta(days=7),
+        'day': lambda d: d+timedelta(days=1),
+        'hour': lambda d: d+timedelta(hours=1),
+    }
+    name = 'date_histogram'
+
+    def to_filter(self, value):
+        filter_body = {
+            'gte': value,
+            'lt': self.DATE_INTERVALS[self.interval](value)
+        }
+        return F('range', **{self.field: filter_body})
+
+    def to_python(self, bucket, bucket_filter):
+        d = datetime.utcfromtimestamp(int(bucket['key']) / 1000)
+        return FacetResults(d, bucket['doc_count'], d in bucket_filter)
+
 AGGS = (
     (Bucket, 'children', None),
-    (Bucket, 'date_histogram', None),
     (Bucket, 'date_range', None),
     (Bucket, 'filters', {'filters': {'type': 'filter', 'hash': True}}),
     (Bucket, 'geo_distance', None),
     (Bucket, 'geohash_grid', None),
     (Bucket, 'global', None),
-    (Bucket, 'histogram', None),
     (Bucket, 'iprange', None),
     (Bucket, 'missing', None),
     (Bucket, 'nested', None),
     (Bucket, 'range', None),
     (Bucket, 'reverse_nested', None),
     (Bucket, 'significant_terms', None),
-    (Bucket, 'terms', None),
 
     (Agg, 'avg', None),
     (Agg, 'cardinality', None),
@@ -165,43 +203,3 @@ for base, fname, params_def in AGGS:
     fclass = _make_dsl_class(base, fname, params_def)
     globals()[fclass.__name__] = fclass
 
-FacetResults = namedtuple('FacetResults', 'value doc_count is_active')
-
-del Agg._classes['terms']
-del Agg._classes['histogram']
-del Agg._classes['date_histogram']
-
-
-class Terms(Terms):
-    def to_filter(self, value):
-        return F('term', **{self.field: value})
-
-    def to_python(self, bucket, bucket_filter):
-        return FacetResults(bucket['key'], bucket['doc_count'],
-                            bucket['key'] in bucket_filter)
-
-
-class Histogram(Histogram):
-    def to_filter(self, value):
-        filter_body = {'gte': value, 'lt': value+self.interval}
-        return F('range', **{self.field: filter_body})
-
-
-class DateHistogram(DateHistogram):
-    DATE_INTERVALS = {
-        'month': lambda d: (d+timedelta(days=32)).replace(day=1),
-        'week': lambda d: d+timedelta(days=7),
-        'day': lambda d: d+timedelta(days=1),
-        'hour': lambda d: d+timedelta(hours=1),
-    }
-
-    def to_filter(self, value):
-        filter_body = {
-            'gte': value,
-            'lt': self.DATE_INTERVALS[self.interval](value)
-        }
-        return F('range', **{self.field: filter_body})
-
-    def to_python(self, bucket, bucket_filter):
-        d = datetime.utcfromtimestamp(int(bucket['key']) / 1000)
-        return FacetResults(d, bucket['doc_count'], d in bucket_filter)
