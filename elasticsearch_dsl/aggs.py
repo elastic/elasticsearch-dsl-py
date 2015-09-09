@@ -49,8 +49,6 @@ class Agg(DslBase):
     _type_shortcut = staticmethod(A)
     name = None
 
-    def to_filter(self):
-        pass
 
 class AggBase(object):
     _param_defs = {
