@@ -25,7 +25,7 @@ class FacetedResponse(Response):
                 data = self.aggregations['_filter_' + name][name]['buckets']
                 filter = self._search._raw_filters.get(name, ())
                 for b in data:
-                    buckets.append(agg.to_data(b, filter))
+                    buckets.append(agg.to_python(b, filter))
         return self._facets
 
 

@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime, timedelta
 from .utils import DslBase, _make_dsl_class
 from .filter import F
@@ -88,7 +89,7 @@ class AggBase(object):
     def to_filter(self, value):
         raise NotImplementedError()
 
-    def to_data(self, bucket, bucket_filter):
+    def to_python(self, bucket, bucket_filter):
         raise NotImplementedError()
 
 
@@ -164,15 +165,20 @@ for base, fname, params_def in AGGS:
     fclass = _make_dsl_class(base, fname, params_def)
     globals()[fclass.__name__] = fclass
 
+FacetResults = namedtuple('FacetResults', 'value doc_count is_active')
+
+del Agg._classes['terms']
+del Agg._classes['histogram']
+del Agg._classes['date_histogram']
+
 
 class Terms(Terms):
     def to_filter(self, value):
         return F('term', **{self.field: value})
 
-    def to_data(self, bucket, bucket_filter):
-        return (bucket['key'],
-                bucket['doc_count'],
-                bucket['key'] == bucket_filter)
+    def to_python(self, bucket, bucket_filter):
+        return FacetResults(bucket['key'], bucket['doc_count'],
+                            bucket['key'] in bucket_filter)
 
 
 class Histogram(Histogram):
@@ -196,6 +202,6 @@ class DateHistogram(DateHistogram):
         }
         return F('range', **{self.field: filter_body})
 
-    def to_data(self, bucket, bucket_filter):
+    def to_python(self, bucket, bucket_filter):
         d = datetime.utcfromtimestamp(int(bucket['key']) / 1000)
-        return d, bucket['doc_count'], d in bucket_filter
+        return FacetResults(d, bucket['doc_count'], d in bucket_filter)
