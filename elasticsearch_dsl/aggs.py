@@ -1,5 +1,15 @@
-
+from datetime import datetime, timedelta
 from .utils import DslBase, _make_dsl_class
+from .filter import F
+
+__all__ = [
+    'A', 'Agg', 'Filter', 'Bucket', 'Children', 'DateHistogram', 'Filters',
+    'GeoDistance', 'GeohashGrid', 'Global', 'Histogram', 'Iprange', 'Missing',
+    'Nested', 'Range', 'ReverseNested', 'SignificantTerms', 'Terms', 'Avg',
+    'Cardinality', 'ExtendedStats', 'GeoBounds', 'Max', 'Min', 'Percentiles',
+    'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount'
+]
+
 
 def A(name_or_agg, filter=None, **params):
     if filter is not None:
@@ -39,6 +49,9 @@ class Agg(DslBase):
     _type_shortcut = staticmethod(A)
     name = None
 
+    def to_filter(self):
+        pass
+
 class AggBase(object):
     _param_defs = {
         'aggs': {'type': 'agg', 'hash': True},
@@ -74,6 +87,12 @@ class AggBase(object):
     def bucket(self, name, agg_type, *args, **params):
         return self._agg(True, name, agg_type, *args, **params)
 
+    def to_filter(self, value):
+        raise NotImplementedError()
+
+    def to_data(self, bucket, bucket_filter):
+        raise NotImplementedError()
+
 
 class Bucket(AggBase, Agg):
     def __init__(self, **params):
@@ -86,6 +105,9 @@ class Bucket(AggBase, Agg):
         if 'aggs' in d[self.name]:
             d['aggs'] = d[self.name].pop('aggs')
         return d
+
+    def to_data(self):
+        pass
 
 class Filter(Bucket):
     name = 'filter'
@@ -143,3 +165,39 @@ for base, fname, params_def in AGGS:
         params_def.update(AggBase._param_defs)
     fclass = _make_dsl_class(base, fname, params_def)
     globals()[fclass.__name__] = fclass
+
+
+class Terms(Terms):
+    def to_filter(self, value):
+        return F('term', **{self.field: value})
+
+    def to_data(self, bucket, bucket_filter):
+        return (bucket['key'],
+                bucket['doc_count'],
+                bucket['key'] == bucket_filter)
+
+
+class Histogram(Histogram):
+    def to_filter(self, value):
+        filter_body = {'gte': value, 'lt': value+self.interval}
+        return F('range', **{self.field: filter_body})
+
+
+class DateHistogram(DateHistogram):
+    DATE_INTERVALS = {
+        'month': lambda d: (d+timedelta(days=32)).replace(day=1),
+        'week': lambda d: d+timedelta(days=7),
+        'day': lambda d: d+timedelta(days=1),
+        'hour': lambda d: d+timedelta(hours=1),
+    }
+
+    def to_filter(self, value):
+        filter_body = {
+            'gte': value,
+            'lt': self.DATE_INTERVALS[self.interval](value)
+        }
+        return F('range', **{self.field: filter_body})
+
+    def to_data(self, bucket, bucket_filter):
+        d = datetime.utcfromtimestamp(int(bucket['key']) / 1000)
+        return d, bucket['doc_count'], d in bucket_filter

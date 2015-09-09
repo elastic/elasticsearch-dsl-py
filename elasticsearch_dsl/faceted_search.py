@@ -1,34 +1,10 @@
-from datetime import timedelta, datetime
 from six import iteritems, itervalues
 from functools import partial
 
 from .search import Search
 from .filter import F
-from .aggs import Terms, DateHistogram, Histogram
 from .utils import AttrDict
 from .result import Response
-
-DATE_INTERVALS = {
-    'month': lambda d: (d+timedelta(days=32)).replace(day=1),
-    'week': lambda d: d+timedelta(days=7),
-    'day': lambda d: d+timedelta(days=1),
-    'hour': lambda d: d+timedelta(hours=1),
-
-}
-
-AGG_TO_FILTER = {
-    Terms: lambda a, v: F('term', **{a.field: v}),
-    DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
-    Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
-}
-
-BUCKET_TO_DATA = {
-    Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] == filter),
-    DateHistogram: lambda bucket, filter: (datetime.utcfromtimestamp(int(bucket['key']) / 1000), bucket['doc_count'], bucket['key'] == filter)
-}
-
-def agg_to_filter(agg, value):
-    return AGG_TO_FILTER[agg.__class__](agg, value)
 
 
 class FacetedResponse(Response):
@@ -43,11 +19,10 @@ class FacetedResponse(Response):
             for name, agg in iteritems(self._search.facets):
                 buckets = self._facets[name] = []
                 data = self.aggregations['_filter_' + name][name]['buckets']
-                filter = self._search._raw_filters.get(name, None)
+                filter = self._search._raw_filters.get(name, {})
                 for b in data:
-                    buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
+                    buckets.append(agg.to_data(b, filter))
         return self._facets
-
 
 
 class FacetedSearch(object):
@@ -66,9 +41,9 @@ class FacetedSearch(object):
     def add_filter(self, name, value):
         agg = self.facets[name]
         if isinstance(value, list):
-            self._filters[name] = F('bool', should=[agg_to_filter(agg, v) for v in value])
+            self._filters[name] = F('bool', should=[agg.to_filter(v) for v in value])
         else:
-            self._filters[name] = agg_to_filter(agg, value)
+            self._filters[name] = agg.to_filter(value)
 
     def search(self):
         return Search(doc_type=self.doc_types, index=self.index)
@@ -110,4 +85,3 @@ class FacetedSearch(object):
             self._response = s.execute(response_class=partial(FacetedResponse, self))
 
         return self._response
-
