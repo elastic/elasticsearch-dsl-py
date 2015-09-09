@@ -10,17 +10,22 @@ from .search import Search
 from .connections import connections
 from .exceptions import ValidationException
 
-DOC_META_FIELDS = frozenset((
-    'id', 'parent', 'routing', 'timestamp', 'ttl', 'version', 'version_type'
+DELETE_META_FIELDS = frozenset((
+    'id', 'parent', 'routing', 'version', 'version_type'
 ))
+
+DOC_META_FIELDS = frozenset((
+    'timestamp', 'ttl'
+)).union(DELETE_META_FIELDS)
 
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
     'index', 'using', 'score',
 )).union(DOC_META_FIELDS)
 
-class MetaField(dict):
-    pass
+class MetaField(object):
+    def __init__(self, *args, **kwargs):
+        self.args, self.kwargs = args, kwargs
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
@@ -56,10 +61,7 @@ class DocTypeOptions(object):
         for name in dir(meta):
             if isinstance(getattr(meta, name, None), MetaField):
                 params = getattr(meta, name)
-                if isinstance(params, dict):
-                    self.mapping.meta(name, **params)
-                else:
-                    self.mapping.meta(name, params)
+                self.mapping.meta(name, *params.args, **params.kwargs)
 
         # document inheritance - include the fields from parents' mappings and
         # index/using values
@@ -177,7 +179,7 @@ class DocType(ObjectBase):
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
-            for k in DOC_META_FIELDS
+            for k in DELETE_META_FIELDS
             if k in self.meta
         )
         doc_meta.update(kwargs)

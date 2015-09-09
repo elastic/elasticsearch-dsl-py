@@ -158,7 +158,7 @@ class DslMeta(type):
             # and create a registry for subclasses
             if not hasattr(cls, '_classes'):
                 cls._classes = {}
-        else:
+        elif cls.name not in cls._classes:
             # normal class, register it
             cls._classes[cls.name] = cls
 
@@ -193,7 +193,7 @@ class DslBase(object):
         try:
             return cls._classes[name]
         except KeyError:
-            raise UnknownDslObject('DSL class %s does not exist in %s.' % (name, cls._type_name))
+            raise UnknownDslObject('DSL class `%s` does not exist in %s.' % (name, cls._type_name))
 
     def __init__(self, **params):
         self._params = {}
@@ -285,7 +285,7 @@ class DslBase(object):
             # typed param
             if pinfo and 'type' in pinfo:
                 # don't serialize empty lists and dicts for typed fields
-                if not value:
+                if value in ({}, []):
                     continue
 
                 # multi-values are serialized as list of dicts
@@ -338,27 +338,9 @@ class DslBase(object):
 class BoolMixin(object):
     """
     Mixin containing all the operator overrides for Bool queries and filters.
-    """
-    def __and__(self, other):
-        q = self._clone()
-        if isinstance(other, self.__class__):
-            q.must += other.must
-            q.must_not += other.must_not
-            if q.should and other.should:
-                should = []
-                for orig_should in (q.should, other.should):
-                    if len(orig_should) == 1:
-                        should.append(orig_should[0])
-                    else:
-                        should.append(self.__class__(should=orig_should))
-                q.should = should
-            else:
-                q.should += other.should
-        else:
-            q.must.append(other)
-        return q
-    __rand__ = __and__
 
+    Except for and where should behavior differs
+    """
     def __add__(self, other):
         q = self._clone()
         if isinstance(other, self.__class__):
@@ -404,9 +386,11 @@ class BoolMixin(object):
 
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
-        super(ObjectBase, self).__init__({})
-        for (k, v) in iteritems(kwargs):
-            setattr(self, k, v)
+        m = self._doc_type.mapping
+        for k in m:
+            if k in kwargs and m[k]._coerce:
+                kwargs[k] = m[k].to_python(kwargs[k])
+        super(ObjectBase, self).__init__(kwargs)
 
     def __getattr__(self, name):
         try:
@@ -437,7 +421,7 @@ class ObjectBase(AttrDict):
 
             # don't serialize empty values
             # careful not to include numeric zeros
-            if not isinstance(v, (int, float)) and not v:
+            if v in ([], {}, None):
                 continue
 
             out[k] = v
@@ -447,9 +431,10 @@ class ObjectBase(AttrDict):
         errors = {}
         for name in self._doc_type.mapping:
             field = self._doc_type.mapping[name]
-            data = getattr(self, name, None)
+            data = self._d_.get(name, None)
             try:
-                data = field.clean(data)
+                # save the cleaned value
+                self._d_[name] = field.clean(data)
             except ValidationException as e:
                 errors.setdefault(name, []).append(e)
 

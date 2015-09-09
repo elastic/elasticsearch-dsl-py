@@ -165,7 +165,19 @@ class Search(object):
     def from_dict(cls, d):
         """
         Construct a `Search` instance from a raw dict containing the search
-        body.
+        body. Useful when migrating from raw dictionaries.
+
+        Example::
+
+            s = Search.from_dict({
+                "query": {
+                    "bool": {
+                        "must": [...]
+                    }
+                },
+                "aggs": {...}
+            })
+            s = s.filter('term', published=True)
         """
         s = cls()
         s.update_from_dict(d)
@@ -199,7 +211,7 @@ class Search(object):
     def update_from_dict(self, d):
         """
         Apply options from a serialized body to the current instance. Modifies
-        the object in-place.
+        the object in-place. Used mostly by ``from_dict``.
         """
         d = d.copy()
         if 'query' in d:
@@ -237,7 +249,9 @@ class Search(object):
 
     def script_fields(self, **kwargs):
         """
-        Define script fields to be calculated on hits.
+        Define script fields to be calculated on hits. See
+        https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-script-fields.html
+        for more details.
 
         Example::
 
@@ -261,7 +275,14 @@ class Search(object):
     def params(self, **kwargs):
         """
         Specify query params to be used when executing the search. All the
-        keyword arguments will override the current values.
+        keyword arguments will override the current values. See
+        http://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch.Elasticsearch.search
+        for all availible parameters.
+
+        Example::
+
+            s = Search()
+            s = s.params(routing='user-1', preference='local')
         """
         s = self._clone()
         s._params.update(kwargs)
@@ -269,7 +290,8 @@ class Search(object):
 
     def extra(self, **kwargs):
         """
-        Add extra keys to the request body.
+        Add extra keys to the request body. Mostly here for backwards
+        compatibility.
         """
         s = self._clone()
         if 'from_' in kwargs:
@@ -283,9 +305,9 @@ class Search(object):
 
         :arg fields: list of fields to return for each document
 
-        If `fields` is None, the entire document will be returned for
+        If ``fields`` is None, the entire document will be returned for
         each hit.  If fields is the empty list, no fields will be
-        returned for each hit, just the _id and _type.
+        returned for each hit, just the metadata.
         """
         s = self._clone()
         s._fields = fields
@@ -323,6 +345,13 @@ class Search(object):
         return s
 
     def highlight_options(self, **kwargs):
+        """
+        Update the global highlighting options used for this request. For
+        example::
+
+            s = Search()
+            s = s.highlight_options(order='score')
+        """
         s = self._clone()
         s._highlight_opts.update(kwargs)
         return s
@@ -352,6 +381,17 @@ class Search(object):
         return s
 
     def suggest(self, name, text, **kwargs):
+        """
+        Add a suggestions request to the search.
+
+        :arg name: name of the suggestion
+        :arg text: text to suggest on
+
+        All keyword arguments will be added to the suggestions body. For example::
+
+            s = Search()
+            s = s.suggest('suggestion-1', 'Elasticserach', term={'field': 'body'})
+        """
         s = self._clone()
         s._suggest[name] = {'text': text}
         s._suggest[name].update(kwargs)
@@ -363,7 +403,8 @@ class Search(object):
 
         Example:
 
-            s = Search().index('twitter')
+            s = Search()
+            s = s.index('twitter-2015.01.01', 'twitter-2015.01.02')
         """
         # .index() resets
         s = self._clone()
@@ -429,7 +470,6 @@ class Search(object):
             d = {"query": self.query.to_dict()}
 
         if self.post_filter:
-            print(self.post_filter._proxied == self.post_filter._empty, self.post_filter._proxied != self.post_filter._empty, bool(self.post_filter))
             d['post_filter'] = self.post_filter.to_dict()
 
         # count request doesn't care for sorting and other things
@@ -463,7 +503,9 @@ class Search(object):
         Associate the search request with an elasticsearch client. A fresh copy
         will be returned with current instance remaining unchanged.
 
-        :arg client: and instance of ``elasticsearch.Elasticsearch`` to use
+        :arg client: an instance of ``elasticsearch.Elasticsearch`` to use or
+            an alias to look up in ``elasticsearch_dsl.connections``
+
         """
         s = self._clone()
         s._using = client
@@ -488,6 +530,8 @@ class Search(object):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
+
+        :arg response_class: optional subclass of ``Response`` to use instead.
         """
         es = connections.get_connection(self._using)
 
@@ -502,6 +546,15 @@ class Search(object):
         )
 
     def scan(self):
+        """
+        Turn the search into a scan search and return a generator that will
+        iterate over all the documents matching the query.
+
+        Use ``params`` method to specify any additional arguments you with to
+        pass to the underlying ``scan`` helper from ``elasticsearch-py`` -
+        http://elasticsearch-py.readthedocs.org/en/master/helpers.html#elasticsearch.helpers.scan
+
+        """
         es = connections.get_connection(self._using)
 
         for hit in scan(

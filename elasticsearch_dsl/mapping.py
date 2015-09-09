@@ -1,7 +1,8 @@
 from six import iteritems
+from itertools import chain
 
 from .utils import DslBase
-from .field import InnerObject
+from .field import InnerObject, String
 from .connections import connections
 from .exceptions import IllegalOperation
 
@@ -39,13 +40,15 @@ class Mapping(object):
 
     def _collect_analysis(self):
         analysis = {}
-        for f in self.properties._collect_fields():
+        fields = []
+        if '_all' in self._meta:
+            fields.append(String(**self._meta['_all']))
+
+        for f in chain(fields, self.properties._collect_fields()):
             for analyzer_name in ('analyzer', 'index_analyzer', 'search_analyzer'):
                 if not hasattr(f, analyzer_name):
                     continue
                 analyzer = getattr(f, analyzer_name)
-                if analyzer.name != 'custom':
-                    continue
                 d = analyzer.get_analysis_definition()
                 # empty custom analyzer, probably already defined out of our control
                 if not d:
@@ -127,7 +130,7 @@ class Mapping(object):
         if params and kwargs:
             raise ValueError('Meta configs cannot have both value and a dictionary.')
 
-        self._meta[name] = params or kwargs
+        self._meta[name] = kwargs if params is None else params
         return self
 
     def to_dict(self):

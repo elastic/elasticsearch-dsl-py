@@ -90,6 +90,8 @@ def test_meta_field_mapping():
         class Meta:
             all = document.MetaField(enabled=False)
             _index = document.MetaField(enabled=True)
+            dynamic = document.MetaField('strict')
+            dynamic_templates = document.MetaField([42])
 
     assert {
         'user': {
@@ -98,6 +100,8 @@ def test_meta_field_mapping():
             },
             '_all': {'enabled': False},
             '_index': {'enabled': True},
+            'dynamic': 'strict',
+            'dynamic_templates': [42]
         }
     } == User._doc_type.mapping.to_dict()
 
@@ -163,6 +167,12 @@ def test_to_dict_is_recursive_and_can_cope_with_multi_values():
         'name': ['a', 'b', 'c'],
         'inner': [{'old_field': 'of1'}, {'old_field': 'of2'}],
     } == md.to_dict()
+
+def test_to_dict_ignores_empty_collections():
+    md = MyDoc(name='', address={}, count=0, valid=False, tags=[])
+
+    assert {'name': '', 'count': 0, 'valid': False} == md.to_dict()
+
 
 def test_declarative_mapping_definition():
     assert issubclass(MyDoc, document.DocType)

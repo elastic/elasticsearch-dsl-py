@@ -55,3 +55,23 @@ def test_delete(write_client):
     i = Index('test-index', using=write_client)
     i.delete()
     assert not write_client.indices.exists(index='test-index')
+
+def test_multiple_indices_with_same_doc_type_work(write_client):
+    i1 = Index('test-index-1', using=write_client)
+    i2 = Index('test-index-2', using=write_client)
+
+    for i in (i1, i2):
+        i.doc_type(Post)
+        i.create()
+
+    for i in ('test-index-1', 'test-index-2'):
+        settings = write_client.indices.get_settings(index=i)
+        print(i)
+        assert settings[i]['settings']['index']['analysis'] == {
+            'analyzer': {
+                'my_analyzer': {
+                    'type': 'custom',
+                    'tokenizer': 'keyword'
+                }
+            }
+        }

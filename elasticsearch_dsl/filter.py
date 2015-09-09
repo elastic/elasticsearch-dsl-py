@@ -1,5 +1,14 @@
 from .utils import DslBase, BoolMixin, _make_dsl_class
 
+__all__ = [
+    'F', 'And', 'AndOrFilter', 'Bool', 'EMPTY_FILTER', 'Exists', 'Filter',
+    'Fquery', 'GeoBoundingBox', 'GeoDistance', 'GeoDistanceRange',
+    'GeoPolygon', 'GeoShape', 'GeohashCell', 'HasChild', 'HasParent', 'Ids',
+    'Indices', 'Limit', 'MatchAll', 'Missing', 'Nested', 'Not', 'Or', 'Prefix',
+    'Query', 'Range', 'Regexp', 'Script', 'Term', 'Terms', 'Type'
+]
+
+
 def F(name_or_filter='match_all', filters=None, **params):
     # 'and/or', [F(), F()]
     if filters is not None:
@@ -61,6 +70,38 @@ class Bool(BoolMixin, Filter):
         'should': {'type': 'filter', 'multi': True},
         'must_not': {'type': 'filter', 'multi': True},
     }
+
+    def __and__(self, other):
+        f = self._clone()
+        if isinstance(other, self.__class__):
+            f.must += other.must
+            f.must_not += other.must_not
+            f.should = []
+            if self.should and other.should:
+                selfshould, othershould = self.should[:], other.should[:]
+                # required subfilter, move to must
+                for s in (selfshould, othershould):
+                    if len(s) == 1:
+                        f.must.append(s.pop())
+
+                # we have leftover lists, nothing to do but add to must as bool(should)
+                if selfshould and othershould:
+                    f.must.extend((
+                        Bool(should=selfshould),
+                        Bool(should=othershould),
+                    ))
+                # at most one should list is left, keep as should
+                else:
+                    f.should = selfshould + othershould
+
+            # at most one should list is left, keep as should
+            else:
+                f.should = self.should + other.should
+        else:
+            f.must.append(other)
+        return f
+    __rand__ = __and__
+
 # register this as Bool for Filter
 Filter._bool = Bool
 

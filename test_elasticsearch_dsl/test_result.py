@@ -25,6 +25,10 @@ def test_enpty_response_is_false(dummy_response):
 
     assert not res
 
+def test_len_response(dummy_response):
+    res = result.Response(dummy_response)
+    assert len(dummy_response) == 4
+
 def test_iterating_over_response_gives_you_hits(dummy_response):
     res = result.Response(dummy_response)
     hits = list(h for h in res)

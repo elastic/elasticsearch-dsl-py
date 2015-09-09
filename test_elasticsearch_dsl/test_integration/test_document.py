@@ -141,6 +141,23 @@ def test_delete(write_client):
         id='elasticsearch-dsl-py',
     )
 
+def test_delete_ignores_ttl_and_timestamp_meta(write_client):
+    write_client.create(
+        index='test-document',
+        doc_type='repos',
+        id='elasticsearch-dsl-py',
+        body={'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}},
+        ttl='1d',
+        timestamp=datetime.now()
+    )
+
+    test_repo = Repository(meta={'id': 'elasticsearch-dsl-py'})
+    test_repo.meta.index = 'test-document'
+    test_repo.meta.ttl = '1d'
+    test_repo.meta.timestamp = datetime.now()
+    test_repo.delete()
+
+
 def test_search(data_client):
     assert Repository.search().count() == 1
 

@@ -3,8 +3,12 @@
 Changelog
 =========
 
-0.0.5 (dev)
------------
+0.0.8 (2015-08-28)
+------------------
+ * ``0.0.5`` and ``0.0.6`` was released with broken .tar.gz on pypi, just a build fix
+
+0.0.5 (2015-08-27)
+------------------
  * added support for (index/search)_analyzer via #143, thanks @wkiser!
  * even keys accessed via ``['field']`` on ``AttrDict`` will be wrapped in
    ``Attr[Dict|List]`` for consistency
@@ -16,6 +20,7 @@ Changelog
    (sub)documents
  * removed ``get`` method from ``AttrDict``. Use ``getattr(d, key, default)``
    instead.
+ * added ``FacetedSearch`` for easy declarative faceted navigation
 
 0.0.4 (2015-04-24)
 ------------------

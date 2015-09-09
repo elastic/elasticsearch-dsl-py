@@ -5,9 +5,11 @@ from six import itervalues
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
 
-__all__ = ['construct_field', 'Object', 'Nested', 'Date', 'String', 'Float',
-    'Double', 'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
-    'GeoPoint', 'GeoShape', ]
+__all__ = [
+    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'String', 'Float', 'Double',
+    'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
+    'GeoPoint', 'GeoShape', 'InnerObjectWrapper'
+]
 
 def construct_field(name_or_field, **params):
     # {"type": "string", "index": "not_analyzed"}
@@ -40,6 +42,7 @@ class Field(DslBase):
     # all fields can be multifields
     _param_defs = {'fields': {'type': 'field', 'hash': True}}
     name = None
+    _coerce = False
 
     def __init__(self, *args, **kwargs):
         self._multi = kwargs.pop('multi', False)
@@ -56,17 +59,17 @@ class Field(DslBase):
         if self._multi:
             return AttrList([])
         return self._empty()
-    
+
     def to_python(self, data):
-        if not data:
-            return data
         if isinstance(data, (list, AttrList)):
             data[:] = map(self._to_python, data)
             return data
         return self._to_python(data)
 
     def clean(self, data):
-        data = self.to_python(data)
+        if data is not None:
+            data = self.to_python(data)
+        # FIXME: numeric 0
         if not data and self._required:
             raise ValidationException("Value required for this field.")
         return data
@@ -87,6 +90,7 @@ class InnerObjectWrapper(ObjectBase):
 class InnerObject(object):
     " Common functionality for nested and object fields. "
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
+    _coerce = True
 
     def __init__(self, *args, **kwargs):
         self._doc_class = kwargs.pop('doc_class', InnerObjectWrapper)
@@ -154,6 +158,8 @@ class InnerObject(object):
 
     def clean(self, data):
         data = super(InnerObject, self).clean(data)
+        if data is None:
+            return None
         if isinstance(data, (list, AttrList)):
             for d in data:
                 d.full_clean()
@@ -175,8 +181,11 @@ class Nested(InnerObject, Field):
 
 class Date(Field):
     name = 'date'
+    _coerce = True
 
     def _to_python(self, data):
+        if not data:
+            return None
         if isinstance(data, date):
             return data
 

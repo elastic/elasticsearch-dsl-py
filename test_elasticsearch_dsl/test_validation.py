@@ -1,4 +1,6 @@
-from elasticsearch_dsl import DocType, Nested, String, Date
+from datetime import datetime
+
+from elasticsearch_dsl import DocType, Nested, String, Date, Object
 from elasticsearch_dsl.field import InnerObjectWrapper
 from elasticsearch_dsl.exceptions import ValidationException
 
@@ -19,6 +21,29 @@ class BlogPost(DocType):
         }
     )
     created = Date()
+    inner = Object()
+
+class AutoNowDate(Date):
+    def clean(self, data):
+        if data is None:
+            data = datetime.now()
+        return super(AutoNowDate, self).clean(data)
+
+class Log(DocType):
+    timestamp = AutoNowDate(required=True)
+    data = String()
+
+def test_field_with_custom_clean():
+    l = Log()
+    l.full_clean()
+
+    assert isinstance(l.timestamp, datetime)
+
+def test_empty_object():
+    d = BlogPost(authors=[{'name': 'Honza', 'email': 'honza@elastic.co'}])
+    d.inner = {}
+
+    d.full_clean()
 
 def test_missing_required_field_raises_validation_exception():
     d = BlogPost()

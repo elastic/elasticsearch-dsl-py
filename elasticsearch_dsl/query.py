@@ -1,6 +1,18 @@
 from .utils import DslBase, BoolMixin, _make_dsl_class
 from .function import SF, ScoreFunction
 
+__all__ = [
+    'Q', 'Bool', 'Boosting', 'Common', 'ConstantScore', 'DisMax', 'Filtered',
+    'FunctionScore', 'Fuzzy', 'FuzzyLikeThis', 'FuzzyLikeThisField',
+    'GeoShape', 'HasChild', 'HasParent', 'Ids', 'Indices', 'Match', 'MatchAll',
+    'MatchPhrase', 'MatchPhrasePrefix', 'MoreLikeThis', 'MoreLikeThisField',
+    'MultiMatch', 'Nested', 'Prefix', 'Query', 'QueryString', 'Range',
+    'Regexp', 'SF', 'ScoreFunction', 'SimpleQueryString', 'SpanFirst',
+    'SpanMulti', 'SpanNear', 'SpanNot', 'SpanOr', 'SpanTerm', 'Template',
+    'Term', 'Terms', 'TopChildren', 'Wildcard'
+]
+
+
 def Q(name_or_query='match_all', **params):
     # {"match": {"title": "python"}}
     if isinstance(name_or_query, dict):
@@ -47,7 +59,31 @@ class Bool(BoolMixin, Query):
         'must': {'type': 'query', 'multi': True},
         'should': {'type': 'query', 'multi': True},
         'must_not': {'type': 'query', 'multi': True},
+        'filter': {'type': 'query', 'multi': True},
     }
+
+    def __and__(self, other):
+        q = self._clone()
+        if isinstance(other, self.__class__):
+            q.must += other.must
+            q.must_not += other.must_not
+            q.should = []
+            for qx in (self, other):
+                min_should_match = getattr(qx, 'minimum_should_match', 0 if any((qx.must, qx.must_not)) else 1)
+                # all subqueries are required
+                if len(qx.should) <= min_should_match:
+                    q.must.extend(qx.should)
+                # not all of them are required, use it and remember min_should_match
+                elif not q.should:
+                    q.minimum_should_match = min_should_match
+                    q.should = qx.should
+                # not all are required, add a should list to the must with proper min_should_match
+                else:
+                    q.must.append(Bool(should=qx.should, minimum_should_match=min_should_match))
+        else:
+            q.must.append(other)
+        return q
+    __rand__ = __and__
 # register this as Bool for Query
 Query._bool = Bool
 

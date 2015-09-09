@@ -71,7 +71,6 @@ def test_filters_are_shown_as_selected_and_data_is_filtered(data_client):
         ('elasticsearch_dsl/result.py', 3, False)
     ] == r.facets.files
 
-    print(r.facets.frequency)
     assert [
         (datetime(2014, 3, 3, 0, 0), 1, False),
         (datetime(2014, 3, 5, 0, 0), 2, False),

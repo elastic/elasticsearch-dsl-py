@@ -46,7 +46,8 @@ def test_query_is_created_properly():
         },
         'query': {
             'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
-        }
+        },
+        'highlight': {'fields': {'body': {}, 'title': {}}}
     } == s.to_dict()
 
 def test_filter_is_applied_to_search_but_not_relevant_facet():
@@ -73,7 +74,8 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
         },
         'query': {
             'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
-        }
+        },
+        'highlight': {'fields': {'body': {}, 'title': {}}}
     } == s.to_dict()
 
 def test_filters_are_applied_to_search_ant_relevant_facets():
@@ -116,6 +118,7 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
                     {'term': {'tags': 'django'}},
                 ]
             }
-        }
+        },
+        'highlight': {'fields': {'body': {}, 'title': {}}}
     } == d
 
