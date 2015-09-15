@@ -143,6 +143,8 @@ class InnerObject(object):
             our[name] = other[name]
 
     def _to_python(self, data):
+        if data is None:
+            return None
         # don't wrap already wrapped data
         if isinstance(data, self._doc_class):
             return data

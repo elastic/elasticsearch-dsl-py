@@ -32,6 +32,11 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+def test_null_value_for_object():
+    d = MyDoc(inner=None)
+
+    assert d.inner is None
+
 def test_inherited_doc_types_can_override_index():
     class MyDocDifferentIndex(MySubDoc):
         class Meta:
