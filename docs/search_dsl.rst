@@ -372,7 +372,9 @@ Response
 --------
 
 You can execute your search by calling the ``.execute()`` method that will return
-a ``Response`` object:
+a ``Response`` object. The ``Response`` object allows you access to any key
+from the response dictionary via attribute access. It also provides some
+convenient helpers:
 
 .. code:: python
 
@@ -383,6 +385,13 @@ a ``Response`` object:
       
   print(response.took)
   # 12
+
+  print(response.hits.total)
+
+  print(response.suggest.my_suggestions)
+
+If you want to inspect the contents of the ``response`` objects, just use its
+``to_dict`` method to get access to the raw data for pretty printing.
 
 
 Hits
