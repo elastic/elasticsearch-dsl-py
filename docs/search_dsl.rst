@@ -326,6 +326,16 @@ Enabling highlighting for individual fields is done using the ``highlight`` meth
     # or, including parameters:
     s = s.highlight('title', fragment_size=50)
 
+The fragments in the response will then be available on reach ``Result`` object
+as ``.meta.highlight.FIELD`` which will contain the list of fragments:
+
+.. code:: python
+
+    response = s.execute()
+    for hit in response:
+        for fragment in hit.meta.highlight.title:
+            print(fragment)
+
 Suggestions
 ~~~~~~~~~~~
 
