@@ -10,6 +10,12 @@ class Index(object):
         self._settings = {}
         self._aliases = {}
 
+    def clone(self, name, using=None):
+        i = Index(name, using=using or self._using)
+        for attr in ('_doc_types', '_mappings', '_settings', '_aliases'):
+            setattr(i, attr, getattr(self, attr).copy())
+        return i
+
     def _get_connection(self):
         return connections.get_connection(self._using)
     connection = property(_get_connection)

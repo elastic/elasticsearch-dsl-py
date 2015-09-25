@@ -351,3 +351,21 @@ in a migration:
 
     # create the index in elasticsearch
     blogs.create()
+
+You can also set up a template for your indices and use the ``clone`` method to
+create specific copies:
+
+.. code:: python
+
+    blogs = Index('blogs', using='production')
+    blogs.settings(number_of_shards=2)
+    blogs.doc_type(Post)
+
+    # create a copy of the index with different name
+    company_blogs = blogs.clone('company-blogs')
+
+    # create a different copy on different cluster
+    dev_blogs = blogs.clone('blogs', using='dev')
+    # and change its settings
+    dev_blogs.setting(number_of_shards=1)
+

@@ -15,6 +15,18 @@ def test_search_is_limited_to_index_name():
 
     assert s._index == ['my-index']
 
+def test_cloned_index_has_copied_settings_and_using():
+    client = object()
+    i = Index('my-index', using=client)
+    i.settings(number_of_shards=1)
+
+    i2 = i.clone('my-other-index')
+
+    assert 'my-other-index' == i2._name
+    assert client is i2._using
+    assert i._settings == i2._settings
+    assert i._settings is not i2._settings
+
 def test_settings_are_saved():
     i = Index('i')
     i.settings(number_of_replicas=0)
