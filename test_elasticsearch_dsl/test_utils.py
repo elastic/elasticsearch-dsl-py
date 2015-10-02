@@ -39,4 +39,4 @@ def test_serializer_deals_with_Attr_versions():
 def test_attrdict_items():
     d = utils.AttrDict({1: 2, 3: 4})
 
-    assert d.items() == [(1, 2), (3, 4)]
+    assert list(d.items()) == [(1, 2), (3, 4)]
