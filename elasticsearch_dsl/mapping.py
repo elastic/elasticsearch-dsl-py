@@ -69,11 +69,12 @@ class Mapping(object):
         else:
             analysis = self._collect_analysis()
             if analysis:
-                if es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] != 'close':
-                    # TODO: check if the analysis config is already there
-                    raise IllegalOperation(
-                        'You cannot update analysis configuration on an open index, you need to close index %s first.' % index)
-                es.indices.put_settings(index=index, body={'analysis': analysis})
+                existing_analysis = es.indices.get_settings(index)[index]['settings']['index'].get('analysis', {})
+                if analysis.items() > existing_analysis.items():
+                    if es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] != 'close':
+                        raise IllegalOperation(
+                            'You cannot update analysis configuration on an open index, you need to close index %s first.' % index)
+                    es.indices.put_settings(index=index, body={'analysis': analysis})
             es.indices.put_mapping(index=index, doc_type=self.doc_type, body=self.to_dict())
 
     def update_from_es(self, index, using='default'):
