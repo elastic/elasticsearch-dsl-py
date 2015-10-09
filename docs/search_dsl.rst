@@ -134,7 +134,7 @@ Query objects can be combined using logical operators:
     Q("match", title='python') & Q("match", title='django')
     # {"bool": {"must": [...]}}
 
-    ~Q("match", "title"="python")
+    ~Q("match", title="python")
     # {"bool": {"must_not": [...]}}
 
 You can also use the ``+`` operator:
