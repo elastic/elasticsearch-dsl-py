@@ -66,6 +66,8 @@ def test_mapping_gets_updated_from_es(write_client):
             'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
             'mappings': {
                 'my_doc': {
+                    'date_detection': False,
+                    '_all': {'enabled': False},
                     'properties': {
                         'title': {
                             'type': 'string',
@@ -99,6 +101,8 @@ def test_mapping_gets_updated_from_es(write_client):
     assert ['comments', 'created_at', 'title'] == list(sorted(m.properties.properties._d_.keys()))
     assert {
         'my_doc': {
+            'date_detection': False,
+            '_all': {'enabled': False},
             'properties': {
                 'comments': {
                     'type': 'nested',

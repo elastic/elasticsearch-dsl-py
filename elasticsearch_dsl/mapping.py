@@ -87,8 +87,11 @@ class Mapping(object):
 
         # metadata like _all etc
         for name, value in iteritems(raw):
-            if name.startswith('_'):
-                self.meta(name, **value)
+            if name != 'properties':
+                if isinstance(value, dict):
+                    self.meta(name, **value)
+                else:
+                    self.meta(name, value)
 
     def update(self, mapping, update_only=False):
         for name in mapping:
