@@ -148,6 +148,15 @@ If you want to create a model-like wrapper around your documents, use the
 Document life cycle
 ~~~~~~~~~~~~~~~~~~~
 
+Before you first use the ``Post`` document type, you need to create the
+mappings in Elasticsearch. For that you can either use the :ref:`index` object
+or create the mappings directly by calling the ``init`` class method:
+
+.. code:: python
+
+    # create the mappings in Elasticsearch
+    Post.init()
+
 To create a new ``Post`` document just instantiate the class and pass in any
 fields you wish to set, you can then use standard attribute setting to
 change/add more fields. Note that you are not limited to the fields defined
