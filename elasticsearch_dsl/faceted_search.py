@@ -1,38 +1,10 @@
-from datetime import timedelta, datetime
 from six import iteritems, itervalues
 from functools import partial
 
 from .search import Search
 from .filter import F
-from .aggs import Terms, DateHistogram, Histogram
 from .utils import AttrDict
 from .result import Response
-
-DATE_INTERVALS = {
-    'month': lambda d: (d+timedelta(days=32)).replace(day=1),
-    'week': lambda d: d+timedelta(days=7),
-    'day': lambda d: d+timedelta(days=1),
-    'hour': lambda d: d+timedelta(hours=1),
-
-}
-
-AGG_TO_FILTER = {
-    Terms: lambda a, v: F('term', **{a.field: v}),
-    DateHistogram: lambda a, v: F('range', **{a.field: {'gte': v, 'lt': DATE_INTERVALS[a.interval](v)}}),
-    Histogram: lambda a, v:  F('range', **{a.field: {'gte': v, 'lt': v+a.interval}}),
-}
-
-def _date_histogram_to_data(bucket, filter):
-    d = datetime.utcfromtimestamp(int(bucket['key']) / 1000)
-    return (d, bucket['doc_count'], d in filter)
-
-BUCKET_TO_DATA = {
-    Terms: lambda bucket, filter: (bucket['key'], bucket['doc_count'], bucket['key'] in filter),
-    DateHistogram: _date_histogram_to_data,
-}
-
-def agg_to_filter(agg, value):
-    return AGG_TO_FILTER[agg.__class__](agg, value)
 
 
 class FacetedResponse(Response):
@@ -53,9 +25,8 @@ class FacetedResponse(Response):
                 data = self.aggregations['_filter_' + name][name]['buckets']
                 filter = self._search._raw_filters.get(name, ())
                 for b in data:
-                    buckets.append(BUCKET_TO_DATA[agg.__class__](b, filter))
+                    buckets.append(agg.to_python(b, filter))
         return self._facets
-
 
 
 class FacetedSearch(object):
@@ -81,9 +52,10 @@ class FacetedSearch(object):
             return
 
         agg = self.facets[name]
-        f = agg_to_filter(agg, value[0])
+
+        f = agg.to_filter(value[0])
         for v in value[1:]:
-            f |= agg_to_filter(agg, v)
+            f |= agg.to_filter(v)
         self._filters[name] = f
         self._raw_filters[name] = value
 
@@ -150,4 +122,3 @@ class FacetedSearch(object):
             self._response = s.execute(response_class=partial(FacetedResponse, self))
 
         return self._response
-

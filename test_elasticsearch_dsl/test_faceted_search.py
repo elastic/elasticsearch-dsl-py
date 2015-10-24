@@ -1,5 +1,5 @@
 from datetime import datetime
-from elasticsearch_dsl.faceted_search import FacetedSearch, agg_to_filter
+from elasticsearch_dsl.faceted_search import FacetedSearch
 from elasticsearch_dsl import A, F
 
 class BlogSearch(FacetedSearch):
@@ -14,13 +14,13 @@ class BlogSearch(FacetedSearch):
 
 def test_agg_filter_for_histograms():
     a = A('histogram', field='comment_count', interval=2)
-    f = agg_to_filter(a, 0)
+    f = a.to_filter(0)
 
     assert f == F('range', comment_count={'gte': 0, 'lt': 2})
 
 def test_agg_filter_for_date_histograms():
     a = A('date_histogram', field='published_date', interval='month')
-    f = agg_to_filter(a, datetime(2014, 12, 1))
+    f = a.to_filter(datetime(2014, 12, 1))
 
     assert f == F('range', published_date={'gte': datetime(2014, 12, 1), 'lt': datetime(2015, 1, 1)})
 
