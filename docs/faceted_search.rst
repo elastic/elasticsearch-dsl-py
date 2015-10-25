@@ -31,8 +31,8 @@ declaring a ``FacetedSearch`` subclass:
 
 ``facets``
   dictionary of facets to display/filter on. The key is the name displayed and
-  values should be a (non nesting) bucket aggregations, for example: ``{'tags':
-  Terms{field='tags'}}``
+  values should be instances of any ``Facet`` subclass, for example: ``{'tags':
+  TermsFacet(field='tags')``
 
 Advanced
 ~~~~~~~~
@@ -82,8 +82,7 @@ Example
 
     from datetime import date
 
-    from elasticsearch_dsl import FacetedSearch
-    from elasticsearch_dsl.aggs import Terms, DateHistogram
+    from elasticsearch_dsl import FacetedSearch, TermsFacet, DateHistogramFacet
 
     class BlogSearch(FacetedSearch):
         doc_types = [Article, ]
@@ -92,8 +91,8 @@ Example
 
         facets = {
             # use bucket aggregations to define facets
-            'tags': Terms(field='tags'),
-            'publishing_frequency': DateHistogram(field='published_from', interval='month')
+            'tags': TermsFacet(field='tags'),
+            'publishing_frequency': DateHistogramFacet(field='published_from', interval='month')
         }
 
         def search(self):
