@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet
+from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
 
 class CommitSearch(FacetedSearch):
     doc_types = ['commits']
@@ -9,6 +9,7 @@ class CommitSearch(FacetedSearch):
     facets = {
         'files': TermsFacet(field='files'),
         'frequency': DateHistogramFacet(field='authored_date', interval="day"),
+        'deletions': RangeFacet(field='stats.deletions', ranges=[('ok', (None, 1)), ('good', (1, 5)), ('better', (5, None))])
     }
     
 
@@ -51,7 +52,13 @@ def test_empty_search_finds_everything(data_client):
         (datetime(2014, 5, 2, 0, 0), 1, False)
      ] == r.facets.frequency
 
-def test_filters_are_shown_as_selected_and_data_is_filtered(data_client):
+    assert [
+        ('ok', 19, False),
+        ('good', 14, False),
+        ('better', 19, False)
+    ] == r.facets.deletions
+
+def test_term_filters_are_shown_as_selected_and_data_is_filtered(data_client):
     cs = CommitSearch(filters={'files': 'test_elasticsearch_dsl'})
 
     r = cs.execute()
@@ -87,3 +94,16 @@ def test_filters_are_shown_as_selected_and_data_is_filtered(data_client):
         (datetime(2014, 5, 1, 0, 0), 1, False),
         (datetime(2014, 5, 2, 0, 0), 1, False)
     ] == r.facets.frequency
+
+    assert [
+        ('ok', 12, False),
+        ('good', 10, False),
+        ('better', 13, False)
+    ] == r.facets.deletions
+
+def test_range_filters_are_shown_as_selected_and_data_is_filtered(data_client):
+    cs = CommitSearch(filters={'deletions': 'better'})
+
+    r = cs.execute()
+
+    assert 19 == r.hits.total

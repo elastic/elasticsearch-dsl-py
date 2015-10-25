@@ -8,7 +8,7 @@ from .aggs import A
 from .utils import AttrDict
 from .result import Response
 
-__all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet']
+__all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet']
 
 class Facet(object):
     """
@@ -82,12 +82,40 @@ class TermsFacet(Facet):
 
     def add_filter(self, filter_values):
         """ Create a terms filter instead of bool containing term filters.  """
-
         self.filter_values = filter_values
-
         if filter_values:
             return F('terms', **{self._params['field']: filter_values})
 
+
+class RangeFacet(Facet):
+    agg_type = 'range'
+
+    def _range_to_dict(self, range):
+        key, range = range
+        out = {'key': key}
+        if range[0] is not None:
+            out['from'] = range[0]
+        if range[1] is not None:
+            out['to'] = range[1]
+        return out
+
+    def __init__(self, ranges, **kwargs):
+        super(RangeFacet, self).__init__(**kwargs)
+        self._params['ranges'] = list(map(self._range_to_dict, ranges))
+        self._params['keyed'] = False
+        self._ranges = dict(ranges)
+
+    def get_value_filter(self, filter_value):
+        f, t = self._ranges[filter_value]
+        limits = {}
+        if f is not None:
+            limits['from'] = f
+        if t is not None:
+            limits['to'] = t
+
+        return F('range', **{
+            self._params['field']: limits
+        })
 
 class HistogramFacet(Facet):
     agg_type = 'histogram'
