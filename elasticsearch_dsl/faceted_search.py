@@ -11,15 +11,27 @@ from .result import Response
 __all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet']
 
 class Facet(object):
+    """
+    A facet on faceted search. Wraps and aggregation and provides functionality
+    to create a filter for selected values and return a list of facet values
+    from the result of the aggregation.
+    """
     agg_type = None
+
     def __init__(self, **kwargs):
         self.filter_values = ()
         self._params = kwargs
 
     def get_aggregation(self):
+        """
+        Return the aggregation object.
+        """
         return A(self.agg_type, **self._params)
 
     def add_filter(self, filter_values):
+        """
+        Construct a filter and remember the values for use in get_values.
+        """
         self.filter_values = filter_values
 
         if not filter_values:
@@ -31,22 +43,36 @@ class Facet(object):
         return f
 
     def get_value_filter(self, filter_value):
+        """
+        Construct a filter for an individual value
+        """
         pass
 
-    def is_filtered(self, key, bucket):
+    def is_filtered(self, key):
+        """
+        Is a filter active on the given key.
+        """
         return key in self.filter_values
 
     def get_value(self, bucket):
+        """
+        return a value representing a bucket. Its key as default.
+        """
         return bucket['key']
 
     def get_values(self, data):
+        """
+        Turn the raw bucket data into a list of tuples containing the key,
+        number of documents and a flag indicating whether this value has been
+        selected or not.
+        """
         out = []
         for bucket in data:
             key = self.get_value(bucket)
             out.append((
                 key,
                 bucket['doc_count'],
-                self.is_filtered(key, self.filter_values)
+                self.is_filtered(key)
             ))
         return out
 
@@ -55,6 +81,8 @@ class TermsFacet(Facet):
     agg_type = 'terms'
 
     def add_filter(self, filter_values):
+        """ Create a terms filter instead of bool containing term filters.  """
+
         self.filter_values = filter_values
 
         if filter_values:
@@ -126,12 +154,16 @@ class FacetedSearch(object):
             self.add_filter(name, value)
 
     def add_filter(self, name, filter_values):
+        """
+        Add a filter for a facet.
+        """
+        # normalize the value into a list
         if not isinstance(filter_values, (tuple, list)):
             if filter_values in (None, ''):
                 return
             filter_values = [filter_values, ]
 
-
+        # get the filter from the facet
         f = self.facets[name].add_filter(filter_values)
         if f is None:
             return
@@ -139,6 +171,9 @@ class FacetedSearch(object):
         self._filters[name] = f
 
     def search(self):
+        """
+        Construct the Search object.
+        """
         return Search(doc_type=self.doc_types, index=self.index)
 
     def query(self, search, query):
