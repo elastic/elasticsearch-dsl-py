@@ -1,28 +1,14 @@
-from datetime import datetime
-from elasticsearch_dsl.faceted_search import FacetedSearch, agg_to_filter
-from elasticsearch_dsl import A, F
+from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet
 
 class BlogSearch(FacetedSearch):
     doc_types = ['user', 'post']
     fields = ('title', 'body', )
 
     facets = {
-        'category': A('terms', field='category.raw'),
-        'tags': A('terms', field='tags'),
+        'category': TermsFacet(field='category.raw'),
+        'tags': TermsFacet(field='tags'),
     }
 
-
-def test_agg_filter_for_histograms():
-    a = A('histogram', field='comment_count', interval=2)
-    f = agg_to_filter(a, 0)
-
-    assert f == F('range', comment_count={'gte': 0, 'lt': 2})
-
-def test_agg_filter_for_date_histograms():
-    a = A('date_histogram', field='published_date', interval='month')
-    f = agg_to_filter(a, datetime(2014, 12, 1))
-
-    assert f == F('range', published_date={'gte': datetime(2014, 12, 1), 'lt': datetime(2015, 1, 1)})
 
 def test_query_is_created_properly():
     bs = BlogSearch('python search')
@@ -57,9 +43,7 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
     assert {
         'aggs': {
             '_filter_tags': {
-                'filter': {
-                    'term': {'category.raw': 'elastic'},
-                },
+                'filter': {'terms': {'category.raw': ['elastic']}},
                 'aggs': {'tags': {'terms': {'field': 'tags'}}},
             },
             '_filter_category': {
@@ -69,9 +53,7 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
                 'aggs': {'category': {'terms': {'field': 'category.raw'}}},
             }
         },
-        'post_filter': {
-            'term': {'category.raw': 'elastic'}
-        },
+        'post_filter': {'terms': {'category.raw': ['elastic']}},
         'query': {
             'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
         },
@@ -85,22 +67,23 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
     d = s.to_dict()
 
 
+    # we need to test post_filter without relying on order
+    f = d['post_filter']['bool'].pop('must')
+    assert len(f) == 2
+    assert {'terms': {'category.raw': ['elastic']}} in f
+    assert {'terms': {'tags': ['python', 'django']}} in f
+
     assert {
         'aggs': {
             '_filter_tags': {
                 'filter': {
-                    'term': {'category.raw': 'elastic'},
+                    'terms': {'category.raw': ['elastic']},
                 },
                 'aggs': {'tags': {'terms': {'field': 'tags'}}},
             },
             '_filter_category': {
                 'filter': {
-                    'bool': {
-                        'should': [
-                            {'term': {'tags': 'python'}},
-                            {'term': {'tags': 'django'}}
-                        ]
-                    }
+                    'terms': {'tags': ['python', 'django']},
                 },
                 'aggs': {'category': {'terms': {'field': 'category.raw'}}},
             }
@@ -110,13 +93,6 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
         },
         'post_filter': {
             'bool': {
-                'must': [
-                    {'term': {'category.raw': 'elastic'}} 
-                ],
-                'should': [
-                    {'term': {'tags': 'python'}},
-                    {'term': {'tags': 'django'}},
-                ]
             }
         },
         'highlight': {'fields': {'body': {}, 'title': {}}}

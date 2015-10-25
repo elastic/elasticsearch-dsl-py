@@ -1,15 +1,14 @@
 from datetime import datetime
 
-from elasticsearch_dsl.faceted_search import FacetedSearch
-from elasticsearch_dsl import A
+from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet
 
 class CommitSearch(FacetedSearch):
     doc_types = ['commits']
     fields = ('description', 'files', )
 
     facets = {
-        'files': A('terms', field='files'),
-        'frequency': A('date_histogram', field='authored_date', interval="day"),
+        'files': TermsFacet(field='files'),
+        'frequency': DateHistogramFacet(field='authored_date', interval="day"),
     }
     
 

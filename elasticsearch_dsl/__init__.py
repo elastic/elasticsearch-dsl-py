@@ -8,7 +8,7 @@ from .document import DocType, MetaField
 from .mapping import Mapping
 from .index import Index
 from .analysis import analyzer, token_filter, char_filter, tokenizer
-from .faceted_search import FacetedSearch
+from .faceted_search import * 
 
 VERSION = (0, 0, 8)
 __version__ = VERSION
