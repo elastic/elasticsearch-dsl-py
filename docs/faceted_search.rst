@@ -38,7 +38,7 @@ declaring a ``FacetedSearch`` subclass:
 Facets
 ~~~~~~
 
-There are several different facets available"
+There are several different facets available:
 
 ``TermsFacet``
   provides an option to split documents into groups based on a value of a field, for example ``TermsFacet(field='catgeory')``
