@@ -3,8 +3,8 @@
 Changelog
 =========
 
-0.0.9 (dev)
------------
+0.0.9 (2015-10-26)
+------------------
  * ``FacetedSearch`` now uses its own ``Facet`` class instead of built in
    aggregations
 
