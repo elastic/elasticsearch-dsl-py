@@ -34,6 +34,25 @@ declaring a ``FacetedSearch`` subclass:
   values should be instances of any ``Facet`` subclass, for example: ``{'tags':
   TermsFacet(field='tags')``
 
+
+Facets
+~~~~~~
+
+There are several different facets available"
+
+``TermsFacet``
+  provides an option to split documents into groups based on a value of a field, for example ``TermsFacet(field='catgeory')``
+
+``DateHistogramFacet``
+  split documents into time intervals, example: ``DateHistogramFacet(field="published_date", interval="day")``
+
+``HistogramFacet``
+  simmilar to ``DateHistogramFacet`` but for numerical values: ``HistogramFacet(field="rating", interval=2)``
+
+``Rangefacet``
+  allows you to define your own ranges for a numerical fiels:
+  ``Rangefacet(field="comment_count", ranges=[("few", (None, 2)), ("lots", (2, None))])`` 
+
 Advanced
 ~~~~~~~~
 
