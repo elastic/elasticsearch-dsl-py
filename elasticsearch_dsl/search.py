@@ -162,6 +162,13 @@ class Search(object):
             s._extra['size'] = 1
             return s
 
+    def __iter__(self):
+        """
+        Prevents not executed Search iteration
+        """
+
+        raise IndexError("Search should be executed before iteration.")
+
     @classmethod
     def from_dict(cls, d):
         """

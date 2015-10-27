@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import pytest
+
 from elasticsearch_dsl import search, query, F, Q, DocType
 
 def test_search_starts_with_empty_query():
@@ -71,6 +73,11 @@ def test_query_always_returns_search():
     s = search.Search()
 
     assert isinstance(s.query('match', f=42), search.Search)
+
+def test_search_iteration_raises():
+    with pytest.raises(IndexError):
+        s = search.Search()
+        next(iter(s))
 
 def test_aggs_get_copied_on_change():
     s = search.Search()
