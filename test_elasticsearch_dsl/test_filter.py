@@ -9,7 +9,6 @@ def test_repr():
 
 def test_and_can_be_created_from_list():
     f = filter.F({'and': [{'term': {'f': 'v'}}, {'term': {'f2': 42}}]})
-
     assert f == filter.And([filter.F('term', f='v'), filter.F('term', f2=42)])
 
 def test_empty_F_is_match_all():
@@ -41,3 +40,23 @@ def test_query_can_use_positional_arg():
 
     assert f.query == Q('match_all')
     assert {'query': {'match_all': {}}} == f.to_dict()
+
+def test_and_filter_to_dict():
+    f = filter.F('and', [filter.F('range', postDate={'to': '2010-04-01', 'from': '2010-03-01'}),
+                         filter.F('prefix', name__second='ba')])
+
+    assert f.to_dict() == {
+        "and" : [
+            {
+                "range" : {
+                    "postDate" : {
+                        "from" : "2010-03-01",
+                        "to" : "2010-04-01"
+                    }
+                }
+            },
+            {
+                "prefix" : { "name.second" : "ba" }
+            }
+        ]
+    }
