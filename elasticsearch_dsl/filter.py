@@ -1,3 +1,5 @@
+from six.moves import map
+
 from .utils import DslBase, BoolMixin, _make_dsl_class
 
 __all__ = [
@@ -121,6 +123,12 @@ class AndOrFilter(object):
         if filters is not None:
             kwargs['filters'] = filters
         super(AndOrFilter, self).__init__(**kwargs)
+
+    def to_dict(self):
+        # 'And' and 'Or' filters are serialized differently from most filters
+        # See: https://www.elastic.co/guide/en/elasticsearch/reference/1.4/query-dsl-or-filter.html
+        value = list(map(lambda x: x.to_dict(), self._params['filters']))
+        return {self.name: value}
 
     # compound filters
 class And(AndOrFilter, Filter):
