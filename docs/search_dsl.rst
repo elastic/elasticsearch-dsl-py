@@ -365,6 +365,18 @@ To set query parameters, use the ``.params()`` method:
   s = s.params(search_type="count")
 
 
+If you need to limit the fields being returned by elasticsearch, use the
+``fields()`` method:
+
+.. code:: python
+
+  # only return the selected fields
+  s = s.fields(['title', 'body'])
+  # reset the field selection
+  s = s.fields()
+  # don't return any fields, just the metadata
+  s = s.fields([])
+
 Serialization and Deserialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
