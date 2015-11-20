@@ -1,10 +1,14 @@
 Configuration
 =============
 
-There are several ways how to configure connections for the library. Easiest
-option, and most useful, is to just define one default connection that will be
-used every time an API call is made without explicitly passing in other
-connection.
+Connections for the library can be configured several ways using the
+``connections`` module. Defining one default global connection is easy and
+useful since API calls can be made every time without explicitly passing
+in another connection.
+
+A default global connection is generally preferred. When additional
+flexibility is needed, manual connections and multiple connections to multiple
+clusters may also be configured.
 
 When using ``elasticsearch_dsl`` it is highly recommended to use the attached
 serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
@@ -19,13 +23,30 @@ explicitly specify your own serializer.
     highly recommended that you use the ``create_connection`` method and all
     operations will use that connection automatically.
 
+.. _default-global-connection:
 
-Manual
-------
+Default global connection
+-------------------------
 
-If you don't wish to supply global configuration you can always pass in your
-own connection (instance of ``elasticsearch.Elasticsearch``) as parameter
-``using`` wherever it is accepted:
+To define a default connection that will be used globally, use the
+``connections`` module and its ``create_connection`` method:
+
+.. code:: python
+
+    from elasticsearch_dsl import connections
+
+    connections.create_connection(hosts=['localhost'], timeout=20)
+
+Any keyword arguments (``hosts`` and ``timeout`` in our example) will be passed
+by the ``create_connection`` method to the ``Elasticsearch`` class.
+
+Manual connection
+-----------------
+
+If you don't wish to use the default global connection you can always configure
+a manual connection with the ``create_connection`` method. The manual
+connection may be passed to other methods by using the keyword ``using`` and
+the value of the connection (instance of ``elasticsearch.Elasticsearch``):
 
 .. code:: python
 
@@ -38,29 +59,30 @@ already associated with:
 
     s = s.using(Elasticsearch('otherhost:9200')
 
-
-.. _default connection:
-
-Default connection
-------------------
-
-To define a default connection that will be used globally, use the
-``connections`` module and the ``create_connection`` method:
+An example:
 
 .. code:: python
 
     from elasticsearch_dsl import connections
 
-    connections.connections.create_connection(hosts=['localhost'], timeout=20)
+    // Create manual configured connection
+    local_connection = connections.create_connection(hosts=['localhost'], timeout=20)
 
-Any keyword arguments (``hosts`` and ``timeout`` in our example) will be passed
-to the ``Elasticsearch`` class.
+    s = Search(using=Elasticsearch('localhost'))
+    ...
+
+    // Create a connection to otherhost
+    s = s.using(Elasticsearch('otherhost:9200')
+    ...
+
+    // Set connection back to localhost
+    s = s.using(Elasticsearch(local_connection))
 
 Multiple clusters
 -----------------
 
-You can define multiple connections to multiple clusters, either at the same
-time using the ``configure`` method:
+Multiple connections to multiple clusters may be created. Create multiple
+connections at the same time using the ``configure`` method:
 
 .. code:: python
 
@@ -71,9 +93,9 @@ time using the ``configure`` method:
         dev={'hosts': ['esdev1.example.com:9200'], sniff_on_start=True}
     )
 
-Such connections will be constructed lazily when requested for the first time.
+Connections will be constructed lazily when requested for the first time.
 
-Or just add them one by one:
+Or just add the multiple connections one by one:
 
 .. code:: python
 
@@ -86,13 +108,12 @@ Or just add them one by one:
 Using aliases
 ~~~~~~~~~~~~~
 
-When using multiple connections you can just refer to them using the string
-alias you registered them under:
+Aliases are handy when working with multiple connections. Using multiple
+connections you can just refer to a connection using the string
+alias you registered it under:
 
 .. code:: python
 
     s = Search(using='qa')
 
-``KeyError`` will be raised if there is no connection registered under that
-alias.
-
+``KeyError`` will be raised if the alias does not have a connection registered.

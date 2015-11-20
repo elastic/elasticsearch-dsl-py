@@ -151,7 +151,7 @@ Let's have a simple Python class representing an article in a blogging system:
 
 In this example you can see:
 
-  * providing a :ref:`default connection`
+  * providing a :ref:`default global connection <default-global-connection>`
 
   * defining fields with mapping configuration
 
