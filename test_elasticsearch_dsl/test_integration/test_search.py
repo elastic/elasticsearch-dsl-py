@@ -24,3 +24,10 @@ def test_scan_iterates_through_all_docs(data_client):
 
     assert 52 == len(commits)
     assert set(d['_id'] for d in DATA if d['_type'] == 'commits') == set(c.meta.id for c in commits)
+
+def test_response_is_cached(data_client):
+    s = Repository.search()
+    repos = list(s)
+
+    assert hasattr(s, '_response')
+    assert s._response.hits == repos

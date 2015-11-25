@@ -1,6 +1,45 @@
 from copy import deepcopy
 
-from elasticsearch_dsl import search, query, F, Q, DocType
+from elasticsearch_dsl import search, query, F, Q, DocType, utils
+
+
+def test_execute_uses_cache():
+    s = search.Search()
+    r = object()
+    s._response = r
+
+    assert r is s.execute()
+
+def test_cache_can_be_ignored(mock_client):
+    s = search.Search('mock')
+    r = object()
+    s._response = r
+    s.execute(ignore_cache=True)
+
+    mock_client.search.assert_called_once_with(
+        doc_type=[],
+        index=None,
+        body={'query': {'match_all': {}}},
+    )
+
+def test_iter_iterates_over_hits():
+    s = search.Search()
+    s._response = [1, 2, 3]
+
+    assert [1, 2, 3] == list(s)
+
+def test_count_uses_cache():
+    s = search.Search()
+    s._response = utils.AttrDict({'hits': {'total': 42}})
+
+    assert 42 == s.count()
+
+def test_cache_isnt_cloned():
+    s = search.Search()
+    s._response = object()
+
+    assert not hasattr(s._clone(), '_response')
+
 
 def test_search_starts_with_empty_query():
     s = search.Search()

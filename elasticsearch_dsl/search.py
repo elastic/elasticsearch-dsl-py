@@ -130,6 +130,12 @@ class Search(object):
         self._filter_proxy = ProxyFilter(self, 'filter')
         self._post_filter_proxy = ProxyFilter(self, 'post_filter')
 
+    def __iter__(self):
+        """
+        Iterate over the hits.
+        """
+        return iter(self.execute())
+
     def __getitem__(self, n):
         """
         Support slicing the `Search` instance for pagination.
@@ -546,6 +552,9 @@ class Search(object):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
+        if hasattr(self, '_response'):
+            return self._response.hits.total
+
         es = connections.get_connection(self._using)
 
         d = self.to_dict(count=True)
@@ -556,24 +565,26 @@ class Search(object):
             body=d
         )['count']
 
-    def execute(self, response_class=Response):
+    def execute(self, response_class=Response, ignore_cache=False):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
 
         :arg response_class: optional subclass of ``Response`` to use instead.
         """
-        es = connections.get_connection(self._using)
+        if ignore_cache or not hasattr(self, '_response'):
+            es = connections.get_connection(self._using)
 
-        return response_class(
-            es.search(
-                index=self._index,
-                doc_type=self._doc_type,
-                body=self.to_dict(),
-                **self._params
-            ),
-            callbacks=self._doc_type_map
-        )
+            self._response = response_class(
+                es.search(
+                    index=self._index,
+                    doc_type=self._doc_type,
+                    body=self.to_dict(),
+                    **self._params
+                ),
+                callbacks=self._doc_type_map
+            )
+        return self._response
 
     def scan(self):
         """

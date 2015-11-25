@@ -3,6 +3,11 @@
 Changelog
 =========
 
+0.0.10 (dev)
+------------
+ * ``Search`` can now be iterated over to get back hits
+ * ``Search`` now caches responses from Elasticsearch
+
 0.0.9 (2015-10-26)
 ------------------
  * ``FacetedSearch`` now uses its own ``Facet`` class instead of built in

@@ -71,6 +71,19 @@ To send the request to Elasticsearch:
 
     response = s.execute()
 
+If you just want to iterate over the hits returned by your search you can
+iterate over the ``Search`` object:
+
+.. code:: python
+
+    for hit in s:
+        print(hit.title)
+
+Search results will be cached do subsequent calls to ``execute`` or trying to
+iterate over an already executed ``Search`` object will not trigger additional
+requests being sent to Elasticsearch. To force a request specify
+``ignore_cache=True`` when calling ``execute``.
+
 For debugging purposes you can serialize the ``Search`` object to a ``dict``
 explicitly:
 
