@@ -8,6 +8,11 @@ class User(DocType):
     username = String(index='not_analyzed')
     joined_date = Date()
 
+def test_index_exists(write_client):
+
+    assert Index('git').exists()
+    assert not Index('not-there').exists()
+
 def test_index_can_be_created_with_settings_and_mappings(write_client):
     i = Index('test-blog', using=write_client)
     i.doc_type(Post)

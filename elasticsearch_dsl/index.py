@@ -69,6 +69,9 @@ class Index(object):
             out.setdefault('settings', {})['analysis'] = analysis
         return out
 
+    def exists(self, **kwargs):
+        return self.connection.indices.exists(index=self._name, **kwargs)
+
     def create(self, **kwargs):
         self.connection.indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
