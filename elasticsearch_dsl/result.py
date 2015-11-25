@@ -29,14 +29,22 @@ class Response(AttrDict):
 
     def _get_result(self, hit):
         dt = hit['_type']
+        print(dt, self._callbacks)
         return self._callbacks.get(dt, Result)(hit)
 
     @property
     def hits(self):
         if not hasattr(self, '_hits'):
             h = self._d_['hits']
+
+            try:
+                hits = AttrList(map(self._get_result, h['hits']))
+            except AttributeError as e:
+                # avoid raising AttributeError since it will be hidden by the property
+                raise TypeError("Could not parse hits.", e)
+
             # avoid assigning _hits into self._d_
-            super(AttrDict, self).__setattr__('_hits', AttrList(map(self._get_result, h['hits'])))
+            super(AttrDict, self).__setattr__('_hits', hits)
             for k in h:
                 setattr(self._hits, k, h[k])
         return self._hits
