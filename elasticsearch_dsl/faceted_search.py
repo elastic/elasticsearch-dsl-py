@@ -3,10 +3,10 @@ from six import iteritems, itervalues
 from functools import partial
 
 from .search import Search
-from .filter import F
 from .aggs import A
 from .utils import AttrDict
 from .result import Response
+from .query import Q
 
 __all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet']
 
@@ -84,7 +84,7 @@ class TermsFacet(Facet):
         """ Create a terms filter instead of bool containing term filters.  """
         self.filter_values = filter_values
         if filter_values:
-            return F('terms', **{self._params['field']: filter_values})
+            return Q('terms', **{self._params['field']: filter_values})
 
 
 class RangeFacet(Facet):
@@ -113,7 +113,7 @@ class RangeFacet(Facet):
         if t is not None:
             limits['to'] = t
 
-        return F('range', **{
+        return Q('range', **{
             self._params['field']: limits
         })
 
@@ -121,7 +121,7 @@ class HistogramFacet(Facet):
     agg_type = 'histogram'
 
     def get_value_filter(self, filter_value):
-        return F('range', **{
+        return Q('range', **{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': filter_value + self._params['interval']
@@ -147,7 +147,7 @@ class DateHistogramFacet(Facet):
         return datetime.utcfromtimestamp(int(bucket['key']) / 1000)
 
     def get_value_filter(self, filter_value):
-        return F('range', **{
+        return Q('range', **{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': self.DATE_INTERVALS[self._params['interval']](filter_value)
@@ -225,7 +225,7 @@ class FacetedSearch(object):
         """
         for f, facet in iteritems(self.facets):
             agg = facet.get_aggregation()
-            agg_filter = F('match_all')
+            agg_filter = Q('match_all')
             for field, filter in iteritems(self._filters):
                 if f == field:
                     continue
@@ -241,7 +241,7 @@ class FacetedSearch(object):
         Add a ``post_filter`` to the search request narrowing the results based
         on the facet filters.
         """
-        post_filter = F('match_all')
+        post_filter = Q('match_all')
         for f in itervalues(self._filters):
             post_filter &= f
         return search.post_filter(post_filter)
