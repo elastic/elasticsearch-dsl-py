@@ -98,7 +98,7 @@ class Bucket(AggBase, Agg):
 class Filter(Bucket):
     name = 'filter'
     _param_defs = {
-        'filter': {'type': 'filter'},
+        'filter': {'type': 'query'},
         'aggs': {'type': 'agg', 'hash': True},
     }
 
@@ -116,7 +116,7 @@ AGGS = (
     (Bucket, 'children', None),
     (Bucket, 'date_histogram', None),
     (Bucket, 'date_range', None),
-    (Bucket, 'filters', {'filters': {'type': 'filter', 'hash': True}}),
+    (Bucket, 'filters', {'filters': {'type': 'query', 'hash': True}}),
     (Bucket, 'geo_distance', None),
     (Bucket, 'geohash_grid', None),
     (Bucket, 'global', None),

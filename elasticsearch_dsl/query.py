@@ -91,7 +91,7 @@ class FunctionScore(Query):
     name = 'function_score'
     _param_defs = {
         'query': {'type': 'query'},
-        'filter': {'type': 'filter'},
+        'filter': {'type': 'query'},
         'functions': {'type': 'score_function', 'multi': True},
     }
 
@@ -108,9 +108,9 @@ class FunctionScore(Query):
 QUERIES = (
     # compound queries
     ('boosting', {'positive': {'type': 'query'}, 'negative': {'type': 'query'}}),
-    ('constant_score', {'query': {'type': 'query'}, 'filter': {'type': 'filter'}}),
+    ('constant_score', {'query': {'type': 'query'}, 'filter': {'type': 'query'}}),
     ('dis_max', {'queries': {'type': 'query', 'multi': True}}),
-    ('filtered', {'query': {'type': 'query'}, 'filter': {'type': 'filter'}}),
+    ('filtered', {'query': {'type': 'query'}, 'filter': {'type': 'query'}}),
     ('indices', {'query': {'type': 'query'}, 'no_match_query': {'type': 'query'}}),
 
     # relationship queries
@@ -136,6 +136,7 @@ QUERIES = (
     ('match', None),
     ('match_phrase', None),
     ('match_phrase_prefix', None),
+    ('missing', None),
     ('more_like_this', None),
     ('more_like_this_field', None),
     ('multi_match', None),

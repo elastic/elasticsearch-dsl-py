@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from elasticsearch_dsl import search, query, F, Q, DocType, utils
+from elasticsearch_dsl import search, query, Q, DocType, utils
 
 
 def test_execute_uses_cache():
@@ -81,7 +81,7 @@ def test_query_can_be_wrapped():
 
 def test_filter_can_be_overriden():
     s = search.Search().filter('term', tag='python')
-    s.filter = ~F(s.filter)
+    s.filter = ~Q(s.filter)
 
     assert {
         "query": {
@@ -243,7 +243,7 @@ def test_complex_example():
     s = search.Search()
     s = s.query('match', title='python') \
         .query(~Q('match', title='ruby')) \
-        .filter(F('term', category='meetup') | F('term', category='conference')) \
+        .filter(Q('term', category='meetup') | Q('term', category='conference')) \
         .post_filter('terms', tags=['prague', 'czech']) \
         .script_fields(more_attendees="doc['attendees'].value + 42")
 

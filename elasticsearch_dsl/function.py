@@ -28,13 +28,13 @@ def SF(name_or_sf, **params):
         kwargs.update(params)
         return ScoreFunction.get_dsl_class(name)(**kwargs)
 
-    # ScriptScore(script="_score", filter=F())
+    # ScriptScore(script="_score", filter=Q())
     if isinstance(name_or_sf, ScoreFunction):
         if params:
             raise ValueError('SF() cannot accept parameters when passing in a ScoreFunction object.')
         return name_or_sf
 
-    # "script_score", script="_score", filter=F()
+    # "script_score", script="_score", filter=Q()
     return ScoreFunction.get_dsl_class(name_or_sf)(**params)
 
 class ScoreFunction(DslBase):
@@ -42,7 +42,7 @@ class ScoreFunction(DslBase):
     _type_shortcut = staticmethod(SF)
     _param_defs = {
         'query': {'type': 'query'},
-        'filter': {'type': 'filter'},
+        'filter': {'type': 'query'},
         'weight': {}
     }
     name = None
