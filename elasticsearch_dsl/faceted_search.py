@@ -139,6 +139,10 @@ class DateHistogramFacet(Facet):
         'hour': lambda d: d+timedelta(hours=1),
     }
 
+    def __init__(self, **kwargs):
+        kwargs.setdefault("min_doc_count", 0)
+        super(DateHistogramFacet, self).__init__(**kwargs)
+
     def get_value(self, bucket):
         return datetime.utcfromtimestamp(int(bucket['key']) / 1000)
 

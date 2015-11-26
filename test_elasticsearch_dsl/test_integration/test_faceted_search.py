@@ -8,7 +8,7 @@ class CommitSearch(FacetedSearch):
 
     facets = {
         'files': TermsFacet(field='files'),
-        'frequency': DateHistogramFacet(field='authored_date', interval="day"),
+        'frequency': DateHistogramFacet(field='authored_date', interval="day", min_doc_count=1),
         'deletions': RangeFacet(field='stats.deletions', ranges=[('ok', (None, 1)), ('good', (1, 5)), ('better', (5, None))])
     }
     
