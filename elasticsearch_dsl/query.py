@@ -1,4 +1,4 @@
-from .utils import DslBase, BoolMixin, _make_dsl_class
+from .utils import DslBase, _make_dsl_class
 from .function import SF, ScoreFunction
 
 __all__ = [
@@ -53,7 +53,7 @@ class MatchAll(Query):
     __ror__ = __or__
 EMPTY_QUERY = MatchAll()
 
-class Bool(BoolMixin, Query):
+class Bool(Query):
     name = 'bool'
     _param_defs = {
         'must': {'type': 'query', 'multi': True},
@@ -62,13 +62,56 @@ class Bool(BoolMixin, Query):
         'filter': {'type': 'query', 'multi': True},
     }
 
+    def __add__(self, other):
+        q = self._clone()
+        if isinstance(other, Bool):
+            q.must += other.must
+            q.should += other.should
+            q.must_not += other.must_not
+        else:
+            q.must.append(other)
+        return q
+    __radd__ = __add__
+
+    def __or__(self, other):
+        if not (self.must or self.must_not):
+            # TODO: if only 1 in must or should, append the query instead of other
+            q = self._clone()
+            q.should.append(other)
+            return q
+
+        elif isinstance(other, Bool) and not (other.must or other.must_not):
+            # TODO: if only 1 in must or should, append the query instead of self
+            q = other._clone()
+            q.should.append(self)
+            return q
+
+        return Bool(should=[self, other])
+    __ror__ = __or__
+
+    def __invert__(self):
+        # special case for single negated query
+        if not (self.must or self.should) and len(self.must_not) == 1:
+            return self.must_not[0]._clone()
+
+        # bol without should, just flip must and must_not
+        elif not self.should:
+            q = self._clone()
+            q.must, q.must_not = q.must_not, q.must
+            return q
+
+        # TODO: should -> must_not.append(Bool(should=self.should)) ??
+        # queries with should just invert normally
+        return super(Bool, self).__invert__()
+
     def __and__(self, other):
         q = self._clone()
-        if isinstance(other, self.__class__):
+        if isinstance(other, Bool):
             q.must += other.must
             q.must_not += other.must_not
             q.should = []
             for qx in (self, other):
+                # TODO: percetages will fail here
                 min_should_match = getattr(qx, 'minimum_should_match', 0 if any((qx.must, qx.must_not)) else 1)
                 # all subqueries are required
                 if len(qx.should) <= min_should_match:
@@ -84,8 +127,6 @@ class Bool(BoolMixin, Query):
             q.must.append(other)
         return q
     __rand__ = __and__
-# register this as Bool for Query
-Query._bool = Bool
 
 class FunctionScore(Query):
     name = 'function_score'
