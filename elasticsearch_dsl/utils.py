@@ -315,73 +315,24 @@ class DslBase(object):
         # preference
         if hasattr(other, '__radd__'):
             return other.__radd__(self)
-        return self._bool(must=[self, other])
+        return self.get_dsl_class('bool')(must=[self, other])
 
     def __invert__(self):
-        return self._bool(must_not=[self])
+        return self.get_dsl_class('bool')(must_not=[self])
 
     def __or__(self, other):
         # make sure we give queries that know how to combine themselves
         # preference
         if hasattr(other, '__ror__'):
             return other.__ror__(self)
-        return self._bool(should=[self, other])
+        return self.get_dsl_class('bool')(should=[self, other])
 
     def __and__(self, other):
         # make sure we give queries that know how to combine themselves
         # preference
         if hasattr(other, '__rand__'):
             return other.__rand__(self)
-        return self._bool(must=[self, other])
-
-
-class BoolMixin(object):
-    """
-    Mixin containing all the operator overrides for Bool queries and filters.
-
-    Except for and where should behavior differs
-    """
-    def __add__(self, other):
-        q = self._clone()
-        if isinstance(other, self.__class__):
-            q.must += other.must
-            q.should += other.should
-            q.must_not += other.must_not
-        else:
-            q.must.append(other)
-        return q
-    __radd__ = __add__
-
-    def __or__(self, other):
-        if not (self.must or self.must_not):
-            # TODO: if only 1 in must or should, append the query instead of other
-            q = self._clone()
-            q.should.append(other)
-            return q
-
-        elif isinstance(other, self.__class__) and not (other.must or other.must_not):
-            # TODO: if only 1 in must or should, append the query instead of self
-            q = other._clone()
-            q.should.append(self)
-            return q
-
-        return self.__class__(should=[self, other])
-    __ror__ = __or__
-
-    def __invert__(self):
-        # special case for single negated query
-        if not (self.must or self.should) and len(self.must_not) == 1:
-            return self.must_not[0]._clone()
-
-        # bol without should, just flip must and must_not
-        elif not self.should:
-            q = self._clone()
-            q.must, q.must_not = q.must_not, q.must
-            return q
-
-        # TODO: should -> must_not.append(self.__class__(should=self.should)) ??
-        # queries with should just invert normally
-        return super(BoolMixin, self).__invert__()
+        return self.get_dsl_class('bool')(must=[self, other])
 
 
 class ObjectBase(AttrDict):
