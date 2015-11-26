@@ -26,13 +26,13 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
                 'post': {
                     'properties': {
                         'title': {'type': 'string', 'analyzer': 'my_analyzer'},
-                        'published_from': {'type': 'date', 'format': 'dateOptionalTime',},
+                        'published_from': {'type': 'date', 'format': 'strict_date_optional_time||epoch_millis',},
                     }
                 },
                 'user': {
                     'properties': {
                         'username': {'type': 'string', 'index': 'not_analyzed'},
-                        'joined_date': {'type': 'date', 'format': 'dateOptionalTime',},
+                        'joined_date': {'type': 'date', 'format': 'strict_date_optional_time||epoch_millis',},
                     }
                 },
             }

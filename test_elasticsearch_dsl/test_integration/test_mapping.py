@@ -107,11 +107,11 @@ def test_mapping_gets_updated_from_es(write_client):
                 'comments': {
                     'type': 'nested',
                     'properties': {
-                        'created': {'type': 'date', 'format': 'dateOptionalTime'},
+                        'created': {'type': 'date', 'format': 'strict_date_optional_time||epoch_millis'},
                         'author': {'analyzer': 'snowball', 'fields': {'raw': {'index': 'not_analyzed', 'type': 'string'}}, 'type': 'string'}
                     },
                 },
-                'created_at': {'format': 'dateOptionalTime', 'type': 'date'},
+                'created_at': {'format': 'strict_date_optional_time||epoch_millis', 'type': 'date'},
                 'title': {'analyzer': 'snowball', 'fields': {'raw': {'index': 'not_analyzed', 'type': 'string'}}, 'type': 'string'}
             }
         }
