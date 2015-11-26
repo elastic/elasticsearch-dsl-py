@@ -5,7 +5,7 @@ import os
 from elasticsearch.helpers.test import get_test_client, SkipTest
 from elasticsearch.helpers import bulk
 
-from pytest import fixture, skip
+from pytest import fixture, yield_fixture, skip
 from mock import Mock
 
 from .test_integration.test_data import DATA, create_git_index
@@ -29,28 +29,21 @@ def client(request):
     except SkipTest:
         skip()
 
-@fixture
+@yield_fixture
 def write_client(request, client):
-    def cleanup():
-        client.indices.delete('test-*')
-    request.addfinalizer(cleanup)
-    return client
+    yield client
+    client.indices.delete('test-*', ignore=404)
 
-@fixture
+@yield_fixture
 def mock_client(request):
     # inner import to avoid throwing off coverage
     from elasticsearch_dsl.connections import connections
-
-    def reset_connections():
-        c = connections
-        c._conn = {}
-        c._kwargs = {}
-    request.addfinalizer(reset_connections)
-
     client = Mock()
     client.search.return_value = dummy_response()
     connections.add_connection('mock', client)
-    return client
+    yield client
+    connections._conn = {}
+    connections._kwargs = {}
 
 @fixture(scope='session')
 def data_client(request, client):
