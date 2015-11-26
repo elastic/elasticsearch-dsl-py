@@ -29,7 +29,6 @@ class Response(AttrDict):
 
     def _get_result(self, hit):
         dt = hit['_type']
-        print(dt, self._callbacks)
         return self._callbacks.get(dt, Result)(hit)
 
     @property

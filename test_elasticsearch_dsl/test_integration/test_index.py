@@ -71,7 +71,6 @@ def test_multiple_indices_with_same_doc_type_work(write_client):
 
     for i in ('test-index-1', 'test-index-2'):
         settings = write_client.indices.get_settings(index=i)
-        print(i)
         assert settings[i]['settings']['index']['analysis'] == {
             'analyzer': {
                 'my_analyzer': {
