@@ -32,6 +32,19 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(properties={'title': field.String()})
 
+class SimpleCommit(document.DocType):
+    files = field.String(multi=True)
+
+    class Meta:
+        index = 'test-git'
+
+def test_multi_works_after_doc_has_been_saved(write_client):
+    c = SimpleCommit()
+    c.full_clean()
+    c.files.append('setup.py')
+
+    assert c.to_dict() == {'files': ['setup.py']}
+
 def test_null_value_for_object():
     d = MyDoc(inner=None)
 
@@ -317,6 +330,6 @@ def test_search_with_custom_alias_and_index(mock_client):
     search_object = MyDoc.search(
       using="staging",
       index=["custom_index1", "custom_index2"])
-    
+
     assert search_object._using == "staging"
     assert search_object._index == ["custom_index1", "custom_index2"]

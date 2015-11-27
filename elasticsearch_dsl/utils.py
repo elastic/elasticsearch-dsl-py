@@ -434,9 +434,12 @@ class ObjectBase(AttrDict):
             data = self._d_.get(name, None)
             try:
                 # save the cleaned value
-                self._d_[name] = field.clean(data)
+                data = field.clean(data)
             except ValidationException as e:
                 errors.setdefault(name, []).append(e)
+
+            if name in self._d_ or data not in ([], {}, None):
+                self._d_[name] = data
 
         if errors:
             raise ValidationException(errors)
