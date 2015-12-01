@@ -232,7 +232,7 @@ acts as a top-level aggregation:
 
     s = Search()
     a = A('terms', field='category')
-    s.aggs.bucket('category_terms',se a)
+    s.aggs.bucket('category_terms', a)
     # {
     #   'aggs': {
     #     'category_terms': {
