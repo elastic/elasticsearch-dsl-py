@@ -11,7 +11,7 @@ def test_execute_uses_cache():
     assert r is s.execute()
 
 def test_cache_can_be_ignored(mock_client):
-    s = search.Search('mock')
+    s = search.Search(using='mock')
     r = object()
     s._response = r
     s.execute(ignore_cache=True)
@@ -377,7 +377,7 @@ def test_from_dict_doesnt_need_query():
     } == s.to_dict()
 
 def test_params_being_passed_to_search(mock_client):
-    s = search.Search('mock')
+    s = search.Search(using='mock')
     s = s.params(routing='42')
     s.execute()
 

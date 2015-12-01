@@ -79,23 +79,8 @@ class AggsProxy(AggBase, DslBase):
     def to_dict(self):
         return super(AggsProxy, self).to_dict().get('aggs', {})
 
-
-class Search(object):
-    query = ProxyDescriptor('query')
-    filter = ProxyDescriptor('filter')
-    post_filter = ProxyDescriptor('post_filter')
-
+class Request(object):
     def __init__(self, using='default', index=None, doc_type=None, extra=None):
-        """
-        Search request to elasticsearch.
-
-        :arg using: `Elasticsearch` instance to use
-        :arg index: limit the search to index
-        :arg doc_type: only query this type.
-
-        All the paramters supplied (or omitted) at creation type can be later
-        overriden by methods (`using`, `index` and `doc_type` respectively).
-        """
         self._using = using
 
         self._index = None
@@ -115,10 +100,128 @@ class Search(object):
         elif doc_type:
             self._add_doc_type(doc_type)
 
+        self._params = {}
+        self._extra = extra or {}
+
+    def params(self, **kwargs):
+        """
+        Specify query params to be used when executing the search. All the
+        keyword arguments will override the current values. See
+        http://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch.Elasticsearch.search
+        for all availible parameters.
+
+        Example::
+
+            s = Search()
+            s = s.params(routing='user-1', preference='local')
+        """
+        s = self._clone()
+        s._params.update(kwargs)
+        return s
+
+    def index(self, *index):
+        """
+        Set the index for the search. If called empty it will rmove all information.
+
+        Example:
+
+            s = Search()
+            s = s.index('twitter-2015.01.01', 'twitter-2015.01.02')
+        """
+        # .index() resets
+        s = self._clone()
+        if not index:
+            s._index = None
+        else:
+            s._index = (self._index or []) + list(index)
+        return s
+
+    def _add_doc_type(self, doc_type):
+        if hasattr(doc_type, '_doc_type'):
+            self._doc_type_map[doc_type._doc_type.name] = doc_type.from_es
+            doc_type = doc_type._doc_type.name
+        self._doc_type.append(doc_type)
+
+    def doc_type(self, *doc_type, **kwargs):
+        """
+        Set the type to search through. You can supply a single value or
+        multiple. Values can be strings or subclasses of ``DocType``.
+
+        You can also pass in any keyword arguments, mapping a doc_type to a
+        callback that should be used instead of the Result class.
+
+        If no doc_type is supplied any information stored on the instance will
+        be erased.
+
+        Example:
+
+            s = Search().doc_type('product', 'store', User, custom=my_callback)
+        """
+        # .doc_type() resets
+        s = self._clone()
+        if not doc_type and not kwargs:
+            s._doc_type = []
+            s._doc_type_map = {}
+        else:
+            for dt in doc_type:
+                s._add_doc_type(dt)
+            s._doc_type.extend(kwargs.keys())
+            s._doc_type_map.update(kwargs)
+        return s
+
+    def using(self, client):
+        """
+        Associate the search request with an elasticsearch client. A fresh copy
+        will be returned with current instance remaining unchanged.
+
+        :arg client: an instance of ``elasticsearch.Elasticsearch`` to use or
+            an alias to look up in ``elasticsearch_dsl.connections``
+
+        """
+        s = self._clone()
+        s._using = client
+        return s
+
+    def extra(self, **kwargs):
+        """
+        Add extra keys to the request body. Mostly here for backwards
+        compatibility.
+        """
+        s = self._clone()
+        if 'from_' in kwargs:
+            kwargs['from'] = kwargs.pop('from_')
+        s._extra.update(kwargs)
+        return s
+
+    def _clone(self):
+        s = self.__class__(using=self._using, index=self._index,
+                           doc_type=self._doc_type)
+        s._doc_type_map = self._doc_type_map.copy()
+        s._extra = self._extra.copy()
+        s._params = self._params.copy()
+        return s
+
+
+class Search(Request):
+    query = ProxyDescriptor('query')
+    filter = ProxyDescriptor('filter')
+    post_filter = ProxyDescriptor('post_filter')
+
+    def __init__(self, **kwargs):
+        """
+        Search request to elasticsearch.
+
+        :arg using: `Elasticsearch` instance to use
+        :arg index: limit the search to index
+        :arg doc_type: only query this type.
+
+        All the paramters supplied (or omitted) at creation type can be later
+        overriden by methods (`using`, `index` and `doc_type` respectively).
+        """
+        super(Search, self).__init__(**kwargs)
+
         self.aggs = AggsProxy(self)
         self._sort = []
-        self._extra = extra or {}
-        self._params = {}
         self._fields = None
         self._partial_fields = {}
         self._highlight = {}
@@ -196,13 +299,11 @@ class Search(object):
         of all the underlying objects. Used internally by most state modifying
         APIs.
         """
-        s = self.__class__(using=self._using, index=self._index,
-                           doc_type=self._doc_type)
-        s._doc_type_map = self._doc_type_map.copy()
+        s = super(Search, self)._clone()
+
         s._sort = self._sort[:]
         s._fields = self._fields[:] if self._fields is not None else None
         s._partial_fields = self._partial_fields.copy()
-        s._extra = self._extra.copy()
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
@@ -213,7 +314,6 @@ class Search(object):
         # copy top-level bucket definitions
         if self.aggs._params.get('aggs'):
             s.aggs._params = {'aggs': self.aggs._params['aggs'].copy()}
-        s._params = self._params.copy()
         return s
 
     def update_from_dict(self, d):
@@ -280,33 +380,6 @@ class Search(object):
             if isinstance(kwargs[name], string_types):
                 kwargs[name] = {'script': kwargs[name]}
         s._script_fields.update(kwargs)
-        return s
-
-    def params(self, **kwargs):
-        """
-        Specify query params to be used when executing the search. All the
-        keyword arguments will override the current values. See
-        http://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch.Elasticsearch.search
-        for all availible parameters.
-
-        Example::
-
-            s = Search()
-            s = s.params(routing='user-1', preference='local')
-        """
-        s = self._clone()
-        s._params.update(kwargs)
-        return s
-
-    def extra(self, **kwargs):
-        """
-        Add extra keys to the request body. Mostly here for backwards
-        compatibility.
-        """
-        s = self._clone()
-        if 'from_' in kwargs:
-            kwargs['from'] = kwargs.pop('from_')
-        s._extra.update(kwargs)
         return s
 
     def fields(self, fields=None):
@@ -430,56 +503,6 @@ class Search(object):
         s._suggest[name].update(kwargs)
         return s
 
-    def index(self, *index):
-        """
-        Set the index for the search. If called empty it will rmove all information.
-
-        Example:
-
-            s = Search()
-            s = s.index('twitter-2015.01.01', 'twitter-2015.01.02')
-        """
-        # .index() resets
-        s = self._clone()
-        if not index:
-            s._index = None
-        else:
-            s._index = (self._index or []) + list(index)
-        return s
-
-    def _add_doc_type(self, doc_type):
-        if hasattr(doc_type, '_doc_type'):
-            self._doc_type_map[doc_type._doc_type.name] = doc_type.from_es
-            doc_type = doc_type._doc_type.name
-        self._doc_type.append(doc_type)
-
-    def doc_type(self, *doc_type, **kwargs):
-        """
-        Set the type to search through. You can supply a single value or
-        multiple. Values can be strings or subclasses of ``DocType``.
-        
-        You can also pass in any keyword arguments, mapping a doc_type to a
-        callback that should be used instead of the Result class.
-
-        If no doc_type is supplied any information stored on the instance will
-        be erased.
-
-        Example:
-
-            s = Search().doc_type('product', 'store', User, custom=my_callback)
-        """
-        # .doc_type() resets
-        s = self._clone()
-        if not doc_type and not kwargs:
-            s._doc_type = []
-            s._doc_type_map = {}
-        else:
-            for dt in doc_type:
-                s._add_doc_type(dt)
-            s._doc_type.extend(kwargs.keys())
-            s._doc_type_map.update(kwargs)
-        return s
-
     def to_dict(self, count=False, **kwargs):
         """
         Serialize the search into the dictionary that will be sent over as the
@@ -533,19 +556,6 @@ class Search(object):
 
         d.update(kwargs)
         return d
-
-    def using(self, client):
-        """
-        Associate the search request with an elasticsearch client. A fresh copy
-        will be returned with current instance remaining unchanged.
-
-        :arg client: an instance of ``elasticsearch.Elasticsearch`` to use or
-            an alias to look up in ``elasticsearch_dsl.connections``
-
-        """
-        s = self._clone()
-        s._using = client
-        return s
 
     def count(self):
         """
