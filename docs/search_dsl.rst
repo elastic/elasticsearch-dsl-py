@@ -76,7 +76,7 @@ iterate over the ``Search`` object:
 
 .. code:: python
 
-    for hit in s:
+    for hit in response:
         print(hit.title)
 
 Search results will be cached do subsequent calls to ``execute`` or trying to
@@ -89,7 +89,7 @@ explicitly:
 
 .. code:: python
 
-    print(s.to_dict())
+    print(response.to_dict())
 
 Queries
 ~~~~~~~
@@ -232,7 +232,7 @@ acts as a top-level aggregation:
 
     s = Search()
     a = A('terms', field='category')
-    s.aggs.bucket('category_terms', a)
+    s.aggs.bucket('category_terms',se a)
     # {
     #   'aggs': {
     #     'category_terms': {
