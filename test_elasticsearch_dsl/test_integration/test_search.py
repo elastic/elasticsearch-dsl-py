@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Search, DocType, Date, String
+from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch
 
 from .test_data import DATA
 
@@ -31,3 +31,19 @@ def test_response_is_cached(data_client):
 
     assert hasattr(s, '_response')
     assert s._response.hits == repos
+
+def test_multi_search(data_client):
+    s1 = Repository.search()
+    s2 = Search(doc_type='commits')
+
+    ms = MultiSearch(index='git')
+    ms = ms.add(s1).add(s2)
+
+    r1, r2 = ms.execute()
+
+    assert 1 == len(r1)
+    assert isinstance(r1[0], Repository)
+    assert r1.search is s1
+
+    assert 52 == r2.hits.total
+    assert r2.search is s2

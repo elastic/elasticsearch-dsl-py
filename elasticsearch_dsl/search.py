@@ -373,7 +373,7 @@ class Search(Request):
                     'params': {'n': 3}
                 }
             )
-        
+
         """
         s = self._clone()
         for name in kwargs:
@@ -617,3 +617,60 @@ class Search(Request):
             ):
             yield self._doc_type_map.get(hit['_type'], Result)(hit)
 
+
+class MultiSearch(Request):
+    def __init__(self, **kwargs):
+        super(MultiSearch, self).__init__(**kwargs)
+        self._searches = []
+
+    def __getitem__(self, key):
+        return self._searches[key]
+
+    def __iter__(self):
+        return iter(self._searches)
+
+    def _clone(self):
+        ms = super(MultiSearch, self)._clone()
+        ms._searches = self._searches[:]
+        return ms
+
+    def add(self, search):
+        ms = self._clone()
+        ms._searches.append(search)
+        return ms
+
+    def to_dict(self):
+        out = []
+        for s in self._searches:
+            meta = {}
+            if s._index:
+                meta['index'] = s._index
+            if s._doc_type:
+                meta['type'] = s._doc_type
+            meta.update(s._params)
+
+            out.append(meta)
+            out.append(s.to_dict())
+
+        return out
+
+    def execute(self, ignore_cache=False):
+        if ignore_cache or not hasattr(self, '_response'):
+            es = connections.get_connection(self._using)
+
+            responses = es.msearch(
+                index=self._index,
+                doc_type=self._doc_type,
+                body=self.to_dict(),
+                **self._params
+            )
+
+            out = []
+            for s, r in zip(self._searches, responses['responses']):
+                r = Response(r, callbacks=s._doc_type_map)
+                r.search = s
+                out.append(r)
+
+            self._response = out
+
+        return self._response

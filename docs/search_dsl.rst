@@ -474,3 +474,26 @@ Aggregations are available through the ``aggregations`` property:
         print(tag.key, tag.max_lines.value)
     
 
+
+``MultiSearch``
+---------------
+
+If you need to execute multiple searches at the same time you can use the
+``MultiSearch`` class which will use the ``_msearch`` API::
+
+.. code:: python
+
+    from elasticsearch_dsl import MultiSearch, Search
+
+    ms = MultiSearch(index='blogs')
+
+    ms = ms.add(Search().filter('term', tags='python'))
+    ms = ms.add(Search().filter('term', tags='elasticsearch'))
+
+    responses = ms.execute()
+
+    for response in responses:
+        print("Results for query %r." % response.search.filter)
+        for hit in response:
+            print(hit.title)
+
