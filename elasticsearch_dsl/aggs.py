@@ -5,7 +5,8 @@ __all__ = [
     'GeoDistance', 'GeohashGrid', 'Global', 'Histogram', 'Iprange', 'Missing',
     'Nested', 'Range', 'ReverseNested', 'SignificantTerms', 'Terms', 'Avg',
     'Cardinality', 'ExtendedStats', 'GeoBounds', 'Max', 'Min', 'Percentiles',
-    'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount'
+    'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount',
+    'MovingAvg',
 ]
 
 
@@ -128,6 +129,7 @@ AGGS = (
     (Bucket, 'reverse_nested', None),
     (Bucket, 'significant_terms', None),
     (Bucket, 'terms', None),
+    (Bucket, 'moving_avg', None),
 
     (Agg, 'avg', None),
     (Agg, 'cardinality', None),
