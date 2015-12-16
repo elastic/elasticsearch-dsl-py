@@ -208,7 +208,8 @@ To define an aggregation, you can use the ``A`` shortcut:
     A('terms', field='tags')
     # {"terms": {"field": "tags"}}
 
-To nest aggregations, you can use the ``.bucket()`` and ``.metric()`` methods:
+To nest aggregations, you can use the ``.bucket()``, ``.metric()`` and
+``.pipeline()`` methods:
 
 .. code:: python
 
@@ -248,23 +249,24 @@ or
 .. code:: python
 
     s = Search()
-    s.aggs.bucket('per_category', 'terms', field='category')\
-        .metric('clicks_per_category', 'sum', field='clicks')\
-        .bucket('tags_per_category', 'terms', field='tags')
+    s.aggs.bucket('articles_per_day', 'date_histogram', field='publish_date', interval='day')\
+        .metric('clicks_per_day', 'sum', field='clicks')\
+        .pipeline('moving_click_average', 'moving_avg', buckets_path='clicks_per_day')\
+        .bucket('tags_per_day', 'terms', field='tags')
 
     s.to_dict()
     # {
-    #   'aggs': {
-    #     'per_category': {
-    #       'terms': {'field': 'category'},
-    #       'aggs': {
-    #         'clicks_per_category': {'sum': {'field': 'clicks'}},
-    #         'tags_per_category': {'terms': {'field': 'tags'}}
+    #   "aggs": {
+    #     "articles_per_day": {
+    #       "date_histogram": { "interval": "day", "field": "publish_date" },
+    #       "aggs": {
+    #         "clicks_per_day": { "sum": { "field": "clicks" } },
+    #         "moving_click_average": { "moving_avg": { "buckets_path": "clicks_per_day" } },
+    #         "tags_per_day": { "terms": { "field": "tags" } }
     #       }
     #     }
     #   }
     # }
-
 
 You can access an existing bucket by its name:
 

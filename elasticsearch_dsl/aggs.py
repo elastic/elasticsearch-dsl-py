@@ -5,7 +5,10 @@ __all__ = [
     'GeoDistance', 'GeohashGrid', 'Global', 'Histogram', 'Iprange', 'Missing',
     'Nested', 'Range', 'ReverseNested', 'SignificantTerms', 'Terms', 'Avg',
     'Cardinality', 'ExtendedStats', 'GeoBounds', 'Max', 'Min', 'Percentiles',
-    'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount'
+    'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount',
+    'AvgBucket', 'BucketScript', 'BucketSelector', 'CumulativeSum',
+    'Derivative', 'ExtendedStatsBucket', 'MaxBucket', 'MinBucket', 'MovingAvg',
+    'PercentilesBucket', 'SerialDiff', 'StatsBucket', 'SumBucket'
 ]
 
 
@@ -66,7 +69,7 @@ class AggBase(object):
     def __setitem__(self, agg_name, agg):
         self.aggs[agg_name] = A(agg)
 
-    def _agg(self, bucket, name, agg_type, *args,**params):
+    def _agg(self, bucket, name, agg_type, *args, **params):
         agg = self[name] = A(agg_type, *args, **params)
 
         # For chaining - when creating new buckets return them...
@@ -81,6 +84,9 @@ class AggBase(object):
 
     def bucket(self, name, agg_type, *args, **params):
         return self._agg(True, name, agg_type, *args, **params)
+
+    def pipeline(self, name, agg_type, *args, **params):
+        return self._agg(False, name, agg_type, *args, **params)
 
 
 class Bucket(AggBase, Agg):
@@ -112,6 +118,9 @@ class Filter(Bucket):
         d[self.name].update(d[self.name].pop('filter', {}))
         return d
 
+class Pipeline(Agg):
+    pass
+
 AGGS = (
     (Bucket, 'children', None),
     (Bucket, 'date_histogram', None),
@@ -142,6 +151,20 @@ AGGS = (
     (Agg, 'sum', None),
     (Agg, 'top_hits', None),
     (Agg, 'value_count', None),
+
+    (Pipeline, 'avg_bucket', None),
+    (Pipeline, 'bucket_script', None),
+    (Pipeline, 'bucket_selector', None),
+    (Pipeline, 'cumulative_sum', None),
+    (Pipeline, 'derivative', None),
+    (Pipeline, 'extended_stats_bucket', None),
+    (Pipeline, 'max_bucket', None),
+    (Pipeline, 'min_bucket', None),
+    (Pipeline, 'moving_avg', None),
+    (Pipeline, 'percentiles_bucket', None),
+    (Pipeline, 'serial_diff', None),
+    (Pipeline, 'stats_bucket', None),
+    (Pipeline, 'sum_bucket', None),
 )
 
 # generate the aggregation classes dynamicaly
