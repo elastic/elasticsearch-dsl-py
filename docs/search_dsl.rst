@@ -79,7 +79,7 @@ iterate over the ``Search`` object:
     for hit in s:
         print(hit.title)
 
-Search results will be cached do subsequent calls to ``execute`` or trying to
+Search results will be cached. Subsequent calls to ``execute`` or trying to
 iterate over an already executed ``Search`` object will not trigger additional
 requests being sent to Elasticsearch. To force a request specify
 ``ignore_cache=True`` when calling ``execute``.
