@@ -131,7 +131,7 @@ Let's have a simple Python class representing an article in a blogging system:
             return super(Article, self).save(** kwargs)
 
         def is_published(self):
-            return datetime.now() < self.published_from
+            return datetime.now() > self.published_from
 
     # create the mappings in elasticsearch
     Article.init()
