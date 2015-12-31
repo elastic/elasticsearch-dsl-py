@@ -1,13 +1,13 @@
 from elasticsearch.serializer import JSONSerializer
 
-from .utils import AttrDict, AttrList
+from .utils import AttrList
 
 class AttrJSONSerializer(JSONSerializer):
     def default(self, data):
-        if isinstance(data, AttrDict):
-            return data._d_
         if isinstance(data, AttrList):
             return data._l_
+        if hasattr(data, 'to_dict'):
+            return data.to_dict()
         return super(AttrJSONSerializer, self).default(data)
 
 serializer = AttrJSONSerializer()

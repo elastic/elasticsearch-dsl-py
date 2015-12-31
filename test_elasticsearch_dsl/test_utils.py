@@ -35,3 +35,10 @@ def test_serializer_deals_with_Attr_versions():
     d = utils.AttrDict({'key': utils.AttrList([1, 2, 3])})
 
     assert serializer.serializer.dumps(d) == '{"key": [1, 2, 3]}'
+
+def test_serializer_deals_with_objects_with_to_dict():
+    class MyClass(object):
+        def to_dict(self):
+            return 42
+
+    assert serializer.serializer.dumps(MyClass()) == '42'
