@@ -138,5 +138,14 @@ class Mapping(object):
 
     def to_dict(self):
         d = self.properties.to_dict()
-        d[self.doc_type].update(self._meta)
+        meta = self._meta
+
+        # hard coded serialization of analyzers in _all
+        if '_all' in meta:
+            meta = meta.copy()
+            _all = meta['_all'] = meta['_all'].copy()
+            for f in ('analyzer', 'search_analyzer', 'index_analyzer'):
+                if hasattr(_all.get(f, None), 'to_dict'):
+                    _all[f] = _all[f].to_dict()
+        d[self.doc_type].update(meta)
         return d
