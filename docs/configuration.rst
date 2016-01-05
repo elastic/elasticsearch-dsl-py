@@ -11,7 +11,9 @@ serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
 your objects are correctly serialized into json every time. The
 ``create_connection`` method that is described here (and that ``configure``
 method uses under the hood) will do that automatically for you, unless you
-explicitly specify your own serializer.
+explicitly specify your own serializer. The serializer we use will also allow
+you to serialize your own objects - just define a ``to_dict()`` method on your
+objects and it will automatically be called when serializing to json.
 
 .. note::
 
