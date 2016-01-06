@@ -10,6 +10,7 @@ Changelog
  * ``DateHistogramFacet`` now defaults to returning empty intervals
  * ``Search`` no longer accepts positional parameters
  * Experimental ``MultiSearch`` API
+ * added option to talk to ``_suggest`` endpoint (``execute_suggest``)
 
 0.0.9 (2015-10-26)
 ------------------
