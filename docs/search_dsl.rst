@@ -371,6 +371,16 @@ The first argument is the name of the suggestions (name under which it will be
 returned), second is the actual text you wish the suggester to work on and the
 keyword arguments will be added to the suggest's json as-is.
 
+If you only wish to run the suggestion part of the search (via the ``_suggest``
+endpoint) you can do so via ``execute_suggest``:
+
+.. code:: python
+
+    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
+    suggestions = s.execute_suggest()
+
+    print(suggestions.my_suggestion)
+
 Extra properties and parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -6,7 +6,7 @@ from .query import Q, EMPTY_QUERY, Filtered
 from .filter import F, EMPTY_FILTER
 from .aggs import A, AggBase
 from .utils import DslBase
-from .result import Response, Result
+from .result import Response, Result, SuggestResponse
 from .connections import connections
 
 class BaseProxy(object):
@@ -595,6 +595,20 @@ class Search(Request):
                 callbacks=self._doc_type_map
             )
         return self._response
+
+    def execute_suggest(self):
+        """
+        Execute just the suggesters. Ignores all parts of the request that are
+        not relevant, including ``query`` and ``doc_type``.
+        """
+        es = connections.get_connection(self._using)
+        return SuggestResponse(
+            es.suggest(
+                index=self._index,
+                body=self._suggest,
+                **self._params
+            )
+        )
 
     def scan(self):
         """

@@ -11,6 +11,14 @@ class Repository(DocType):
         index = 'git'
         doc_type = 'repos'
 
+def test_suggest_can_be_run_separately(data_client):
+    s = Search()
+    s = s.suggest('simple_suggestion', 'elasticserach', term={'field': 'organization'})
+    response = s.execute_suggest()
+
+    assert response.success()
+    assert response.simple_suggestion[0].options[0].text == 'elasticsearch'
+
 def test_scan_respects_doc_types(data_client):
     repos = list(Repository.search().scan())
 

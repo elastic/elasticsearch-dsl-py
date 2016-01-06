@@ -2,6 +2,10 @@ from six import iteritems, u
 
 from .utils import AttrDict, AttrList
 
+class SuggestResponse(AttrDict):
+    def success(self):
+        return not self._shards.failed
+
 class Response(AttrDict):
     def __init__(self, response, callbacks=None):
         super(AttrDict, self).__setattr__('_callbacks', callbacks or {})
