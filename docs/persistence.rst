@@ -118,6 +118,7 @@ If you want to create a model-like wrapper around your documents, use the
 
     class Post(DocType):
         title = String()
+        title_suggest = Completion(payloads=True)
         created_at = Date()
         published = Boolean()
         category = String(
@@ -187,8 +188,8 @@ variant:
     # prints 42, same as post._id
     print(post.meta.id)
 
-    # override default index
-    post._index = 'my-blog'
+    # override default index, same as post._index
+    post.meta.index = 'my-blog'
 
 .. note::
 
@@ -245,6 +246,13 @@ example if you wish the ``Date`` fields to be properly (de)serialized):
 
     Post._doc_type.refresh()
 
+To delete a document just call its ``delete`` method:
+
+.. code:: python
+
+    first = Post.get(id=42)
+    first.delete()
+
 Search
 ~~~~~~
 
@@ -276,12 +284,22 @@ You can also combine document classes with standard doc types (just strings),
 which will be treated as before. You can also pass in multiple ``DocType``
 subclasses and each document in the response will be wrapped in it's class.
 
-To delete a document just call its ``delete`` method:
+If you want to run suggestions, just use the ``suggest`` method on the
+``Search`` object:
 
 .. code:: python
 
-    first = Post.get(id=42)
-    first.delete()
+    s = Post.search()
+    s.suggest('title_suggestions', 'pyth', completion={'field': 'title_suggest'})
+
+    # you can even execute just the suggestions via the _suggest API
+    suggestions = s.execute_suggest()
+
+    for result in suggestions.title_suggestions:
+        print('Suggestions for %s:' % result.text)
+        for option in result.options:
+            print('  %s (%r)' % (option.text, option.payload))
+
 
 ``class Meta`` options
 ~~~~~~~~~~~~~~~~~~~~~~
