@@ -56,6 +56,7 @@ def test_inherited_doc_types_can_override_index():
             index = 'not-default-index'
 
     assert MyDocDifferentIndex._doc_type.index == 'not-default-index'
+    assert MyDocDifferentIndex().meta.index == 'not-default-index'
 
 def test_to_dict_with_meta():
     d = MySubDoc(title='hello')

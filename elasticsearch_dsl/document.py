@@ -99,6 +99,9 @@ class DocType(ObjectBase):
         for k in list(kwargs):
             if k.startswith('_'):
                 meta[k] = kwargs.pop(k)
+
+        if self._doc_type.index:
+            meta.setdefault('_index', self._doc_type.index)
         super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
