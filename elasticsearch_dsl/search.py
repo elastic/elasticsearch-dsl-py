@@ -2,7 +2,7 @@ from six import iteritems, string_types
 
 from elasticsearch.helpers import scan
 
-from .query import Q, EMPTY_QUERY, Filtered
+from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
 from .utils import DslBase
 from .result import Response, Result, SuggestResponse
@@ -193,7 +193,6 @@ class Request(object):
 
 class Search(Request):
     query = ProxyDescriptor('query')
-    filter = ProxyDescriptor('filter')
     post_filter = ProxyDescriptor('post_filter')
 
     def __init__(self, **kwargs):
@@ -219,8 +218,10 @@ class Search(Request):
         self._script_fields = {}
 
         self._query_proxy = QueryProxy(self, 'query')
-        self._filter_proxy = QueryProxy(self, 'filter')
         self._post_filter_proxy = QueryProxy(self, 'post_filter')
+
+    def filter(self, *args, **kwargs):
+        return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
     def __iter__(self):
         """
@@ -297,7 +298,7 @@ class Search(Request):
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
         s._script_fields = self._script_fields.copy()
-        for x in ('query', 'filter', 'post_filter'):
+        for x in ('query', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
         # copy top-level bucket definitions
@@ -315,10 +316,6 @@ class Search(Request):
             self.query._proxied = Q(d.pop('query'))
         if 'post_filter' in d:
             self.post_filter._proxied = Q(d.pop('post_filter'))
-
-        if isinstance(self.query._proxied, Filtered):
-            self.filter._proxied = self.query._proxied.filter
-            self.query._proxied = self.query._proxied.query
 
         aggs = d.pop('aggs', d.pop('aggregations', {}))
         if aggs:
@@ -502,17 +499,7 @@ class Search(Request):
 
         All additional keyword arguments will be included into the dictionary.
         """
-        if self.filter:
-            d = {
-              "query": {
-                "filtered": {
-                  "query": self.query.to_dict(),
-                  "filter": self.filter.to_dict()
-                }
-              }
-            }
-        else:
-            d = {"query": self.query.to_dict()}
+        d = {"query": self.query.to_dict()}
 
         if self.post_filter:
             d['post_filter'] = self.post_filter.to_dict()

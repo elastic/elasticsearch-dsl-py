@@ -79,19 +79,6 @@ def test_query_can_be_wrapped():
         }
     }== s.to_dict()
 
-def test_filter_can_be_overriden():
-    s = search.Search().filter('term', tag='python')
-    s.filter = ~Q(s.filter)
-
-    assert {
-        "query": {
-            "filtered": {
-                "query": {"match_all": {}},
-                "filter": {"bool": {"must_not": [{"term": {"tag": "python"}}]}}
-            }
-        }
-    } == s.to_dict()
-
 def test_using():
     o = object()
     o2 = object()
@@ -256,22 +243,20 @@ def test_complex_example():
 
     assert {
         'query': {
-            'filtered': {
-                'filter': {
-                    'bool': {
-                        'should': [
-                            {'term': {'category': 'meetup'}},
-                            {'term': {'category': 'conference'}}
-                        ]
+            'bool': {
+                'filter': [
+                    {
+                        'bool': {
+                            'should': [
+                                {'term': {'category': 'meetup'}},
+                                {'term': {'category': 'conference'}}
+                            ]
+                        }
                     }
-                },
-                'query': {
-                    'bool': {
-                        'must': [ {'match': {'title': 'python'}}],
-                        'must_not': [{'match': {'title': 'ruby'}}],
-                        'minimum_should_match': 2
-                    }
-                }
+                ],
+                'must': [ {'match': {'title': 'python'}}],
+                'must_not': [{'match': {'title': 'ruby'}}],
+                'minimum_should_match': 2
             }
         },
         'post_filter': {
@@ -421,9 +406,8 @@ def test_fields():
 def test_fields_on_clone():
     assert {
         'query': {
-            'filtered': {
-                'filter': {'term': {'title': 'python'}},
-                'query': {'match_all': {}}
+            'bool': {
+                'filter': [{'term': {'title': 'python'}}],
             }
         },
         'fields': ['title']
@@ -489,15 +473,10 @@ def test_partial_fields():
 def test_partial_fields_on_clone():
     assert {
         'query': {
-            'filtered': {
-                'filter': {
-                    'term': {
-                        'title': 'python',
-                    }
-                },
-                'query': {
-                    'match_all': {},
-                }
+            'bool': {
+                'filter': [
+                    {'term': { 'title': 'python'}},
+                ]
             }
         },
         'partial_fields': {

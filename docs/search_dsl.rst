@@ -190,9 +190,25 @@ to directly construct the combined query:
 Filters
 ~~~~~~~
 
-Filters behave similarly to queries - just use the ``F`` shortcut and
-``.filter()`` method. When you use the ``.filter()`` method, the query will be
-automatically wrapped in a ``filtered`` query.
+
+If you want to add a query in a `filter context
+<https://www.elastic.co/guide/en/elasticsearch/reference/2.0/query-filter-context.html>`_
+you can use the ``filter()`` method to make things easier:
+
+.. code:: python
+
+    s = Search()
+    s = s.filter('terms', tags=['search', 'python'])
+
+Behind the scenes this will produce a ``Bool`` query and place the specified
+``terms`` query into its ``filter`` branch, making it equivalent to:
+
+.. code:: python
+
+    s = Search()
+    s = s.query('bool', filter=[Q('terms', tags=['search', 'python'])])
+
+
 
 If you want to use the post_filter element for faceted navigation, use the
 ``.post_filter()`` method.
@@ -500,7 +516,7 @@ Aggregations are available through the ``aggregations`` property:
 ---------------
 
 If you need to execute multiple searches at the same time you can use the
-``MultiSearch`` class which will use the ``_msearch`` API::
+``MultiSearch`` class which will use the ``_msearch`` API:
 
 .. code:: python
 
@@ -514,7 +530,6 @@ If you need to execute multiple searches at the same time you can use the
     responses = ms.execute()
 
     for response in responses:
-        print("Results for query %r." % response.search.filter)
+        print("Results for query %r." % response.search.query)
         for hit in response:
             print(hit.title)
-
