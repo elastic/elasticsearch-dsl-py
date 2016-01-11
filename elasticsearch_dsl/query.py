@@ -93,36 +93,34 @@ class Bool(Query):
             q.must += other.must
             q.should += other.should
             q.must_not += other.must_not
+            q.filter += other.filter
         else:
             q.must.append(other)
         return q
     __radd__ = __add__
 
     def __or__(self, other):
-        if not (self.must or self.must_not):
-            # TODO: if only 1 in must or should, append the query instead of other
-            q = self._clone()
-            q.should.append(other)
-            return q
-
-        elif isinstance(other, Bool) and not (other.must or other.must_not):
-            # TODO: if only 1 in must or should, append the query instead of self
-            q = other._clone()
-            q.should.append(self)
-            return q
+        for q in (self, other):
+            if isinstance(q, Bool) and len(q.should) == 1 and not any((q.must, q.must_not, q.filter)):
+                other = self if q is other else other
+                q = q._clone()
+                q.should.append(other)
+                return q
 
         return Bool(should=[self, other])
     __ror__ = __or__
 
     def __invert__(self):
         # special case for single negated query
-        if not (self.must or self.should) and len(self.must_not) == 1:
+        if not (self.must or self.should or self.filter) and len(self.must_not) == 1:
             return self.must_not[0]._clone()
 
         # bol without should, just flip must and must_not
         elif not self.should:
             q = self._clone()
             q.must, q.must_not = q.must_not, q.must
+            if q.filter:
+                q.filter = [Bool(must_not=q.filter)]
             return q
 
         # TODO: should -> must_not.append(Bool(should=self.should)) ??
@@ -134,10 +132,11 @@ class Bool(Query):
         if isinstance(other, Bool):
             q.must += other.must
             q.must_not += other.must_not
+            q.filter += other.filter
             q.should = []
             for qx in (self, other):
                 # TODO: percetages will fail here
-                min_should_match = getattr(qx, 'minimum_should_match', 0 if any((qx.must, qx.must_not)) else 1)
+                min_should_match = getattr(qx, 'minimum_should_match', 0 if qx.must else 1)
                 # all subqueries are required
                 if len(qx.should) <= min_should_match:
                     q.must.extend(qx.should)
