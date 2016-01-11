@@ -310,30 +310,6 @@ class DslBase(object):
     def _clone(self):
         return self._type_shortcut(self.to_dict())
 
-    def __add__(self, other):
-        # make sure we give queries that know how to combine themselves
-        # preference
-        if hasattr(other, '__radd__'):
-            return other.__radd__(self)
-        return self.get_dsl_class('bool')(must=[self, other])
-
-    def __invert__(self):
-        return self.get_dsl_class('bool')(must_not=[self])
-
-    def __or__(self, other):
-        # make sure we give queries that know how to combine themselves
-        # preference
-        if hasattr(other, '__ror__'):
-            return other.__ror__(self)
-        return self.get_dsl_class('bool')(should=[self, other])
-
-    def __and__(self, other):
-        # make sure we give queries that know how to combine themselves
-        # preference
-        if hasattr(other, '__rand__'):
-            return other.__rand__(self)
-        return self.get_dsl_class('bool')(must=[self, other])
-
 
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
