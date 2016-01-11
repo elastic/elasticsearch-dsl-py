@@ -237,6 +237,8 @@ class DslBase(object):
                 # get the shortcut used to construct this type (query.Q, aggs.A, etc)
                 shortcut = self.__class__.get_dsl_type(pinfo['type'])
                 if pinfo.get('multi'):
+                    if not isinstance(value, (tuple, list)):
+                        value = (value, )
                     value = list(map(shortcut, value))
 
                 # dict(name -> DslBase), make sure we pickup all the objs
