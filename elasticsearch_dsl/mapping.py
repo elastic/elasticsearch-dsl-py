@@ -8,7 +8,7 @@ from .exceptions import IllegalOperation
 
 META_FIELDS = frozenset((
     'dynamic', 'transform', 'dynamic_date_formats', 'date_detection',
-    'numeric_detection', 'dynamic_templates'
+    'numeric_detection', 'dynamic_templates',
 ))
 
 class Properties(InnerObject, DslBase):
