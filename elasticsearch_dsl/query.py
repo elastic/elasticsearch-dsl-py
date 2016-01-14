@@ -196,11 +196,18 @@ QUERIES = (
     ('fuzzy', None),
     ('fuzzy_like_this', None),
     ('fuzzy_like_this_field', None),
+    ('geo_bounding_box', None),
+    ('geo_distance', None),
+    ('geo_distance_range', None),
+    ('geo_polygon', None),
     ('geo_shape', None),
+    ('geohash_cell', None),
     ('ids', None),
+    ('limit', None),
     ('match', None),
     ('match_phrase', None),
     ('match_phrase_prefix', None),
+    ('exists', None),
     ('missing', None),
     ('more_like_this', None),
     ('more_like_this_field', None),
@@ -215,6 +222,8 @@ QUERIES = (
     ('term', None),
     ('terms', None),
     ('wildcard', None),
+    ('script', None),
+    ('type', None),
 )
 
 # generate the query classes dynamicaly
