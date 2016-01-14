@@ -17,6 +17,31 @@ document data in user-defined classes.
 To use the other Elasticsearch APIs (eg. cluster health) just use the
 underlying client.
 
+Compatibility
+-------------
+
+The library is compatible with all Elasticsearch versions since ``1.x`` but you
+**have to use a matching major version**:
+
+For **Elasticsearch 2.0** and later, use the major version 2 (``2.x.y``) of the
+library.
+
+For **Elasticsearch 1.0** and later, use the major version 0 (``0.x.y``) of the
+library.
+
+
+The recommended way to set your requirements in your `setup.py` or
+`requirements.txt` is::
+
+    # Elasticsearch 2.x
+    elasticsearch-dsl>=2.0.0,<3.0.0
+
+    # Elasticsearch 1.x
+    elasticsearch-dsl<2.0.0
+
+
+The development is happening on ``master`` and ``1.x`` branches, respectively.
+
 Search Example
 --------------
 
