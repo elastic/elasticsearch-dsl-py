@@ -14,7 +14,7 @@ f.close()
 install_requires = [
     'six',
     'python-dateutil',
-    'elasticsearch>=1.0.0'
+    'elasticsearch>=2.0.0, <3.0.0'
 ]
 tests_require = [
     "mock",
