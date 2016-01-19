@@ -32,7 +32,7 @@ declaring a ``FacetedSearch`` subclass:
 ``facets``
   dictionary of facets to display/filter on. The key is the name displayed and
   values should be instances of any ``Facet`` subclass, for example: ``{'tags':
-  TermsFacet(field='tags')``
+  TermsFacet(field='tags')}``
 
 
 Facets
