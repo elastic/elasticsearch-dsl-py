@@ -1,3 +1,5 @@
+from six import iteritems
+
 from .utils import DslBase, _make_dsl_class
 from .function import SF, ScoreFunction
 
@@ -77,6 +79,62 @@ class MatchAll(Query):
         return self
     __ror__ = __or__
 EMPTY_QUERY = MatchAll()
+
+
+class Match(Query):
+    name = 'match'
+    def __add__(self, other):
+        return other._clone()
+    __and__ = __rand__ = __radd__ = __add__
+
+    def __or__(self, other):
+        return self
+    __ror__ = __or__
+
+    def __init__(self, **params):
+        self._params = {}
+        for pname, pvalue in iteritems(params):
+            if '__' in pname:
+                pname = pname.replace('__', '.')
+            self._setattr(pname, pvalue)
+
+    def to_dict(self):
+        """
+        Serialize the DSL object to plain dict
+        """
+        if 'field' not in self._params:
+            return super(Match, self).to_dict()
+
+        field_name = self._params.pop('field')
+        d = {}
+        for pname, value in iteritems(self._params):
+            pinfo = self._param_defs.get(pname)
+
+            # typed param
+            if pinfo and 'type' in pinfo:
+                # don't serialize empty lists and dicts for typed fields
+                if value in ({}, []):
+                    continue
+
+                # multi-values are serialized as list of dicts
+                if pinfo.get('multi'):
+                    value = list(map(lambda x: x.to_dict(), value))
+
+                # squash all the hash values into one dict
+                elif pinfo.get('hash'):
+                    value = dict((k, v.to_dict()) for k, v in iteritems(value))
+
+                # serialize single values
+                else:
+                    value = value.to_dict()
+
+            # serialize anything with to_dict method
+            elif hasattr(value, 'to_dict'):
+                value = value.to_dict()
+
+            d[pname] = value
+        return {self.name: {field_name: d}}
+
 
 class Bool(Query):
     name = 'bool'
