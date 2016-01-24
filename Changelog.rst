@@ -3,8 +3,8 @@
 Changelog
 =========
 
-0.0.10 (dev)
-------------
+0.0.10 (2016-01-24)
+-------------------
  * ``Search`` can now be iterated over to get back hits
  * ``Search`` now caches responses from Elasticsearch
  * ``DateHistogramFacet`` now defaults to returning empty intervals
