@@ -38,7 +38,7 @@ already associated with:
 
 .. code:: python
 
-    s = s.using(Elasticsearch('otherhost:9200')
+    s = s.using(Elasticsearch('otherhost:9200'))
 
 
 .. _default connection:
@@ -70,7 +70,10 @@ time using the ``configure`` method:
 
     connections.configure(
         default={'hosts': 'localhost'},
-        dev={'hosts': ['esdev1.example.com:9200'], sniff_on_start=True}
+        dev={
+            'hosts': ['esdev1.example.com:9200'],
+            'sniff_on_start': True
+        }
     )
 
 Such connections will be constructed lazily when requested for the first time.
