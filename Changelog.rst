@@ -3,6 +3,14 @@
 Changelog
 =========
 
+2.0.0 (dev)
+-----------
+Compatibility with Eelasticsearch 2.x:
+
+ * Filters have been removed
+ * ``Search.filter`` is just a shortcut to add queries in filter context
+ * support for pipeline aggregations added
+
 0.0.10 (2016-01-24)
 -------------------
  * ``Search`` can now be iterated over to get back hits
