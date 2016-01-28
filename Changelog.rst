@@ -3,6 +3,10 @@
 Changelog
 =========
 
+0.0.11 (2016-01-28)
+-------------------
+ * Fix #330 - ``FacetedSearch`` remembered previous filter values.
+
 0.0.10 (2016-01-24)
 -------------------
  * ``Search`` can now be iterated over to get back hits
