@@ -30,10 +30,8 @@ class Facet(object):
 
     def add_filter(self, filter_values):
         """
-        Construct a filter and remember the values for use in get_values.
+        Construct a filter.
         """
-        self.filter_values = filter_values
-
         if not filter_values:
             return
 
@@ -48,11 +46,11 @@ class Facet(object):
         """
         pass
 
-    def is_filtered(self, key):
+    def is_filtered(self, key, filter_values):
         """
         Is a filter active on the given key.
         """
-        return key in self.filter_values
+        return key in filter_values
 
     def get_value(self, bucket):
         """
@@ -60,7 +58,7 @@ class Facet(object):
         """
         return bucket['key']
 
-    def get_values(self, data):
+    def get_values(self, data, filter_values):
         """
         Turn the raw bucket data into a list of tuples containing the key,
         number of documents and a flag indicating whether this value has been
@@ -72,7 +70,7 @@ class Facet(object):
             out.append((
                 key,
                 bucket['doc_count'],
-                self.is_filtered(key)
+                self.is_filtered(key, filter_values)
             ))
         return out
 
@@ -82,7 +80,6 @@ class TermsFacet(Facet):
 
     def add_filter(self, filter_values):
         """ Create a terms filter instead of bool containing term filters.  """
-        self.filter_values = filter_values
         if filter_values:
             return F('terms', **{self._params['field']: filter_values})
 
@@ -169,7 +166,10 @@ class FacetedResponse(Response):
         if not hasattr(self, '_facets'):
             super(AttrDict, self).__setattr__('_facets', AttrDict({}))
             for name, facet in iteritems(self._search.facets):
-                self._facets[name] = facet.get_values(self.aggregations['_filter_' + name][name]['buckets'])
+                self._facets[name] = facet.get_values(
+                    self.aggregations['_filter_' + name][name]['buckets'],
+                    self._search.filter_values.get(name, ())
+                )
         return self._facets
 
 
@@ -182,6 +182,7 @@ class FacetedSearch(object):
     def __init__(self, query=None, filters={}):
         self._query = query
         self._filters = {}
+        self.filter_values = {}
         for name, value in iteritems(filters):
             self.add_filter(name, value)
 
@@ -194,6 +195,9 @@ class FacetedSearch(object):
             if filter_values in (None, ''):
                 return
             filter_values = [filter_values, ]
+
+        # remember the filter values for use in FacetedResponse
+        self.filter_values[name] = filter_values
 
         # get the filter from the facet
         f = self.facets[name].add_filter(filter_values)
