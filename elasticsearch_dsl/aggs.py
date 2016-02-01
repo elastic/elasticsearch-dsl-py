@@ -128,6 +128,7 @@ AGGS = (
     (Bucket, 'filters', {'filters': {'type': 'query', 'hash': True}}),
     (Bucket, 'geo_distance', None),
     (Bucket, 'geohash_grid', None),
+    (Bucket, 'geo_centroid', None),
     (Bucket, 'global', None),
     (Bucket, 'histogram', None),
     (Bucket, 'iprange', None),
