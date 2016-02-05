@@ -318,7 +318,7 @@ class ObjectBase(AttrDict):
         m = self._doc_type.mapping
         for k in m:
             if k in kwargs and m[k]._coerce:
-                kwargs[k] = m[k].to_python(kwargs[k])
+                kwargs[k] = m[k].deserialize(kwargs[k])
         super(ObjectBase, self).__init__(kwargs)
 
     def __getattr__(self, name):
@@ -337,7 +337,7 @@ class ObjectBase(AttrDict):
 
     def __setattr__(self, name, value):
         if name in self._doc_type.mapping:
-            value = self._doc_type.mapping[name].to_python(value)
+            value = self._doc_type.mapping[name].deserialize(value)
         super(ObjectBase, self).__setattr__(name, value)
 
     def to_dict(self):
