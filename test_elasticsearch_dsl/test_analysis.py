@@ -2,7 +2,7 @@
 from elasticsearch_dsl import analysis
 
 def test_analyzer_serializes_as_name():
-    a = analysis.Analyzer('my_analyzer')
+    a = analysis.analyzer('my_analyzer')
 
     assert 'my_analyzer' == a.to_dict()
 
@@ -17,7 +17,7 @@ def test_analyzer_has_definition():
         'type': 'custom',
         'tokenizer': 'keyword',
         'filter': ["lowercase"],
-    } == a.definition()
+    } == a.get_definition()
 
 def test_tokenizer():
     t = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
@@ -27,8 +27,7 @@ def test_tokenizer():
         'type': 'nGram',
         'min_gram': 3,
         'max_gram': 3
-    } == t.definition()
-    assert t == analysis.NGramTokenizer('trigram', min_gram=3, max_gram=3)
+    } == t.get_definition()
 
 def test_custom_analyzer_can_collect_custom_items():
     trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
@@ -52,13 +51,13 @@ def test_custom_analyzer_can_collect_custom_items():
             }
         },
         'tokenizer': {
-            'trigram': trigram.definition()
+            'trigram': trigram.get_definition()
         },
         'filter': {
-            'my_stop': my_stop.definition()
+            'my_stop': my_stop.get_definition()
         },
         'char_filter': {
-            'umlauts': umlauts.definition()
+            'umlauts': umlauts.get_definition()
         }
     } == a.get_analysis_definition()
 

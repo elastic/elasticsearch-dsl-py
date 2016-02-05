@@ -11,6 +11,11 @@ Compatibility with Eelasticsearch 2.x:
  * ``Search.filter`` is just a shortcut to add queries in filter context
  * support for pipeline aggregations added
 
+Backwards incompatible changes:
+
+ * list of analysis objects and classes was removed, any string used as
+   tokenizer, char or token filter or analyzer will be treated as a builtin
+
 0.0.10 (2016-01-24)
 -------------------
  * ``Search`` can now be iterated over to get back hits
