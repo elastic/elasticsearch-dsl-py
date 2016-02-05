@@ -72,6 +72,18 @@ class Index(object):
     def exists(self, **kwargs):
         return self.connection.indices.exists(index=self._name, **kwargs)
 
+    def refresh(self, **kwargs):
+        return self.connection.indices.refresh(index=self._name, **kwargs)
+
+    def flush(self, **kwargs):
+        return self.connection.indices.flush(index=self._name, **kwargs)
+
+    def open(self, **kwargs):
+        return self.connection.indices.open(index=self._name, **kwargs)
+
+    def close(self, **kwargs):
+        return self.connection.indices.close(index=self._name, **kwargs)
+
     def create(self, **kwargs):
         self.connection.indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
