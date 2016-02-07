@@ -194,23 +194,24 @@ class DocType(ObjectBase):
 
     def to_dict(self, include_meta=False):
         d = super(DocType, self).to_dict()
-        if include_meta:
-            meta = dict(
-                ('_' + k, self.meta[k])
-                for k in DOC_META_FIELDS
-                if k in self.meta
-            )
+        if not include_meta:
+            return d
 
-            # in case of to_dict include the index unlike save/update/delete
-            if 'index' in self.meta:
-                meta['_index'] = self.meta.index
-            elif self._doc_type.index:
-                meta['_index'] = self._doc_type.index
+        meta = dict(
+            ('_' + k, self.meta[k])
+            for k in DOC_META_FIELDS
+            if k in self.meta
+        )
 
-            meta['_type'] = self._doc_type.name
-            meta['_source'] = d
-            d = meta
-        return d
+        # in case of to_dict include the index unlike save/update/delete
+        if 'index' in self.meta:
+            meta['_index'] = self.meta.index
+        elif self._doc_type.index:
+            meta['_index'] = self._doc_type.index
+
+        meta['_type'] = self._doc_type.name
+        meta['_source'] = d
+        return meta
 
     def update(self, using=None, index=None, **fields):
         es = self._get_connection(using)
