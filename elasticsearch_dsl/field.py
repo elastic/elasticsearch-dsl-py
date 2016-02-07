@@ -49,6 +49,9 @@ class Field(DslBase):
         self._required = kwargs.pop('required', False)
         super(Field, self).__init__(*args, **kwargs)
 
+    def _serialize(self, data):
+        return data
+
     def _deserialize(self, data):
         return data
 
@@ -59,6 +62,12 @@ class Field(DslBase):
         if self._multi:
             return AttrList([])
         return self._empty()
+
+    def serialize(self, data):
+        if isinstance(data, (list, AttrList)):
+            data[:] = map(self._serialize, data)
+            return data
+        return self._serialize(data)
 
     def deserialize(self, data):
         if isinstance(data, (list, AttrList)):
@@ -157,6 +166,9 @@ class InnerObject(object):
             data = data._d_
 
         return self._doc_class(self.properties, **data)
+
+    def _serialize(self, data):
+        return data.to_dict()
 
     def clean(self, data):
         data = super(InnerObject, self).clean(data)

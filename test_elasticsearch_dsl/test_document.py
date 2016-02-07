@@ -1,4 +1,5 @@
 import pickle
+import codecs
 from hashlib import md5
 from datetime import datetime
 
@@ -37,6 +38,48 @@ class SimpleCommit(document.DocType):
 
     class Meta:
         index = 'test-git'
+
+class Secret(str): pass
+
+class SecretField(field.Field):
+    name = 'rot13'
+    _coerce = True
+
+    def to_dict(self):
+        d = super(SecretField, self).to_dict()
+        d['type'] = 'string'
+        return d
+
+    def _serialize(self, data):
+        return codecs.encode(data, 'rot_13')
+
+    def _deserialize(self, data):
+        if isinstance(data, Secret):
+            return data
+        return Secret(codecs.decode(data, 'rot_13'))
+
+class SecretDoc(document.DocType):
+    title = SecretField()
+
+class NestedSecret(document.DocType):
+    secrets = field.Nested(properties={'title': SecretField()})
+
+def test_custom_field():
+    s = SecretDoc(title=Secret('Hello'))
+
+    assert {'title': 'Uryyb'} == s.to_dict()
+    assert s.title == 'Hello'
+
+    s.title = 'Uryyb'
+    assert s.title == 'Hello'
+    assert isinstance(s.title, Secret)
+
+def test_custom_field_in_nested():
+    s = NestedSecret()
+    s.secrets.append({'title': Secret('Hello')})
+
+    assert {'secrets': [{'title': 'Uryyb'}]} == s.to_dict()
+    assert s.secrets[0].title == 'Hello'
 
 def test_multi_works_after_doc_has_been_saved(write_client):
     c = SimpleCommit()

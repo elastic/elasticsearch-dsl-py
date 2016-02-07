@@ -15,6 +15,8 @@ Backwards incompatible changes:
 
  * list of analysis objects and classes was removed, any string used as
    tokenizer, char or token filter or analyzer will be treated as a builtin
+ * internal method ``Field.to_python`` has been renamed to ``deserialize`` and
+   an optional serialization mechanic for fields has been added.
 
 0.0.10 (2016-01-24)
 -------------------

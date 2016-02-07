@@ -343,10 +343,12 @@ class ObjectBase(AttrDict):
     def to_dict(self):
         out = {}
         for k, v in iteritems(self._d_):
-            if isinstance(v, (AttrList, list, tuple)):
-                v = [i.to_dict() if hasattr(i, 'to_dict') else i for i in v]
-            else:
-                v = v.to_dict() if hasattr(v, 'to_dict') else v
+            try:
+                f = self._doc_type.mapping[k]
+                if f._coerce:
+                    v = f.serialize(v)
+            except KeyError:
+                pass
 
             # don't serialize empty values
             # careful not to include numeric zeros
