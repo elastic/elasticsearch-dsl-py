@@ -89,6 +89,15 @@ class Field(DslBase):
         value['type'] = name
         return value
 
+class CustomField(Field):
+    name = 'custom'
+    _coerce = True
+
+    def to_dict(self):
+        d = super(CustomField, self).to_dict()
+        d['type'] = self.builtin_type
+        return d
+
 class InnerObjectWrapper(ObjectBase):
     def __init__(self, mapping, **kwargs):
         # mimic DocType behavior with _doc_type.mapping

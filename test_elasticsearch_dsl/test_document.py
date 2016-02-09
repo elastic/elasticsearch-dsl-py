@@ -41,14 +41,8 @@ class SimpleCommit(document.DocType):
 
 class Secret(str): pass
 
-class SecretField(field.Field):
-    name = 'rot13'
-    _coerce = True
-
-    def to_dict(self):
-        d = super(SecretField, self).to_dict()
-        d['type'] = 'string'
-        return d
+class SecretField(field.CustomField):
+    builtin_type = 'string'
 
     def _serialize(self, data):
         return codecs.encode(data, 'rot_13')
@@ -59,7 +53,7 @@ class SecretField(field.Field):
         return Secret(codecs.decode(data, 'rot_13'))
 
 class SecretDoc(document.DocType):
-    title = SecretField()
+    title = SecretField(index='no')
 
 class NestedSecret(document.DocType):
     secrets = field.Nested(properties={'title': SecretField()})
@@ -73,6 +67,15 @@ def test_custom_field():
     s.title = 'Uryyb'
     assert s.title == 'Hello'
     assert isinstance(s.title, Secret)
+
+def test_custom_field_mapping():
+    assert {
+        'secret_doc': {
+            'properties': {
+                'title': {'index': 'no', 'type': 'string'}
+            }
+        }
+    } == SecretDoc._doc_type.mapping.to_dict()
 
 def test_custom_field_in_nested():
     s = NestedSecret()
