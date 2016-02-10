@@ -94,6 +94,9 @@ class CustomField(Field):
     _coerce = True
 
     def to_dict(self):
+        if isinstance(self.builtin_type, Field):
+            return self.builtin_type.to_dict()
+
         d = super(CustomField, self).to_dict()
         d['type'] = self.builtin_type
         return d

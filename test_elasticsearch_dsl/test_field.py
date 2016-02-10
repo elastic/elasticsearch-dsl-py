@@ -1,5 +1,12 @@
 from elasticsearch_dsl import field
 
+def test_custom_field_car_wrap_other_field():
+    class MyField(field.CustomField):
+        @property
+        def builtin_type(self):
+            return field.String(**self._params)
+
+    assert {'type': 'string', 'index': 'not_analyzed'} == MyField(index='not_analyzed').to_dict()
 
 def test_field_from_dict():
     f = field.construct_field({'type': 'string', 'index': 'not_analyzed'})
