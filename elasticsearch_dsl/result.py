@@ -29,7 +29,7 @@ class Response(AttrDict):
         return len(self.hits)
 
     def success(self):
-        return not (self.timed_out or self._shards.failed)
+        return self._shards.total == self._shards.successful and not self.timed_out
 
     def _get_result(self, hit):
         dt = hit['_type']
