@@ -186,6 +186,15 @@ class FacetedSearch(object):
         for name, value in iteritems(filters):
             self.add_filter(name, value)
 
+        self._s = self.build_search()
+
+    def count(self):
+        return self._s.count()
+
+    def __getitem__(self, k):
+        self._s = self._s[k]
+        return self
+
     def add_filter(self, name, filter_values):
         """
         Add a filter for a facet.
@@ -269,8 +278,6 @@ class FacetedSearch(object):
 
     def execute(self):
         if not hasattr(self, '_response'):
-            s = self.build_search()
-            self._response = s.execute(response_class=partial(FacetedResponse, self))
+            self._response = self._s.execute(response_class=partial(FacetedResponse, self))
 
         return self._response
-

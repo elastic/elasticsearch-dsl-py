@@ -18,6 +18,10 @@ Backwards incompatible changes:
  * internal method ``Field.to_python`` has been renamed to ``deserialize`` and
    an optional serialization mechanic for fields has been added.
 
+Other changes:
+
+ * ``FacetedSearch`` now supports pagination via slicing
+
 0.0.10 (2016-01-24)
 -------------------
  * ``Search`` can now be iterated over to get back hits

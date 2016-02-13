@@ -11,7 +11,7 @@ class CommitSearch(FacetedSearch):
         'frequency': DateHistogramFacet(field='authored_date', interval="day", min_doc_count=1),
         'deletions': RangeFacet(field='stats.deletions', ranges=[('ok', (None, 1)), ('good', (1, 5)), ('better', (5, None))])
     }
-    
+
 
 def test_empty_search_finds_everything(data_client):
     cs = CommitSearch()
@@ -107,3 +107,10 @@ def test_range_filters_are_shown_as_selected_and_data_is_filtered(data_client):
     r = cs.execute()
 
     assert 19 == r.hits.total
+
+def test_pagination(data_client):
+    cs = CommitSearch()
+    cs = cs[0:20]
+
+    assert 52 == cs.count()
+    assert 20 == len(cs.execute())
