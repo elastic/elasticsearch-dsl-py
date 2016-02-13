@@ -216,6 +216,7 @@ class Search(Request):
         self._highlight_opts = {}
         self._suggest = {}
         self._script_fields = {}
+        self._response_class = Response
 
         self._query_proxy = QueryProxy(self, 'query')
         self._post_filter_proxy = QueryProxy(self, 'post_filter')
@@ -291,6 +292,7 @@ class Search(Request):
         """
         s = super(Search, self)._clone()
 
+        s._response_class = self._response_class
         s._sort = self._sort[:]
         s._fields = self._fields[:] if self._fields is not None else None
         s._partial_fields = self._partial_fields.copy()
@@ -304,6 +306,14 @@ class Search(Request):
         # copy top-level bucket definitions
         if self.aggs._params.get('aggs'):
             s.aggs._params = {'aggs': self.aggs._params['aggs'].copy()}
+        return s
+
+    def response_class(self, cls):
+        """
+        Override the default wrapper used for the response.
+        """
+        s = self._clone()
+        s._response_class = cls
         return s
 
     def update_from_dict(self, d):
@@ -551,7 +561,7 @@ class Search(Request):
             body=d
         )['count']
 
-    def execute(self, response_class=Response, ignore_cache=False):
+    def execute(self, ignore_cache=False):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
@@ -561,7 +571,7 @@ class Search(Request):
         if ignore_cache or not hasattr(self, '_response'):
             es = connections.get_connection(self._using)
 
-            self._response = response_class(
+            self._response = self._response_class(
                 es.search(
                     index=self._index,
                     doc_type=self._doc_type,

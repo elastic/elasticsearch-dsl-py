@@ -219,7 +219,8 @@ class FacetedSearch(object):
         """
         Construct the Search object.
         """
-        return Search(doc_type=self.doc_types, index=self.index)
+        s = Search(doc_type=self.doc_types, index=self.index)
+        return s.response_class(partial(FacetedResponse, self))
 
     def query(self, search, query):
         """
@@ -277,7 +278,4 @@ class FacetedSearch(object):
         return s
 
     def execute(self):
-        if not hasattr(self, '_response'):
-            self._response = self._s.execute(response_class=partial(FacetedResponse, self))
-
-        return self._response
+        return self._s.execute()

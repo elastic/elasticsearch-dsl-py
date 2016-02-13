@@ -17,6 +17,8 @@ Backwards incompatible changes:
    tokenizer, char or token filter or analyzer will be treated as a builtin
  * internal method ``Field.to_python`` has been renamed to ``deserialize`` and
    an optional serialization mechanic for fields has been added.
+ * Custom response class is now set by ``response_class`` method instead of a
+   kwarg to ``Search.execute``
 
 Other changes:
 
