@@ -195,6 +195,9 @@ class FacetedSearch(object):
         self._s = self._s[k]
         return self
 
+    def __iter__(self):
+        return iter(self._s)
+
     def add_filter(self, name, filter_values):
         """
         Add a filter for a facet.
