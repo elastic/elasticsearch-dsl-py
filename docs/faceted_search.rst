@@ -41,7 +41,7 @@ Facets
 There are several different facets available:
 
 ``TermsFacet``
-  provides an option to split documents into groups based on a value of a field, for example ``TermsFacet(field='catgeory')``
+  provides an option to split documents into groups based on a value of a field, for example ``TermsFacet(field='category')``
 
 ``DateHistogramFacet``
   split documents into time intervals, example: ``DateHistogramFacet(field="published_date", interval="day")``
