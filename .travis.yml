@@ -7,13 +7,15 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
+  - "3.5"
 
 env:
   global:
     - WAIT_FOR_ES=1
   matrix:
     - ES_VERSION=2.0.1
-    - ES_VERSION=2.1.0
+    - ES_VERSION=2.1.2
+    - ES_VERSION=2.2.0
 
 install:
   - mkdir /tmp/elasticsearch
