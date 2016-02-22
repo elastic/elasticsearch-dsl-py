@@ -97,6 +97,12 @@ class AttrDict(object):
             r = r[:60] + '...}'
         return r
 
+    def __getstate__(self):
+        return self._d_
+
+    def __setstate__(self, state):
+        super(AttrDict, self).__setattr__('_d_', state)
+
     def __getattr__(self, attr_name):
         try:
             return _wrap(self._d_[attr_name])
