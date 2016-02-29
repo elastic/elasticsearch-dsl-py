@@ -373,6 +373,42 @@ def test_params_being_passed_to_search(mock_client):
         routing='42'
     )
 
+def test_source():
+    assert {
+        'query': {
+            'match_all': {}
+        },
+    } == search.Search().source(None).to_dict()
+
+    assert {
+        '_source': {
+            'include': ['foo.bar.*'],
+            'exclude': ['foo.one']
+        },
+        'query': {
+            'match_all': {}
+        }
+    } == search.Search().source({
+        'include': ['foo.bar.*'],
+        'exclude': ['foo.one']
+    }).to_dict()
+
+def test_source_on_clone():
+    assert {
+        '_source': {
+            'include': ['foo.bar.*'],
+            'exclude': ['foo.one']
+        },
+        'query': {
+            'bool': {
+                'filter': [{'term': {'title': 'python'}}],
+            }
+        }
+    } == search.Search().source({
+        'include': ['foo.bar.*'],
+        'exclude': ['foo.one']
+    }).filter('term', title='python').to_dict()
+
 def test_fields():
     assert {
         'query': {

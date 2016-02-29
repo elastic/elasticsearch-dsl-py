@@ -210,6 +210,7 @@ class Search(Request):
 
         self.aggs = AggsProxy(self)
         self._sort = []
+        self._source = None
         self._fields = None
         self._partial_fields = {}
         self._highlight = {}
@@ -294,6 +295,7 @@ class Search(Request):
 
         s._response_class = self._response_class
         s._sort = self._sort[:]
+        s._source = self._source.copy() if self._source is not None else None
         s._fields = self._fields[:] if self._fields is not None else None
         s._partial_fields = self._partial_fields.copy()
         s._highlight = self._highlight.copy()
@@ -335,6 +337,8 @@ class Search(Request):
             }
         if 'sort' in d:
             self._sort = d.pop('sort')
+        if '_source' in d:
+            self._source = d.pop('_source')
         if 'fields' in d:
             self._fields = d.pop('fields')
         if 'partial_fields' in d:
@@ -376,6 +380,38 @@ class Search(Request):
             if isinstance(kwargs[name], string_types):
                 kwargs[name] = {'script': kwargs[name]}
         s._script_fields.update(kwargs)
+        return s
+
+    def source(self, source=None):
+        """
+        Selectively control how the _source field is returned.
+
+        :arg source: wildcard string, array of wildcards, or dictionary of includes and excludes
+
+        If ``source`` is None, the entire document will be returned for
+        each hit.  If source is a wildcard or array of wildcards, matching
+        fields will be included. If source is a dictionary with keys of 'include' and/or
+        'exclude' the fields will be either included or excluded appropriately.
+
+        Calling this multiple times will override the previous values with the new ones.
+
+        Example::
+
+            s = Search()
+            s = s.source("obj.*")
+
+            s = Search()
+            s = s.source(["obj1.*", "obj2.*"])
+
+            s = Search()
+            s = s.source({
+                "include": ["obj1.*", "obj2.*"],
+                "exclude": ["*.description"]
+            })
+
+        """
+        s = self._clone()
+        s._source = source
         return s
 
     def fields(self, fields=None):
@@ -523,6 +559,9 @@ class Search(Request):
                 d['sort'] = self._sort
 
             d.update(self._extra)
+
+            if self._source is not None:
+                d['_source'] = self._source
 
             if self._fields is not None:
                 d['fields'] = self._fields
