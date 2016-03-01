@@ -378,7 +378,7 @@ def test_source():
         'query': {
             'match_all': {}
         },
-    } == search.Search().source(None).to_dict()
+    } == search.Search().source().to_dict()
 
     assert {
         '_source': {
@@ -388,10 +388,7 @@ def test_source():
         'query': {
             'match_all': {}
         }
-    } == search.Search().source({
-        'include': ['foo.bar.*'],
-        'exclude': ['foo.one']
-    }).to_dict()
+    } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).to_dict()
 
 def test_source_on_clone():
     assert {
@@ -404,10 +401,18 @@ def test_source_on_clone():
                 'filter': [{'term': {'title': 'python'}}],
             }
         }
-    } == search.Search().source({
-        'include': ['foo.bar.*'],
-        'exclude': ['foo.one']
-    }).filter('term', title='python').to_dict()
+    } == search.Search().source(include=['foo.bar.*']).\
+        source(exclude=['foo.one']).\
+        filter('term', title='python').to_dict()\
+
+def test_source_on_clear():
+    assert {
+        'query': {
+            'match_all': {}
+        }
+    } == search.Search().source(include=['foo.bar.*']).\
+        source(exclude=['foo.one']).\
+        source(include=None, exclude=None).to_dict()
 
 def test_fields():
     assert {
