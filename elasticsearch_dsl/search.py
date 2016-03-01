@@ -222,6 +222,7 @@ class Search(Request):
 
         self.aggs = AggsProxy(self)
         self._sort = []
+        self._source = None
         self._fields = None
         self._partial_fields = {}
         self._highlight = {}
@@ -302,6 +303,7 @@ class Search(Request):
         s = super(Search, self)._clone()
 
         s._sort = self._sort[:]
+        s._source = self._source.copy() if self._source is not None else None
         s._fields = self._fields[:] if self._fields is not None else None
         s._partial_fields = self._partial_fields.copy()
         s._highlight = self._highlight.copy()
@@ -339,6 +341,8 @@ class Search(Request):
             }
         if 'sort' in d:
             self._sort = d.pop('sort')
+        if '_source' in d:
+            self._source = d.pop('_source')
         if 'fields' in d:
             self._fields = d.pop('fields')
         if 'partial_fields' in d:
@@ -380,6 +384,44 @@ class Search(Request):
             if isinstance(kwargs[name], string_types):
                 kwargs[name] = {'script': kwargs[name]}
         s._script_fields.update(kwargs)
+        return s
+
+    def source(self, **kwargs):
+        """
+        Selectively control how the _source field is returned.
+
+        :arg source: wildcard string, array of wildcards, or dictionary of includes and excludes
+
+        If ``source`` is None, the entire document will be returned for
+        each hit.  If source is a dictionary with keys of 'include' and/or
+        'exclude' the fields will be either included or excluded appropriately.
+
+        Calling this multiple times with the same named parameter will override the
+        previous values with the new ones.
+
+        Example::
+
+            s = Search()
+            s = s.source(include=['obj1.*'], exclude=["*.description"])
+
+            s = Search()
+            s = s.source(include=['obj1.*']).source(exclude=["*.description"])
+
+        """
+        s = self._clone()
+
+        if s._source is None:
+            s._source = {}
+
+        for key, value in kwargs.items():
+            if value is None:
+                del s._source[key]
+            else:
+                s._source[key] = value
+
+        if len(s._source) == 0:
+            s._source = None
+
         return s
 
     def fields(self, fields=None):
@@ -537,6 +579,9 @@ class Search(Request):
                 d['sort'] = self._sort
 
             d.update(self._extra)
+
+            if self._source is not None:
+                d['_source'] = self._source
 
             if self._fields is not None:
                 d['fields'] = self._fields
