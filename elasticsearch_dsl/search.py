@@ -386,36 +386,42 @@ class Search(Request):
         s._script_fields.update(kwargs)
         return s
 
-    def source(self, source=None):
+    def source(self, **kwargs):
         """
         Selectively control how the _source field is returned.
 
         :arg source: wildcard string, array of wildcards, or dictionary of includes and excludes
 
         If ``source`` is None, the entire document will be returned for
-        each hit.  If source is a wildcard or array of wildcards, matching
-        fields will be included. If source is a dictionary with keys of 'include' and/or
+        each hit.  If source is a dictionary with keys of 'include' and/or
         'exclude' the fields will be either included or excluded appropriately.
 
-        Calling this multiple times will override the previous values with the new ones.
+        Calling this multiple times with the same named parameter will override the
+        previous values with the new ones.
 
         Example::
 
             s = Search()
-            s = s.source("obj.*")
+            s = s.source(include=['obj1.*'], exclude=["*.description"])
 
             s = Search()
-            s = s.source(["obj1.*", "obj2.*"])
-
-            s = Search()
-            s = s.source({
-                "include": ["obj1.*", "obj2.*"],
-                "exclude": ["*.description"]
-            })
+            s = s.source(include=['obj1.*']).source(exclude=["*.description"])
 
         """
         s = self._clone()
-        s._source = source
+
+        if s._source is None:
+            s._source = {}
+
+        for key, value in kwargs.iteritems():
+            if value is None:
+                del s._source[key]
+            else:
+                s._source[key] = value
+
+        if len(s._source) == 0:
+            s._source = None
+
         return s
 
     def fields(self, fields=None):
