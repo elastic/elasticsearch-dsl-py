@@ -409,7 +409,7 @@ class Search(Request):
         if s._source is None:
             s._source = {}
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if value is None:
                 del s._source[key]
             else:
