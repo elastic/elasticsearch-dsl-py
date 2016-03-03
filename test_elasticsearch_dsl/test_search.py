@@ -411,7 +411,6 @@ def test_source_on_clear():
             'match_all': {}
         }
     } == search.Search().source(include=['foo.bar.*']).\
-        source(exclude=['foo.one']).\
         source(include=None, exclude=None).to_dict()
 
 def test_fields():

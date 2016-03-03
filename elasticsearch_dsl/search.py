@@ -411,12 +411,12 @@ class Search(Request):
 
         for key, value in kwargs.items():
             if value is None:
-                del s._source[key]
+                try:
+                    del s._source[key]
+                except KeyError:
+                    pass
             else:
                 s._source[key] = value
-
-        if len(s._source) == 0:
-            s._source = None
 
         return s
 
@@ -566,7 +566,7 @@ class Search(Request):
 
             d.update(self._extra)
 
-            if self._source is not None:
+            if self._source:
                 d['_source'] = self._source
 
             if self._fields is not None:
