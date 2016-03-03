@@ -58,13 +58,6 @@ statement:
 
     s = Search().using(client).query("match", title="python")
 
-.. note::
-
-    In some cases this approach is not possible due to python's restriction on
-    identifiers - for example if your field is called ``@timestamp``. In that
-    case you have to fall back to unpacking a dictionary: ``s.query('range', **
-    {'@timestamp': {'lt': 'now'}})``
-
 To send the request to Elasticsearch:
 
 .. code:: python
@@ -95,16 +88,30 @@ Queries
 ~~~~~~~
 
 
-
 The library provides classes for all Elasticsearch query types. Pass all the
-parameters as keyword arguments:
+parameters as keyword arguments. The classes accept any keyword arguments, the
+dsl then takes all arguments passed to the constructor and serializes them as
+top-level keys in the resulting dictionary (and thus the resulting json being
+sent to elasticsearch). This means that there is a clear one-to-one mapping
+between the raw query and its equivalent in the DSL:
 
 .. code:: python
 
-    from elasticsearch_dsl.query import MultiMatch
+    from elasticsearch_dsl.query import MultiMatch, Match
 
     # {"multi_match": {"query": "python django", "fields": ["title", "body"]}}
     MultiMatch(query='python django', fields=['title', 'body'])
+
+    # {"match": {"title": {"query": "web framework", "type": "phrase"}}}
+    Match(title={"query": "web framework", "type": "phrase"})
+
+.. note::
+
+    In some cases this approach is not possible due to python's restriction on
+    identifiers - for example if your field is called ``@timestamp``. In that
+    case you have to fall back to unpacking a dictionary: ``Range(**
+    {'@timestamp': {'lt': 'now'}})``
+
 
 You can use the ``Q`` shortcut to construct the instance using a name with
 parameters or the raw ``dict``:
@@ -133,6 +140,7 @@ just override the query used in the ``Search`` object:
 .. code:: python
 
     s.query = Q('bool', must=[Q('match', title='python'), Q('match', body='best')])
+
 
 Query combination
 ^^^^^^^^^^^^^^^^^
