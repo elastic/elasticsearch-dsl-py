@@ -63,6 +63,12 @@ class AttrList(object):
     def __getattr__(self, name):
         return getattr(self._l_, name)
 
+    def __getstate__(self):
+        return (self._l_, self._obj_wrapper)
+
+    def __setstate__(self, state):
+        self._l_, self._obj_wrapper = state
+
 
 class AttrDict(object):
     """

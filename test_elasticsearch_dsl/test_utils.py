@@ -8,6 +8,13 @@ def test_attrdict_pickle():
     pickled_ad = pickle.dumps(ad)
     assert ad == pickle.loads(pickled_ad)
 
+
+def test_attrlist_pickle():
+    al = utils.AttrList([])
+
+    pickled_al = pickle.dumps(al)
+    assert al == pickle.loads(pickled_al)
+
 def test_merge():
     a = {'a': {'b': 42, 'c': 47}}
     b = {'a': {'b': 123, 'd': -12}, 'e': [1, 2, 3]}

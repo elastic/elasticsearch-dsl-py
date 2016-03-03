@@ -126,9 +126,12 @@ class InnerObject(object):
     def _empty(self):
         return self._doc_class(self.properties)
 
+    def _wrap(self, data):
+        return self._doc_class(self.properties, **data)
+
     def empty(self):
         if self._multi:
-            return AttrList([], lambda d: self._doc_class(self.properties, **d))
+            return AttrList([], self._wrap)
         return self._empty()
 
     def __getitem__(self, name):
