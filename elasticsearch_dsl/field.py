@@ -1,6 +1,7 @@
 from datetime import date
 from dateutil import parser
-from six import itervalues, map
+from six import itervalues
+from six.moves import map
 
 from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
