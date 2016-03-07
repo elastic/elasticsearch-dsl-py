@@ -31,7 +31,12 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
     pass
 
 class DocWithNested(document.DocType):
-    comments = field.Nested(properties={'title': field.String()})
+    comments = field.Nested(
+        properties={
+            'title': field.String(),
+            'tags': field.String(multi=True, index='not_analyzed')
+        }
+    )
 
 class SimpleCommit(document.DocType):
     files = field.String(multi=True)
@@ -84,12 +89,20 @@ def test_custom_field_in_nested():
     assert {'secrets': [{'title': 'Uryyb'}]} == s.to_dict()
     assert s.secrets[0].title == 'Hello'
 
-def test_multi_works_after_doc_has_been_saved(write_client):
+def test_multi_works_after_doc_has_been_saved():
     c = SimpleCommit()
     c.full_clean()
     c.files.append('setup.py')
 
     assert c.to_dict() == {'files': ['setup.py']}
+
+def test_multi_works_in_nested_after_doc_has_been_serialized():
+    # Issue #359
+    c = DocWithNested(comments=[{'title': 'First!'}])
+
+    assert [] == c.comments[0].tags
+    assert {'comments': [{'title': 'First!'}]} == c.to_dict()
+    assert [] == c.comments[0].tags
 
 def test_null_value_for_object():
     d = MyDoc(inner=None)
