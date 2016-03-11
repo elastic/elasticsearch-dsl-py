@@ -356,6 +356,7 @@ class Search(Request):
         if 'script_fields' in d:
             self._script_fields = d.pop('script_fields')
         self._extra = d
+        return self
 
     def script_fields(self, **kwargs):
         """
