@@ -33,6 +33,7 @@ setup(
     license="Apache License, Version 2.0",
     url = "https://github.com/elasticsearch/elasticsearch-dsl-py",
     long_description = long_description,
+    description = "High level Python client for Elasticsearch",
     version = __versionstr__,
     author = "Honza Král",
     author_email = "honza.kral@gmail.com",
