@@ -54,7 +54,7 @@ class Mapping(object):
                 if not d:
                     continue
 
-                # merge the defintion
+                # merge the definition
                 # TODO: conflict detection/resolution
                 for key in d:
                     analysis.setdefault(key, {}).update(d[key])

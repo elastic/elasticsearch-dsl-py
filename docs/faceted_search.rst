@@ -47,11 +47,11 @@ There are several different facets available:
   split documents into time intervals, example: ``DateHistogramFacet(field="published_date", interval="day")``
 
 ``HistogramFacet``
-  simmilar to ``DateHistogramFacet`` but for numerical values: ``HistogramFacet(field="rating", interval=2)``
+  similar to ``DateHistogramFacet`` but for numerical values: ``HistogramFacet(field="rating", interval=2)``
 
 ``Rangefacet``
-  allows you to define your own ranges for a numerical fiels:
-  ``Rangefacet(field="comment_count", ranges=[("few", (None, 2)), ("lots", (2, None))])`` 
+  allows you to define your own ranges for a numerical fields:
+  ``Rangefacet(field="comment_count", ranges=[("few", (None, 2)), ("lots", (2, None))])``
 
 Advanced
 ~~~~~~~~
@@ -91,7 +91,7 @@ Response
 the response returned from the ``FacetedSearch`` object (by calling
 ``.execute()``) is a subclass of the standard ``Response`` class that adds a
 property called ``facets`` which contains a dictionary with lists of buckets -
-each represented by a tuple of key, document cound and a flag indicating
+each represented by a tuple of key, document count and a flag indicating
 whether this value has been filtered on.
 
 Example

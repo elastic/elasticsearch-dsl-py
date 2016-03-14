@@ -215,7 +215,7 @@ To retrieve an existing document use the ``get`` class method:
 
 If the document is not found in elasticsearch an exception
 (``elasticsearch.NotFoundError``) will be raised. If you wish to return
-``None`` instead just pass in ``ignore=404`` to supress the exception:
+``None`` instead just pass in ``ignore=404`` to suppress the exception:
 
 .. code:: python
 
@@ -230,7 +230,7 @@ accessed through the ``_doc_type`` attribute of the class:
     # name of the type and index in elasticsearch
     Post._doc_type.name
     Post._doc_type.index
-    
+
     # the raw Mapping object
     Post._doc_type.mapping
 

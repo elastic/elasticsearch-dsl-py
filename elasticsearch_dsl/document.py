@@ -44,7 +44,7 @@ class DocTypeOptions(object):
         self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined take the name of the class and
-        # tranform it to lower_case
+        # transform it to lower_case
         doc_type = getattr(meta, 'doc_type',
                 re.sub(r'(.)([A-Z])', r'\1_\2', name).lower())
 

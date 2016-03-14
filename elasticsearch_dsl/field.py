@@ -251,7 +251,7 @@ FIELDS = (
     'completion',
 )
 
-# generate the query classes dynamicaly
+# generate the query classes dynamically
 for f in FIELDS:
     fclass = _make_dsl_class(Field, f)
     globals()[fclass.__name__] = fclass

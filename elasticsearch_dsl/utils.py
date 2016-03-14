@@ -26,7 +26,7 @@ def _make_dsl_class(base, name, params_def=None, suffix=''):
 
 class AttrList(object):
     def __init__(self, l, obj_wrapper=None):
-        # make iteables into lists
+        # make iterables into lists
         if not isinstance(l, list):
             l = list(l)
         self._l_ = l
@@ -194,7 +194,7 @@ class DslBase(object):
         - to_dict method to serialize into dict (to be sent via elasticsearch-py)
         - basic logical operators (&, | and ~) using a Bool(Filter|Query) TODO:
           move into a class specific for Query/Filter
-        - respects the definiton of the class and (de)serializes it's
+        - respects the definition of the class and (de)serializes it's
           attributes based on the `_param_defs` definition (for example turning
           all values in the `must` attribute into Query objects)
     """

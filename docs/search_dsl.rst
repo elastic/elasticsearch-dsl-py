@@ -171,7 +171,7 @@ single ``Bool`` query:
 .. code:: python
 
     Q("bool") + Q("bool")
-    # {"bool": {"..."}} 
+    # {"bool": {"..."}}
 
 When you call the ``.query()`` method multiple times, the ``+`` operator will
 be used internally:
@@ -267,7 +267,7 @@ acts as a top-level aggregation:
     #     }
     #   }
     # }
-    
+
 or
 
 .. code:: python
@@ -391,7 +391,7 @@ To specify a suggest request on your ``Search`` object use the ``suggest`` metho
 
 .. code:: python
 
-    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
+    s = s.suggest('my_suggestion', 'python', term={'field': 'title'})
 
 The first argument is the name of the suggestions (name under which it will be
 returned), second is the actual text you wish the suggester to work on and the
@@ -402,7 +402,7 @@ endpoint) you can do so via ``execute_suggest``:
 
 .. code:: python
 
-    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
+    s = s.suggest('my_suggestion', 'python', term={'field': 'title'})
     suggestions = s.execute_suggest()
 
     print(suggestions.my_suggestion)
@@ -415,7 +415,7 @@ To set extra properties of the search request, use the ``.extra()`` method:
 .. code:: python
 
   s = s.extra(explain=True)
- 
+
 To set query parameters, use the ``.params()`` method:
 
 .. code:: python
@@ -462,7 +462,7 @@ convenient helpers:
 
   print(response.success())
   # True
-      
+
   print(response.took)
   # 12
 
@@ -517,7 +517,7 @@ Aggregations are available through the ``aggregations`` property:
 
     for tag in response.aggregations.per_tag.buckets:
         print(tag.key, tag.max_lines.value)
-    
+
 
 
 ``MultiSearch``

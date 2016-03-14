@@ -27,7 +27,7 @@ def test_interactive_helpers(dummy_response):
     assert set(['meta', 'city', 'name']) == set(dir(h))
     assert "<Result(test-index/company/elasticsearch): %r>" % dummy_response['hits']['hits'][0]['_source'] == repr(h)
 
-def test_enpty_response_is_false(dummy_response):
+def test_empty_response_is_false(dummy_response):
     dummy_response['hits']['hits'] = []
     res = result.Response(dummy_response)
 

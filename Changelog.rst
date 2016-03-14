@@ -5,7 +5,7 @@ Changelog
 
 2.0.0 (2016-02-18)
 ------------------
-Compatibility with Eelasticsearch 2.x:
+Compatibility with Elasticsearch 2.x:
 
  * Filters have been removed and additional queries have been added
  * ``Search.filter`` is now just a shortcut to add queries in filter context

@@ -135,7 +135,7 @@ class Bool(Query):
             q.filter += other.filter
             q.should = []
             for qx in (self, other):
-                # TODO: percetages will fail here
+                # TODO: percentages will fail here
                 min_should_match = getattr(qx, 'minimum_should_match', 0 if qx.must else 1)
                 # all subqueries are required
                 if len(qx.should) <= min_should_match:
@@ -226,7 +226,7 @@ QUERIES = (
     ('type', None),
 )
 
-# generate the query classes dynamicaly
+# generate the query classes dynamically
 for qname, params_def in QUERIES:
     qclass = _make_dsl_class(Query, qname, params_def)
     globals()[qclass.__name__] = qclass

@@ -101,7 +101,7 @@ def test_save_updates_existing_doc(data_client):
     new_repo = data_client.get(index='git', doc_type='repos', id='elasticsearch-dsl-py')
     assert 'testing-save' == new_repo['_source']['new_field']
 
-def test_save_automatially_uses_versions(data_client):
+def test_save_automatically_uses_versions(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
     elasticsearch_repo.meta.version += 1
 

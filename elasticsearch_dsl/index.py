@@ -49,7 +49,7 @@ class Index(object):
         for mapping in self._mappings.values():
             mappings.update(mapping.to_dict())
             a = mapping._collect_analysis()
-            # merge the defintion
+            # merge the definition
             # TODO: conflict detection/resolution
             for key in a:
                 analysis.setdefault(key, {}).update(a[key])

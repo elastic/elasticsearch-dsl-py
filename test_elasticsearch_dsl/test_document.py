@@ -286,7 +286,7 @@ def test_you_can_supply_own_mapping_instance():
         }
     } == MyD._doc_type.mapping.to_dict()
 
-def test_document_can_be_created_dynamicaly():
+def test_document_can_be_created_dynamically():
     n = datetime.now()
     md = MyDoc(title='hello')
     md.name = 'My Fancy Document!'

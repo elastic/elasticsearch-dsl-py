@@ -26,7 +26,7 @@ def A(name_or_agg, filter=None, **params):
         agg = name_or_agg.copy()
         # pop out nested aggs
         aggs = agg.pop('aggs', None)
-        # should be {"terms": {"fied": "tags"}}
+        # should be {"terms": {"field": "tags"}}
         if len(agg) != 1:
             raise ValueError('A() can only accept dict with an aggregation ({"terms": {...}}). '
                  'Instead it got (%r)' % name_or_agg)
@@ -168,7 +168,7 @@ AGGS = (
     (Pipeline, 'sum_bucket', None),
 )
 
-# generate the aggregation classes dynamicaly
+# generate the aggregation classes dynamically
 for base, fname, params_def in AGGS:
     # don't override the params def from AggBase
     if params_def:
