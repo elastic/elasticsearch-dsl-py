@@ -391,7 +391,7 @@ To specify a suggest request on your ``Search`` object use the ``suggest`` metho
 
 .. code:: python
 
-    s = s.suggest('my_suggestion', 'python', term={'field': 'title'})
+    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
 
 The first argument is the name of the suggestions (name under which it will be
 returned), second is the actual text you wish the suggester to work on and the
@@ -402,7 +402,7 @@ endpoint) you can do so via ``execute_suggest``:
 
 .. code:: python
 
-    s = s.suggest('my_suggestion', 'python', term={'field': 'title'})
+    s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
     suggestions = s.execute_suggest()
 
     print(suggestions.my_suggestion)
