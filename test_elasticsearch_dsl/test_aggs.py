@@ -170,4 +170,3 @@ def test_filters_correctly_identifies_the_hash():
 def test_import__all__():
     for name in aggs.__all__:
         exec('from elasticsearch_dsl.aggs import {0}'.format(name))
-
