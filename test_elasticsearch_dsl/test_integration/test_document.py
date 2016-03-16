@@ -1,7 +1,7 @@
 from datetime import datetime
 from pytz import timezone
 
-from elasticsearch import ConflictError, NotFoundError
+from elasticsearch import ConflictError, NotFoundError, RequestError
 
 from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
 from elasticsearch_dsl.utils import AttrList
@@ -68,6 +68,56 @@ def test_save_with_tz_date(data_client):
 
     first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
     assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123456)) == first_commit.committed_date
+
+COMMIT_DOCS_WITH_MISSING = [
+    {'parent': 'elasticsearch-dsl-py', '_id': '0'},                                         # Missing
+    {'parent': 'elasticsearch-dsl-py', '_id': '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'},  # Existing
+    {'parent': 'elasticsearch-dsl-py', '_id': 'f'},                                         # Missing
+    {'parent': 'elasticsearch-dsl-py', '_id': 'eb3e543323f189fd7b698e66295427204fff5755'},  # Existing
+]
+
+COMMIT_DOCS_WITH_ERRORS = [
+    '0',                                                                                    # Error
+    {'parent': 'elasticsearch-dsl-py', '_id': '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'},  # Existing
+    'f',                                                                                    # Error
+    {'parent': 'elasticsearch-dsl-py', '_id': 'eb3e543323f189fd7b698e66295427204fff5755'},  # Existing
+]
+
+def test_mget(data_client):
+    commits = Commit.mget(COMMIT_DOCS_WITH_MISSING)
+    assert commits[0] is None
+    assert commits[1]._id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
+    assert commits[2] is None
+    assert commits[3]._id == 'eb3e543323f189fd7b698e66295427204fff5755'
+
+def test_mget_raises_exception_when_missing_param_is_invalid(data_client):
+    with raises(ValueError):
+        Commit.mget(COMMIT_DOCS_WITH_MISSING, missing='raj')
+
+def test_mget_raises_404_when_missing_param_is_raise(data_client):
+    with raises(NotFoundError):
+        Commit.mget(COMMIT_DOCS_WITH_MISSING, missing='raise')
+
+def test_mget_ignores_missing_docs_when_missing_param_is_skip(data_client):
+    commits = Commit.mget(COMMIT_DOCS_WITH_MISSING, missing='skip')
+    assert commits[0]._id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
+    assert commits[1]._id == 'eb3e543323f189fd7b698e66295427204fff5755'
+
+def test_mget_raises_404_when_error_param_is_true(data_client):
+    with raises(RequestError):
+        commits = Commit.mget(COMMIT_DOCS_WITH_ERRORS)
+
+def test_mget_returns_none_for_error_docs_when_error_param_is_false(data_client):
+    commits = Commit.mget(COMMIT_DOCS_WITH_ERRORS, raise_on_error=False)
+    assert commits[0] is None
+    assert commits[1]._id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
+    assert commits[2] is None
+    assert commits[3]._id == 'eb3e543323f189fd7b698e66295427204fff5755'
+
+def test_mget_error_and_missing_params_together(data_client):
+    commits = Commit.mget(COMMIT_DOCS_WITH_ERRORS, raise_on_error=False, missing='skip')
+    assert commits[0]._id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
+    assert commits[1]._id == 'eb3e543323f189fd7b698e66295427204fff5755'
 
 def test_update_works_from_search_response(data_client):
     elasticsearch_repo = Repository.search().execute()[0]
