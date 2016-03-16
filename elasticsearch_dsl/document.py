@@ -1,5 +1,6 @@
 import re
 
+from elasticsearch.exceptions import NotFoundError, RequestError
 from six import iteritems, add_metaclass
 
 from .field import Field
@@ -148,6 +149,52 @@ class DocType(ObjectBase):
         if not doc['found']:
             return None
         return cls.from_es(doc)
+
+    @classmethod
+    def mget(cls, docs, using=None, index=None, raise_on_error=True,
+             missing='none', **kwargs):
+        if missing not in ('raise', 'skip', 'none'):
+            raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
+        es = connections.get_connection(using or cls._doc_type.using)
+        body = {'docs': [doc if isinstance(doc, dict) else {'_id': doc}
+                         for doc in docs]}
+        results = es.mget(
+            body,
+            index=index or cls._doc_type.index,
+            doc_type=cls._doc_type.name,
+            **kwargs
+        )
+
+        objs, error_docs, missing_docs = [], [], []
+        for doc in results['docs']:
+            if doc.get('error'):
+                error_docs.append(doc)
+                if missing == 'none':
+                    objs.append(None)
+            elif doc.get('found'):
+                if (raise_on_error and error_docs or
+                    missing == 'raise' and missing_docs):
+                    # We're going to raise an exception anyway, so avoid an
+                    # expensive call to cls.from_es().
+                    pass
+                else:
+                    objs.append(cls.from_es(doc))
+            else:
+                # The doc didn't cause an error, but the doc also wasn't found.
+                missing_docs.append(doc)
+                if missing == 'none':
+                    objs.append(None)
+
+        if raise_on_error and error_docs:
+            error_ids = [doc['_id'] for doc in error_docs]
+            message = 'Required routing/parent not provided for documents %s.'
+            message %= ', '.join(error_ids)
+            raise RequestError(400, message, error_docs)
+        if missing == 'raise' and missing_docs:
+            missing_ids = [doc['_id'] for doc in missing_docs]
+            message = 'Documents %s not found.' % ', '.join(missing_ids)
+            raise NotFoundError(404, message, missing_docs)
+        return objs
 
     @classmethod
     def from_es(cls, hit):
