@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from dateutil import parser
 from six import itervalues
 from six.moves import map
@@ -215,6 +215,12 @@ class Date(Field):
     def _deserialize(self, data):
         if not data:
             return None
+
+        # Fix for datetime with timezone
+        # See https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-date-format.html#mapping-date-format
+        if isinstance(data, datetime) and data.microsecond:
+            return data.replace(microsecond=0)
+
         if isinstance(data, date):
             return data
 
