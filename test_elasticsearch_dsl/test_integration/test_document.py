@@ -58,7 +58,7 @@ def test_get_with_tz_date(data_client):
     first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
 
     tzinfo = timezone('Europe/Prague')
-    assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19)) == first_commit.authored_date
+    assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123000)) == first_commit.authored_date
 
 def test_update_works_from_search_response(data_client):
     elasticsearch_repo = Repository.search().execute()[0]
