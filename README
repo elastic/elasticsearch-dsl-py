@@ -56,14 +56,10 @@ Let's have a typical search request written directly as a ``dict``:
         index="my-index",
         body={
           "query": {
-            "filtered": {
-              "query": {
-                "bool": {
-                  "must": [{"match": {"title": "python"}}],
-                  "must_not": [{"match": {"description": "beta"}}]
-                }
-              },
-              "filter": {"term": {"category": "search"}}
+            "bool": {
+              "must": [{"match": {"title": "python"}}],
+              "must_not": [{"match": {"description": "beta"}}]
+              "filter": [{"term": {"category": "search"}}]
             }
           },
           "aggs" : {
@@ -120,7 +116,7 @@ As you see, the library took care of:
 
   * composing queries into a compound ``bool`` query
 
-  * creating a ``filtered`` query since ``.filter()`` was used
+  * putting the ``term`` query in a filter context of the ``bool`` query
 
   * providing a convenient access to response data
 

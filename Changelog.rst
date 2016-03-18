@@ -7,7 +7,8 @@ Changelog
 ------------------
 Compatibility with Elasticsearch 2.x:
 
- * Filters have been removed and additional queries have been added
+ * Filters have been removed and additional queries have been added. Instead of
+   ``F`` objects you can now use ``Q``.
  * ``Search.filter`` is now just a shortcut to add queries in filter context
  * support for pipeline aggregations added
 
