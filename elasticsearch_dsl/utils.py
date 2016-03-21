@@ -41,6 +41,9 @@ class AttrList(object):
         # make sure we still equal to a dict with the same data
         return other == self._l_
 
+    def __ne__(self, other):
+        return not self == other
+
     def __getitem__(self, k):
         l = self._l_[k]
         if isinstance(k, slice):
@@ -96,6 +99,9 @@ class AttrDict(object):
             return other._d_ == self._d_
         # make sure we still equal to a dict with the same data
         return other == self._d_
+
+    def __ne__(self, other):
+        return not self == other
 
     def __repr__(self):
         r = repr(self._d_)
