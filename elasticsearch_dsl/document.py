@@ -213,7 +213,7 @@ class DocType(ObjectBase):
         meta['_source'] = d
         return meta
 
-    def update(self, using=None, index=None, **fields):
+    def update(self, using=None, index=None, **fields, **kwargs):
         es = self._get_connection(using)
 
         # update the data locally
@@ -229,7 +229,8 @@ class DocType(ObjectBase):
             index=self._get_index(index),
             doc_type=self._doc_type.name,
             body={'doc': fields},
-            **doc_meta
+            **doc_meta,
+            **kwargs
         )
         # update meta information from ES
         for k in META_FIELDS:
