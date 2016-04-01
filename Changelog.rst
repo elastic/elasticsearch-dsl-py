@@ -3,6 +3,10 @@
 Changelog
 =========
 
+2.1.0 (dev)
+-----------
+ * ``inner_hits`` are now also wrapped in ``Response``
+
 2.0.0 (2016-02-18)
 ------------------
 Compatibility with Elasticsearch 2.x:
