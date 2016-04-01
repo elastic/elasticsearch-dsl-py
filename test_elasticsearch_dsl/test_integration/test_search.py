@@ -1,4 +1,5 @@
-from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch
+from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch, \
+    MetaField, Index, Q
 
 from .test_data import DATA
 
@@ -10,6 +11,23 @@ class Repository(DocType):
     class Meta:
         index = 'git'
         doc_type = 'repos'
+
+class Commit(DocType):
+    class Meta:
+        doc_type = 'commits'
+        index = 'git'
+        parent = MetaField(type='repos')
+
+def test_inner_hits_are_wrapped_in_response(data_client):
+    i = Index('git')
+    i.doc_type(Repository)
+    i.doc_type(Commit)
+    s = i.search()[0:1].doc_type(Commit).query('has_parent', type='repos', inner_hits={}, query=Q('match_all'))
+    response = s.execute()
+
+    commit = response.hits[0]
+    assert isinstance(commit.meta.inner_hits.repos, response.__class__)
+    assert isinstance(commit.meta.inner_hits.repos[0], Repository)
 
 def test_suggest_can_be_run_separately(data_client):
     s = Search()

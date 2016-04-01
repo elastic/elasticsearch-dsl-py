@@ -33,6 +33,8 @@ class Response(AttrDict):
 
     def _get_result(self, hit):
         dt = hit['_type']
+        for t in hit.get('inner_hits', ()):
+            hit['inner_hits'][t] = self.__class__(hit['inner_hits'][t], self._callbacks)
         return self._callbacks.get(dt, Result)(hit)
 
     @property
