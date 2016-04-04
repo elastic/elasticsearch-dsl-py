@@ -49,6 +49,12 @@ class Agg(DslBase):
     _type_name = 'agg'
     _type_shortcut = staticmethod(A)
     name = None
+    def to_dict(self):
+        d = super(Agg, self).to_dict()
+        if 'meta' in d[self.name]:
+            d['meta'] = d[self.name].pop('meta')
+        return d
+
 
 class AggBase(object):
     _param_defs = {
