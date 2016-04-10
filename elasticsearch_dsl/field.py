@@ -236,6 +236,18 @@ class String(Field):
     def _empty(self):
         return ''
 
+
+class Boolean(Field):
+    name = 'boolean'
+
+    def clean(self, data):
+        if data is not None:
+            data = self.deserialize(data)
+        if data is None and self._required:
+            raise ValidationException("Value required for this field.")
+        return data
+
+
 FIELDS = (
     'float',
     'double',
@@ -243,7 +255,6 @@ FIELDS = (
     'short',
     'integer',
     'long',
-    'boolean',
     'ip',
     'attachment',
     'geo_point',
