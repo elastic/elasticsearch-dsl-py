@@ -158,22 +158,7 @@ Query objects can be combined using logical operators:
     ~Q("match", title="python")
     # {"bool": {"must_not": [...]}}
 
-You can also use the ``+`` operator:
-
-.. code:: python
-
-    Q("match", title='python') + Q("match", title='django')
-    # {"bool": {"must": [...]}}
-
-When using the ``+`` operator with ``Bool`` queries, it will merge them into a
-single ``Bool`` query:
-
-.. code:: python
-
-    Q("bool") + Q("bool")
-    # {"bool": {"..."}}
-
-When you call the ``.query()`` method multiple times, the ``+`` operator will
+When you call the ``.query()`` method multiple times, the ``&`` operator will
 be used internally:
 
 .. code:: python
