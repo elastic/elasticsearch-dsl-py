@@ -175,7 +175,7 @@ class DocType(ObjectBase):
 
                 objs.append(cls.from_es(doc))
 
-            if doc.get('error'):
+            elif doc.get('error'):
                 if raise_on_error:
                     error_docs.append(doc)
                 if missing == 'none':
