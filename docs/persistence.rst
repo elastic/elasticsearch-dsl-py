@@ -222,6 +222,28 @@ If the document is not found in elasticsearch an exception
     p = Post.get(id='not-in-es', ignore=404)
     p is None
 
+When you wish to retrive multiple documents at the same time by their ``id``
+you can use the ``mget`` method:
+
+.. code:: python
+
+    posts = Post.mget([42, 47, 256])
+
+``mget`` will, by default, raise a ``NotFoundError`` if any of the documents
+wasn't found and ``RequestError`` if any of the document had resulted in error.
+You can control this behavior by setting parameters:
+
+``raise_on_error``
+  If ``True`` (default) then any error will cause an exception to be raised.
+  Otherwise all documents containing errors will be treated as missing.
+
+``missing``
+  Can have three possible values: ``'none'`` (default), ``'raise'`` and
+  ``'skip'``. If a document is missing or errored it will either be replaced
+  with ``None``, an exception will be raised or the document will be skipped in
+  the output list entirely.
+
+
 All the information about the ``DocType``, including its ``Mapping`` can be
 accessed through the ``_doc_type`` attribute of the class:
 

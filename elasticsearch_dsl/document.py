@@ -167,30 +167,32 @@ class DocType(ObjectBase):
 
         objs, error_docs, missing_docs = [], [], []
         for doc in results['docs']:
-            if doc.get('error'):
-                error_docs.append(doc)
-                if missing == 'none':
-                    objs.append(None)
-            elif doc.get('found'):
-                if (raise_on_error and error_docs or
-                    missing == 'raise' and missing_docs):
+            if doc.get('found'):
+                if error_docs or missing_docs:
                     # We're going to raise an exception anyway, so avoid an
                     # expensive call to cls.from_es().
-                    pass
-                else:
-                    objs.append(cls.from_es(doc))
-            else:
-                # The doc didn't cause an error, but the doc also wasn't found.
-                missing_docs.append(doc)
+                    continue
+
+                objs.append(cls.from_es(doc))
+
+            if doc.get('error'):
+                if raise_on_error:
+                    error_docs.append(doc)
                 if missing == 'none':
                     objs.append(None)
 
-        if raise_on_error and error_docs:
+            # The doc didn't cause an error, but the doc also wasn't found.
+            elif missing == 'raise':
+                missing_docs.append(doc)
+            elif missing == 'none':
+                objs.append(None)
+
+        if error_docs:
             error_ids = [doc['_id'] for doc in error_docs]
             message = 'Required routing/parent not provided for documents %s.'
             message %= ', '.join(error_ids)
             raise RequestError(400, message, error_docs)
-        if missing == 'raise' and missing_docs:
+        if missing_docs:
             missing_ids = [doc['_id'] for doc in missing_docs]
             message = 'Documents %s not found.' % ', '.join(missing_ids)
             raise NotFoundError(404, message, missing_docs)
