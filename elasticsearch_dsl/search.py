@@ -1,6 +1,6 @@
 from six import iteritems, string_types
 
-from elasticsearch.helpers import scan
+from elasticsearch.helpers import scan, bulk
 
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
@@ -662,6 +662,28 @@ class Search(Request):
                 **self._params
             ):
             yield self._doc_type_map.get(hit['_type'], Result)(hit)
+
+    def delete(self):
+        """
+        Perform a delete-by-query operation.
+        """
+        es = connections.get_connection(self._using)
+        operations = (
+            {
+                '_op_type': 'delete',
+                '_id': hit['_id'],
+                '_index': hit['_index'],
+                '_type': hit['_type'],
+            } for hit in scan(
+                es,
+                query=self.to_dict(),
+                index=self._index,
+                doc_type=self._doc_type,
+                _source=0,
+                **self._params
+            )
+        )
+        return bulk(es, operations, **self._params)
 
 
 class MultiSearch(Request):
