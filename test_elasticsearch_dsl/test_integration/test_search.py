@@ -1,7 +1,11 @@
+from elasticsearch import TransportError
+
 from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch, \
     MetaField, Index, Q
 
 from .test_data import DATA
+
+from pytest import raises
 
 class Repository(DocType):
     created_at = Date()
@@ -73,3 +77,25 @@ def test_multi_search(data_client):
 
     assert 52 == r2.hits.total
     assert r2.search is s2
+
+def test_multi_missing(data_client):
+    s1 = Repository.search()
+    s2 = Search(doc_type='commits')
+    s3 = Search(index='does_not_exist')
+
+    ms = MultiSearch()
+    ms = ms.add(s1).add(s2).add(s3)
+
+    with raises(TransportError):
+        ms.execute()
+
+    r1, r2, r3 = ms.execute(raise_on_error=False)
+
+    assert 1 == len(r1)
+    assert isinstance(r1[0], Repository)
+    assert r1.search is s1
+
+    assert 52 == r2.hits.total
+    assert r2.search is s2
+
+    assert r3 is None

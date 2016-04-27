@@ -1,6 +1,7 @@
 from six import iteritems, string_types
 
 from elasticsearch.helpers import scan
+from elasticsearch.exceptions import TransportError
 
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
@@ -700,7 +701,7 @@ class MultiSearch(Request):
 
         return out
 
-    def execute(self, ignore_cache=False):
+    def execute(self, ignore_cache=False, raise_on_error=True):
         if ignore_cache or not hasattr(self, '_response'):
             es = connections.get_connection(self._using)
 
@@ -713,8 +714,14 @@ class MultiSearch(Request):
 
             out = []
             for s, r in zip(self._searches, responses['responses']):
-                r = Response(r, callbacks=s._doc_type_map)
-                r.search = s
+                if r.get('error', False):
+                    print(r)
+                    if raise_on_error:
+                        raise TransportError('N/A', r['error']['type'], r['error'])
+                    r = None
+                else:
+                    r = Response(r, callbacks=s._doc_type_map)
+                    r.search = s
                 out.append(r)
 
             self._response = out
