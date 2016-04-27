@@ -108,13 +108,18 @@ If you want to create a model-like wrapper around your documents, use the
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch_dsl import DocType, String, Date, Nested, Boolean, analyzer
+    from elasticsearch_dsl import DocType, String, Date, Nested, Boolean, \
+        analyzer, InnerObjectWrapper
 
     html_strip = analyzer('html_strip',
         tokenizer="standard",
         filter=["standard", "lowercase", "stop", "snowball"],
         char_filter=["html_strip"]
     )
+
+    class Comment(InnerObjectWrapper):
+        def age(self):
+            return datetime.now() - self.created_at
 
     class Post(DocType):
         title = String()
@@ -127,6 +132,7 @@ If you want to create a model-like wrapper around your documents, use the
         )
 
         comments = Nested(
+            doc_class=Comment,
             properties={
                 'author': String(fields={'raw': String(index='not_analyzed')}),
                 'content': String(analyzer='snowball'),
