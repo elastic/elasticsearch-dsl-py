@@ -8,7 +8,7 @@ __all__ = [
     'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount',
     'AvgBucket', 'BucketScript', 'BucketSelector', 'CumulativeSum',
     'Derivative', 'ExtendedStatsBucket', 'MaxBucket', 'MinBucket', 'MovingAvg',
-    'PercentilesBucket', 'SerialDiff', 'StatsBucket', 'SumBucket'
+    'PercentilesBucket', 'SerialDiff', 'StatsBucket', 'SumBucket', 'Sampler'
 ]
 
 
@@ -144,6 +144,7 @@ AGGS = (
     (Bucket, 'reverse_nested', None),
     (Bucket, 'significant_terms', None),
     (Bucket, 'terms', None),
+    (Bucket, 'sampler', None),
 
     (Agg, 'avg', None),
     (Agg, 'cardinality', None),
