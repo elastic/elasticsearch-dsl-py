@@ -228,7 +228,6 @@ class String(Field):
     _param_defs = {
         'fields': {'type': 'field', 'hash': True},
         'analyzer': {'type': 'analyzer'},
-        'index_analyzer': {'type': 'analyzer'},
         'search_analyzer': {'type': 'analyzer'},
     }
     name = 'string'

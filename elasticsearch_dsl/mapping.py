@@ -45,7 +45,7 @@ class Mapping(object):
             fields.append(String(**self._meta['_all']))
 
         for f in chain(fields, self.properties._collect_fields()):
-            for analyzer_name in ('analyzer', 'index_analyzer', 'search_analyzer'):
+            for analyzer_name in ('analyzer', 'search_analyzer'):
                 if not hasattr(f, analyzer_name):
                     continue
                 analyzer = getattr(f, analyzer_name)
@@ -144,7 +144,7 @@ class Mapping(object):
         if '_all' in meta:
             meta = meta.copy()
             _all = meta['_all'] = meta['_all'].copy()
-            for f in ('analyzer', 'search_analyzer', 'index_analyzer'):
+            for f in ('analyzer', 'search_analyzer'):
                 if hasattr(_all.get(f, None), 'to_dict'):
                     _all[f] = _all[f].to_dict()
         d[self.doc_type].update(meta)
