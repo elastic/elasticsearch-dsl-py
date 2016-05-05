@@ -136,7 +136,7 @@ class Bool(Query):
             q.should = []
             for qx in (self, other):
                 # TODO: percentages will fail here
-                min_should_match = getattr(qx, 'minimum_should_match', 0 if qx.must else 1)
+                min_should_match = getattr(qx, 'minimum_should_match', 0 if (qx.must or qx.filter) else 1)
                 # all subqueries are required
                 if len(qx.should) <= min_should_match:
                     q.must.extend(qx.should)
