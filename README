@@ -58,7 +58,7 @@ Let's have a typical search request written directly as a ``dict``:
           "query": {
             "bool": {
               "must": [{"match": {"title": "python"}}],
-              "must_not": [{"match": {"description": "beta"}}]
+              "must_not": [{"match": {"description": "beta"}}],
               "filter": [{"term": {"category": "search"}}]
             }
           },
