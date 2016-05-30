@@ -218,6 +218,7 @@ class Search(Request):
         self._highlight_opts = {}
         self._suggest = {}
         self._script_fields = {}
+        self._rescore = []
         self._response_class = Response
 
         self._query_proxy = QueryProxy(self, 'query')
@@ -303,6 +304,7 @@ class Search(Request):
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
         s._script_fields = self._script_fields.copy()
+        s._rescore = self._rescore[:]
         for x in ('query', 'post_filter'):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -526,6 +528,22 @@ class Search(Request):
             s._highlight[f] = kwargs
         return s
 
+    def rescore(self, query, **kwargs):
+        """
+        Add a rescore request to the search.
+
+        :arg query: query to be used during the rescore process.
+
+        All keyword arguments will be added to the rescore request body.
+        """
+        s = self._clone()
+        rescore = {}
+        rescore['query'] = dict()
+        rescore['query']['rescore_query'] = query.to_dict()
+        rescore.update(kwargs)
+        s._rescore.append(rescore)
+        return s
+
     def suggest(self, name, text, **kwargs):
         """
         Add a suggestions request to the search.
@@ -586,6 +604,9 @@ class Search(Request):
 
             if self._script_fields:
                 d['script_fields'] = self._script_fields
+
+            if self._rescore:
+                d['rescore'] = self._rescore
 
         d.update(kwargs)
         return d

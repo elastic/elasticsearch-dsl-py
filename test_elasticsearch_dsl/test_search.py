@@ -571,3 +571,30 @@ def test_suggest():
             }
         }
     } == s.to_dict()
+
+def test_rescore():
+    s = search.Search()
+    s = s.rescore(query=Q('match', title='test test test'), window_size=50)
+    s = s.rescore(query=Q('match', title='test2 test2 test2'), window_size=100)
+    assert {
+       'query' : {'match_all' : {} },
+       'rescore' : [{
+          'window_size' : 50,
+          'query' : {
+             'rescore_query' : {
+                'match' : {
+                   'title': 'test test test'
+                }
+             }
+          }
+       },{
+          'window_size' : 100,
+          'query' : {
+             'rescore_query' : {
+                'match' : {
+                   'title': 'test2 test2 test2'
+                }
+             }
+          }
+       }]
+    } == s.to_dict()
