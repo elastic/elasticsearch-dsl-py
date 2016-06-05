@@ -27,7 +27,7 @@ all changes to the object will result in a copy being created which contains
 the changes. This means you can safely pass the ``Search`` object to foreign
 code without fear of it modifying your objects.
 
-You can pass an instance of the low-level `elasticsearch client <http://elasticsearch-py.readthedocs.org/>`_ when
+You can pass an instance of the low-level `elasticsearch client <https://elasticsearch-py.readthedocs.io/>`_ when
 instantiating the ``Search`` object:
 
 .. code:: python
