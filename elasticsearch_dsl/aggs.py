@@ -5,7 +5,7 @@ __all__ = [
     'GeoDistance', 'GeohashGrid', 'Global', 'Histogram', 'Iprange', 'Missing',
     'Nested', 'Range', 'ReverseNested', 'SignificantTerms', 'Terms', 'Avg',
     'Cardinality', 'ExtendedStats', 'GeoBounds', 'Max', 'Min', 'Percentiles',
-    'PercenileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount',
+    'PercentileRanks', 'ScriptedMetric', 'Stats', 'Sum', 'TopHits', 'ValueCount',
     'AvgBucket', 'BucketScript', 'BucketSelector', 'CumulativeSum',
     'Derivative', 'ExtendedStatsBucket', 'MaxBucket', 'MinBucket', 'MovingAvg',
     'PercentilesBucket', 'SerialDiff', 'StatsBucket', 'SumBucket', 'Sampler'
