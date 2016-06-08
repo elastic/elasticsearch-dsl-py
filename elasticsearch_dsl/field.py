@@ -78,8 +78,7 @@ class Field(DslBase):
     def clean(self, data):
         if data is not None:
             data = self.deserialize(data)
-        # FIXME: numeric 0
-        if not data and self._required:
+        if data in (None, [], {}) and self._required:
             raise ValidationException("Value required for this field.")
         return data
 

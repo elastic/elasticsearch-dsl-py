@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Nested, String, Date, Object, Boolean
+from elasticsearch_dsl import DocType, Nested, String, Date, Object, Boolean, Integer
 from elasticsearch_dsl.field import InnerObjectWrapper
 from elasticsearch_dsl.exceptions import ValidationException
 
@@ -37,6 +37,32 @@ class AutoNowDate(Date):
 class Log(DocType):
     timestamp = AutoNowDate(required=True)
     data = String()
+
+def test_required_int_can_be_0():
+    class DT(DocType):
+        i = Integer(required=True)
+
+    dt = DT(i=0)
+    assert dt.full_clean() is None
+
+def test_required_field_cannot_be_empty_list():
+    class DT(DocType):
+        i = Integer(required=True)
+
+    dt = DT(i=[])
+    with raises(ValidationException):
+        dt.full_clean()
+
+def test_validation_works_for_lists_of_values():
+    class DT(DocType):
+        i = Date(required=True)
+
+    with raises(ValidationException):
+        DT(i=[datetime.now(), 'not date'])
+
+    dt = DT(i=[datetime.now(), datetime.now()])
+    assert None is dt.full_clean()
+
 
 def test_field_with_custom_clean():
     l = Log()
