@@ -98,7 +98,7 @@ class DocType(ObjectBase):
     def __init__(self, meta=None, **kwargs):
         meta = meta or {}
         for k in list(kwargs):
-            if k.startswith('_'):
+            if k.startswith('_') and k[1:] in META_FIELDS:
                 meta[k] = kwargs.pop(k)
 
         if self._doc_type.index:
@@ -208,7 +208,7 @@ class DocType(ObjectBase):
             for k, v in iteritems(meta.pop('fields')):
                 if k == '_source':
                     doc.update(v)
-                if k.startswith('_'):
+                if k.startswith('_') and k[1:] in META_FIELDS:
                     meta[k] = v
                 else:
                     doc[k] = v

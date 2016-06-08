@@ -393,3 +393,31 @@ def test_search_with_custom_alias_and_index(mock_client):
 
     assert search_object._using == "staging"
     assert search_object._index == ["custom_index1", "custom_index2"]
+
+def test_from_es_respects_underscored_non_meta_fields():
+    doc = {
+        "_index": "test-index",
+        "_type": "company",
+        "_id": "elasticsearch",
+        "_score": 12.0,
+
+        "fields": {
+            "hello": "world",
+            "_routing": "es",
+            "_tags": ["search"]
+
+        },
+
+        "_source": {
+            "city": "Amsterdam",
+            "name": "Elasticsearch",
+            "_tagline": "You know, for search"
+        }
+    }
+
+    class Company(document.DocType):
+        pass
+
+    c = Company.from_es(doc)
+
+    assert c.to_dict() == {'city': 'Amsterdam', 'hello': 'world', 'name': 'Elasticsearch', "_tags": ["search"], "_tagline": "You know, for search"}
