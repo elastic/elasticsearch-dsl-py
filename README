@@ -213,7 +213,7 @@ existing ``dict``, modifying it using the API and serializing it back to a
 Documentation
 -------------
 
-Documentation is available at https://elasticsearch-dsl.readthedocs.org.
+Documentation is available at https://elasticsearch-dsl.readthedocs.io.
 
 License
 -------

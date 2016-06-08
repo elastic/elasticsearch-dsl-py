@@ -97,7 +97,7 @@ class Request(object):
         """
         Specify query params to be used when executing the search. All the
         keyword arguments will override the current values. See
-        http://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch.Elasticsearch.search
+        https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.search
         for all available parameters.
 
         Example::
@@ -650,7 +650,7 @@ class Search(Request):
 
         Use ``params`` method to specify any additional arguments you with to
         pass to the underlying ``scan`` helper from ``elasticsearch-py`` -
-        http://elasticsearch-py.readthedocs.org/en/master/helpers.html#elasticsearch.helpers.scan
+        https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
 
         """
         es = connections.get_connection(self._using)
