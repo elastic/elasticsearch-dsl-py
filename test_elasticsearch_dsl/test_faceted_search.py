@@ -2,7 +2,7 @@ from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet
 
 class BlogSearch(FacetedSearch):
     doc_types = ['user', 'post']
-    fields = ('title', 'body', )
+    fields = ('title^5', 'body', )
 
     facets = {
         'category': TermsFacet(field='category.raw'),
@@ -31,7 +31,7 @@ def test_query_is_created_properly():
             },
         },
         'query': {
-            'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
+            'multi_match': {'fields': ('title^5', 'body'), 'query': 'python search'}
         },
         'highlight': {'fields': {'body': {}, 'title': {}}}
     } == s.to_dict()
@@ -55,7 +55,7 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
         },
         'post_filter': {'terms': {'category.raw': ['elastic']}},
         'query': {
-            'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
+            'multi_match': {'fields': ('title^5', 'body'), 'query': 'python search'}
         },
         'highlight': {'fields': {'body': {}, 'title': {}}}
     } == s.to_dict()
@@ -89,7 +89,7 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
             }
         },
         'query': {
-            'multi_match': {'fields': ('title', 'body'), 'query': 'python search'}
+            'multi_match': {'fields': ('title^5', 'body'), 'query': 'python search'}
         },
         'post_filter': {
             'bool': {

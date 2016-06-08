@@ -267,7 +267,8 @@ class FacetedSearch(object):
         """
         Add highlighting for all the fields
         """
-        return search.highlight(*self.fields)
+        return search.highlight(*(f if '^' not in f else f.split('^', 1)[0]
+                                  for f in self.fields))
 
     def build_search(self):
         """
