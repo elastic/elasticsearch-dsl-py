@@ -213,10 +213,10 @@ class DslBase(object):
         except KeyError:
             raise UnknownDslObject('DSL class `%s` does not exist in %s.' % (name, cls._type_name))
 
-    def __init__(self, **params):
+    def __init__(self, _expand__to_dot=True, **params):
         self._params = {}
         for pname, pvalue in iteritems(params):
-            if '__' in pname:
+            if '__' in pname and _expand__to_dot:
                 pname = pname.replace('__', '.')
             self._setattr(pname, pvalue)
 

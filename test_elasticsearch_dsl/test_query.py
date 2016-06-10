@@ -189,6 +189,11 @@ def test_Q_translates_double_underscore_to_dots_in_param_names():
 
     assert {'comment.author': 'honza'} == q._params
 
+def test_Q_doesn_translate_double_underscore_to_dots_in_param_names():
+    q = query.Q('match', comment__author='honza', _expand__to_dot=False)
+
+    assert {'comment__author': 'honza'} == q._params
+
 def test_Q_constructs_simple_query_from_dict():
     q = query.Q({'match': {'f': 'value'}})
 
