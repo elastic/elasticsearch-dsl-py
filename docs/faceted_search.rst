@@ -57,7 +57,7 @@ Advanced
 ~~~~~~~~
 
 If you require any custom behavior or modifications simply override one or more
-of the methods responsible for the class' functions. The two main methods are:
+of the methods responsible for the class' functions:
 
 ``search(self)``
   is responsible for constructing the ``Search`` object used. Override this if
@@ -67,6 +67,10 @@ of the methods responsible for the class' functions. The two main methods are:
 ``query(self, search)``
   adds the query postion of the search (if search input specified), by default
   using ``MultiField`` query. Override this if you want to modify the query type used.
+
+``highlight(self, search)``
+  defines the highlighting on the ``Search`` object and returns a new one.
+  Default behavior is to highlight on all fields specified for search.
 
 
 Usage
