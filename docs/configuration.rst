@@ -56,7 +56,9 @@ To define a default connection that will be used globally, use the
     connections.create_connection(hosts=['localhost'], timeout=20)
 
 Any keyword arguments (``hosts`` and ``timeout`` in our example) will be passed
-to the ``Elasticsearch`` class.
+to the ``Elasticsearch`` class from ``elasticsearch-py``. To see all the
+possible configuration options see the `documentation
+<http://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch>`_.
 
 Multiple clusters
 -----------------

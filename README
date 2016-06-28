@@ -3,7 +3,7 @@ Elasticsearch DSL
 
 Elasticsearch DSL is a high-level library whose aim is to help with writing and
 running queries against Elasticsearch. It is built on top of the official
-low-level client (``elasticsearch-py``).
+low-level client (`elasticsearch-py <https://github.com/elastic/elasticsearch-py>`_).
 
 It provides a more convenient and idiomatic way to write and manipulate
 queries. It stays close to the Elasticsearch JSON DSL, mirroring its
