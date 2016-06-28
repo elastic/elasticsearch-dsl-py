@@ -426,12 +426,22 @@ Serialization and Deserialization
 The search object can be serialized into a dictionary by using the
 ``.to_dict()`` method.
 
-You can also create a ``Search`` object from a ``dict``:
+You can also create a ``Search`` object from a ``dict`` using the ``from_dict``
+class method. This will create a new ``Search`` object and populate it using
+the data from the dict::
 
 .. code:: python
 
   s = Search.from_dict({"query": {"match": {"title": "python"}}})
 
+If you wish to modify an existing ``Search`` object, overriding it's
+properties, instead use the ``update_from_dict`` method that alters an instance
+**in-place**:
+
+.. code:: python
+
+  s = Search(index='i')
+  s.update_from_dict({"query": {"match": {"title": "python"}}, "size": 42})
 
 Response
 --------

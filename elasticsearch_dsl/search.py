@@ -267,7 +267,7 @@ class Search(Request):
     @classmethod
     def from_dict(cls, d):
         """
-        Construct a `Search` instance from a raw dict containing the search
+        Construct a new `Search` instance from a raw dict containing the search
         body. Useful when migrating from raw dictionaries.
 
         Example::
