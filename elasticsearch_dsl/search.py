@@ -605,7 +605,8 @@ class Search(Request):
         return es.count(
             index=self._index,
             doc_type=self._doc_type,
-            body=d
+            body=d,
+            **self._params
         )['count']
 
     def execute(self, ignore_cache=False):
