@@ -3,10 +3,12 @@
 Changelog
 =========
 
-2.1.0 (dev)
------------
+2.1.0 (2016-06-29)
+------------------
  * ``inner_hits`` are now also wrapped in ``Response``
  * ``+`` operator is deprecated, ``.query()`` now uses ``&`` to combine queries
+ * added ``mget`` method to ``DocType``
+ * fixed validation for "empty" values like ``''`` and ``[]``
 
 2.0.0 (2016-02-18)
 ------------------
