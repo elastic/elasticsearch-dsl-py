@@ -318,7 +318,7 @@ If you want to run suggestions, just use the ``suggest`` method on the
 .. code:: python
 
     s = Post.search()
-    s.suggest('title_suggestions', 'pyth', completion={'field': 'title_suggest'})
+    s = s.suggest('title_suggestions', 'pyth', completion={'field': 'title_suggest'})
 
     # you can even execute just the suggestions via the _suggest API
     suggestions = s.execute_suggest()
