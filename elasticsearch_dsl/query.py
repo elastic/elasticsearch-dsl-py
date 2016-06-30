@@ -148,6 +148,8 @@ class Bool(Query):
                 else:
                     q.must.append(Bool(should=qx.should, minimum_should_match=min_should_match))
         else:
+            if not q.must and q.should:
+                q._params.setdefault('minimum_should_match', 1)
             q.must.append(other)
         return q
     __rand__ = __and__
