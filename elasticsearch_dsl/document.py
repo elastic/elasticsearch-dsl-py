@@ -24,15 +24,18 @@ META_FIELDS = frozenset((
     'index', 'using', 'score',
 )).union(DOC_META_FIELDS)
 
+
 class MetaField(object):
     def __init__(self, *args, **kwargs):
         self.args, self.kwargs = args, kwargs
+
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
         # DocTypeMeta filters attrs in place
         attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
         return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+
 
 class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
@@ -262,7 +265,15 @@ class DocType(ObjectBase):
         meta['_source'] = d
         return meta
 
-    def update(self, using=None, index=None, **fields):
+    def update(self, using=None, index=None, detect_noop=True, doc_as_upsert=False, **fields):
+        """ Update this document in Elasticsearch.
+
+        :param using:
+        :param index:
+        :param detect_noop: check if values have changed to avoid unnecessary write operation. Default: True.
+        :param doc_as_upsert: index document if it doesn't exist. Default: False.
+        :param fields: kwargs of additional fields
+        """
         es = self._get_connection(using)
 
         # update the data locally
@@ -274,10 +285,15 @@ class DocType(ObjectBase):
             for k in DOC_META_FIELDS
             if k in self.meta
         )
+        body = {'doc': fields}
+        if doc_as_upsert:
+            body['doc_as_upsert'] = True
+        body['detect_noop'] = True if detect_noop else False
+
         meta = es.update(
             index=self._get_index(index),
             doc_type=self._doc_type.name,
-            body={'doc': fields},
+            body=body,
             **doc_meta
         )
         # update meta information from ES
@@ -310,4 +326,3 @@ class DocType(ObjectBase):
 
         # return True/False if the document has been created/updated
         return meta['created']
-
