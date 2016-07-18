@@ -109,7 +109,7 @@ If you want to create a model-like wrapper around your documents, use the
 
     from datetime import datetime
     from elasticsearch_dsl import DocType, String, Date, Nested, Boolean, \
-        analyzer, InnerObjectWrapper
+        analyzer, InnerObjectWrapper, Completion
 
     html_strip = analyzer('html_strip',
         tokenizer="standard",
