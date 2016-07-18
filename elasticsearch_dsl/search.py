@@ -716,7 +716,6 @@ class MultiSearch(Request):
             out = []
             for s, r in zip(self._searches, responses['responses']):
                 if r.get('error', False):
-                    print(r)
                     if raise_on_error:
                         raise TransportError('N/A', r['error']['type'], r['error'])
                     r = None
