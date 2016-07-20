@@ -80,5 +80,8 @@ class Result(AttrDict):
         return super(Result, self).__dir__() + ['meta']
 
     def __repr__(self):
-        return u('<Result(%s/%s/%s): %s>') % (
-            self.meta.index, self.meta.doc_type, self.meta.id, super(Result, self).__repr__())
+        return '<Result(%s): %s>' % (
+            '/'.join(getattr(self.meta, key) for key in
+                      ('index', 'doc_type', 'id') if key in self.meta),
+            super(Result, self).__repr__()
+        )

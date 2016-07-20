@@ -23,6 +23,14 @@ class Commit(DocType):
         parent = MetaField(type='repos')
 
 def test_inner_hits_are_wrapped_in_response(data_client):
+    s = Search(index='git', doc_type='commits')[0:1].query('has_parent', type='repos', inner_hits={}, query=Q('match_all'))
+    response = s.execute()
+
+    commit = response.hits[0]
+    assert isinstance(commit.meta.inner_hits.repos, response.__class__)
+    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Result(git/repos/elasticsearch-dsl-py): ")
+
+def test_inner_hits_are_wrapped_in_doc_type(data_client):
     i = Index('git')
     i.doc_type(Repository)
     i.doc_type(Commit)
@@ -32,6 +40,8 @@ def test_inner_hits_are_wrapped_in_response(data_client):
     commit = response.hits[0]
     assert isinstance(commit.meta.inner_hits.repos, response.__class__)
     assert isinstance(commit.meta.inner_hits.repos[0], Repository)
+    assert "Repository(index='git', doc_type='repos', id='elasticsearch-dsl-py')" == repr(commit.meta.inner_hits.repos[0])
+
 
 def test_suggest_can_be_run_separately(data_client):
     s = Search()

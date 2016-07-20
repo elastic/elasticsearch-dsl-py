@@ -120,6 +120,13 @@ class DocType(ObjectBase):
             return getattr(self.meta, name[1:])
         return super(DocType, self).__getattr__(name)
 
+    def __repr__(self):
+        return '%s(%s)' % (
+            self.__class__.__name__,
+            ', '.join('%s=%r' % (key, getattr(self.meta, key)) for key in
+                      ('index', 'doc_type', 'id') if key in self.meta)
+        )
+
     def __setattr__(self, name, value):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return setattr(self.meta, name[1:], value)
