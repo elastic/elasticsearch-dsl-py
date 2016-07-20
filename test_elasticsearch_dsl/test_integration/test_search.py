@@ -40,7 +40,7 @@ def test_inner_hits_are_wrapped_in_doc_type(data_client):
     commit = response.hits[0]
     assert isinstance(commit.meta.inner_hits.repos, response.__class__)
     assert isinstance(commit.meta.inner_hits.repos[0], Repository)
-    assert "Repository(index='git', doc_type='repos', id='elasticsearch-dsl-py')" == repr(commit.meta.inner_hits.repos[0])
+    assert "Repository(index=%r, doc_type=%r, id=%r)" % ('git', 'repos', 'elasticsearch-dsl-py') == repr(commit.meta.inner_hits.repos[0])
 
 
 def test_suggest_can_be_run_separately(data_client):
