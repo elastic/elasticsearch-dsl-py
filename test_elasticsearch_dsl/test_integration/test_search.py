@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from elasticsearch import TransportError
 
 from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch, \
