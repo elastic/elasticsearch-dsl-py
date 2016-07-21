@@ -378,7 +378,7 @@ in a migration:
 
 .. code:: python
 
-    from elasticsearch_dsl import Index, DocType, String
+    from elasticsearch_dsl import Index, DocType, String, analyzer
 
     blogs = Index('blogs')
 
@@ -400,6 +400,16 @@ in a migration:
     @blogs.doc_type
     class Post(DocType):
         title = String()
+
+    # You can attach custom analyzers to the index
+
+    html_strip = analyzer('html_strip',
+        tokenizer="standard",
+        filter=["standard", "lowercase", "stop", "snowball"],
+        char_filter=["html_strip"]
+    )
+
+    blog.analyzer(html_strip)
 
     # delete the index, ignore if it doesn't exist
     blogs.delete(ignore=404)
