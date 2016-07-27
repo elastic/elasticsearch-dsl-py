@@ -162,11 +162,17 @@ def test_or_bool_doesnt_loop_infinitely_issue_96():
 
     assert q == query.Bool(should=[query.Bool(must_not=[query.Match(f=42)]), query.Bool(must_not=[query.Match(f=47)])])
 
-def test_bool_with_only_should_will_append_another_query_with_or():
-    qb = query.Bool(should=[query.Match(f='v')])
+def test_bool_will_append_another_query_with_or():
+    qb = query.Bool(should=[query.Match(f='v'), query.Match(f='v2'),])
     q = query.Match(g=42)
 
-    assert (q | qb) == query.Bool(should=[query.Match(f='v'), q])
+    assert (q | qb) == query.Bool(should=[query.Match(f='v'), query.Match(f='v2'), q])
+
+def test_bool_queries_with_only_should_get_concatenated():
+    q1 = query.Bool(should=[query.Match(f=1), query.Match(f=2),])
+    q2 = query.Bool(should=[query.Match(f=3), query.Match(f=4),])
+
+    assert (q1 | q2) == query.Bool(should=[query.Match(f=1), query.Match(f=2),query.Match(f=3), query.Match(f=4),])
 
 def test_two_bool_queries_append_one_to_should_if_possible():
     q1 = query.Bool(should=[query.Match(f='v')])

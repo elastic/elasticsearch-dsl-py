@@ -101,10 +101,14 @@ class Bool(Query):
 
     def __or__(self, other):
         for q in (self, other):
-            if isinstance(q, Bool) and len(q.should) == 1 and not any((q.must, q.must_not, q.filter)):
+            if isinstance(q, Bool) and not any((q.must, q.must_not, q.filter)):
+                # TODO: take minimum_should_match into account
                 other = self if q is other else other
                 q = q._clone()
-                q.should.append(other)
+                if isinstance(other, Bool) and not any((other.must, other.must_not, other.filter)):
+                    q.should.extend(other.should)
+                else:
+                    q.should.append(other)
                 return q
 
         return Bool(should=[self, other])
