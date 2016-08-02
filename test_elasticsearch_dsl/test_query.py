@@ -123,9 +123,31 @@ def test_bool_and_bool():
 
 def test_inverted_query_becomes_bool_with_must_not():
     q = query.Match(f=42)
-    q = ~q
 
-    assert q == query.Bool(must_not=[query.Match(f=42)])
+    assert ~q == query.Bool(must_not=[query.Match(f=42)])
+
+def test_inverted_query_with_must_not_become_should():
+    q = query.Q('bool', must_not=[query.Q('match', f=1), query.Q('match', f=2)])
+
+    assert ~q == query.Q('bool', should=[query.Q('match', f=1), query.Q('match', f=2)])
+
+def test_inverted_query_with_must_and_must_not():
+    q = query.Q('bool',
+        must=[query.Q('match', f=3), query.Q('match', f=4)],
+        must_not=[query.Q('match', f=1), query.Q('match', f=2)]
+    )
+    print((~q).to_dict())
+    assert ~q == query.Q('bool',
+        should=[
+            # negation of must
+            query.Q('bool', must_not=[query.Q('match', f=3)]),
+            query.Q('bool', must_not=[query.Q('match', f=4)]),
+
+            # negation of must_not
+            query.Q('match', f=1),
+            query.Q('match', f=2),
+        ]
+    )
 
 def test_double_invert_returns_original_query():
     q = query.Match(f=42)
@@ -134,9 +156,15 @@ def test_double_invert_returns_original_query():
 
 def test_bool_query_gets_inverted_internally():
     q = query.Bool(must_not=[query.Match(f=42)], must=[query.Match(g='v')])
-    q = ~q
 
-    assert q == query.Bool(must=[query.Match(f=42)], must_not=[query.Match(g='v')])
+    assert ~q == query.Bool(
+        should=[
+            # negating must
+            query.Bool(must_not=[query.Match(g='v')]),
+            # negating must_not
+            query.Match(f=42),
+        ]
+    )
 
 def test_match_all_or_something_is_match_all():
     q1 = query.MatchAll()

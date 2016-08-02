@@ -1,3 +1,5 @@
+from itertools import chain
+
 from .utils import DslBase, _make_dsl_class
 from .function import SF, ScoreFunction
 
@@ -114,22 +116,24 @@ class Bool(Query):
         return Bool(should=[self, other])
     __ror__ = __or__
 
+    @property
+    def _min_should_match(self):
+        return getattr(self, 'minimum_should_match', 0 if (self.must or self.filter) else 1)
+
     def __invert__(self):
-        # special case for single negated query
-        if not (self.must or self.should or self.filter) and len(self.must_not) == 1:
-            return self.must_not[0]._clone()
+        negations = []
+        for q in chain(self.must, self.filter):
+            negations.append(~q)
 
-        # bol without should, just flip must and must_not
-        elif not self.should:
-            q = self._clone()
-            q.must, q.must_not = q.must_not, q.must
-            if q.filter:
-                q.filter = [Bool(must_not=q.filter)]
-            return q
+        for q in self.must_not:
+            negations.append(q)
 
-        # TODO: should -> must_not.append(Bool(should=self.should)) ??
-        # queries with should just invert normally
-        return super(Bool, self).__invert__()
+        if self.should and self._min_should_match:
+            negations.append(Bool(must_not=self.should[:]))
+
+        if len(negations) > 1:
+            return Bool(should=negations)
+        return negations[0]
 
     def __and__(self, other):
         q = self._clone()
