@@ -131,9 +131,9 @@ class Bool(Query):
         if self.should and self._min_should_match:
             negations.append(Bool(must_not=self.should[:]))
 
-        if len(negations) > 1:
-            return Bool(should=negations)
-        return negations[0]
+        if len(negations) == 1:
+            return negations[0]
+        return Bool(should=negations)
 
     def __and__(self, other):
         q = self._clone()
