@@ -380,7 +380,9 @@ To specify a suggest request on your ``Search`` object use the ``suggest`` metho
 
 The first argument is the name of the suggestions (name under which it will be
 returned), second is the actual text you wish the suggester to work on and the
-keyword arguments will be added to the suggest's json as-is.
+keyword arguments will be added to the suggest's json as-is which means that it
+should be one of ``term``, ``phrase`` or ``completion`` to indicate which type
+of suggester should be used.
 
 If you only wish to run the suggestion part of the search (via the ``_suggest``
 endpoint) you can do so via ``execute_suggest``:
