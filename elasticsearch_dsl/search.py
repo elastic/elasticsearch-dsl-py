@@ -580,6 +580,7 @@ class Search(Request):
             es = connections.get_connection(self._using)
 
             self._response = self._response_class(
+                self,
                 es.search(
                     index=self._index,
                     doc_type=self._doc_type,
@@ -680,8 +681,7 @@ class MultiSearch(Request):
                         raise TransportError('N/A', r['error']['type'], r['error'])
                     r = None
                 else:
-                    r = Response(r, callbacks=s._doc_type_map)
-                    r.search = s
+                    r = Response(s, r, callbacks=s._doc_type_map)
                 out.append(r)
 
             self._response = out

@@ -7,7 +7,8 @@ class SuggestResponse(AttrDict):
         return not self._shards.failed
 
 class Response(AttrDict):
-    def __init__(self, response, callbacks=None):
+    def __init__(self, search, response, callbacks=None):
+        super(AttrDict, self).__setattr__('_search', search)
         super(AttrDict, self).__setattr__('_callbacks', callbacks or {})
         super(Response, self).__init__(response)
 
@@ -34,7 +35,7 @@ class Response(AttrDict):
     def _get_result(self, hit):
         dt = hit['_type']
         for t in hit.get('inner_hits', ()):
-            hit['inner_hits'][t] = Response(hit['inner_hits'][t], callbacks=self._callbacks)
+            hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t], callbacks=self._callbacks)
         return self._callbacks.get(dt, Hit)(hit)
 
     @property
