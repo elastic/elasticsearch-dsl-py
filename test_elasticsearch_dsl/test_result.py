@@ -88,3 +88,8 @@ def test_slicing_on_response_slices_on_hits(dummy_response):
     assert res[0] is res.hits[0]
     assert res[::-1] == res.hits[::-1]
 
+def test_aggregation_base(aggs_search, aggs_response):
+    res = response.Response(aggs_search, aggs_response)
+
+    assert res.aggs is res.aggregations
+    assert isinstance(res.aggs, response.AggResult)
