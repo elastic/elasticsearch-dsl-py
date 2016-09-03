@@ -1,6 +1,7 @@
 import collections
 
 from .utils import DslBase, _make_dsl_class
+from .response.aggs import BucketData, AggData
 
 __all__ = [
     'A', 'Agg', 'Filter', 'Bucket', 'Children', 'DateHistogram', 'Filters',
@@ -57,6 +58,9 @@ class Agg(DslBase):
             d['meta'] = d[self.name].pop('meta')
         return d
 
+    def result(self, data):
+        return AggData(self, data)
+
 
 class AggBase(object):
     _param_defs = {
@@ -77,6 +81,9 @@ class AggBase(object):
     def __setitem__(self, agg_name, agg):
         self.aggs[agg_name] = A(agg)
 
+    def __iter__(self):
+        return iter(self.aggs)
+
     def _agg(self, bucket, name, agg_type, *args, **params):
         agg = self[name] = A(agg_type, *args, **params)
 
@@ -95,6 +102,9 @@ class AggBase(object):
 
     def pipeline(self, name, agg_type, *args, **params):
         return self._agg(False, name, agg_type, *args, **params)
+
+    def result(self, data):
+        return BucketData(self, data)
 
 
 class Bucket(AggBase, Agg):
