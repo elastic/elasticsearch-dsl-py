@@ -6,7 +6,7 @@ from six import iteritems, add_metaclass
 from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict, merge
-from .result import ResultMeta
+from .response import ResultMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException

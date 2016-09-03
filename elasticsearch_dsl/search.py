@@ -6,7 +6,7 @@ from elasticsearch.exceptions import TransportError
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
 from .utils import DslBase
-from .result import Response, Result, SuggestResponse
+from .response import Response, Result, SuggestResponse
 from .connections import connections
 
 class QueryProxy(object):
