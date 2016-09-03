@@ -1,7 +1,7 @@
 from ..utils import AttrDict, AttrList
 
 from .hit import Hit, HitMeta
-from .aggs import AggResult
+from .aggs import AggResponse
 
 class SuggestResponse(AttrDict):
     def success(self):
@@ -17,8 +17,10 @@ class Response(AttrDict):
         return iter(self.hits)
 
     def __getitem__(self, key):
-        # for slicing etc
-        return self.hits[key]
+        if isinstance(key, (slice, int)):
+            # for slicing etc
+            return self.hits[key]
+        return super(Response, self).__getitem__(key)
 
     def __nonzero__(self):
         return bool(self.hits)
@@ -63,7 +65,7 @@ class Response(AttrDict):
     @property
     def aggs(self):
         if not hasattr(self, '_aggs'):
-            aggs = AggResult(self._d_.get('aggregations', {}))
+            aggs = AggResponse(self._search.aggs, self._d_.get('aggregations', {}))
 
             # avoid assigning _aggs into self._d_
             super(AttrDict, self).__setattr__('_aggs', aggs)

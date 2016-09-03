@@ -135,7 +135,7 @@ def aggs_search():
     return s
 
 @fixture
-def aggs_response():
+def aggs_data():
     return {
         'took': 4,
         'timed_out': False,

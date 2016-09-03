@@ -1,6 +1,12 @@
-from pytest import raises
+from pytest import raises, fixture
 
 from elasticsearch_dsl import response, Search
+from elasticsearch_dsl.aggs import Terms
+from elasticsearch_dsl.response.aggs import AggData, BucketData
+
+@fixture
+def agg_response(aggs_search, aggs_data):
+    return response.Response(aggs_search, aggs_data)
 
 def test_response_stores_search(dummy_response):
     s = Search()
@@ -88,8 +94,19 @@ def test_slicing_on_response_slices_on_hits(dummy_response):
     assert res[0] is res.hits[0]
     assert res[::-1] == res.hits[::-1]
 
-def test_aggregation_base(aggs_search, aggs_response):
-    res = response.Response(aggs_search, aggs_response)
+def test_aggregation_base(agg_response):
+    assert agg_response.aggs is agg_response.aggregations
+    assert isinstance(agg_response.aggs, response.AggResponse)
 
-    assert res.aggs is res.aggregations
-    assert isinstance(res.aggs, response.AggResult)
+def test_aggregations_can_be_iterated_over(agg_response):
+    aggs = [a for a in agg_response.aggs]
+
+    assert len(aggs) == 1
+    assert all(map(lambda a: isinstance(a, AggData), aggs))
+
+def test_aggregations_can_be_retrieved_by_name(agg_response, aggs_search):
+    a = agg_response.aggs['popular_files']
+
+    assert isinstance(a, BucketData)
+    assert isinstance(a.meta.agg, Terms)
+    assert a.meta.agg is aggs_search.aggs.aggs['popular_files']

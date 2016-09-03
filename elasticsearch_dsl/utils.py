@@ -117,7 +117,7 @@ class AttrDict(object):
 
     def __getattr__(self, attr_name):
         try:
-            return _wrap(self._d_[attr_name])
+            return self.__getitem__(attr_name)
         except KeyError:
             raise AttributeError(
                 '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
