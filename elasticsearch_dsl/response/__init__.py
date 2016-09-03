@@ -1,6 +1,6 @@
 from ..utils import AttrDict, AttrList
 
-from .result import Result, ResultMeta
+from .hit import Hit, HitMeta
 
 class SuggestResponse(AttrDict):
     def success(self):
@@ -35,7 +35,7 @@ class Response(AttrDict):
         dt = hit['_type']
         for t in hit.get('inner_hits', ()):
             hit['inner_hits'][t] = Response(hit['inner_hits'][t], callbacks=self._callbacks)
-        return self._callbacks.get(dt, Result)(hit)
+        return self._callbacks.get(dt, Hit)(hit)
 
     @property
     def hits(self):

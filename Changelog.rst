@@ -3,6 +3,10 @@
 Changelog
 =========
 
+5.1.0 (dev)
+-----------
+ * Renamed ``Result`` and ``ResultMeta`` to ``Hit`` and ``HitMeta`` respectively
+
 5.0.0 (2016-11-04)
 ------------------
 
