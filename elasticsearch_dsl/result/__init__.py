@@ -1,6 +1,6 @@
 from six import iteritems, u
 
-from .utils import AttrDict, AttrList
+from ..utils import AttrDict, AttrList
 
 class SuggestResponse(AttrDict):
     def success(self):
