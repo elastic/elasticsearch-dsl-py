@@ -5,7 +5,7 @@ from functools import partial
 from .search import Search
 from .aggs import A
 from .utils import AttrDict
-from .result import Response
+from .response import Response
 from .query import Q
 
 __all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet']

@@ -1,17 +1,17 @@
 from pytest import raises
 
-from elasticsearch_dsl import result
+from elasticsearch_dsl import response
 
 def test_attribute_error_in_hits_is_not_hidden(dummy_response):
     def f(hit):
         raise AttributeError()
 
-    r = result.Response(dummy_response, callbacks={'employee': f})
+    r = response.Response(dummy_response, callbacks={'employee': f})
     with raises(TypeError):
         r.hits
 
 def test_interactive_helpers(dummy_response):
-    res = result.Response(dummy_response)
+    res = response.Response(dummy_response)
     hits = res.hits
     h = hits[0]
 
@@ -29,22 +29,22 @@ def test_interactive_helpers(dummy_response):
 
 def test_empty_response_is_false(dummy_response):
     dummy_response['hits']['hits'] = []
-    res = result.Response(dummy_response)
+    res = response.Response(dummy_response)
 
     assert not res
 
 def test_len_response(dummy_response):
-    res = result.Response(dummy_response)
-    assert len(dummy_response) == 4
+    res = response.Response(dummy_response)
+    assert len(res) == 4
 
 def test_iterating_over_response_gives_you_hits(dummy_response):
-    res = result.Response(dummy_response)
+    res = response.Response(dummy_response)
     hits = list(h for h in res)
 
     assert res.success()
     assert 123 == res.took
     assert 4 == len(hits)
-    assert all(isinstance(h, result.Result) for h in hits)
+    assert all(isinstance(h, response.Result) for h in hits)
     h = hits[0]
 
     assert 'test-index' == h.meta.index
@@ -55,14 +55,14 @@ def test_iterating_over_response_gives_you_hits(dummy_response):
     assert hits[1].meta.parent == 'elasticsearch'
 
 def test_hits_get_wrapped_to_contain_additional_attrs(dummy_response):
-    res = result.Response(dummy_response)
+    res = response.Response(dummy_response)
     hits = res.hits
 
     assert 123 == hits.total
     assert 12.0 == hits.max_score
 
 def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
-    res = result.Response(dummy_response)
+    res = response.Response(dummy_response)
     h = res.hits[0]
 
     assert 'Elasticsearch' == h.name
@@ -77,7 +77,7 @@ def test_hits_provide_dot_and_bracket_access_to_attrs(dummy_response):
         h.not_there
 
 def test_slicing_on_response_slices_on_hits(dummy_response):
-    res = result.Response(dummy_response)
+    res = response.Response(dummy_response)
 
     assert res[0] is res.hits[0]
     assert res[::-1] == res.hits[::-1]
