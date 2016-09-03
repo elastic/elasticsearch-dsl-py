@@ -7,7 +7,7 @@ from six import iteritems, add_metaclass
 from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict, merge
-from .response import ResultMeta
+from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
@@ -104,7 +104,7 @@ class DocType(ObjectBase):
 
         if self._doc_type.index:
             meta.setdefault('_index', self._doc_type.index)
-        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
 
@@ -114,7 +114,7 @@ class DocType(ObjectBase):
     def __setstate__(self, state):
         data, meta = state
         super(AttrDict, self).__setattr__('_d_', data)
-        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:

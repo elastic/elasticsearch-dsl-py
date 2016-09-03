@@ -29,8 +29,7 @@ def test_inner_hits_are_wrapped_in_response(data_client):
 
     commit = response.hits[0]
     assert isinstance(commit.meta.inner_hits.repos, response.__class__)
-    r = commit.meta.inner_hits.repos[0]
-    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Result(repos/elasticsearch-dsl-py): ")
+    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Hit(git/repos/elasticsearch-dsl-py): ")
 
 def test_inner_hits_are_wrapped_in_doc_type(data_client):
     i = Index('git')

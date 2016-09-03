@@ -9,7 +9,7 @@ from elasticsearch.exceptions import TransportError
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
 from .utils import DslBase
-from .response import Response, Result, SuggestResponse
+from .response import Response, Hit, SuggestResponse
 from .connections import connections
 
 class QueryProxy(object):
@@ -141,7 +141,7 @@ class Request(object):
         multiple. Values can be strings or subclasses of ``DocType``.
 
         You can also pass in any keyword arguments, mapping a doc_type to a
-        callback that should be used instead of the Result class.
+        callback that should be used instead of the Hit class.
 
         If no doc_type is supplied any information stored on the instance will
         be erased.
@@ -623,7 +623,7 @@ class Search(Request):
                 doc_type=self._doc_type,
                 **self._params
             ):
-            yield self._doc_type_map.get(hit['_type'], Result)(hit)
+            yield self._doc_type_map.get(hit['_type'], Hit)(hit)
 
 
 class MultiSearch(Request):
