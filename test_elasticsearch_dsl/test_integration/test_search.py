@@ -84,10 +84,10 @@ def test_multi_search(data_client):
 
     assert 1 == len(r1)
     assert isinstance(r1[0], Repository)
-    assert r1.search is s1
+    assert r1._search is s1
 
     assert 52 == r2.hits.total
-    assert r2.search is s2
+    assert r2._search is s2
 
 def test_multi_missing(data_client):
     s1 = Repository.search()
@@ -104,9 +104,9 @@ def test_multi_missing(data_client):
 
     assert 1 == len(r1)
     assert isinstance(r1[0], Repository)
-    assert r1.search is s1
+    assert r1._search is s1
 
     assert 52 == r2.hits.total
-    assert r2.search is s2
+    assert r2._search is s2
 
     assert r3 is None
