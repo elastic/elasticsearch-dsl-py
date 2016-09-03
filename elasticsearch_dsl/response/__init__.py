@@ -1,6 +1,7 @@
 from ..utils import AttrDict, AttrList
 
 from .hit import Hit, HitMeta
+from .aggs import AggResult
 
 class SuggestResponse(AttrDict):
     def success(self):
@@ -54,3 +55,16 @@ class Response(AttrDict):
             for k in h:
                 setattr(self._hits, k, h[k])
         return self._hits
+
+    @property
+    def aggregations(self):
+        return self.aggs
+
+    @property
+    def aggs(self):
+        if not hasattr(self, '_aggs'):
+            aggs = AggResult(self._d_.get('aggregations', {}))
+
+            # avoid assigning _aggs into self._d_
+            super(AttrDict, self).__setattr__('_aggs', aggs)
+        return self._aggs
