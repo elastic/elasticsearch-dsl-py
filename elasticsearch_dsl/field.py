@@ -1,3 +1,5 @@
+import collections
+
 from datetime import date
 from dateutil import parser
 from six import itervalues
@@ -14,7 +16,7 @@ __all__ = [
 
 def construct_field(name_or_field, **params):
     # {"type": "string", "index": "not_analyzed"}
-    if isinstance(name_or_field, dict):
+    if isinstance(name_or_field, collections.Mapping):
         if params:
             raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
         params = name_or_field.copy()

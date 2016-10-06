@@ -1,8 +1,10 @@
+import collections
+
 from .utils import DslBase
 
 def SF(name_or_sf, **params):
     # {"script_score": {"script": "_score"}, "filter": {}}
-    if isinstance(name_or_sf, dict):
+    if isinstance(name_or_sf, collections.Mapping):
         if params:
             raise ValueError('SF() cannot accept parameters when passing in a dict.')
         kwargs = {}
@@ -21,7 +23,7 @@ def SF(name_or_sf, **params):
             raise ValueError('SF() got an unexpected fields in the dictionary: %r' % sf)
 
         # boost factor special case, see elasticsearch #6343
-        if not isinstance(params, dict):
+        if not isinstance(params, collections.Mapping):
             params = {'value': params}
 
         # mix known params (from _param_defs) and from inside the function
