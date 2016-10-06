@@ -1,3 +1,5 @@
+import collections
+
 from itertools import chain
 
 from .utils import DslBase, _make_dsl_class
@@ -17,7 +19,7 @@ __all__ = [
 
 def Q(name_or_query='match_all', **params):
     # {"match": {"title": "python"}}
-    if isinstance(name_or_query, dict):
+    if isinstance(name_or_query, collections.Mapping):
         if params:
             raise ValueError('Q() cannot accept parameters when passing in a dict.')
         if len(name_or_query) != 1:
