@@ -26,7 +26,7 @@ class QueryProxy(object):
 
     def __call__(self, *args, **kwargs):
         s = self._search._clone()
-        getattr(s, self._attr_name)._proxied += Q(*args, **kwargs)
+        getattr(s, self._attr_name)._proxied &= Q(*args, **kwargs)
 
         # always return search to be chainable
         return s

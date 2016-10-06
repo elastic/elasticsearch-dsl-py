@@ -9,6 +9,7 @@ class Index(object):
         self._using = using
         self._settings = {}
         self._aliases = {}
+        self._analysis = {}
 
     def clone(self, name, using=None):
         i = Index(name, using=using or self._using)
@@ -36,6 +37,17 @@ class Index(object):
     def aliases(self, **kwargs):
         self._aliases.update(kwargs)
         return self
+
+    def analyzer(self, analyzer):
+        d = analyzer.get_analysis_definition()
+        # empty custom analyzer, probably already defined out of our control
+        if not d:
+            return
+
+        # merge the definition
+        # TODO: conflict detection/resolution
+        for key in d:
+            self._analysis.setdefault(key, {}).update(d[key])
 
     def search(self):
         return Search(
@@ -65,7 +77,9 @@ class Index(object):
         mappings, analysis = self._get_mappings()
         if mappings:
             out['mappings'] = mappings
-        if analysis:
+        if analysis or self._analysis:
+            for key in self._analysis:
+                analysis.setdefault(key, {}).update(self._analysis[key])
             out.setdefault('settings', {})['analysis'] = analysis
         return out
 
