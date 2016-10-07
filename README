@@ -17,6 +17,14 @@ document data in user-defined classes.
 To use the other Elasticsearch APIs (eg. cluster health) just use the
 underlying client.
 
+Installation
+------------
+
+::
+
+  pip install elasticsearch-dsl
+
+
 Compatibility
 -------------
 
