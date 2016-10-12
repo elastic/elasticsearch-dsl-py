@@ -297,7 +297,7 @@ class Search(Request):
         s._response_class = self._response_class
         s._sort = self._sort[:]
         s._source = self._source.copy() if self._source else None
-        s._fields = self._fields[:] if self._fields else None
+        s._fields = self._fields[:] if self._fields is not None else None
         s._partial_fields = self._partial_fields.copy()
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
