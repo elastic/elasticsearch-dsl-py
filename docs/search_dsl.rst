@@ -430,7 +430,7 @@ The search object can be serialized into a dictionary by using the
 
 You can also create a ``Search`` object from a ``dict`` using the ``from_dict``
 class method. This will create a new ``Search`` object and populate it using
-the data from the dict::
+the data from the dict:
 
 .. code:: python
 
