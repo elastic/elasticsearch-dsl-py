@@ -453,6 +453,16 @@ def test_fields_on_clone():
         'fields': ['title']
     } == search.Search().fields(['title']).filter('term', title='python').to_dict()
 
+def test_empty_fields_on_clone():
+    assert {
+        'query': {
+            'bool': {
+                'filter': [{'term': {'title': 'python'}}],
+            }
+        },
+        'fields': []
+    } == search.Search().fields([]).filter('term', title='python').to_dict()
+
 def test_partial_fields():
     assert {
         'query': {
