@@ -386,6 +386,20 @@ def test_source():
         }
     } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).to_dict()
 
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        '_source': False
+    } == search.Search().source(False).to_dict()
+
+    assert {
+        'query': {
+            'match_all': {}
+        },
+        '_source': ['f1', 'f2']
+    } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).source(['f1', 'f2']).to_dict()
+
 def test_source_on_clone():
     assert {
         '_source': {

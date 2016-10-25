@@ -376,7 +376,7 @@ class Search(Request):
         s._script_fields.update(kwargs)
         return s
 
-    def source(self, **kwargs):
+    def source(self, fields=None, **kwargs):
         """
         Selectively control how the _source field is returned.
 
@@ -400,7 +400,14 @@ class Search(Request):
         """
         s = self._clone()
 
-        if s._source is None:
+        if fields and kwargs:
+            raise ValueError("You cannot specify fields and kwargs at the same time.")
+
+        if fields is not None:
+            s._source = fields
+            return s
+
+        if kwargs and not isinstance(s._source, dict):
             s._source = {}
 
         for key, value in kwargs.items():
@@ -523,7 +530,7 @@ class Search(Request):
 
             d.update(self._extra)
 
-            if self._source:
+            if not self._source in (None, {}):
                 d['_source'] = self._source
 
             if self._highlight:
