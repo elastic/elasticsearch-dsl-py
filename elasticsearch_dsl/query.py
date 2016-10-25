@@ -218,7 +218,6 @@ QUERIES = (
     ('match_phrase', None),
     ('match_phrase_prefix', None),
     ('exists', None),
-    ('missing', None),
     ('more_like_this', None),
     ('more_like_this_field', None),
     ('multi_match', None),
