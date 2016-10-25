@@ -1,36 +1,36 @@
 import json
 
-from elasticsearch_dsl import mapping, String, Nested, analysis
+from elasticsearch_dsl import mapping, Text, Keyword, Nested, analysis
 
 
 def test_mapping_can_has_fields():
     m = mapping.Mapping('article')
-    m.field('name', 'string').field('tags', 'string', index='not_analyzed')
+    m.field('name', 'text').field('tags', 'keyword')
 
     assert {
         'article': {
             'properties': {
-                'name': {'type': 'string'},
-                'tags': {'index': 'not_analyzed', 'type': 'string'}
+                'name': {'type': 'text'},
+                'tags': {'type': 'keyword'}
             }
         }
     } == m.to_dict()
 
 def test_mapping_update_is_recursive():
     m1 = mapping.Mapping('article')
-    m1.field('title', 'string')
+    m1.field('title', 'text')
     m1.field('author', 'object')
-    m1['author'].field('name', 'string')
+    m1['author'].field('name', 'text')
     m1.meta('_all', enabled=False)
     m1.meta('dynamic', False)
 
     m2 = mapping.Mapping('article')
     m2.field('published_from', 'date')
     m2.field('author', 'object')
-    m2.field('title', 'string')
-    m2.field('lang', 'string', index='not_analyzed')
+    m2.field('title', 'text')
+    m2.field('lang', 'keyword')
     m2.meta('_analyzer', path='lang')
-    m2['author'].field('email', 'string')
+    m2['author'].field('email', 'text')
 
     m1.update(m2, update_only=True)
 
@@ -41,13 +41,13 @@ def test_mapping_update_is_recursive():
             'dynamic': False,
             'properties': {
                 'published_from': {'type': 'date'},
-                'title': {'type': 'string'},
-                'lang': {'type': 'string', 'index': 'not_analyzed'},
+                'title': {'type': 'text'},
+                'lang': {'type': 'keyword'},
                 'author': {
                     'type': 'object',
                     'properties': {
-                        'name': {'type': 'string'},
-                        'email': {'type': 'string'},
+                        'name': {'type': 'text'},
+                        'email': {'type': 'text'},
                     }
                 }
             }
@@ -56,9 +56,9 @@ def test_mapping_update_is_recursive():
 
 def test_properties_can_iterate_over_all_the_fields():
     m = mapping.Mapping('testing')
-    m.field('f1', 'string', test_attr='f1', fields={'f2': String(test_attr='f2')})
+    m.field('f1', 'text', test_attr='f1', fields={'f2': Keyword(test_attr='f2')})
     m.field('f3', Nested(test_attr='f3', properties={
-            'f4': String(test_attr='f4')}))
+            'f4': Text(test_attr='f4')}))
 
     assert set(('f1', 'f2', 'f3', 'f4')) == set(f.test_attr for f in m.properties._collect_fields())
 
@@ -76,14 +76,14 @@ def test_mapping_can_collect_all_analyzers():
     a5 = analysis.analyzer('my_analyzer3', tokenizer='keyword')
 
     m = mapping.Mapping('article')
-    m.field('title', 'string', analyzer=a1,
+    m.field('title', 'text', analyzer=a1,
         fields={
-            'english': String(analyzer=a2),
-            'unknown': String(search_analyzer=a3),
+            'english': Text(analyzer=a2),
+            'unknown': Keyword(search_analyzer=a3),
         }
     )
     m.field('comments', Nested(properties={
-        'author': String(analyzer=a4)
+        'author': Text(analyzer=a4)
     }))
     m.meta('_all', analyzer=a5)
 
@@ -117,12 +117,12 @@ def test_mapping_can_collect_multiple_analyzers():
         filter=[analysis.token_filter('my_filter2', 'stop', stopwords=['c', 'd'])],
     )
     m = mapping.Mapping('article')
-    m.field('title', 'string', analyzer=a1, search_analyzer=a2)
+    m.field('title', 'text', analyzer=a1, search_analyzer=a2)
     m.field(
-        'text', 'string', analyzer=a1,
+        'text', 'text', analyzer=a1,
         fields={
-            'english': String(analyzer=a1),
-            'unknown': String(analyzer=a1, search_analyzer=a2),
+            'english': Text(analyzer=a1),
+            'unknown': Keyword(analyzer=a1, search_analyzer=a2),
         }
     )
     assert {
@@ -142,7 +142,7 @@ def test_mapping_can_collect_multiple_analyzers():
 def test_even_non_custom_analyzers_can_have_params():
     a1 = analysis.analyzer('whitespace', type='pattern', pattern=r'\\s+')
     m = mapping.Mapping('some_type')
-    m.field('title', 'string', analyzer=a1)
+    m.field('title', 'text', analyzer=a1)
 
     assert {
         "analyzer": {

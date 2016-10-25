@@ -3,19 +3,19 @@ from pytz import timezone
 
 from elasticsearch import ConflictError, NotFoundError, RequestError
 
-from elasticsearch_dsl import DocType, Date, String, construct_field, Mapping
+from elasticsearch_dsl import DocType, Date, Text, Keyword, construct_field, Mapping
 from elasticsearch_dsl.utils import AttrList
 
 from pytest import raises
 
 user_field = construct_field('object')
-user_field.field('name', 'string', fields={'raw': construct_field('string', index='not_analyzed')})
+user_field.field('name', 'text', fields={'raw': construct_field('keyword')})
 
 class Repository(DocType):
     owner = user_field
     created_at = Date()
-    description = String(analyzer='snowball')
-    tags = String(index='not_analyzed')
+    description = Text(analyzer='snowball')
+    tags = Keyword()
 
     class Meta:
         index = 'git'
@@ -24,7 +24,7 @@ class Repository(DocType):
 class Commit(DocType):
     committed_date = Date()
     authored_date = Date()
-    description = String(analyzer='snowball')
+    description = Text(analyzer='snowball')
 
     class Meta:
         index = 'git'

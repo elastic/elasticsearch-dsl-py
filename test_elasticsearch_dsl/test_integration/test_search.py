@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from elasticsearch import TransportError
 
-from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch, \
+from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch, \
     MetaField, Index, Q
 
 from .test_data import DATA
@@ -10,8 +10,8 @@ from pytest import raises
 
 class Repository(DocType):
     created_at = Date()
-    description = String(analyzer='snowball')
-    tags = String(index='not_analyzed')
+    description = Text(analyzer='snowball')
+    tags = Keyword()
 
     class Meta:
         index = 'git'

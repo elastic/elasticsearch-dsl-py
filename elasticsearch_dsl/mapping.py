@@ -2,7 +2,7 @@ from six import iteritems
 from itertools import chain
 
 from .utils import DslBase
-from .field import InnerObject, String
+from .field import InnerObject, Text
 from .connections import connections
 from .exceptions import IllegalOperation
 
@@ -42,10 +42,10 @@ class Mapping(object):
         analysis = {}
         fields = []
         if '_all' in self._meta:
-            fields.append(String(**self._meta['_all']))
+            fields.append(Text(**self._meta['_all']))
 
         for f in chain(fields, self.properties._collect_fields()):
-            for analyzer_name in ('analyzer', 'search_analyzer'):
+            for analyzer_name in ('analyzer', 'search_analyzer', 'search_quote_analyzer'):
                 if not hasattr(f, analyzer_name):
                     continue
                 analyzer = getattr(f, analyzer_name)
@@ -144,7 +144,7 @@ class Mapping(object):
         if '_all' in meta:
             meta = meta.copy()
             _all = meta['_all'] = meta['_all'].copy()
-            for f in ('analyzer', 'search_analyzer'):
+            for f in ('analyzer', 'search_analyzer', 'search_quote_analyzer'):
                 if hasattr(_all.get(f, None), 'to_dict'):
                     _all[f] = _all[f].to_dict()
         d[self.doc_type].update(meta)
