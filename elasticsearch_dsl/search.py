@@ -212,8 +212,6 @@ class Search(Request):
         self.aggs = AggsProxy(self)
         self._sort = []
         self._source = None
-        self._fields = None
-        self._partial_fields = {}
         self._highlight = {}
         self._highlight_opts = {}
         self._suggest = {}
@@ -297,8 +295,6 @@ class Search(Request):
         s._response_class = self._response_class
         s._sort = self._sort[:]
         s._source = self._source.copy() if self._source else None
-        s._fields = self._fields[:] if self._fields else None
-        s._partial_fields = self._partial_fields.copy()
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
@@ -340,10 +336,6 @@ class Search(Request):
             self._sort = d.pop('sort')
         if '_source' in d:
             self._source = d.pop('_source')
-        if 'fields' in d:
-            self._fields = d.pop('fields')
-        if 'partial_fields' in d:
-            self._partial_fields = d.pop('partial_fields')
         if 'highlight' in d:
             high = d.pop('highlight').copy()
             self._highlight = high.pop('fields')
@@ -420,43 +412,6 @@ class Search(Request):
             else:
                 s._source[key] = value
 
-        return s
-
-    def fields(self, fields=None):
-        """
-        Selectively load specific stored fields for each document.
-
-        :arg fields: list of fields to return for each document
-
-        If ``fields`` is None, the entire document will be returned for
-        each hit.  If fields is the empty list, no fields will be
-        returned for each hit, just the metadata.
-        """
-        s = self._clone()
-        s._fields = fields
-        return s
-
-    def partial_fields(self, **partial):
-        """
-        Control which part of the fields to extract from the `_source` document
-
-        :kwargs partial: dict specifying which fields to extract from the source
-
-        An example usage would be:
-
-            s = Search().partial_fields(authors_data={
-                    'include': ['authors.*'],
-                    'exclude': ['authors.name']
-                })
-
-        which will include all fields from the `authors` nested property except for
-        each authors `name`
-
-        If ``partial`` is not provided, the whole `_source` will be fetched. Calling this multiple
-        times will override the previous values with the new ones.
-        """
-        s = self._clone()
-        s._partial_fields = partial
         return s
 
     def sort(self, *keys):
@@ -570,12 +525,6 @@ class Search(Request):
 
             if self._source:
                 d['_source'] = self._source
-
-            if self._fields is not None:
-                d['fields'] = self._fields
-
-            if self._partial_fields:
-                d['partial_fields'] = self._partial_fields
 
             if self._highlight:
                 d['highlight'] = {'fields': self._highlight}

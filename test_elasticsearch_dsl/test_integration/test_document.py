@@ -228,10 +228,9 @@ def test_search_returns_proper_doc_classes(data_client):
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == 'elasticsearch'
 
-def test_search_with_fields(data_client):
+def test_parent_value(data_client):
     s = Commit.search()
     s = s.filter('term', _id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037')
-    s = s.fields(['_parent', 'parent_shas'])
     results = s.execute()
 
     commit = results.hits[0]
