@@ -13,13 +13,11 @@ env:
   global:
     - WAIT_FOR_ES=1
   matrix:
-    - ES_VERSION=2.0.1
-    - ES_VERSION=2.1.2
-    - ES_VERSION=2.2.1
+    - ES_VERSION=5.0.0
 
 install:
   - mkdir /tmp/elasticsearch
-  - wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  - wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
   - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp 
   - pip install git+https://github.com/elastic/elasticsearch-py.git#egg=elasticsearch
   - pip install .
