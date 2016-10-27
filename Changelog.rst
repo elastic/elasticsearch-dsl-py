@@ -3,6 +3,11 @@
 Changelog
 =========
 
+2.2.0
+-----
+ * accessing missing string fields no longer returnd ``''`` but returns
+   ``None`` instead.
+
 2.1.0 (2016-06-29)
 ------------------
  * ``inner_hits`` are now also wrapped in ``Response``

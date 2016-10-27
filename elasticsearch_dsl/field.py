@@ -231,9 +231,6 @@ class String(Field):
     }
     name = 'string'
 
-    def _empty(self):
-        return ''
-
 
 class Boolean(Field):
     name = 'boolean'

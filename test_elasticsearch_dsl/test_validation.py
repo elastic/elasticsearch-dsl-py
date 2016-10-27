@@ -114,8 +114,8 @@ def test_accessing_known_fields_returns_empty_value():
     assert [] == d.authors
 
     d.authors.append({})
-    assert '' == d.authors[0].name
-    assert '' == d.authors[0].email
+    assert None is d.authors[0].name
+    assert None is d.authors[0].email
 
 def test_empty_values_are_not_serialized():
     d = BlogPost(authors=[{'name': 'Honza', 'email': 'honza@elastic.co'}], created=None)
