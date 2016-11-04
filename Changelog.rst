@@ -3,10 +3,11 @@
 Changelog
 =========
 
-2.2.0
------
+2.2.0 (2016-11-04)
+------------------
  * accessing missing string fields no longer returnd ``''`` but returns
    ``None`` instead.
+ * fix issues with bool's ``|`` and ``&`` operators and ``minimum_should_match``
 
 2.1.0 (2016-06-29)
 ------------------
