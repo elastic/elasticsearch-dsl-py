@@ -3,6 +3,16 @@
 Changelog
 =========
 
+5.0.0 (2016-11-04)
+------------------
+
+Version compatible with elasticsearch 5.0.
+
+Breaking changes:
+
+ * ``String`` field type has been deprecated in favor of ``Text`` and ``Keyword``
+ * ``fields`` method has been removed in favor of ``source`` filtering
+
 2.2.0 (2016-11-04)
 ------------------
  * accessing missing string fields no longer returnd ``''`` but returns

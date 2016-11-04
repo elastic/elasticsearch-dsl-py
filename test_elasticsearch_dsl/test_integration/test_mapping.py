@@ -4,12 +4,12 @@ from pytest import raises
 
 def test_mapping_saved_into_es(write_client):
     m = mapping.Mapping('test-type')
-    m.field('name', 'string', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
-    m.field('tags', 'string', index='not_analyzed')
+    m.field('name', 'text', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
+    m.field('tags', 'keyword')
     m.save('test-mapping', using=write_client)
 
     m = mapping.Mapping('other-type')
-    m.field('title', 'string').field('categories', 'string', index='not_analyzed')
+    m.field('title', 'text').field('categories', 'keyword')
 
     m.save('test-mapping', using=write_client)
 
@@ -20,14 +20,14 @@ def test_mapping_saved_into_es(write_client):
             'mappings': {
                 'test-type': {
                     'properties': {
-                        'name': {'type': 'string', 'analyzer': 'my_analyzer'},
-                        'tags': {'index': 'not_analyzed', 'type': 'string'}
+                        'name': {'type': 'text', 'analyzer': 'my_analyzer'},
+                        'tags': {'type': 'keyword'}
                     }
                 },
                 'other-type': {
                     'properties': {
-                        'title': {'type': 'string'},
-                        'categories': {'index': 'not_analyzed', 'type': 'string'}
+                        'title': {'type': 'text'},
+                        'categories': {'type': 'keyword'}
                     }
                 }
             }
@@ -36,7 +36,7 @@ def test_mapping_saved_into_es(write_client):
 
 def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
     m = mapping.Mapping('test-type')
-    m.field('name', 'string', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
+    m.field('name', 'text', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
     write_client.indices.create(index='test-mapping')
 
     with raises(exceptions.IllegalOperation):
@@ -52,7 +52,7 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
             'mappings': {
                 'test-type': {
                     'properties': {
-                        'name': {'type': 'string', 'analyzer': 'my_analyzer'},
+                        'name': {'type': 'text', 'analyzer': 'my_analyzer'},
                     }
                 }
             }
@@ -70,10 +70,10 @@ def test_mapping_gets_updated_from_es(write_client):
                     '_all': {'enabled': False},
                     'properties': {
                         'title': {
-                            'type': 'string',
+                            'type': 'text',
                             'analyzer': 'snowball',
                             'fields': {
-                                'raw': {'type': 'string', 'index': 'not_analyzed'}
+                                'raw': {'type': 'keyword'}
                             }
                         },
                         'created_at': {'type': 'date'},
@@ -82,10 +82,10 @@ def test_mapping_gets_updated_from_es(write_client):
                             'properties': {
                                 'created': {'type': 'date'},
                                 'author': {
-                                    'type': 'string',
+                                    'type': 'text',
                                     'analyzer': 'snowball',
                                     'fields': {
-                                        'raw': {'type': 'string', 'index': 'not_analyzed'}
+                                        'raw': {'type': 'keyword'}
                                     }
                                 }
                             }
@@ -95,7 +95,7 @@ def test_mapping_gets_updated_from_es(write_client):
             }
         }
     )
-    
+
     m = mapping.Mapping.from_es('test-mapping', 'my_doc', using=write_client)
 
     assert ['comments', 'created_at', 'title'] == list(sorted(m.properties.properties._d_.keys()))
@@ -107,12 +107,12 @@ def test_mapping_gets_updated_from_es(write_client):
                 'comments': {
                     'type': 'nested',
                     'properties': {
-                        'created': {'type': 'date', 'format': 'strict_date_optional_time||epoch_millis'},
-                        'author': {'analyzer': 'snowball', 'fields': {'raw': {'index': 'not_analyzed', 'type': 'string'}}, 'type': 'string'}
+                        'created': {'type': 'date'},
+                        'author': {'analyzer': 'snowball', 'fields': {'raw': {'type': 'keyword'}}, 'type': 'text'}
                     },
                 },
-                'created_at': {'format': 'strict_date_optional_time||epoch_millis', 'type': 'date'},
-                'title': {'analyzer': 'snowball', 'fields': {'raw': {'index': 'not_analyzed', 'type': 'string'}}, 'type': 'string'}
+                'created_at': {'type': 'date'},
+                'title': {'analyzer': 'snowball', 'fields': {'raw': {'type': 'keyword'}}, 'type': 'text'}
             }
         }
     } == m.to_dict()

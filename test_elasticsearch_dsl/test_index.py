@@ -1,11 +1,11 @@
-from elasticsearch_dsl import DocType, Index, String, Date, analyzer
+from elasticsearch_dsl import DocType, Index, Text, Date, analyzer
 
 from random import choice
 
 import string
 
 class Post(DocType):
-    title = String()
+    title = Text()
     published_from = Date()
 
 
@@ -48,7 +48,7 @@ def test_registered_doc_type_included_in_to_dict():
         'mappings': {
             'post': {
                 'properties': {
-                    'title': {'type': 'string'},
+                    'title': {'type': 'text'},
                     'published_from': {'type': 'date'},
                 }
             }
