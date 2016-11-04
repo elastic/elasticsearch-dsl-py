@@ -137,16 +137,16 @@ Let's have a simple Python class representing an article in a blogging system:
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch_dsl import DocType, String, Date, Integer
+    from elasticsearch_dsl import DocType, Date, Integer, Keyword, Text
     from elasticsearch_dsl.connections import connections
 
     # Define a default Elasticsearch client
     connections.create_connection(hosts=['localhost'])
 
     class Article(DocType):
-        title = String(analyzer='snowball', fields={'raw': String(index='not_analyzed')})
-        body = String(analyzer='snowball')
-        tags = String(index='not_analyzed')
+        title = Text(analyzer='snowball', fields={'raw': Keyword()})
+        body = Text(analyzer='snowball')
+        tags = Keyword()
         published_from = Date()
         lines = Integer()
 
