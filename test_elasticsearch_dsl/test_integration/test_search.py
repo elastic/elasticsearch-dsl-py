@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from elasticsearch import TransportError
 
-from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch, \
+from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch, \
     MetaField, Index, Q
 
 from .test_data import DATA
@@ -10,8 +10,8 @@ from pytest import raises
 
 class Repository(DocType):
     created_at = Date()
-    description = String(analyzer='snowball')
-    tags = String(index='not_analyzed')
+    description = Text(analyzer='snowball')
+    tags = Keyword()
 
     class Meta:
         index = 'git'
@@ -29,7 +29,8 @@ def test_inner_hits_are_wrapped_in_response(data_client):
 
     commit = response.hits[0]
     assert isinstance(commit.meta.inner_hits.repos, response.__class__)
-    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Result(git/repos/elasticsearch-dsl-py): ")
+    r = commit.meta.inner_hits.repos[0]
+    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Result(repos/elasticsearch-dsl-py): ")
 
 def test_inner_hits_are_wrapped_in_doc_type(data_client):
     i = Index('git')

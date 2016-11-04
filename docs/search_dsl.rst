@@ -411,16 +411,18 @@ To set query parameters, use the ``.params()`` method:
 
 
 If you need to limit the fields being returned by elasticsearch, use the
-``fields()`` method:
+``source()`` method:
 
 .. code:: python
 
   # only return the selected fields
-  s = s.fields(['title', 'body'])
-  # reset the field selection
-  s = s.fields()
+  s = s.source(['title', 'body'])
   # don't return any fields, just the metadata
-  s = s.fields([])
+  s = s.source(False)
+  # explicitly include/exclude fields
+  s = s.source(include=["title"], exclude=["user.*"])
+  # reset the field selection
+  s = s.source(None)
 
 Serialization and Deserialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

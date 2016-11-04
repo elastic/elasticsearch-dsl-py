@@ -1,11 +1,11 @@
-from elasticsearch_dsl import DocType, Index, String, Date, analysis
+from elasticsearch_dsl import DocType, Index, Text, Keyword, Date, analysis
 
 class Post(DocType):
-    title = String(analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
+    title = Text(analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
     published_from = Date()
 
 class User(DocType):
-    username = String(index='not_analyzed')
+    username = Keyword()
     joined_date = Date()
 
 def test_index_exists(write_client):
@@ -25,14 +25,14 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
             'mappings': {
                 'post': {
                     'properties': {
-                        'title': {'type': 'string', 'analyzer': 'my_analyzer'},
-                        'published_from': {'type': 'date', 'format': 'strict_date_optional_time||epoch_millis',},
+                        'title': {'type': 'text', 'analyzer': 'my_analyzer'},
+                        'published_from': {'type': 'date'}
                     }
                 },
                 'user': {
                     'properties': {
-                        'username': {'type': 'string', 'index': 'not_analyzed'},
-                        'joined_date': {'type': 'date', 'format': 'strict_date_optional_time||epoch_millis',},
+                        'username': {'type': 'keyword'},
+                        'joined_date': {'type': 'date'}
                     }
                 },
             }

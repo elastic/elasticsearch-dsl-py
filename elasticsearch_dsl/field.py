@@ -7,13 +7,13 @@ from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
 
 __all__ = [
-    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'String', 'Float', 'Double',
+    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'Float', 'Double',
     'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
-    'GeoPoint', 'GeoShape', 'InnerObjectWrapper'
+    'GeoPoint', 'GeoShape', 'InnerObjectWrapper', 'Keyword', 'Text'
 ]
 
 def construct_field(name_or_field, **params):
-    # {"type": "string", "index": "not_analyzed"}
+    # {"type": "text", "analyzer": "snowball"}
     if isinstance(name_or_field, dict):
         if params:
             raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
@@ -28,13 +28,13 @@ def construct_field(name_or_field, **params):
             name = params.pop('type')
         return Field.get_dsl_class(name)(**params)
 
-    # String()
+    # Text()
     if isinstance(name_or_field, Field):
         if params:
             raise ValueError('construct_field() cannot accept parameters when passing in a construct_field object.')
         return name_or_field
 
-    # "string", index="not_analyzed"
+    # "text", analyzer="snowball"
     return Field.get_dsl_class(name_or_field)(**params)
 
 class Field(DslBase):
@@ -231,6 +231,21 @@ class String(Field):
     }
     name = 'string'
 
+class Text(Field):
+    _param_defs = {
+        'fields': {'type': 'field', 'hash': True},
+        'analyzer': {'type': 'analyzer'},
+        'search_analyzer': {'type': 'analyzer'},
+        'search_quote_analyzer': {'type': 'analyzer'},
+    }
+    name = 'text'
+
+class Keyword(Field):
+    _param_defs = {
+        'fields': {'type': 'field', 'hash': True},
+        'search_analyzer': {'type': 'analyzer'},
+    }
+    name = 'keyword'
 
 class Boolean(Field):
     name = 'boolean'
