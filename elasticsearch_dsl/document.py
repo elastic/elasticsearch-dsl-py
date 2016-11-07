@@ -268,11 +268,11 @@ class DocType(ObjectBase):
     def update(self, using=None, index=None, detect_noop=True, doc_as_upsert=False, **fields):
         """ Update this document in Elasticsearch.
 
-        :param using:
-        :param index:
-        :param detect_noop: check if values have changed to avoid unnecessary write operation. Default: True.
-        :param doc_as_upsert: index document if it doesn't exist. Default: False.
-        :param fields: kwargs of additional fields
+        :arg using:
+        :arg index:
+        :arg detect_noop: check if values have changed to avoid unnecessary write operation. Default: True.
+        :arg doc_as_upsert: index document if it doesn't exist. Default: False.
+        :arg fields: kwargs of additional fields
         """
         es = self._get_connection(using)
 
