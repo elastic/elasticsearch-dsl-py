@@ -276,8 +276,16 @@ class DocType(ObjectBase):
         """
         es = self._get_connection(using)
 
-        # update the data locally
-        merge(self._d_, fields)
+        # update given fields locally
+        if len(fields):
+            merge(self._d_, fields)
+
+        # prepare data for ES
+        doc = self.to_dict()
+
+        # if fields were given: partial update
+        if fields:
+            doc = {k: doc.get(k) for k in fields.keys()}
 
         # extract parent, routing etc from meta
         doc_meta = dict(
@@ -285,7 +293,7 @@ class DocType(ObjectBase):
             for k in DOC_META_FIELDS
             if k in self.meta
         )
-        body = {'doc': fields}
+        body = {'doc': doc}
         if doc_as_upsert:
             body['doc_as_upsert'] = True
         body['detect_noop'] = True if detect_noop else False
