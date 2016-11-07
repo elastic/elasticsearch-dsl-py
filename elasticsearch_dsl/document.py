@@ -285,7 +285,10 @@ class DocType(ObjectBase):
 
         # if fields were given: partial update
         if fields:
-            doc = {k: doc.get(k) for k in fields.keys()}
+            doc = dict(
+                (k, doc.get(k))
+                for k in fields.keys()
+            )
 
         # extract parent, routing etc from meta
         doc_meta = dict(
