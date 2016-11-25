@@ -18,7 +18,8 @@ def test_attribute_error_in_hits_is_not_hidden(dummy_response):
     def f(hit):
         raise AttributeError()
 
-    r = response.Response(Search(), dummy_response, callbacks={'employee': f})
+    s = Search().doc_type(employee=f)
+    r = response.Response(s, dummy_response)
     with raises(TypeError):
         r.hits
 

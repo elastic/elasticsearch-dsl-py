@@ -582,8 +582,7 @@ class Search(Request):
                     doc_type=self._doc_type,
                     body=self.to_dict(),
                     **self._params
-                ),
-                callbacks=self._doc_type_map
+                )
             )
         return self._response
 
@@ -677,7 +676,7 @@ class MultiSearch(Request):
                         raise TransportError('N/A', r['error']['type'], r['error'])
                     r = None
                 else:
-                    r = Response(s, r, callbacks=s._doc_type_map)
+                    r = Response(s, r)
                 out.append(r)
 
             self._response = out
