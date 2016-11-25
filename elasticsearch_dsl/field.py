@@ -216,6 +216,8 @@ class Date(Field):
             return None
         if isinstance(data, date):
             return data
+        elif not data:
+            return None
 
         try:
             # TODO: add format awareness
