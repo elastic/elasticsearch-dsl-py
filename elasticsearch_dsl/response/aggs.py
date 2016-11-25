@@ -1,4 +1,4 @@
-from ..utils import AttrDict
+from ..utils import AttrDict, AttrList
 
 class AggResponse(AttrDict):
     def __init__(self, aggs, data):
@@ -21,5 +21,18 @@ class AggData(AttrDict):
         super(AggData, self).__init__(data)
         super(AttrDict, self).__setattr__('meta', AttrDict({'agg': agg}))
 
-class BucketData(AggData):
+class TopHitsData(AggData):
     pass
+
+class Bucket(AggResponse):
+    pass
+
+class BucketData(AggData):
+    _bucket_class = Bucket
+    def _wrap_bucket(self, data):
+        return self._bucket_class(self.meta.agg, data)
+
+    @property
+    def buckets(self):
+        bs = self._d_['buckets']
+        return AttrList(bs, self._wrap_bucket)

@@ -3,6 +3,7 @@ from elasticsearch import TransportError
 
 from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch, \
     MetaField, Index, Q
+from elasticsearch_dsl.response import aggs
 
 from .test_data import DATA
 
@@ -22,6 +23,15 @@ class Commit(DocType):
         doc_type = 'commits'
         index = 'git'
         parent = MetaField(type='repos')
+
+def test_top_hits_are_wrapped_in_response(data_client):
+    s = Commit.search()[0:0]
+    s.aggs.bucket('top_authors', 'terms', field='author.name.raw').metric('top_commits', 'top_hits')
+    response = s.execute()
+
+    top_hits = response.aggregations.top_authors.buckets[0].top_commits
+    assert isinstance(top_hits, aggs.TopHitsData)
+
 
 def test_inner_hits_are_wrapped_in_response(data_client):
     s = Search(index='git', doc_type='commits')[0:1].query('has_parent', type='repos', inner_hits={}, query=Q('match_all'))

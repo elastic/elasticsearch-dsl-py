@@ -1,5 +1,5 @@
 from .utils import DslBase, _make_dsl_class
-from .response.aggs import BucketData, AggData
+from .response.aggs import BucketData, AggData, TopHitsData
 
 __all__ = [
     'A', 'Agg', 'Filter', 'Bucket', 'Children', 'DateHistogram', 'Filters',
@@ -137,6 +137,12 @@ class Filter(Bucket):
 class Pipeline(Agg):
     pass
 
+class TopHits(Agg):
+    name = 'top_hits'
+
+    def result(self, data):
+        return TopHitsData(self, data)
+
 AGGS = (
     (Bucket, 'children', None),
     (Bucket, 'date_histogram', None),
@@ -167,7 +173,6 @@ AGGS = (
     (Agg, 'scripted_metric', None),
     (Agg, 'stats', None),
     (Agg, 'sum', None),
-    (Agg, 'top_hits', None),
     (Agg, 'value_count', None),
 
     (Pipeline, 'avg_bucket', None),
