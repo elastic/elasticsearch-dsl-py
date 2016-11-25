@@ -1,5 +1,6 @@
 from .utils import DslBase, _make_dsl_class
-from .response.aggs import BucketData, AggData, TopHitsData
+from .response.aggs import BucketData, AggData
+from .response.top_hits import TopHitsData
 
 __all__ = [
     'A', 'Agg', 'Filter', 'Bucket', 'Children', 'DateHistogram', 'Filters',
@@ -56,8 +57,8 @@ class Agg(DslBase):
             d['meta'] = d[self.name].pop('meta')
         return d
 
-    def result(self, data):
-        return AggData(self, data)
+    def result(self, search, data):
+        return AggData(self, search, data)
 
 
 class AggBase(object):
@@ -101,8 +102,8 @@ class AggBase(object):
     def pipeline(self, name, agg_type, *args, **params):
         return self._agg(False, name, agg_type, *args, **params)
 
-    def result(self, data):
-        return BucketData(self, data)
+    def result(self, search, data):
+        return BucketData(self, search, data)
 
 
 class Bucket(AggBase, Agg):
@@ -140,8 +141,8 @@ class Pipeline(Agg):
 class TopHits(Agg):
     name = 'top_hits'
 
-    def result(self, data):
-        return TopHitsData(self, data)
+    def result(self, search, data):
+        return TopHitsData(self, search, data)
 
 AGGS = (
     (Bucket, 'children', None),
