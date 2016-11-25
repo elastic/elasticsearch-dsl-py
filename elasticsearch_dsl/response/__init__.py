@@ -1,7 +1,6 @@
 from ..utils import AttrDict, AttrList
 
 from .hit import Hit, HitMeta
-from .aggs import AggResponse
 
 class SuggestResponse(AttrDict):
     def success(self):
@@ -69,3 +68,21 @@ class Response(AttrDict):
             # avoid assigning _aggs into self._d_
             super(AttrDict, self).__setattr__('_aggs', aggs)
         return self._aggs
+
+class AggResponse(AttrDict):
+    def __init__(self, aggs, search, data):
+        super(AttrDict, self).__setattr__('_search', search)
+        super(AttrDict, self).__setattr__('_aggs', aggs)
+        super(AggResponse, self).__init__(data)
+
+    def __getitem__(self, attr_name):
+        if attr_name in self._aggs:
+            # don't do self._aggs[attr_name] to avoid copying
+            agg = self._aggs.aggs[attr_name]
+            return agg.result(self._search, self._d_[attr_name])
+        return super(AggResponse, self).__getitem__(attr_name)
+
+    def __iter__(self):
+        for name in self._aggs:
+            yield self[name]
+

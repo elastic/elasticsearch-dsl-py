@@ -3,7 +3,7 @@ from elasticsearch import TransportError
 
 from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch, \
     MetaField, Index, Q
-from elasticsearch_dsl.response import aggs, top_hits
+from elasticsearch_dsl.response import aggs
 
 from .test_data import DATA
 
@@ -30,7 +30,7 @@ def test_top_hits_are_wrapped_in_response(data_client):
     response = s.execute()
 
     top_commits = response.aggregations.top_authors.buckets[0].top_commits
-    assert isinstance(top_commits, top_hits.TopHitsData)
+    assert isinstance(top_commits, aggs.TopHitsData)
     assert 5 == len(top_commits)
 
     hits = [h for h in top_commits]

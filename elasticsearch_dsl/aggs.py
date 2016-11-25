@@ -1,8 +1,7 @@
 import collections
 
 from .utils import DslBase, _make_dsl_class
-from .response.aggs import BucketData, AggData
-from .response.top_hits import TopHitsData
+from .response.aggs import BucketData, AggData, TopHitsData
 
 __all__ = [
     'A', 'Agg', 'Filter', 'Bucket', 'Children', 'DateHistogram', 'Filters',
