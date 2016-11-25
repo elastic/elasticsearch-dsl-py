@@ -37,7 +37,9 @@ class Response(AttrDict):
         dt = hit['_type']
         for t in hit.get('inner_hits', ()):
             hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t])
-        return self._search._doc_type_map.get(dt, Hit)(hit)
+        callback = self._search._doc_type_map.get(dt, Hit)
+        callback = getattr(callback, 'from_es', callback)
+        return callback(hit)
 
     @property
     def hits(self):

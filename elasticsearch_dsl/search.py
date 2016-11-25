@@ -128,7 +128,7 @@ class Request(object):
 
     def _add_doc_type(self, doc_type):
         if hasattr(doc_type, '_doc_type'):
-            self._doc_type_map[doc_type._doc_type.name] = doc_type.from_es
+            self._doc_type_map[doc_type._doc_type.name] = doc_type
             doc_type = doc_type._doc_type.name
         self._doc_type.append(doc_type)
 
