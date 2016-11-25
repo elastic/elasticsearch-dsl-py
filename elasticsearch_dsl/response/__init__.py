@@ -64,7 +64,7 @@ class Response(AttrDict):
     @property
     def aggs(self):
         if not hasattr(self, '_aggs'):
-            aggs = AggResponse(self._search.aggs, self._d_.get('aggregations', {}))
+            aggs = AggResponse(self._search.aggs, self._search, self._d_.get('aggregations', {}))
 
             # avoid assigning _aggs into self._d_
             super(AttrDict, self).__setattr__('_aggs', aggs)
