@@ -61,7 +61,7 @@ def test_registered_doc_type_included_in_search():
 
     s = i.search()
 
-    assert s._doc_type_map == {'post': Post.from_es}
+    assert s._doc_type_map == {'post': Post}
 
 
 def test_aliases_add_to_object():
