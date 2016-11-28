@@ -1,6 +1,7 @@
+from datetime import date
 from pytest import raises, fixture
 
-from elasticsearch_dsl import response, Search
+from elasticsearch_dsl import response, Search, DocType, Date, Object
 from elasticsearch_dsl.aggs import Terms
 from elasticsearch_dsl.response.aggs import AggData, BucketData, Bucket
 
@@ -102,7 +103,7 @@ def test_aggregation_base(agg_response):
 def test_aggregations_can_be_iterated_over(agg_response):
     aggs = [a for a in agg_response.aggs]
 
-    assert len(aggs) == 1
+    assert len(aggs) == 2
     assert all(map(lambda a: isinstance(a, AggData), aggs))
 
 def test_aggregations_can_be_retrieved_by_name(agg_response, aggs_search):
@@ -118,3 +119,13 @@ def test_bucket_response_can_be_iterated_over(agg_response):
     buckets = [b for b in popular_files]
     assert all(isinstance(b, Bucket) for b in buckets)
     assert buckets == popular_files.buckets
+
+def test_bucket_keys_get_deserialized(aggs_data, aggs_search):
+    class Commit(DocType):
+        info = Object(properties={'committed_date': Date()})
+    aggs_search._doc_type_map = {'commit': Commit}
+    agg_response = response.Response(aggs_search, aggs_data)
+
+    per_month = agg_response.aggregations.per_month
+    for b in per_month:
+        assert isinstance(b.key, date)

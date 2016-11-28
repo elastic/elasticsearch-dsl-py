@@ -86,6 +86,9 @@ class DocTypeOptions(object):
             return self.mapping._meta['_parent']['type']
         return
 
+    def resolve_field(self, field_path):
+        return self.mapping.resolve_field(field_path)
+
     def init(self, index=None, using=None):
         self.mapping.save(index or self.index, using=using or self.using)
 
@@ -141,7 +144,7 @@ class DocType(ObjectBase):
         return Search(
             using=using or cls._doc_type.using,
             index=index or cls._doc_type.index,
-            doc_type={cls._doc_type.name: cls.from_es},
+            doc_type=[cls]
         )
 
     @classmethod
