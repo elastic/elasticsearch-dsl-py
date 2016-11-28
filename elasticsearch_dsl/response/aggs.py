@@ -14,10 +14,14 @@ class BucketData(AggData):
     def _wrap_bucket(self, data):
         return self._bucket_class(self.meta.agg, self.meta.search, data)
 
+    def __iter__(self):
+        return iter(self.buckets)
+
     @property
     def buckets(self):
         bs = self._d_['buckets']
         return AttrList(bs, self._wrap_bucket)
+
 class TopHitsData(Response):
     def __init__(self, agg, search, data):
         super(AttrDict, self).__setattr__('meta', AttrDict({'agg': agg, 'search': search}))
