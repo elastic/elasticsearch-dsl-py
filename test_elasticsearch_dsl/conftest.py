@@ -131,7 +131,7 @@ def aggs_search():
         .bucket('popular_files', 'terms', field='files', size=2)\
         .metric('line_stats', 'stats', field='stats.lines')\
         .metric('top_commits', 'top_hits', size=2, _source=["stats.*", "committed_date"])
-
+    s.aggs.bucket('per_month', 'date_histogram', interval='month', field='info.committed_date')
     return s
 
 @fixture
@@ -142,6 +142,13 @@ def aggs_data():
         '_shards': {'total': 1, 'successful': 1, 'failed': 0},
         'hits': {'total': 52, 'hits': [], 'max_score': 0.0},
         'aggregations': {
+            'per_month': {
+                'buckets': [
+                    {'doc_count': 38, 'key': 1393632000000, 'key_as_string': '2014-03-01T00:00:00.000Z'},
+                    {'doc_count': 11, 'key': 1396310400000, 'key_as_string': '2014-04-01T00:00:00.000Z'},
+                    {'doc_count': 3, 'key': 1398902400000, 'key_as_string': '2014-05-01T00:00:00.000Z'},
+                ]
+            },
             'popular_files': {
                 'buckets': [
                     {
