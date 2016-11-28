@@ -1,3 +1,4 @@
+import copy
 from six import iteritems, string_types
 
 from elasticsearch.helpers import scan
@@ -294,7 +295,10 @@ class Search(Request):
 
         s._response_class = self._response_class
         s._sort = self._sort[:]
-        s._source = self._source.copy() if self._source else None
+        if hasattr(self._source, "copy"):
+            s._source = self._source.copy()
+        else:
+            s._source = copy.copy(self._source)
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
