@@ -1,6 +1,6 @@
 import collections
 
-from datetime import date
+from datetime import date, datetime
 from dateutil import parser
 from six import itervalues
 from six.moves import map
@@ -218,6 +218,8 @@ class Date(Field):
             return None
         if isinstance(data, date):
             return data
+        if isinstance(data, int):
+            return datetime.utcfromtimestamp(data / 1000)
 
         try:
             # TODO: add format awareness
