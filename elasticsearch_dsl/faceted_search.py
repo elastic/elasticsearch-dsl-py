@@ -199,7 +199,7 @@ class FacetedSearch(object):
         """
         # normalize the value into a list
         if not isinstance(filter_values, (tuple, list)):
-            if filter_values in (None, ''):
+            if filter_values is None:
                 return
             filter_values = [filter_values, ]
 
