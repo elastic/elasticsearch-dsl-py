@@ -224,6 +224,9 @@ class Search(Request):
     def filter(self, *args, **kwargs):
         return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
+    def exclude(self, *args, **kwargs):
+        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
+
     def __iter__(self):
         """
         Iterate over the hits.
