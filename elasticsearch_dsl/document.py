@@ -9,7 +9,7 @@ from .utils import ObjectBase, AttrDict, merge
 from .response import HitMeta
 from .search import Search
 from .connections import connections
-from .exceptions import ValidationException
+from .exceptions import ValidationException, IllegalOperation
 
 DELETE_META_FIELDS = frozenset((
     'id', 'parent', 'routing', 'version', 'version_type'
@@ -273,6 +273,9 @@ class DocType(ObjectBase):
         return meta
 
     def update(self, using=None, index=None, **fields):
+        if not fields:
+            raise IllegalOperation('You cannot call update() without updating individual fields. '
+                                   'If you wish to update the entire object use save().')
         es = self._get_connection(using)
 
         # update the data locally
@@ -320,4 +323,3 @@ class DocType(ObjectBase):
 
         # return True/False if the document has been created/updated
         return meta['created']
-
