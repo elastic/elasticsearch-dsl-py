@@ -4,7 +4,7 @@ from hashlib import md5
 from datetime import datetime
 
 from elasticsearch_dsl import document, field, Mapping
-from elasticsearch_dsl.exceptions import ValidationException
+from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
 
@@ -385,6 +385,11 @@ def test_delete_no_index(mock_client):
     md = MyDoc()
     with raises(ValidationException):
         md.delete(using='mock')
+
+def test_update_no_fields():
+    md = MyDoc()
+    with raises(IllegalOperation):
+        md.update()
 
 def test_search_with_custom_alias_and_index(mock_client):
     search_object = MyDoc.search(
