@@ -295,10 +295,8 @@ class Search(Request):
 
         s._response_class = self._response_class
         s._sort = self._sort[:]
-        if hasattr(self._source, "copy"):
-            s._source = self._source.copy()
-        else:
-            s._source = copy.copy(self._source)
+        s._source = copy.copy(self._source) \
+            if self._source is not None else None
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
