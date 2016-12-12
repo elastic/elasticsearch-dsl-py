@@ -26,8 +26,8 @@ The mapping definition follows a similar pattern to the query dsl:
 
     # you can also create a field manually
     comment = Nested()
-    comment.field('author', String())
-    comment.field('created_at', Date())
+    comment.field('author', 'string')
+    comment.field('created_at', 'date')
 
     # and attach it to the mapping
     m.field('comments', comment)
