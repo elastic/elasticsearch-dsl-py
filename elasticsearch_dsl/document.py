@@ -6,7 +6,7 @@ from six import iteritems, add_metaclass
 from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict, merge
-from .result import ResultMeta
+from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
@@ -86,6 +86,9 @@ class DocTypeOptions(object):
             return self.mapping._meta['_parent']['type']
         return
 
+    def resolve_field(self, field_path):
+        return self.mapping.resolve_field(field_path)
+
     def init(self, index=None, using=None):
         self.mapping.save(index or self.index, using=using or self.using)
 
@@ -103,7 +106,7 @@ class DocType(ObjectBase):
 
         if self._doc_type.index:
             meta.setdefault('_index', self._doc_type.index)
-        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
 
@@ -113,7 +116,7 @@ class DocType(ObjectBase):
     def __setstate__(self, state):
         data, meta = state
         super(AttrDict, self).__setattr__('_d_', data)
-        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:
@@ -141,7 +144,7 @@ class DocType(ObjectBase):
         return Search(
             using=using or cls._doc_type.using,
             index=index or cls._doc_type.index,
-            doc_type={cls._doc_type.name: cls.from_es},
+            doc_type=[cls]
         )
 
     @classmethod

@@ -3,6 +3,7 @@ from elasticsearch import TransportError
 
 from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch, \
     MetaField, Index, Q
+from elasticsearch_dsl.response import aggs
 
 from .test_data import DATA
 
@@ -23,14 +24,27 @@ class Commit(DocType):
         index = 'git'
         parent = MetaField(type='repos')
 
+def test_top_hits_are_wrapped_in_response(data_client):
+    s = Commit.search()[0:0]
+    s.aggs.bucket('top_authors', 'terms', field='author.name.raw').metric('top_commits', 'top_hits', size=5)
+    response = s.execute()
+
+    top_commits = response.aggregations.top_authors.buckets[0].top_commits
+    assert isinstance(top_commits, aggs.TopHitsData)
+    assert 5 == len(top_commits)
+
+    hits = [h for h in top_commits]
+    assert 5 == len(hits)
+    assert isinstance(hits[0], Commit)
+
+
 def test_inner_hits_are_wrapped_in_response(data_client):
     s = Search(index='git', doc_type='commits')[0:1].query('has_parent', type='repos', inner_hits={}, query=Q('match_all'))
     response = s.execute()
 
     commit = response.hits[0]
     assert isinstance(commit.meta.inner_hits.repos, response.__class__)
-    r = commit.meta.inner_hits.repos[0]
-    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Result(repos/elasticsearch-dsl-py): ")
+    assert repr(commit.meta.inner_hits.repos[0]).startswith("<Hit(repos/elasticsearch-dsl-py): ")
 
 def test_inner_hits_are_wrapped_in_doc_type(data_client):
     i = Index('git')
@@ -85,10 +99,10 @@ def test_multi_search(data_client):
 
     assert 1 == len(r1)
     assert isinstance(r1[0], Repository)
-    assert r1.search is s1
+    assert r1._search is s1
 
     assert 52 == r2.hits.total
-    assert r2.search is s2
+    assert r2._search is s2
 
 def test_multi_missing(data_client):
     s1 = Repository.search()
@@ -105,9 +119,9 @@ def test_multi_missing(data_client):
 
     assert 1 == len(r1)
     assert isinstance(r1[0], Repository)
-    assert r1.search is s1
+    assert r1._search is s1
 
     assert 52 == r2.hits.total
-    assert r2.search is s2
+    assert r2._search is s2
 
     assert r3 is None

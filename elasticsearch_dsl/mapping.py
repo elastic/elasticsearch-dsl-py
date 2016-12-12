@@ -38,6 +38,15 @@ class Mapping(object):
         m.update_from_es(index, using)
         return m
 
+    def resolve_field(self, field_path):
+        field = self
+        for step in field_path.split('.'):
+            try:
+                field = field[step]
+            except KeyError:
+                return
+        return field
+
     def _collect_analysis(self):
         analysis = {}
         fields = []

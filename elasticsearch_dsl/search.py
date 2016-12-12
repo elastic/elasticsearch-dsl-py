@@ -7,7 +7,7 @@ from elasticsearch.exceptions import TransportError
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
 from .utils import DslBase
-from .result import Response, Result, SuggestResponse
+from .response import Response, Hit, SuggestResponse
 from .connections import connections
 
 class QueryProxy(object):
@@ -129,7 +129,7 @@ class Request(object):
 
     def _add_doc_type(self, doc_type):
         if hasattr(doc_type, '_doc_type'):
-            self._doc_type_map[doc_type._doc_type.name] = doc_type.from_es
+            self._doc_type_map[doc_type._doc_type.name] = doc_type
             doc_type = doc_type._doc_type.name
         self._doc_type.append(doc_type)
 
@@ -139,7 +139,7 @@ class Request(object):
         multiple. Values can be strings or subclasses of ``DocType``.
 
         You can also pass in any keyword arguments, mapping a doc_type to a
-        callback that should be used instead of the Result class.
+        callback that should be used instead of the Hit class.
 
         If no doc_type is supplied any information stored on the instance will
         be erased.
@@ -578,13 +578,13 @@ class Search(Request):
             es = connections.get_connection(self._using)
 
             self._response = self._response_class(
+                self,
                 es.search(
                     index=self._index,
                     doc_type=self._doc_type,
                     body=self.to_dict(),
                     **self._params
-                ),
-                callbacks=self._doc_type_map
+                )
             )
         return self._response
 
@@ -621,7 +621,7 @@ class Search(Request):
                 doc_type=self._doc_type,
                 **self._params
             ):
-            yield self._doc_type_map.get(hit['_type'], Result)(hit)
+            yield self._doc_type_map.get(hit['_type'], Hit)(hit)
 
 
 class MultiSearch(Request):
@@ -678,8 +678,7 @@ class MultiSearch(Request):
                         raise TransportError('N/A', r['error']['type'], r['error'])
                     r = None
                 else:
-                    r = Response(r, callbacks=s._doc_type_map)
-                    r.search = s
+                    r = Response(s, r)
                 out.append(r)
 
             self._response = out

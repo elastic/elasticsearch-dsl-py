@@ -183,11 +183,11 @@ def test_doc_type_can_be_document_class():
 
     s = search.Search(doc_type=MyDocType)
     assert s._doc_type == ['my_doc_type']
-    assert s._doc_type_map == {'my_doc_type': MyDocType.from_es}
+    assert s._doc_type_map == {'my_doc_type': MyDocType}
 
     s = search.Search().doc_type(MyDocType)
     assert s._doc_type == ['my_doc_type']
-    assert s._doc_type_map == {'my_doc_type': MyDocType.from_es}
+    assert s._doc_type_map == {'my_doc_type': MyDocType}
 
 
 def test_sort():
