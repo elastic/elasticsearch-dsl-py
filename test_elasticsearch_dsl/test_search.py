@@ -98,6 +98,19 @@ def test_query_always_returns_search():
 
     assert isinstance(s.query('match', f=42), search.Search)
 
+def test_source_copied_on_clone():
+    s = search.Search().source(False)
+    assert s._clone()._source == s._source
+    assert s._clone()._source is False
+
+    s2 = search.Search().source([])
+    assert s2._clone()._source == s2._source
+    assert s2._source == []
+
+    s3 = search.Search().source(["some", "fields"])
+    assert s3._clone()._source == s3._source
+    assert s3._clone()._source == ["some", "fields"]
+
 def test_aggs_get_copied_on_change():
     s = search.Search()
     s.aggs.bucket('per_tag', 'terms', field='f').metric('max_score', 'max', field='score')
@@ -414,6 +427,14 @@ def test_source_on_clone():
     } == search.Search().source(include=['foo.bar.*']).\
         source(exclude=['foo.one']).\
         filter('term', title='python').to_dict()\
+
+    assert {'_source': False,
+            'query': {
+                'bool': {
+                    'filter': [{'term': {'title': 'python'}}],
+                }
+            }} == search.Search().source(
+        False).filter('term', title='python').to_dict()
 
 def test_source_on_clear():
     assert {
