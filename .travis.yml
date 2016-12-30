@@ -8,6 +8,7 @@ addons:
 before_install:
   - sudo update-java-alternatives -s java-8-oracle
   - export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre
+  - java -version
 
 python:
   - "2.6"
@@ -27,6 +28,7 @@ install:
   - mkdir /tmp/elasticsearch
   - wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
   - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp 
+  - sleep 5
   - pip install git+https://github.com/elastic/elasticsearch-py.git#egg=elasticsearch
   - pip install .
 
