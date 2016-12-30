@@ -199,3 +199,4 @@ for base, fname, params_def in AGGS:
         params_def.update(AggBase._param_defs)
     fclass = _make_dsl_class(base, fname, params_def)
     globals()[fclass.__name__] = fclass
+    fclass.__module__ = __name__

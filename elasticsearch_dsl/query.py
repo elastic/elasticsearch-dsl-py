@@ -241,4 +241,5 @@ QUERIES = (
 for qname, params_def in QUERIES:
     qclass = _make_dsl_class(Query, qname, params_def)
     globals()[qclass.__name__] = qclass
+    qclass.__module__ = __name__
 

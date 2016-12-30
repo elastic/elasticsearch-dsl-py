@@ -282,5 +282,6 @@ FIELDS = (
 for f in FIELDS:
     fclass = _make_dsl_class(Field, f)
     globals()[fclass.__name__] = fclass
+    fclass.__module__ = __name__
     __all__.append(fclass.__name__)
 
