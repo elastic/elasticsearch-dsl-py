@@ -7,7 +7,8 @@ Changelog
 -----------
  * Renamed ``Result`` and ``ResultMeta`` to ``Hit`` and ``HitMeta`` respectively
  * ``Response`` now stores ``Search`` which it gets as first arg to ``__init__``
-* ``Date`` fields now allow for numerical timestamps in the java format (in millis)
+ * aggregation results are now wrapped in classes and properly deserialized
+ * ``Date`` fields now allow for numerical timestamps in the java format (in millis)
 
 5.0.0 (2016-11-04)
 ------------------
