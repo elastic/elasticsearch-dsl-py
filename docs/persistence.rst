@@ -297,7 +297,7 @@ To search for this document type, use the ``search`` class method:
     results = s.execute()
 
     # when you execute the search the results are wrapped in your document class (Post)
-    for posts in results:
+    for post in results:
         print(post.meta.score, post.title)
 
 Alternatively you can just take a ``Search`` object and restrict it to return
