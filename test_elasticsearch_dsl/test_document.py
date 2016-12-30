@@ -228,6 +228,11 @@ def test_nested_can_be_assigned_to():
     assert d2.comments == [{'title': 'First!'}]
     assert {'comments': [{'title': 'First!'}]} == d2.to_dict()
 
+def test_nested_can_be_none():
+    d = DocWithNested(comments=None, title='Hello World!')
+
+    assert {"title": 'Hello World!'} == d.to_dict()
+
 def test_nested_defaults_to_list_and_can_be_updated():
     md = DocWithNested()
 

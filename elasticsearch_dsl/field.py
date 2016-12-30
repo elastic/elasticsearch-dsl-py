@@ -184,6 +184,8 @@ class InnerObject(object):
         return self._wrap(data)
 
     def _serialize(self, data):
+        if data is None:
+            return None
         return data.to_dict()
 
     def clean(self, data):
