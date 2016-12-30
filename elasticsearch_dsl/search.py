@@ -521,11 +521,11 @@ class Search(Request):
         """
         d = {"query": self.query.to_dict()}
 
-        if self.post_filter:
-            d['post_filter'] = self.post_filter.to_dict()
-
         # count request doesn't care for sorting and other things
         if not count:
+            if self.post_filter:
+                d['post_filter'] = self.post_filter.to_dict()
+
             if self.aggs.aggs:
                 d.update(self.aggs.to_dict())
 
