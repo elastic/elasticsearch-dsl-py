@@ -9,7 +9,7 @@ from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
 
 __all__ = [
-    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'Float', 'Double',
+    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'String', 'Float', 'Double',
     'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
     'GeoPoint', 'GeoShape', 'InnerObjectWrapper', 'Keyword', 'Text'
 ]
