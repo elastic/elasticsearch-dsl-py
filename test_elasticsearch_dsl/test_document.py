@@ -63,6 +63,14 @@ class SecretDoc(document.DocType):
 class NestedSecret(document.DocType):
     secrets = field.Nested(properties={'title': SecretField()})
 
+class OptionalObjectWithRequiredField(document.DocType):
+    comments = field.Nested(properties={'title': field.Keyword(required=True)})
+
+def test_optional_inner_objects_are_not_validated_if_missing():
+    d = OptionalObjectWithRequiredField()
+
+    assert d.full_clean() is None
+
 def test_custom_field():
     s = SecretDoc(title=Secret('Hello'))
 
