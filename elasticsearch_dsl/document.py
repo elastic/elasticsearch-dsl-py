@@ -256,8 +256,8 @@ class DocType(ObjectBase):
             **doc_meta
         )
 
-    def to_dict(self, include_meta=False):
-        d = super(DocType, self).to_dict()
+    def to_dict(self, include_meta=False, include_empty=False):
+        d = super(DocType, self).to_dict(include_empty=include_empty)
         if not include_meta:
             return d
 

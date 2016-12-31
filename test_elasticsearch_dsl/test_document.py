@@ -266,6 +266,11 @@ def test_to_dict_ignores_empty_collections():
     assert {'name': '', 'count': 0, 'valid': False} == md.to_dict()
 
 
+def test_to_dict_can_include_empty_values():
+    md = MyDoc(name=None, address={}, count=0, valid=False, tags=[])
+
+    assert {'name': None, 'count': 0, 'valid': False, 'address': {}, 'tags': []} == md.to_dict(include_empty=True)
+
 def test_declarative_mapping_definition():
     assert issubclass(MyDoc, document.DocType)
     assert hasattr(MyDoc, '_doc_type')

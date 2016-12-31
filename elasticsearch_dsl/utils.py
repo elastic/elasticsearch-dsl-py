@@ -360,7 +360,7 @@ class ObjectBase(AttrDict):
             value = self._doc_type.mapping[name].deserialize(value)
         super(ObjectBase, self).__setattr__(name, value)
 
-    def to_dict(self):
+    def to_dict(self, include_empty=False):
         out = {}
         for k, v in iteritems(self._d_):
             try:
@@ -372,7 +372,7 @@ class ObjectBase(AttrDict):
 
             # don't serialize empty values
             # careful not to include numeric zeros
-            if v in ([], {}, None):
+            if not include_empty and v in ([], {}, None):
                 continue
 
             out[k] = v
@@ -412,5 +412,3 @@ def merge(data, new_data):
             merge(data[key], value)
         else:
             data[key] = value
-
-
