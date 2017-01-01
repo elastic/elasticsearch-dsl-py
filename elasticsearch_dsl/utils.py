@@ -16,16 +16,6 @@ def _wrap(val, obj_wrapper=None):
         return AttrList(val)
     return val
 
-def _make_dsl_class(base, name, params_def=None, suffix=''):
-    """
-    Generate a DSL class based on the name of the DSL object and it's parameters
-    """
-    attrs = {'name': name}
-    if params_def:
-        attrs['_param_defs'] = params_def
-    cls_name = str(''.join(s.title() for s in name.split('_')) + suffix)
-    return type(cls_name, (base, ), attrs)
-
 class AttrList(object):
     def __init__(self, l, obj_wrapper=None):
         # make iterables into lists
@@ -224,7 +214,7 @@ class DslBase(object):
 
     def _repr_params(self):
         """ Produce a repr of all our parameters to be used in __repr__. """
-        return  ', '.join(
+        return ', '.join(
             '%s=%r' % (n.replace('.', '__'), v)
             for (n, v) in sorted(iteritems(self._params))
             # make sure we don't include empty typed params
@@ -412,5 +402,3 @@ def merge(data, new_data):
             merge(data[key], value)
         else:
             data[key] = value
-
-
