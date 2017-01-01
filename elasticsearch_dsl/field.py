@@ -5,14 +5,8 @@ from dateutil import parser
 from six import itervalues
 from six.moves import map
 
-from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
+from .utils import DslBase, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
-
-__all__ = [
-    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'String', 'Float', 'Double',
-    'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
-    'GeoPoint', 'GeoShape', 'InnerObjectWrapper', 'Keyword', 'Text'
-]
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
@@ -263,25 +257,35 @@ class Boolean(Field):
             raise ValidationException("Value required for this field.")
         return data
 
+class Float(Field):
+    name = 'float'
 
-FIELDS = (
-    'float',
-    'double',
-    'byte',
-    'short',
-    'integer',
-    'long',
-    'ip',
-    'attachment',
-    'geo_point',
-    'geo_shape',
-    'completion',
-)
+class Double(Field):
+    name = 'double'
 
-# generate the query classes dynamically
-for f in FIELDS:
-    fclass = _make_dsl_class(Field, f)
-    globals()[fclass.__name__] = fclass
-    fclass.__module__ = __name__
-    __all__.append(fclass.__name__)
+class Byte(Field):
+    name = 'byte'
 
+class Short(Field):
+    name = 'short'
+
+class Integer(Field):
+    name = 'integer'
+
+class Long(Field):
+    name = 'long'
+
+class Ip(Field):
+    name = 'ip'
+
+class Attachment(Field):
+    name = 'attachment'
+
+class GeoPoint(Field):
+    name = 'geo_point'
+
+class GeoShape(Field):
+    name = 'geo_shape'
+
+class Completion(Field):
+    name = 'completion'
