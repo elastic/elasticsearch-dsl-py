@@ -284,5 +284,6 @@ Contents
    search_dsl
    persistence
    faceted_search
+   api
    Changelog
 
