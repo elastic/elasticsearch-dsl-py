@@ -174,9 +174,10 @@ class FacetedSearch(object):
     fields = ('*', )
     facets = {}
 
-    def __init__(self, query=None, filters={}):
+    def __init__(self, query=None, filters={}, sort=None):
         self._query = query
         self._filters = {}
+        self._sort = sort
         self.filter_values = {}
         for name, value in iteritems(filters):
             self.add_filter(name, value)
@@ -265,6 +266,14 @@ class FacetedSearch(object):
         return search.highlight(*(f if '^' not in f else f.split('^', 1)[0]
                                   for f in self.fields))
 
+    def sort(self, search):
+        """
+        Add sorting information to the request.
+        """
+        if self._sort:
+            search = search.sort(self._sort)
+        return search
+
     def build_search(self):
         """
         Construct the ``Search`` object.
@@ -273,6 +282,7 @@ class FacetedSearch(object):
         s = self.query(s, self._query)
         s = self.filter(s)
         s = self.highlight(s)
+        s = self.sort(s)
         self.aggregate(s)
         return s
 
