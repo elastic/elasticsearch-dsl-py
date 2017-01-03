@@ -99,6 +99,9 @@ class DocTypeOptions(object):
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):
+    """
+    Model-like class for persisting documents in elasticsearch.
+    """
     def __init__(self, meta=None, **kwargs):
         meta = meta or {}
         for k in list(kwargs):
@@ -138,10 +141,17 @@ class DocType(ObjectBase):
 
     @classmethod
     def init(cls, index=None, using=None):
+        """
+        Create the index and populate the mappings in elasticsearch.
+        """
         cls._doc_type.init(index, using)
 
     @classmethod
     def search(cls, using=None, index=None):
+        """
+        Create an :class:`~elasticsearch_dsl.Search` instance that will search
+        over this ``DocType``.
+        """
         return Search(
             using=using or cls._doc_type.using,
             index=index or cls._doc_type.index,
@@ -150,6 +160,17 @@ class DocType(ObjectBase):
 
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
+        """
+        Retrieve a single document from elasticsearch using it's ``id``.
+
+        :arg id: ``id`` of the document to be retireved
+        :arg index: elasticsearch index to use, if the ``DocType`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.get`` unchanged.
+        """
         es = connections.get_connection(using or cls._doc_type.using)
         doc = es.get(
             index=index or cls._doc_type.index,
@@ -164,6 +185,23 @@ class DocType(ObjectBase):
     @classmethod
     def mget(cls, docs, using=None, index=None, raise_on_error=True,
              missing='none', **kwargs):
+        """
+        Retrieve multiple document by their ``id``\s. Returns a list of instances
+        in the same order as requested.
+
+        :arg docs: list of ``id``\s of the documents to be retireved or a list
+            of document specifications as per
+            https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
+        :arg index: elasticsearch index to use, if the ``DocType`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg missing: what to do when one of the documents requested is not
+            found. Valid options are ``'none'`` (use ``None``), ``'raise'`` (raise
+            ``NotFoundError``) or ``'skip'`` (ignore the missing document).
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.mget`` unchanged.
+        """
         if missing not in ('raise', 'skip', 'none'):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
         es = connections.get_connection(using or cls._doc_type.using)
@@ -215,6 +253,10 @@ class DocType(ObjectBase):
 
     @classmethod
     def from_es(cls, hit):
+        """
+        Helper method to construct an instance from a dictionary returned by
+        elasticsearch.
+        """
         # don't modify in place
         meta = hit.copy()
         doc = meta.pop('_source', {})
@@ -242,6 +284,16 @@ class DocType(ObjectBase):
         return index
 
     def delete(self, using=None, index=None, **kwargs):
+        """
+        Delete the instance in elasticsearch.
+
+        :arg index: elasticsearch index to use, if the ``DocType`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.delete`` unchanged.
+        """
         es = self._get_connection(using)
         # extract parent, routing etc from meta
         doc_meta = dict(
@@ -257,6 +309,14 @@ class DocType(ObjectBase):
         )
 
     def to_dict(self, include_meta=False):
+        """
+        Serialize the instance into a dictionary so that it can be saved in elasticsearch.
+
+        :arg include_meta: if set to ``True`` will include all the metadata
+            (``_index``, ``_type``, ``_id`` etc). Otherwise just the document's
+            data is serialized. This is useful when passing multiple instances into
+            ``elasticsearch.helpers.bulk``.
+        """
         d = super(DocType, self).to_dict()
         if not include_meta:
             return d
@@ -278,6 +338,21 @@ class DocType(ObjectBase):
         return meta
 
     def update(self, using=None, index=None, **fields):
+        """
+        Partial update of the document, specify fields you wish to update and
+        both the instance and the document in elasticsearch will be updated::
+
+            doc = MyDocument(title='Document Title!')
+            doc.save()
+            doc.update(title='New Document Title!')
+
+        :arg index: elasticsearch index to use, if the ``DocType`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.update`` unchanged.
+        """
         if not fields:
             raise IllegalOperation('You cannot call update() without updating individual fields. '
                                    'If you wish to update the entire object use save().')
@@ -304,6 +379,19 @@ class DocType(ObjectBase):
                 setattr(self.meta, k, meta['_' + k])
 
     def save(self, using=None, index=None, validate=True, **kwargs):
+        """
+        Save the document into elasticsearch. If the document doesn't exist it
+        is created, it is overwritten otherwise. Returns ``True`` if this
+        operations resulted in new document being created.
+
+        :arg index: elasticsearch index to use, if the ``DocType`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg validate: set to ``False`` to skip validating the document
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.index`` unchanged.
+        """
         if validate:
             self.full_clean()
 

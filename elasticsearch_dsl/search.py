@@ -627,6 +627,10 @@ class Search(Request):
 
 
 class MultiSearch(Request):
+    """
+    Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
+    request.
+    """
     def __init__(self, **kwargs):
         super(MultiSearch, self).__init__(**kwargs)
         self._searches = []
@@ -643,6 +647,13 @@ class MultiSearch(Request):
         return ms
 
     def add(self, search):
+        """
+        Adds a new :class:`~elasticsearch_dsl.Search` object to the request::
+
+            ms = MultiSearch(index='my-index')
+            ms = ms.add(Search(doc_type=Category).filter('term', category='python'))
+            ms = ms.add(Search(doc_type=Blog))
+        """
         ms = self._clone()
         ms._searches.append(search)
         return ms
@@ -663,6 +674,9 @@ class MultiSearch(Request):
         return out
 
     def execute(self, ignore_cache=False, raise_on_error=True):
+        """
+        Execute the multi search request and return a list of search results.
+        """
         if ignore_cache or not hasattr(self, '_response'):
             es = connections.get_connection(self._using)
 

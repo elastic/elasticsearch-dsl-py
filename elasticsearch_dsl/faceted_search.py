@@ -169,12 +169,57 @@ class FacetedResponse(Response):
 
 
 class FacetedSearch(object):
+    """
+    Abstraction for creating faceted navigation searches that takes care of
+    composing the queries, aggregations and filters as needed as well as
+    presenting the results in an easy-to-consume fashion::
+
+        class BlogSearch(FacetedSearch):
+            index = 'blogs'
+            doc_types = [Blog, Post]
+            fields = ['title^5', 'category', 'description', 'body']
+
+            facets = {
+                'type': TermsFacet(field='_type'),
+                'category': TermsFacet(field='category'),
+                'weekly_posts': DateHistogramFacet(field='published_from', interval='week')
+            }
+
+            def search(self):
+                ' Override search to add your own filters '
+                s = super(BlogSearch, self).search()
+                return s.filter('term', published=True)
+
+        # when using:
+        blog_search = BlogSearch("web framework", filters={"category": "python"})
+
+        # supports pagination
+        blog_search[10:20]
+
+        response = blog_search.execute()
+
+        # easy access to aggregation results:
+        for category, hit_count, is_selected in response.facets.category:
+            print(
+                "Category %s has %d hits%s." % (
+                    category,
+                    hit_count,
+                    ' and is chosen' if is_selected else ''
+                )
+            )
+
+    """
     index = '_all'
     doc_types = ['_all']
     fields = ('*', )
     facets = {}
 
     def __init__(self, query=None, filters={}, sort=None):
+        """
+        :arg query: the text to search for
+        :arg filters: facet values to filter
+        :arg sort: sort information to be passed to :class:`~elasticsearch_dsl.Search`
+        """
         self._query = query
         self._filters = {}
         self._sort = sort
@@ -287,6 +332,9 @@ class FacetedSearch(object):
         return s
 
     def execute(self):
+        """
+        Execute the search and return the response.
+        """
         r = self._s.execute()
         r._faceted_search = self
         return r
