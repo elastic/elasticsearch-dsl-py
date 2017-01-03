@@ -1,11 +1,10 @@
 from datetime import timedelta, datetime
 from six import iteritems, itervalues
-from functools import partial
 
 from .search import Search
 from .aggs import A
 from .utils import AttrDict
-from .result import Response
+from .response import Response
 from .query import Q
 
 __all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet']
@@ -153,22 +152,18 @@ class DateHistogramFacet(Facet):
 
 
 class FacetedResponse(Response):
-    def __init__(self, search, *args, **kwargs):
-        super(FacetedResponse, self).__init__(*args, **kwargs)
-        super(AttrDict, self).__setattr__('_search', search)
-
     @property
     def query_string(self):
-        return self._search._query
+        return self._faceted_search._query
 
     @property
     def facets(self):
         if not hasattr(self, '_facets'):
             super(AttrDict, self).__setattr__('_facets', AttrDict({}))
-            for name, facet in iteritems(self._search.facets):
+            for name, facet in iteritems(self._faceted_search.facets):
                 self._facets[name] = facet.get_values(
                     self.aggregations['_filter_' + name][name]['buckets'],
-                    self._search.filter_values.get(name, ())
+                    self._faceted_search.filter_values.get(name, ())
                 )
         return self._facets
 
@@ -204,7 +199,7 @@ class FacetedSearch(object):
         """
         # normalize the value into a list
         if not isinstance(filter_values, (tuple, list)):
-            if filter_values in (None, ''):
+            if filter_values is None:
                 return
             filter_values = [filter_values, ]
 
@@ -223,7 +218,7 @@ class FacetedSearch(object):
         Construct the Search object.
         """
         s = Search(doc_type=self.doc_types, index=self.index)
-        return s.response_class(partial(FacetedResponse, self))
+        return s.response_class(FacetedResponse)
 
     def query(self, search, query):
         """
@@ -282,4 +277,6 @@ class FacetedSearch(object):
         return s
 
     def execute(self):
-        return self._s.execute()
+        r = self._s.execute()
+        r._faceted_search = self
+        return r

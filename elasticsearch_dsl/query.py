@@ -1,3 +1,7 @@
+import collections
+
+from itertools import chain
+
 from .utils import DslBase, _make_dsl_class
 from .function import SF, ScoreFunction
 
@@ -15,7 +19,7 @@ __all__ = [
 
 def Q(name_or_query='match_all', **params):
     # {"match": {"title": "python"}}
-    if isinstance(name_or_query, dict):
+    if isinstance(name_or_query, collections.Mapping):
         if params:
             raise ValueError('Q() cannot accept parameters when passing in a dict.')
         if len(name_or_query) != 1:
@@ -101,31 +105,37 @@ class Bool(Query):
 
     def __or__(self, other):
         for q in (self, other):
-            if isinstance(q, Bool) and len(q.should) == 1 and not any((q.must, q.must_not, q.filter)):
+            if isinstance(q, Bool) and not any((q.must, q.must_not, q.filter)):
+                # TODO: take minimum_should_match into account
                 other = self if q is other else other
                 q = q._clone()
-                q.should.append(other)
+                if isinstance(other, Bool) and not any((other.must, other.must_not, other.filter)):
+                    q.should.extend(other.should)
+                else:
+                    q.should.append(other)
                 return q
 
         return Bool(should=[self, other])
     __ror__ = __or__
 
+    @property
+    def _min_should_match(self):
+        return getattr(self, 'minimum_should_match', 0 if (self.must or self.filter) else 1)
+
     def __invert__(self):
-        # special case for single negated query
-        if not (self.must or self.should or self.filter) and len(self.must_not) == 1:
-            return self.must_not[0]._clone()
+        negations = []
+        for q in chain(self.must, self.filter):
+            negations.append(~q)
 
-        # bol without should, just flip must and must_not
-        elif not self.should:
-            q = self._clone()
-            q.must, q.must_not = q.must_not, q.must
-            if q.filter:
-                q.filter = [Bool(must_not=q.filter)]
-            return q
+        for q in self.must_not:
+            negations.append(q)
 
-        # TODO: should -> must_not.append(Bool(should=self.should)) ??
-        # queries with should just invert normally
-        return super(Bool, self).__invert__()
+        if self.should and self._min_should_match:
+            negations.append(Bool(must_not=self.should[:]))
+
+        if len(negations) == 1:
+            return negations[0]
+        return Bool(should=negations)
 
     def __and__(self, other):
         q = self._clone()
@@ -136,7 +146,7 @@ class Bool(Query):
             q.should = []
             for qx in (self, other):
                 # TODO: percentages will fail here
-                min_should_match = getattr(qx, 'minimum_should_match', 0 if (qx.must or qx.filter) else 1)
+                min_should_match = qx._min_should_match
                 # all subqueries are required
                 if len(qx.should) <= min_should_match:
                     q.must.extend(qx.should)
@@ -210,7 +220,6 @@ QUERIES = (
     ('match_phrase', None),
     ('match_phrase_prefix', None),
     ('exists', None),
-    ('missing', None),
     ('more_like_this', None),
     ('more_like_this_field', None),
     ('multi_match', None),
@@ -232,4 +241,5 @@ QUERIES = (
 for qname, params_def in QUERIES:
     qclass = _make_dsl_class(Query, qname, params_def)
     globals()[qclass.__name__] = qclass
+    qclass.__module__ = __name__
 

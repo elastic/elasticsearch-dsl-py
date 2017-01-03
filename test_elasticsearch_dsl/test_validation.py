@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Nested, String, Date, Object, Boolean, Integer
+from elasticsearch_dsl import DocType, Nested, Text, Date, Object, Boolean, Integer
 from elasticsearch_dsl.field import InnerObjectWrapper
 from elasticsearch_dsl.exceptions import ValidationException
 
@@ -16,8 +16,8 @@ class BlogPost(DocType):
         required=True,
         doc_class=Author,
         properties={
-            'name': String(required=True),
-            'email': String(required=True)
+            'name': Text(required=True),
+            'email': Text(required=True)
         }
     )
     created = Date()
@@ -36,7 +36,7 @@ class AutoNowDate(Date):
 
 class Log(DocType):
     timestamp = AutoNowDate(required=True)
-    data = String()
+    data = Text()
 
 def test_required_int_can_be_0():
     class DT(DocType):
@@ -114,8 +114,8 @@ def test_accessing_known_fields_returns_empty_value():
     assert [] == d.authors
 
     d.authors.append({})
-    assert '' == d.authors[0].name
-    assert '' == d.authors[0].email
+    assert None is d.authors[0].name
+    assert None is d.authors[0].email
 
 def test_empty_values_are_not_serialized():
     d = BlogPost(authors=[{'name': 'Honza', 'email': 'honza@elastic.co'}], created=None)

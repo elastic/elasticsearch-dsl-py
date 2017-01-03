@@ -3,6 +3,29 @@
 Changelog
 =========
 
+5.1.0 (dev)
+-----------
+ * Renamed ``Result`` and ``ResultMeta`` to ``Hit`` and ``HitMeta`` respectively
+ * ``Response`` now stores ``Search`` which it gets as first arg to ``__init__``
+ * aggregation results are now wrapped in classes and properly deserialized
+ * ``Date`` fields now allow for numerical timestamps in the java format (in millis)
+
+5.0.0 (2016-11-04)
+------------------
+
+Version compatible with elasticsearch 5.0.
+
+Breaking changes:
+
+ * ``String`` field type has been deprecated in favor of ``Text`` and ``Keyword``
+ * ``fields`` method has been removed in favor of ``source`` filtering
+
+2.2.0 (2016-11-04)
+------------------
+ * accessing missing string fields no longer returnd ``''`` but returns
+   ``None`` instead.
+ * fix issues with bool's ``|`` and ``&`` operators and ``minimum_should_match``
+
 2.1.0 (2016-06-29)
 ------------------
  * ``inner_hits`` are now also wrapped in ``Response``

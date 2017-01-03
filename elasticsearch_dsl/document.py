@@ -1,3 +1,4 @@
+import collections
 import re
 
 from elasticsearch.exceptions import NotFoundError, RequestError
@@ -6,10 +7,10 @@ from six import iteritems, add_metaclass
 from .field import Field
 from .mapping import Mapping
 from .utils import ObjectBase, AttrDict, merge
-from .result import ResultMeta
+from .response import HitMeta
 from .search import Search
 from .connections import connections
-from .exceptions import ValidationException
+from .exceptions import ValidationException, IllegalOperation
 
 DELETE_META_FIELDS = frozenset((
     'id', 'parent', 'routing', 'version', 'version_type'
@@ -89,6 +90,9 @@ class DocTypeOptions(object):
             return self.mapping._meta['_parent']['type']
         return
 
+    def resolve_field(self, field_path):
+        return self.mapping.resolve_field(field_path)
+
     def init(self, index=None, using=None):
         self.mapping.save(index or self.index, using=using or self.using)
 
@@ -106,7 +110,7 @@ class DocType(ObjectBase):
 
         if self._doc_type.index:
             meta.setdefault('_index', self._doc_type.index)
-        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
         super(DocType, self).__init__(**kwargs)
 
@@ -116,12 +120,19 @@ class DocType(ObjectBase):
     def __setstate__(self, state):
         data, meta = state
         super(AttrDict, self).__setattr__('_d_', data)
-        super(AttrDict, self).__setattr__('meta', ResultMeta(meta))
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return getattr(self.meta, name[1:])
         return super(DocType, self).__getattr__(name)
+
+    def __repr__(self):
+        return '%s(%s)' % (
+            self.__class__.__name__,
+            ', '.join('%s=%r' % (key, getattr(self.meta, key)) for key in
+                      ('index', 'doc_type', 'id') if key in self.meta)
+        )
 
     def __setattr__(self, name, value):
         if name.startswith('_') and name[1:] in META_FIELDS:
@@ -137,7 +148,7 @@ class DocType(ObjectBase):
         return Search(
             using=using or cls._doc_type.using,
             index=index or cls._doc_type.index,
-            doc_type={cls._doc_type.name: cls.from_es},
+            doc_type=[cls]
         )
 
     @classmethod
@@ -159,8 +170,12 @@ class DocType(ObjectBase):
         if missing not in ('raise', 'skip', 'none'):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
         es = connections.get_connection(using or cls._doc_type.using)
-        body = {'docs': [doc if isinstance(doc, dict) else {'_id': doc}
-                         for doc in docs]}
+        body = {
+            'docs': [
+                doc if isinstance(doc, collections.Mapping) else {'_id': doc}
+                for doc in docs
+            ]
+        }
         results = es.mget(
             body,
             index=index or cls._doc_type.index,
@@ -274,6 +289,10 @@ class DocType(ObjectBase):
         :arg doc_as_upsert: index document if it doesn't exist. Default: False.
         :arg fields: kwargs of additional fields
         """
+        if not fields:
+            raise IllegalOperation('You cannot call update() without updating individual fields. '
+                                   'If you wish to update the entire object use save().')
+
         es = self._get_connection(using)
 
         # update given fields locally

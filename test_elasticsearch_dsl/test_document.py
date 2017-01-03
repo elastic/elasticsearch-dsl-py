@@ -4,7 +4,7 @@ from hashlib import md5
 from datetime import datetime
 
 from elasticsearch_dsl import document, field, Mapping
-from elasticsearch_dsl.exceptions import ValidationException
+from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
 
@@ -12,13 +12,13 @@ class MyInner(field.InnerObjectWrapper):
     pass
 
 class MyDoc(document.DocType):
-    title = field.String(index='not_analyzed')
-    name = field.String()
+    title = field.Keyword()
+    name = field.Text()
     created_at = field.Date()
-    inner = field.Object(properties={'old_field': field.String()}, doc_class=MyInner)
+    inner = field.Object(properties={'old_field': field.Text()}, doc_class=MyInner)
 
 class MySubDoc(MyDoc):
-    name = field.String(index='not_analyzed')
+    name = field.Keyword()
 
     class Meta:
         doc_type = 'my_custom_doc'
@@ -33,13 +33,13 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
 class DocWithNested(document.DocType):
     comments = field.Nested(
         properties={
-            'title': field.String(),
-            'tags': field.String(multi=True, index='not_analyzed')
+            'title': field.Text(),
+            'tags': field.Keyword(multi=True)
         }
     )
 
 class SimpleCommit(document.DocType):
-    files = field.String(multi=True)
+    files = field.Text(multi=True)
 
     class Meta:
         index = 'test-git'
@@ -47,7 +47,7 @@ class SimpleCommit(document.DocType):
 class Secret(str): pass
 
 class SecretField(field.CustomField):
-    builtin_type = 'string'
+    builtin_type = 'text'
 
     def _serialize(self, data):
         return codecs.encode(data, 'rot_13')
@@ -63,6 +63,14 @@ class SecretDoc(document.DocType):
 class NestedSecret(document.DocType):
     secrets = field.Nested(properties={'title': SecretField()})
 
+class OptionalObjectWithRequiredField(document.DocType):
+    comments = field.Nested(properties={'title': field.Keyword(required=True)})
+
+def test_optional_inner_objects_are_not_validated_if_missing():
+    d = OptionalObjectWithRequiredField()
+
+    assert d.full_clean() is None
+
 def test_custom_field():
     s = SecretDoc(title=Secret('Hello'))
 
@@ -77,7 +85,7 @@ def test_custom_field_mapping():
     assert {
         'secret_doc': {
             'properties': {
-                'title': {'index': 'no', 'type': 'string'}
+                'title': {'index': 'no', 'type': 'text'}
             }
         }
     } == SecretDoc._doc_type.mapping.to_dict()
@@ -164,7 +172,7 @@ def test_meta_is_accessible_even_on_empty_doc():
 
 def test_meta_field_mapping():
     class User(document.DocType):
-        username = field.String()
+        username = field.Text()
         class Meta:
             all = document.MetaField(enabled=False)
             _index = document.MetaField(enabled=True)
@@ -174,7 +182,7 @@ def test_meta_field_mapping():
     assert {
         'user': {
             'properties': {
-                'username': {'type': 'string'}
+                'username': {'type': 'text'}
             },
             '_all': {'enabled': False},
             '_index': {'enabled': True},
@@ -185,7 +193,7 @@ def test_meta_field_mapping():
 
 def test_multi_value_fields():
     class Blog(document.DocType):
-        tags = field.String(multi=True, index='not_analyzed')
+        tags = field.Keyword(multi=True)
 
     b = Blog()
     assert [] == b.tags
@@ -195,7 +203,7 @@ def test_multi_value_fields():
 
 def test_docs_with_properties():
     class User(document.DocType):
-        pwd_hash = field.String()
+        pwd_hash = field.Text()
 
         def check_password(self, pwd):
             return md5(pwd).hexdigest() == self.pwd_hash
@@ -227,6 +235,11 @@ def test_nested_can_be_assigned_to():
     d2.comments = d1.comments
     assert d2.comments == [{'title': 'First!'}]
     assert {'comments': [{'title': 'First!'}]} == d2.to_dict()
+
+def test_nested_can_be_none():
+    d = DocWithNested(comments=None, title='Hello World!')
+
+    assert {"title": 'Hello World!'} == d.to_dict()
 
 def test_nested_defaults_to_list_and_can_be_updated():
     md = DocWithNested()
@@ -261,11 +274,11 @@ def test_declarative_mapping_definition():
         'my_doc': {
             'properties': {
                 'created_at': {'type': 'date'},
-                'name': {'type': 'string'},
-                'title': {'index': 'not_analyzed', 'type': 'string'},
+                'name': {'type': 'text'},
+                'title': {'type': 'keyword'},
                 'inner': {
                     'type': 'object',
-                    'properties': {'old_field': {'type': 'string'}}
+                    'properties': {'old_field': {'type': 'text'}}
                 }
             }
         }
@@ -273,7 +286,7 @@ def test_declarative_mapping_definition():
 
 def test_you_can_supply_own_mapping_instance():
     class MyD(document.DocType):
-        title = field.String()
+        title = field.Text()
 
         class Meta:
             mapping = Mapping('my_d')
@@ -282,7 +295,7 @@ def test_you_can_supply_own_mapping_instance():
     assert {
         'my_d': {
             '_all': {'enabled': False},
-            'properties': {'title': {'type': 'string'}}
+            'properties': {'title': {'type': 'text'}}
         }
     } == MyD._doc_type.mapping.to_dict()
 
@@ -323,11 +336,11 @@ def test_document_inheritance():
         'my_custom_doc': {
             'properties': {
                 'created_at': {'type': 'date'},
-                'name': {'type': 'string', 'index': 'not_analyzed'},
-                'title': {'index': 'not_analyzed', 'type': 'string'},
+                'name': {'type': 'keyword'},
+                'title': {'type': 'keyword'},
                 'inner': {
                     'type': 'object',
-                    'properties': {'old_field': {'type': 'string'}}
+                    'properties': {'old_field': {'type': 'text'}}
                 }
             }
         }
@@ -356,11 +369,11 @@ def test_meta_inheritance():
         'my_multi_sub_doc': {
             'properties': {
                 'created_at': {'type': 'date'},
-                'name': {'type': 'string', 'index': 'not_analyzed'},
-                'title': {'index': 'not_analyzed', 'type': 'string'},
+                'name': {'type': 'keyword'},
+                'title': {'type': 'keyword'},
                 'inner': {
                     'type': 'object',
-                    'properties': {'old_field': {'type': 'string'}}
+                    'properties': {'old_field': {'type': 'text'}}
                 },
                 'extra': {'type': 'long'}
             }
@@ -385,6 +398,11 @@ def test_delete_no_index(mock_client):
     md = MyDoc()
     with raises(ValidationException):
         md.delete(using='mock')
+
+def test_update_no_fields():
+    md = MyDoc()
+    with raises(IllegalOperation):
+        md.update()
 
 def test_search_with_custom_alias_and_index(mock_client):
     search_object = MyDoc.search(

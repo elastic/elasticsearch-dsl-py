@@ -1,4 +1,7 @@
+import collections
+
 from .utils import DslBase, _make_dsl_class
+from .response.aggs import BucketData, AggData, TopHitsData
 
 __all__ = [
     'A', 'Agg', 'Filter', 'Bucket', 'Children', 'DateHistogram', 'Filters',
@@ -19,7 +22,7 @@ def A(name_or_agg, filter=None, **params):
         params['filter'] = filter
 
     # {"terms": {"field": "tags"}, "aggs": {...}}
-    if isinstance(name_or_agg, dict):
+    if isinstance(name_or_agg, collections.Mapping):
         if params:
             raise ValueError('A() cannot accept parameters when passing in a dict.')
         # copy to avoid modifying in-place
@@ -55,6 +58,9 @@ class Agg(DslBase):
             d['meta'] = d[self.name].pop('meta')
         return d
 
+    def result(self, search, data):
+        return AggData(self, search, data)
+
 
 class AggBase(object):
     _param_defs = {
@@ -75,6 +81,9 @@ class AggBase(object):
     def __setitem__(self, agg_name, agg):
         self.aggs[agg_name] = A(agg)
 
+    def __iter__(self):
+        return iter(self.aggs)
+
     def _agg(self, bucket, name, agg_type, *args, **params):
         agg = self[name] = A(agg_type, *args, **params)
 
@@ -93,6 +102,9 @@ class AggBase(object):
 
     def pipeline(self, name, agg_type, *args, **params):
         return self._agg(False, name, agg_type, *args, **params)
+
+    def result(self, search, data):
+        return BucketData(self, search, data)
 
 
 class Bucket(AggBase, Agg):
@@ -127,6 +139,12 @@ class Filter(Bucket):
 class Pipeline(Agg):
     pass
 
+class TopHits(Agg):
+    name = 'top_hits'
+
+    def result(self, search, data):
+        return TopHitsData(self, search, data)
+
 AGGS = (
     (Bucket, 'children', None),
     (Bucket, 'date_histogram', None),
@@ -157,7 +175,6 @@ AGGS = (
     (Agg, 'scripted_metric', None),
     (Agg, 'stats', None),
     (Agg, 'sum', None),
-    (Agg, 'top_hits', None),
     (Agg, 'value_count', None),
 
     (Pipeline, 'avg_bucket', None),
@@ -182,3 +199,4 @@ for base, fname, params_def in AGGS:
         params_def.update(AggBase._param_defs)
     fclass = _make_dsl_class(base, fname, params_def)
     globals()[fclass.__name__] = fclass
+    fclass.__module__ = __name__

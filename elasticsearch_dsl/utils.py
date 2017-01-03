@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import collections
+
 from six import iteritems, add_metaclass
 from six.moves import map
 
@@ -8,7 +10,7 @@ from .exceptions import UnknownDslObject, ValidationException
 SKIP_VALUES = ('', None)
 
 def _wrap(val, obj_wrapper=None):
-    if isinstance(val, dict):
+    if isinstance(val, collections.Mapping):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
         return AttrList(val)
@@ -117,7 +119,7 @@ class AttrDict(object):
 
     def __getattr__(self, attr_name):
         try:
-            return _wrap(self._d_[attr_name])
+            return self.__getitem__(attr_name)
         except KeyError:
             raise AttributeError(
                 '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
@@ -290,7 +292,7 @@ class DslBase(object):
                 '%r object has no attribute %r' % (self.__class__.__name__, name))
 
         # wrap nested dicts in AttrDict for convenient access
-        if isinstance(value, dict):
+        if isinstance(value, collections.Mapping):
             return AttrDict(value)
         return value
 
@@ -401,12 +403,12 @@ class ObjectBase(AttrDict):
         self.clean()
 
 def merge(data, new_data):
-    if not (isinstance(data, (AttrDict, dict))
-            and isinstance(new_data, (AttrDict, dict))):
+    if not (isinstance(data, (AttrDict, collections.Mapping))
+            and isinstance(new_data, (AttrDict, collections.Mapping))):
         raise ValueError('You can only merge two dicts! Got %r and %r instead.' % (data, new_data))
 
     for key, value in iteritems(new_data):
-        if key in data and isinstance(data[key], (AttrDict, dict)):
+        if key in data and isinstance(data[key], (AttrDict, collections.Mapping)):
             merge(data[key], value)
         else:
             data[key] = value

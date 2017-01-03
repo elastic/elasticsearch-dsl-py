@@ -1,11 +1,11 @@
-from elasticsearch_dsl import DocType, Index, String, Date
+from elasticsearch_dsl import DocType, Index, Text, Date, analyzer
 
 from random import choice
 
 import string
 
 class Post(DocType):
-    title = String()
+    title = Text()
     published_from = Date()
 
 
@@ -48,7 +48,7 @@ def test_registered_doc_type_included_in_to_dict():
         'mappings': {
             'post': {
                 'properties': {
-                    'title': {'type': 'string'},
+                    'title': {'type': 'text'},
                     'published_from': {'type': 'date'},
                 }
             }
@@ -61,7 +61,7 @@ def test_registered_doc_type_included_in_search():
 
     s = i.search()
 
-    assert s._doc_type_map == {'post': Post.from_es}
+    assert s._doc_type_map == {'post': Post}
 
 
 def test_aliases_add_to_object():
@@ -82,3 +82,22 @@ def test_aliases_returned_from_to_dict():
     index.aliases(**alias_dict)
 
     assert index._aliases == index.to_dict()['aliases'] == alias_dict
+
+
+def test_analyzers_added_to_object():
+    random_analyzer_name = ''.join((choice(string.ascii_letters) for _ in range(100)))
+    random_analyzer = analyzer(random_analyzer_name, tokenizer="standard", filter="standard")
+
+    index = Index('i', using='alias')
+    index.analyzer(random_analyzer)
+
+    assert index._analysis["analyzer"][random_analyzer_name] == {"filter": ["standard"], "type": "custom", "tokenizer": "standard"}
+
+
+def test_analyzers_returned_from_to_dict():
+    random_analyzer_name = ''.join((choice(string.ascii_letters) for _ in range(100)))
+    random_analyzer = analyzer(random_analyzer_name, tokenizer="standard", filter="standard")
+    index = Index('i', using='alias')
+    index.analyzer(random_analyzer)
+
+    assert index.to_dict()["settings"]["analysis"]["analyzer"][random_analyzer_name] == {"filter": ["standard"], "type": "custom", "tokenizer": "standard"}
