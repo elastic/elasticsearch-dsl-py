@@ -623,7 +623,9 @@ class Search(Request):
                 doc_type=self._doc_type,
                 **self._params
             ):
-            yield self._doc_type_map.get(hit['_type'], Hit)(hit)
+            callback = self._doc_type_map.get(hit['_type'], Hit)
+            callback = getattr(callback, 'from_es', callback)
+            yield callback(hit)
 
 
 class MultiSearch(Request):

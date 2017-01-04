@@ -72,6 +72,7 @@ def test_scan_respects_doc_types(data_client):
 
     assert 1 == len(repos)
     assert isinstance(repos[0], Repository)
+    assert repos[0].organization == 'elasticsearch'
 
 def test_scan_iterates_through_all_docs(data_client):
     s = Search(index='git').filter('term', _type='commits')
