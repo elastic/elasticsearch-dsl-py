@@ -289,3 +289,6 @@ class GeoShape(Field):
 
 class Completion(Field):
     name = 'completion'
+
+class Binary(Field):
+    name = 'binary'
