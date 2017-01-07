@@ -233,6 +233,17 @@ class SpanOr(Query):
     name = 'span_or'
     _params_def = {'clauses': {'type': 'query', 'multi': True}}
 
+class FieldMaskingSpan(Query):
+    name = 'field_masking_span'
+    _params_def = {'query': {'type': 'query'}}
+
+class SpanContainining(Query):
+    name = 'span_containing'
+    _params_def = {'little': {'type': 'query'}, 'big': {'type': 'query'}}
+
+class SpanWithin(Query):
+    name = 'span_within'
+    _params_def = {'little': {'type': 'query'}, 'big': {'type': 'query'}}
 
 # core queries
 class Common(Query):
