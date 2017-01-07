@@ -327,3 +327,6 @@ class Script(Query):
 
 class Type(Query):
     name = 'type'
+
+class ParentId(Query):
+    name = 'parent_id'
