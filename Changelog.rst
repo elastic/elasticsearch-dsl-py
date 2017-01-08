@@ -3,16 +3,17 @@
 Changelog
 =========
 
-5.1.0 (dev)
------------
+5.1.0 (2017-01-08)
+------------------
  * Renamed ``Result`` and ``ResultMeta`` to ``Hit`` and ``HitMeta`` respectively
  * ``Response`` now stores ``Search`` which it gets as first arg to ``__init__``
  * aggregation results are now wrapped in classes and properly deserialized
  * ``Date`` fields now allow for numerical timestamps in the java format (in millis)
+ * Added API documentation
+ * replaced generated classes with manually created
 
 5.0.0 (2016-11-04)
 ------------------
-
 Version compatible with elasticsearch 5.0.
 
 Breaking changes:
