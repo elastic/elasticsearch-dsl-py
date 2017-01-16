@@ -23,6 +23,12 @@ def test_response_is_pickleable(dummy_response):
 
     assert r == res
 
+def test_hit_is_pickleable(dummy_response):
+    res = response.Response(Search(), dummy_response)
+    hits = pickle.loads(pickle.dumps(res.hits))
+
+    assert hits == res.hits
+
 def test_response_stores_search(dummy_response):
     s = Search()
     r = response.Response(s, dummy_response)
