@@ -1,3 +1,4 @@
+import pickle
 from datetime import date
 from pytest import raises, fixture
 
@@ -8,6 +9,19 @@ from elasticsearch_dsl.response.aggs import AggData, BucketData, Bucket
 @fixture
 def agg_response(aggs_search, aggs_data):
     return response.Response(aggs_search, aggs_data)
+
+def test_agg_response_is_pickleable(agg_response):
+    agg_response.hits
+    r = pickle.loads(pickle.dumps(agg_response))
+
+    assert r == agg_response
+
+def test_response_is_pickleable(dummy_response):
+    res = response.Response(Search(), dummy_response)
+    res.hits
+    r = pickle.loads(pickle.dumps(res))
+
+    assert r == res
 
 def test_response_stores_search(dummy_response):
     s = Search()
