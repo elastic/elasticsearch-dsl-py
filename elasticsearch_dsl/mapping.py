@@ -47,6 +47,8 @@ class Mapping(object):
                 field = field[step]
             except KeyError:
                 return
+            except TypeError:
+                return field
         return field
 
     def _collect_analysis(self):
