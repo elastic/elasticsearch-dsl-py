@@ -214,7 +214,7 @@ class FacetedSearch(object):
     fields = ('*', )
     facets = {}
 
-    def __init__(self, query=None, filters={}, sort=None):
+    def __init__(self, query=None, filters={}, sort=()):
         """
         :arg query: the text to search for
         :arg filters: facet values to filter
@@ -316,7 +316,7 @@ class FacetedSearch(object):
         Add sorting information to the request.
         """
         if self._sort:
-            search = search.sort(self._sort)
+            search = search.sort(*self._sort)
         return search
 
     def build_search(self):
