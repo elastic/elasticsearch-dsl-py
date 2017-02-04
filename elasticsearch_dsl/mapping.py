@@ -49,7 +49,7 @@ class Mapping(object):
                 return
         return field
 
-    def _collect_analysis(self):
+    def _collect_analysis(self, exclude_custom_analysis=True):
         analysis = {}
         fields = []
         if '_all' in self._meta:
@@ -65,6 +65,11 @@ class Mapping(object):
                 if not d:
                     continue
 
+                if exclude_custom_analysis and 'analyzer' in d.keys():
+                    for k, v in d['analyzer'].items():
+                        if v['type'] == 'custom':
+                            d = {}
+
                 # merge the definition
                 # TODO: conflict detection/resolution
                 for key in d:
@@ -76,7 +81,7 @@ class Mapping(object):
         # TODO: replace with creating an Index instance to avoid duplication
         es = connections.get_connection(using)
         if not es.indices.exists(index=index):
-            es.indices.create(index=index, body={'mappings': self.to_dict(), 'settings': {'analysis': self._collect_analysis()}})
+            es.indices.create(index=index, body={'mappings': self.to_dict(), 'settings': {'analysis': self._collect_analysis(False)}})
         else:
             analysis = self._collect_analysis()
             if analysis:

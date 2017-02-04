@@ -37,7 +37,8 @@ def test_mapping_saved_into_es(write_client):
 def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
     m = mapping.Mapping('test-type')
     m.field('name', 'text', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
-    write_client.indices.create(index='test-mapping')
+    write_client.indices.create(index='test-mapping', body={
+        'settings': {'analysis': m._collect_analysis(False)}})
 
     with raises(exceptions.IllegalOperation):
         m.save('test-mapping', using=write_client)
