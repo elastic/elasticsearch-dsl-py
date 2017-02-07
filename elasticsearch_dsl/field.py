@@ -289,3 +289,6 @@ class GeoShape(Field):
 
 class Completion(Field):
     name = 'completion'
+
+class Percolator(Field):
+    name = 'percolator'
