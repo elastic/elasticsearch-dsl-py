@@ -250,6 +250,11 @@ class Keyword(Field):
 class Boolean(Field):
     name = 'boolean'
 
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return bool(data)
+
     def clean(self, data):
         if data is not None:
             data = self.deserialize(data)
