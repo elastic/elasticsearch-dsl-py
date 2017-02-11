@@ -162,7 +162,7 @@ class FacetedResponse(Response):
             super(AttrDict, self).__setattr__('_facets', AttrDict({}))
             for name, facet in iteritems(self._faceted_search.facets):
                 self._facets[name] = facet.get_values(
-                    self.aggregations['_filter_' + name][name]['buckets'],
+                    getattr(getattr(self.aggregations, '_filter_' + name), name).buckets,
                     self._faceted_search.filter_values.get(name, ())
                 )
         return self._facets

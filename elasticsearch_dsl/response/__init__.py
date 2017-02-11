@@ -73,18 +73,17 @@ class Response(AttrDict):
 
 class AggResponse(AttrDict):
     def __init__(self, aggs, search, data):
-        super(AttrDict, self).__setattr__('_search', search)
-        super(AttrDict, self).__setattr__('_aggs', aggs)
+        super(AttrDict, self).__setattr__('_meta', {'search': search, 'aggs': aggs})
         super(AggResponse, self).__init__(data)
 
     def __getitem__(self, attr_name):
-        if attr_name in self._aggs:
-            # don't do self._aggs[attr_name] to avoid copying
-            agg = self._aggs.aggs[attr_name]
-            return agg.result(self._search, self._d_[attr_name])
+        if attr_name in self._meta['aggs']:
+            # don't do self._meta['aggs'][attr_name] to avoid copying
+            agg = self._meta['aggs'].aggs[attr_name]
+            return agg.result(self._meta['search'], self._d_[attr_name])
         return super(AggResponse, self).__getitem__(attr_name)
 
     def __iter__(self):
-        for name in self._aggs:
+        for name in self._meta['aggs']:
             yield self[name]
 

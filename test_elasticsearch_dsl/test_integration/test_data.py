@@ -50,6 +50,7 @@ def create_git_index(client, index):
             },
             'repos': {
               'properties': {
+                'is_public': {'type': 'boolean'},
                 'owner': user_mapping,
                 'created_at': {'type': 'date'},
                 'description': {
@@ -67,7 +68,7 @@ def create_git_index(client, index):
 
 DATA = [
     # repository
-    {'_type': 'repos', '_id': 'elasticsearch-dsl-py', '_source': {'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}}, '_index': 'git'},
+    {'_type': 'repos', '_id': 'elasticsearch-dsl-py', '_source': {'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}, 'is_public': True}, '_index': 'git'},
     # documents
     {'_type': 'commits', '_parent': 'elasticsearch-dsl-py', '_id': '3ca6e1e73a071a705b4babd2f581c91a2a3e5037', '_source': {'files': ['elasticsearch_dsl/aggs.py', 'elasticsearch_dsl/search.py', 'test_elasticsearch_dsl/test_aggs.py', 'test_elasticsearch_dsl/test_search.py'], 'committer': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'stats': {'deletions': 7, 'insertions': 23, 'lines': 30, 'files': 4}, 'description': "Make sure buckets aren't modified in-place", 'author': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'parent_shas': ['eb3e543323f189fd7b698e66295427204fff5755'], 'committed_date': '2014-05-02T13:47:19', 'authored_date': '2014-05-02T13:47:19.123+02:00'}, '_index': 'git'},
     {'_type': 'commits', '_parent': 'elasticsearch-dsl-py', '_id': 'eb3e543323f189fd7b698e66295427204fff5755', '_source': {'files': ['elasticsearch_dsl/search.py'], 'committer': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'stats': {'deletions': 0, 'insertions': 18, 'lines': 18, 'files': 1}, 'description': 'Add communication with ES server', 'author': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'parent_shas': ['dd15b6ba17dd9ba16363a51f85b31f66f1fb1157'], 'committed_date': '2014-05-01T13:32:14', 'authored_date': '2014-05-01T13:32:14'}, '_index': 'git'},
