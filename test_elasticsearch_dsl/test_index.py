@@ -27,6 +27,24 @@ def test_cloned_index_has_copied_settings_and_using():
     assert i._settings == i2._settings
     assert i._settings is not i2._settings
 
+def test_cloned_index_has_analysis_attribute():
+    """
+    Regression test for Issue #582 in which `Index.clone()` was not copying
+    over the `_analysis` attribute.
+    """
+    client = object()
+    i = Index('my-index', using=client)
+
+    random_analyzer_name = ''.join((choice(string.ascii_letters) for _ in range(100)))
+    random_analyzer = analyzer(random_analyzer_name, tokenizer="standard", filter="standard")
+
+    i.analyzer(random_analyzer)
+
+    i2 = i.clone('my-clone-index')
+
+    assert i.to_dict()['settings']['analysis'] == i2.to_dict()['settings']['analysis']
+
+
 def test_settings_are_saved():
     i = Index('i')
     i.settings(number_of_replicas=0)
