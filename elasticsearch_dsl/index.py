@@ -31,7 +31,8 @@ class Index(object):
         :arg using: connection alias to use, defaults to ``'default'``
         """
         i = Index(name, using=using or self._using)
-        for attr in ('_doc_types', '_mappings', '_settings', '_aliases'):
+        for attr in ('_doc_types', '_mappings', '_settings', '_aliases',
+                     '_analysis'):
             setattr(i, attr, getattr(self, attr).copy())
         return i
 
