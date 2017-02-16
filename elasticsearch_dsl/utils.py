@@ -355,10 +355,11 @@ class ObjectBase(AttrDict):
         for k, v in iteritems(self._d_):
             try:
                 f = self._doc_type.mapping[k]
-                if f._coerce:
-                    v = f.serialize(v)
             except KeyError:
                 pass
+            else:
+                if f._coerce:
+                    v = f.serialize(v)
 
             # don't serialize empty values
             # careful not to include numeric zeros
