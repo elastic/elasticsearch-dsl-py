@@ -80,12 +80,22 @@ class Mapping(object):
         else:
             analysis = self._collect_analysis()
             if analysis:
-                existing_analysis = es.indices.get_settings(index)[index]['settings']['index'].get('analysis', {})
-                if analysis.items() > existing_analysis.items():
-                    if es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] != 'close':
+                # closed index, update away
+                if es.cluster.state(index=index, metric='metadata')['metadata']['indices'][index]['state'] == 'close':
+                    es.indices.put_settings(index=index, body={'analysis': analysis})
+                else:
+                    # compare analysis definition, if all analysis objects are
+                    # already defined as requested, skip analysis update and
+                    # proceed, otherwise raise IllegalOperation
+                    existing_analysis = es.indices.get_settings(index)[index]['settings']['index'].get('analysis', {})
+                    if any(
+                        existing_analysis.get(section, {}).get(k, None) != analysis[section][k]
+                        for section in analysis
+                        for k in analysis[section]
+                    ):
                         raise IllegalOperation(
                             'You cannot update analysis configuration on an open index, you need to close index %s first.' % index)
-                    es.indices.put_settings(index=index, body={'analysis': analysis})
+
             es.indices.put_mapping(index=index, doc_type=self.doc_type, body=self.to_dict())
 
     def update_from_es(self, index, using='default'):
