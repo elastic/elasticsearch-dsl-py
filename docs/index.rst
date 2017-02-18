@@ -285,5 +285,5 @@ Contents
    persistence
    faceted_search
    api
+   CONTRIBUTING
    Changelog
-
