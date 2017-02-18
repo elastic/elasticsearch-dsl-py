@@ -105,9 +105,9 @@ class RangeFacet(Facet):
         f, t = self._ranges[filter_value]
         limits = {}
         if f is not None:
-            limits['from'] = f
+            limits['gte'] = f
         if t is not None:
-            limits['to'] = t
+            limits['lt'] = t
 
         return Q('range', **{
             self._params['field']: limits
