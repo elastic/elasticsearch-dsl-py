@@ -239,10 +239,10 @@ examples can be seen below:
 .. code:: bash
 
     # Run all of the tests in `test_elasticsearch_dsl/test_analysis.py`
-    $ ./run_tests test_elasticsearch_dsl/test_analysis.py
+    $ ./run_tests.py test_analysis.py
 
     # Run only the `test_analyzer_serializes_as_name` test.
-    $ ./run_tests test_elasticsearch_dsl/test_analysis.py::test_analyzer_serializes_as_name
+    $ ./run_tests.py test_analysis.py::test_analyzer_serializes_as_name
 
 ``pytest`` will skip tests from ``test_elasticsearch_dsl/test_integration``
 unless there is an instance of Elasticsearch on which a connection can occur.
