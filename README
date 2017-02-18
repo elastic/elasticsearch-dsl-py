@@ -230,7 +230,7 @@ To install all of the dependencies necessary for development, run:
 
 .. code:: bash
 
-    $ pip install -e .[develop]
+    $ pip install -e '.[develop]'
 
 To run all of the tests for ``elasticsearch-dsl-py``, run:
 
