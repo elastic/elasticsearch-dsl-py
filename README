@@ -265,6 +265,11 @@ Documentation
 
 Documentation is available at https://elasticsearch-dsl.readthedocs.io.
 
+Contribution Guide
+------------------
+
+Want to hack on Elasticsearch DSL? Awesome! We have `Contribution-Guide <https://github.com/elastic/elasticsearch-dsl-py/blob/master/CONTRIBUTING.rst>`_.
+
 License
 -------
 
