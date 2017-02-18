@@ -219,6 +219,13 @@ existing ``dict``, modifying it using the API and serializing it back to a
 Development
 -----------
 
+Activate Virtual Environment (`virtualenvs <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_):
+
+.. code:: bash
+
+    $ virtualenv venv
+    $ source venv/bin/activate
+
 To install all of the dependencies necessary for development, run:
 
 .. code:: bash
