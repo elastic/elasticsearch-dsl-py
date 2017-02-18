@@ -485,3 +485,23 @@ def test_suggest():
             }
         }
     } == s.to_dict()
+
+def test_exclude():
+    s = search.Search()
+    s = s.exclude('match', title='python')
+
+    assert {
+        'query': {
+            'bool': {
+                'filter': [{
+                    'bool': {
+                        'must_not': [{
+                            'match': {
+                                'title': 'python'
+                            }
+                        }]
+                    }
+                }]
+            }
+        }
+    } == s.to_dict()
