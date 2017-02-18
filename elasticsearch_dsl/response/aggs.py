@@ -21,6 +21,14 @@ class BucketData(AggResponse):
     def __iter__(self):
         return iter(self.buckets)
 
+    def __len__(self):
+        return len(self.buckets)
+
+    def __getitem__(self, key):
+        if isinstance(key, (int, slice)):
+            return self.buckets[key]
+        return super(BucketData, self).__getitem__(key)
+
     @property
     def buckets(self):
         if not hasattr(self, '_buckets'):
