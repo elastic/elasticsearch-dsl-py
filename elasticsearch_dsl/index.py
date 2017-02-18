@@ -1,5 +1,6 @@
 from .connections import connections
 from .search import Search
+from .exceptions import IllegalOperation
 
 class Index(object):
     def __init__(self, name, using='default'):
@@ -41,11 +42,20 @@ class Index(object):
         return connections.get_connection(self._using)
     connection = property(_get_connection)
 
+    def mapping(self, mapping):
+        """
+        Associate a mapping (an instance of
+        :class:`~elasticsearch_dsl.Mapping`) with this index.
+        This means that, when this index is created, it will contain the
+        mappings for the document type defined by those mappings.
+        """
+        self._mappings[mapping.doc_type] = mapping
+
     def doc_type(self, doc_type):
         """
         Associate a :class:`~elasticsearch_dsl.DocType` subclass with an index.
         This means that, when this index is created, it will contain the
-        mappings fo the ``DocType``. If the ``DocType`` class doesn't have a
+        mappings for the ``DocType``. If the ``DocType`` class doesn't have a
         default index yet, name of the ``Index`` instance will be used. Can be
         used as a decorator::
 
@@ -212,6 +222,62 @@ class Index(object):
         ``Elasticsearch.indices.create`` unchanged.
         """
         self.connection.indices.create(index=self._name, body=self.to_dict(), **kwargs)
+
+    def put_mapping(self, **kwargs):
+        return self.connection.indices.put_mapping(index=self._name, **kwargs)
+
+    def put_settings(self, **kwargs):
+        return self.connection.indices.put_settings(index=self._name, **kwargs)
+
+    def get_settings(self, **kwargs):
+        return self.connection.indices.get_settings(index=self._name, **kwargs)
+
+    def is_closed(self):
+        state = self.connection.cluster.state(index=self._name, metric='metadata')
+        return state['metadata']['indices'][self._name]['state'] == 'close'
+
+    def save(self):
+        """
+        Sync the index definition with elasticsearch, creating the index if it
+        doesn't exist and updating its settings and mappings if it does.
+
+        Note some settings and mapping changes cannot be done on an open
+        index (or at all on an existing index) and for those this method will
+        fail with the underlying exception.
+        """
+        if not self.exists():
+            return self.create()
+
+        body = self.to_dict()
+        settings = body.pop('settings', {})
+        analysis = settings.pop('analysis', None)
+        if analysis:
+            if self.is_closed():
+                # closed index, update away
+                settings['analysis'] = analysis
+            else:
+                # compare analysis definition, if all analysis objects are
+                # already defined as requested, skip analysis update and
+                # proceed, otherwise raise IllegalOperation
+                existing_analysis = self.get_settings()[self._name]['settings']['index'].get('analysis', {})
+                if any(
+                    existing_analysis.get(section, {}).get(k, None) != analysis[section][k]
+                    for section in analysis
+                    for k in analysis[section]
+                ):
+                    raise IllegalOperation(
+                        'You cannot update analysis configuration on an open index, you need to close index %s first.' % self._name)
+
+        # try and update the settings
+        if settings:
+            self.put_settings(body=settings)
+
+        # update the mappings, any conflict in the mappings will result in an
+        # exception
+        mappings = body.pop('mappings', {})
+        if mappings:
+            for doc_type in mappings:
+                self.put_mapping(doc_type=doc_type, body=mappings[doc_type])
 
     def delete(self, **kwargs):
         """
