@@ -8,7 +8,7 @@ from elasticsearch.exceptions import TransportError
 
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
-from .utils import DslBase
+from .utils import DslBase, AttrDict
 from .response import Response, Hit, SuggestResponse
 from .connections import connections
 
@@ -629,6 +629,23 @@ class Search(Request):
             callback = self._doc_type_map.get(hit['_type'], Hit)
             callback = getattr(callback, 'from_es', callback)
             yield callback(hit)
+
+    def delete(self):
+        """
+        delete() executes the query by delegating to delete_by_query()
+        """
+
+        es = connections.get_connection(self._using)
+
+        return AttrDict(
+            es.delete_by_query(
+                index=self._index,
+                body=self.to_dict(),
+                doc_type=self._doc_type,
+                **self._params
+            )
+        )
+
 
 
 class MultiSearch(Request):

@@ -505,3 +505,14 @@ def test_exclude():
             }
         }
     } == s.to_dict()
+
+def test_delete_by_query(mock_client):
+    s = search.Search(using='mock') \
+        .query("match", lang="java")
+    s.delete()
+
+    mock_client.delete_by_query.assert_called_once_with(
+        doc_type=[],
+        index=None,
+        body={"query": {"match": {"lang": "java"}}}
+    )
