@@ -222,6 +222,7 @@ class FacetedSearch(object):
         """
         self._query = query
         self._filters = {}
+        # TODO: remove in 6.0
         if isinstance(sort, string_types):
             self._sort = (sort,)
         else:
