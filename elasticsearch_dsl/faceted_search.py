@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime
-from six import iteritems, itervalues
+from six import iteritems, itervalues, string_types
 
 from .search import Search
 from .aggs import A
@@ -214,7 +214,7 @@ class FacetedSearch(object):
     fields = ('*', )
     facets = {}
 
-    def __init__(self, query=None, filters={}, sort=None):
+    def __init__(self, query=None, filters={}, sort=()):
         """
         :arg query: the text to search for
         :arg filters: facet values to filter
@@ -222,7 +222,10 @@ class FacetedSearch(object):
         """
         self._query = query
         self._filters = {}
-        self._sort = sort
+        if isinstance(sort, string_types):
+            self._sort = (sort,)
+        else:
+            self._sort = sort
         self.filter_values = {}
         for name, value in iteritems(filters):
             self.add_filter(name, value)
@@ -316,7 +319,7 @@ class FacetedSearch(object):
         Add sorting information to the request.
         """
         if self._sort:
-            search = search.sort(self._sort)
+            search = search.sort(*self._sort)
         return search
 
     def build_search(self):
