@@ -35,8 +35,8 @@ library.
 
 The recommended way to set your requirements in your `setup.py` or
 `requirements.txt` is::
-	
-	# Elasticsearch 5.x
+
+    # Elasticsearch 5.x
     elasticsearch-dsl>=5.0.0,<6.0.0
 
     # Elasticsearch 2.x
