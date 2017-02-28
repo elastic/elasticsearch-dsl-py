@@ -15,6 +15,8 @@ def test_agg_response_is_pickleable(agg_response):
     r = pickle.loads(pickle.dumps(agg_response))
 
     assert r == agg_response
+    assert r._search == agg_response._search
+    assert r.hits == agg_response.hits
 
 def test_response_is_pickleable(dummy_response):
     res = response.Response(Search(), dummy_response)
@@ -22,6 +24,8 @@ def test_response_is_pickleable(dummy_response):
     r = pickle.loads(pickle.dumps(res))
 
     assert r == res
+    assert r._search == res._search
+    assert r.hits == res.hits
 
 def test_hit_is_pickleable(dummy_response):
     res = response.Response(Search(), dummy_response)

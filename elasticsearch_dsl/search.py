@@ -43,6 +43,12 @@ class QueryProxy(object):
             setattr(self._proxied, attr_name, value)
         super(QueryProxy, self).__setattr__(attr_name, value)
 
+    def __getstate__(self):
+        return (self._search, self._proxied, self._attr_name)
+
+    def __setstate__(self, state):
+        self._search, self._proxied, self._attr_name = state
+
 
 class ProxyDescriptor(object):
     """
@@ -95,6 +101,15 @@ class Request(object):
 
         self._params = {}
         self._extra = extra or {}
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, Request) and
+            other._params == self._params and
+            other._index == self._index and
+            other._doc_type == self._doc_type and
+            other.to_dict() == self.to_dict()
+        )
 
     def params(self, **kwargs):
         """
