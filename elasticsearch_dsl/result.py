@@ -28,6 +28,13 @@ class Response(AttrDict):
     def __len__(self):
         return len(self.hits)
 
+    def __getstate__(self):
+        return (self._d_, self._callbacks)
+
+    def __setstate__(self, state):
+        super(AttrDict, self).__setattr__('_d_', state[0])
+        super(AttrDict, self).__setattr__('_callbacks', state[1])
+
     def success(self):
         return self._shards.total == self._shards.successful and not self.timed_out
 

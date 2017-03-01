@@ -1,6 +1,16 @@
+import pickle
+
 from pytest import raises
 
 from elasticsearch_dsl import result
+
+def test_response_is_pickleable(dummy_response):
+    res = result.Response(dummy_response)
+    res.hits
+    r = pickle.loads(pickle.dumps(res))
+
+    assert r == res
+    assert r.hits == res.hits
 
 def test_attribute_error_in_hits_is_not_hidden(dummy_response):
     def f(hit):
