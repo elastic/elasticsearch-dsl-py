@@ -7,31 +7,34 @@ def _resolve_field(search, field):
         if f:
             return f
 
-class AggData(AttrDict):
-    def __init__(self, agg, search, data):
-        super(AggData, self).__init__(data)
-        super(AttrDict, self).__setattr__('meta', AttrDict({'agg': agg, 'search': search}))
-
 class Bucket(AggResponse):
     def __init__(self, aggs, search, data, field=None):
         if field:
             data['key'] = field.deserialize(data['key'])
         super(Bucket, self).__init__(aggs, search, data)
 
-class BucketData(AggData):
+class BucketData(AggResponse):
     _bucket_class = Bucket
     def _wrap_bucket(self, data, field=None):
-        return self._bucket_class(self.meta.agg, self.meta.search, data, field=field)
+        return self._bucket_class(self._meta['aggs'], self._meta['search'], data, field=field)
 
     def __iter__(self):
         return iter(self.buckets)
 
+    def __len__(self):
+        return len(self.buckets)
+
+    def __getitem__(self, key):
+        if isinstance(key, (int, slice)):
+            return self.buckets[key]
+        return super(BucketData, self).__getitem__(key)
+
     @property
     def buckets(self):
         if not hasattr(self, '_buckets'):
-            field = getattr(self.meta.agg, 'field', None)
+            field = getattr(self._meta['aggs'], 'field', None)
             if field:
-                field = _resolve_field(self.meta.search, field)
+                field = _resolve_field(self._meta['search'], field)
             bs = [self._wrap_bucket(b, field=field) for b in self._d_['buckets']]
             super(AttrDict, self).__setattr__('_buckets', bs)
         return self._buckets

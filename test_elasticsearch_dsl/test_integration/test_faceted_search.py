@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from elasticsearch_dsl import DocType, Boolean
 from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
 
 class CommitSearch(FacetedSearch):
@@ -11,6 +12,23 @@ class CommitSearch(FacetedSearch):
         'frequency': DateHistogramFacet(field='authored_date', interval="day", min_doc_count=1),
         'deletions': RangeFacet(field='stats.deletions', ranges=[('ok', (None, 1)), ('good', (1, 5)), ('better', (5, None))])
     }
+
+class Repos(DocType):
+    is_public = Boolean()
+
+class RepoSearch(FacetedSearch):
+    doc_types = [Repos]
+
+    facets = {
+      'public': TermsFacet(field='is_public')
+    }
+
+def test_boolean_facet(data_client):
+    rs = RepoSearch()
+    r = rs.execute()
+
+    assert r.hits.total == 1
+    assert [(True, 1, False)] == r.facets.public
 
 
 def test_empty_search_finds_everything(data_client):

@@ -216,10 +216,66 @@ existing ``dict``, modifying it using the API and serializing it back to a
     # Convert back to dict to plug back into existing code
     body = s.to_dict()
 
+Development
+-----------
+
+Activate Virtual Environment (`virtualenvs <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_):
+
+.. code:: bash
+
+    $ virtualenv venv
+    $ source venv/bin/activate
+
+To install all of the dependencies necessary for development, run:
+
+.. code:: bash
+
+    $ pip install -e '.[develop]'
+
+To run all of the tests for ``elasticsearch-dsl-py``, run:
+
+.. code:: bash
+
+    $ python setup.py test
+
+Alternatively, it is possible to use the ``run_tests.py`` script in
+``test_elasticsearch_dsl``, which wraps `pytest
+<http://doc.pytest.org/en/latest/>`_, to run subsets of the test suite. Some
+examples can be seen below:
+
+.. code:: bash
+
+    # Run all of the tests in `test_elasticsearch_dsl/test_analysis.py`
+    $ ./run_tests.py test_analysis.py
+
+    # Run only the `test_analyzer_serializes_as_name` test.
+    $ ./run_tests.py test_analysis.py::test_analyzer_serializes_as_name
+
+``pytest`` will skip tests from ``test_elasticsearch_dsl/test_integration``
+unless there is an instance of Elasticsearch on which a connection can occur.
+By default, the test connection is attempted at ``localhost:9200``, based on
+the defaults specified in the ``elasticsearch-py`` `Connection
+<https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch
+/connection/base.py#L29>`_ class. **Because running the integration
+tests will cause destructive changes to the Elasticsearch cluster, only run
+them when the associated cluster is empty.** As such, if the
+Elasticsearch instance at ``localhost:9200`` does not meet these requirements,
+it is possible to specify a different test Elasticsearch server through the
+``TEST_ES_SERVER`` environment variable.
+
+.. code:: bash
+
+    $ TEST_ES_SERVER=my-test-server:9201 ./run_tests
+
 Documentation
 -------------
 
 Documentation is available at https://elasticsearch-dsl.readthedocs.io.
+
+Contribution Guide
+------------------
+
+Want to hack on Elasticsearch DSL? Awesome! We have `Contribution-Guide <https://github.com/elastic/elasticsearch-dsl-py/blob/master/CONTRIBUTING.rst>`_.
 
 License
 -------

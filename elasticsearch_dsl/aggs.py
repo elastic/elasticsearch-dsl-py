@@ -1,7 +1,7 @@
 import collections
 
 from .utils import DslBase
-from .response.aggs import BucketData, AggData, TopHitsData
+from .response.aggs import BucketData, AggResponse, TopHitsData
 
 def A(name_or_agg, filter=None, **params):
     if filter is not None:
@@ -47,7 +47,7 @@ class Agg(DslBase):
         return d
 
     def result(self, search, data):
-        return AggData(self, search, data)
+        return AggResponse(self, search, data)
 
 
 class AggBase(object):

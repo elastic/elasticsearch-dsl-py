@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from elasticsearch import TransportError
 
@@ -126,3 +127,13 @@ def test_multi_missing(data_client):
     assert r2._search is s2
 
     assert r3 is None
+
+def test_raw_subfield_can_be_used_in_aggs(data_client):
+    s = Search(index='git', doc_type='commits')[0:0]
+    s.aggs.bucket('authors', 'terms', field='author.name.raw', size=1)
+
+    r = s.execute()
+
+    authors = r.aggregations.authors
+    assert 1 == len(authors)
+    assert {'key': 'Honza Král', 'doc_count': 52} == authors[0]

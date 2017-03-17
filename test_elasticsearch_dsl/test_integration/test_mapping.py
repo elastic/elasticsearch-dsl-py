@@ -59,6 +59,34 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
         }
     } == write_client.indices.get_mapping(index='test-mapping')
 
+def test_mapping_saved_into_es_when_index_already_exists_with_analysis(write_client):
+    m = mapping.Mapping('test-type')
+    analyzer = analysis.analyzer('my_analyzer', tokenizer='keyword')
+    m.field('name', 'text', analyzer=analyzer)
+
+    new_analysis = analyzer.get_analysis_definition()
+    new_analysis['analyzer']['other_analyzer'] = {
+        'type': 'custom',
+        'tokenizer': 'whitespace'
+    }
+    write_client.indices.create(index='test-mapping', body={'settings': {'analysis': new_analysis}})
+
+    m.field('title', 'text', analyzer=analyzer)
+    m.save('test-mapping', using=write_client)
+
+    assert {
+        'test-mapping': {
+            'mappings': {
+                'test-type': {
+                    'properties': {
+                        'name': {'type': 'text', 'analyzer': 'my_analyzer'},
+                        'title': {'type': 'text', 'analyzer': 'my_analyzer'},
+                    }
+                }
+            }
+        }
+    } == write_client.indices.get_mapping(index='test-mapping')
+
 def test_mapping_gets_updated_from_es(write_client):
     write_client.indices.create(
         index='test-mapping',

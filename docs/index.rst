@@ -23,6 +23,9 @@ Compatibility
 The library is compatible with all Elasticsearch versions since ``1.x`` but you
 **have to use a matching major version**:
 
+For **Elasticsearch 5.0** and later, use the major version 5 (``5.x.y``) of the
+library.
+
 For **Elasticsearch 2.0** and later, use the major version 2 (``2.x.y``) of the
 library.
 
@@ -32,6 +35,9 @@ library.
 
 The recommended way to set your requirements in your `setup.py` or
 `requirements.txt` is::
+
+    # Elasticsearch 5.x
+    elasticsearch-dsl>=5.0.0,<6.0.0
 
     # Elasticsearch 2.x
     elasticsearch-dsl>=2.0.0,<3.0.0
@@ -285,5 +291,5 @@ Contents
    persistence
    faceted_search
    api
+   CONTRIBUTING
    Changelog
-

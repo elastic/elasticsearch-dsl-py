@@ -84,6 +84,19 @@ explicitly:
 
     print(s.to_dict())
 
+
+Delete By Query
+~~~~~~~~~~~~~~~
+You can delete the documents matching a search by calling ``delete`` on the ``Search`` object instead of
+``execute`` like this:
+
+.. code:: python
+
+    s = Search().query("match", title="python")
+    response = s.delete()
+
+
+
 Queries
 ~~~~~~~
 
@@ -202,10 +215,17 @@ Behind the scenes this will produce a ``Bool`` query and place the specified
     s = s.query('bool', filter=[Q('terms', tags=['search', 'python'])])
 
 
-
 If you want to use the post_filter element for faceted navigation, use the
 ``.post_filter()`` method.
 
+You can also ``exclude()`` items from your query like this:
+
+.. code:: python
+
+    s = Search()
+    s = s.exclude('terms', tags=['search', 'python'])
+
+which is shorthand for: ``s = s.query('bool', filter=[~Q('terms', tags=['search', 'python'])])``
 
 Aggregations
 ~~~~~~~~~~~~

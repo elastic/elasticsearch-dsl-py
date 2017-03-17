@@ -8,7 +8,7 @@ from elasticsearch.exceptions import TransportError
 
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
-from .utils import DslBase
+from .utils import DslBase, AttrDict
 from .response import Response, Hit, SuggestResponse
 from .connections import connections
 
@@ -42,6 +42,12 @@ class QueryProxy(object):
             self._proxied = Q(self._proxied.to_dict())
             setattr(self._proxied, attr_name, value)
         super(QueryProxy, self).__setattr__(attr_name, value)
+
+    def __getstate__(self):
+        return (self._search, self._proxied, self._attr_name)
+
+    def __setstate__(self, state):
+        self._search, self._proxied, self._attr_name = state
 
 
 class ProxyDescriptor(object):
@@ -95,6 +101,15 @@ class Request(object):
 
         self._params = {}
         self._extra = extra or {}
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, Request) and
+            other._params == self._params and
+            other._index == self._index and
+            other._doc_type == self._doc_type and
+            other.to_dict() == self.to_dict()
+        )
 
     def params(self, **kwargs):
         """
@@ -226,6 +241,9 @@ class Search(Request):
 
     def filter(self, *args, **kwargs):
         return self.query(Bool(filter=[Q(*args, **kwargs)]))
+
+    def exclude(self, *args, **kwargs):
+        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
 
     def __iter__(self):
         """
@@ -626,6 +644,23 @@ class Search(Request):
             callback = self._doc_type_map.get(hit['_type'], Hit)
             callback = getattr(callback, 'from_es', callback)
             yield callback(hit)
+
+    def delete(self):
+        """
+        delete() executes the query by delegating to delete_by_query()
+        """
+
+        es = connections.get_connection(self._using)
+
+        return AttrDict(
+            es.delete_by_query(
+                index=self._index,
+                body=self.to_dict(),
+                doc_type=self._doc_type,
+                **self._params
+            )
+        )
+
 
 
 class MultiSearch(Request):
