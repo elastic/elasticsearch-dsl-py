@@ -41,7 +41,7 @@ class Response(AttrDict):
         return self._shards.total == self._shards.successful and not self.timed_out
 
     def _get_result(self, hit):
-        dt = hit['_type']
+        dt = hit.get('_type')
         for t in hit.get('inner_hits', ()):
             hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t])
         callback = self._search._doc_type_map.get(dt, Hit)
