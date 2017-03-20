@@ -417,7 +417,9 @@ endpoint) you can do so via ``execute_suggest``:
 Extra properties and parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To set extra properties of the search request, use the ``.extra()`` method:
+To set extra properties of the search request, use the ``.extra()`` method.
+This can be used to define keys in the body that cannot be defined via a
+specific API method like ``explain`` or ``search_after``:
 
 .. code:: python
 
