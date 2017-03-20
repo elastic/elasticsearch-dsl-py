@@ -152,3 +152,9 @@ def test_even_non_custom_analyzers_can_have_params():
             }
             }
     } == m._collect_analysis()
+
+def test_resolve_field_can_resolve_multifields():
+    m = mapping.Mapping('m')
+    m.field('title', 'text', fields={'keyword': Keyword()})
+
+    assert isinstance(m.resolve_field('title.keyword'), Keyword)

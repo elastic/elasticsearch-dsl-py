@@ -46,6 +46,9 @@ class Field(DslBase):
         self._required = kwargs.pop('required', False)
         super(Field, self).__init__(*args, **kwargs)
 
+    def __getitem__(self, subfield):
+        return self._params.get('fields', {})[subfield]
+
     def _serialize(self, data):
         return data
 
