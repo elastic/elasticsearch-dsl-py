@@ -268,6 +268,9 @@ class Boolean(Field):
 class Float(Field):
     name = 'float'
 
+class HalfFloat(Field):
+    name = 'half_float'
+
 class Double(Field):
     name = 'double'
 
