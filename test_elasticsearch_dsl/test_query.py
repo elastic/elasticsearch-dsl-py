@@ -212,6 +212,17 @@ def test_two_bool_queries_append_one_to_should_if_possible():
     assert (q1 | q2) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
     assert (q2 | q1) == query.Bool(should=[query.Match(f='v'), query.Bool(must=[query.Match(f='v')])])
 
+def test_allow_multiple_queries_for_constant_score_issue_599():
+    # Construct a number of ConstantScore queries each with different
+    # combinations of queries and filters.
+    q1 = query.ConstantScore(query=[query.Match(f=1), query.Match(f=2)])
+    q2 = query.ConstantScore(filter=[query.Match(f=1), query.Match(f=2)])
+    q3 = query.ConstantScore(query=query.Match(f=1))
+    q4 = query.ConstantScore(filter=query.Match(f=1))
+
+    for q in [q1, q2, q3, q4]:
+        assert isinstance(q.to_dict(), dict)
+
 def test_queries_are_registered():
     assert 'match' in query.Query._classes
     assert query.Query._classes['match'] is query.Match
