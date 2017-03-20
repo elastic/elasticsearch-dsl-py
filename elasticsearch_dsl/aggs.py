@@ -40,6 +40,10 @@ class Agg(DslBase):
     _type_name = 'agg'
     _type_shortcut = staticmethod(A)
     name = None
+
+    def __contains__(self, key):
+        return False
+
     def to_dict(self):
         d = super(Agg, self).to_dict()
         if 'meta' in d[self.name]:
@@ -54,6 +58,9 @@ class AggBase(object):
     _param_defs = {
         'aggs': {'type': 'agg', 'hash': True},
     }
+    def __contains__(self, key):
+        return key in self._params.get('aggs', {})
+
     def __getitem__(self, agg_name):
         agg = self._params.setdefault('aggs', {})[agg_name] # propagate KeyError
 

@@ -124,10 +124,13 @@ def test_aggregation_base(agg_response):
     assert agg_response.aggs is agg_response.aggregations
     assert isinstance(agg_response.aggs, response.AggResponse)
 
+def test_metric_agg_works(agg_response):
+    assert 25052.0 == agg_response.aggs.sum_lines.value
+
 def test_aggregations_can_be_iterated_over(agg_response):
     aggs = [a for a in agg_response.aggs]
 
-    assert len(aggs) == 2
+    assert len(aggs) == 3
     assert all(map(lambda a: isinstance(a, AggResponse), aggs))
 
 def test_aggregations_can_be_retrieved_by_name(agg_response, aggs_search):

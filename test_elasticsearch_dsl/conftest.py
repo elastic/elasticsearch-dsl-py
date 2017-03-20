@@ -132,6 +132,7 @@ def aggs_search():
         .metric('line_stats', 'stats', field='stats.lines')\
         .metric('top_commits', 'top_hits', size=2, _source=["stats.*", "committed_date"])
     s.aggs.bucket('per_month', 'date_histogram', interval='month', field='info.committed_date')
+    s.aggs.metric('sum_lines', 'sum', field='stats.lines')
     return s
 
 @fixture
@@ -142,6 +143,7 @@ def aggs_data():
         '_shards': {'total': 1, 'successful': 1, 'failed': 0},
         'hits': {'total': 52, 'hits': [], 'max_score': 0.0},
         'aggregations': {
+            'sum_lines': {'value': 25052.0},
             'per_month': {
                 'buckets': [
                     {'doc_count': 38, 'key': 1393632000000, 'key_as_string': '2014-03-01T00:00:00.000Z'},
