@@ -123,7 +123,7 @@ If you want to create a model-like wrapper around your documents, use the
 
     class Post(DocType):
         title = Text()
-        title_suggest = Completion(payloads=True)
+        title_suggest = Completion()
         created_at = Date()
         published = Boolean()
         category = Text(
@@ -433,4 +433,3 @@ create specific copies:
     dev_blogs = blogs.clone('blogs', using='dev')
     # and change its settings
     dev_blogs.setting(number_of_shards=1)
-
