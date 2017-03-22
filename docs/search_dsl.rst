@@ -179,6 +179,16 @@ be used internally:
     s = s.query().query()
     print(s.to_dict())
     # {"query": {"bool": {...}}}
+    
+To perform ``.query()`` methods dynamically if you have multiple query params
+.. code:: python
+
+    search_query = Search().using(client).index(index).doc_type(doc_type)
+    for query_param in query_params:
+        search_query = search_query.query(
+                "match", **{query_param: query_params[query_param]}
+            )
+because ``.query()`` method do not update an existing search object unless it is assigned to the same. 
 
 If you want to have precise control over the query form, use the ``Q`` shortcut
 to directly construct the combined query:
