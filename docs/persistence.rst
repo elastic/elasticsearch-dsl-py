@@ -409,7 +409,7 @@ in a migration:
         char_filter=["html_strip"]
     )
 
-    blog.analyzer(html_strip)
+    blogs.analyzer(html_strip)
 
     # delete the index, ignore if it doesn't exist
     blogs.delete(ignore=404)
