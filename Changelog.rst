@@ -3,6 +3,14 @@
 Changelog
 =========
 
+5.2.0 (2017-03-26)
+------------------
+ * make sure all response structers are pickleable (for caching)
+ * adding ``exclude`` to ``Search``
+ * fix metric aggregation deserialization
+ * expose all index-level APIs on ``Index`` class
+ * adding ``delete`` to ``Search`` which calls ``delete_by_query`` API
+
 5.1.0 (2017-01-08)
 ------------------
  * Renamed ``Result`` and ``ResultMeta`` to ``Hit`` and ``HitMeta`` respectively
