@@ -1,4 +1,4 @@
-from ..utils import AttrDict
+from ..utils import AttrDict, AttrList
 from . import Response, AggResponse
 
 def _resolve_field(search, field):
@@ -15,8 +15,9 @@ class Bucket(AggResponse):
 
 class BucketData(AggResponse):
     _bucket_class = Bucket
-    def _wrap_bucket(self, data, field=None):
-        return self._bucket_class(self._meta['aggs'], self._meta['search'], data, field=field)
+    def _wrap_bucket(self, data):
+        return self._bucket_class(self._meta['aggs'], self._meta['search'],
+                                  data, field=self._meta.get('field'))
 
     def __iter__(self):
         return iter(self.buckets)
@@ -34,8 +35,12 @@ class BucketData(AggResponse):
         if not hasattr(self, '_buckets'):
             field = getattr(self._meta['aggs'], 'field', None)
             if field:
-                field = _resolve_field(self._meta['search'], field)
-            bs = [self._wrap_bucket(b, field=field) for b in self._d_['buckets']]
+                self._meta['field'] = _resolve_field(self._meta['search'], field)
+            bs = self._d_['buckets']
+            if isinstance(bs, list):
+                bs = AttrList(bs, obj_wrapper=self._wrap_bucket)
+            else:
+                bs = AttrDict(dict((k, self._wrap_bucket(bs[k])) for k in bs))
             super(AttrDict, self).__setattr__('_buckets', bs)
         return self._buckets
 

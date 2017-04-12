@@ -137,7 +137,10 @@ class Pipeline(Agg):
 # bucket aggregations
 class Filters(Bucket):
     name = 'filters'
-    _param_defs = {'filters': {'type': 'query', 'hash': True}}
+    _param_defs = {
+        'filters': {'type': 'query', 'hash': True},
+        'aggs': {'type': 'agg', 'hash': True},
+    }
 
 class Children(Bucket):
     name = 'children'

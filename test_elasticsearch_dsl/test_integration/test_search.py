@@ -25,6 +25,19 @@ class Commit(DocType):
         index = 'git'
         parent = MetaField(type='repos')
 
+def test_filters_aggregation_buckets_are_accessible(data_client):
+    has_tests_query = Q('term', files='test_elasticsearch_dsl')
+    s = Commit.search()[0:0]
+    s.aggs\
+        .bucket('top_authors', 'terms', field='author.name.raw')\
+        .bucket('has_tests', 'filters', filters={'yes': has_tests_query, 'no': ~has_tests_query})\
+        .metric('lines', 'stats', field='stats.lines')
+    response = s.execute()
+
+    assert isinstance(response.aggregations.top_authors.buckets[0].has_tests.buckets.yes, aggs.Bucket)
+    assert 35 == response.aggregations.top_authors.buckets[0].has_tests.buckets.yes.doc_count
+    assert 228 == response.aggregations.top_authors.buckets[0].has_tests.buckets.yes.lines.max
+
 def test_top_hits_are_wrapped_in_response(data_client):
     s = Commit.search()[0:0]
     s.aggs.bucket('top_authors', 'terms', field='author.name.raw').metric('top_commits', 'top_hits', size=5)
