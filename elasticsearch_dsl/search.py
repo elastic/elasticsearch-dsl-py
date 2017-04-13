@@ -271,7 +271,7 @@ class Search(Request):
             if n.start and n.start < 0 or n.stop and n.stop < 0:
                 raise ValueError("Search does not support negative slicing.")
             # Elasticsearch won't get all results so we default to size: 10 if
-            # stop not given.
+            # stop not given. [0:0] for an empty Response.
             s._extra['from'] = n.start or 0
             s._extra['size'] = n.stop - (n.start or 0) if n.stop is not None else 10
             return s
