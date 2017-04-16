@@ -252,7 +252,15 @@ existing ``dict``, modifying it using the API and serializing it back to a
 .. code:: python
 
     body = {...} # insert complicated query here
-
+    
+    # In case you have an aggregation or a filter to migrate to dsl and extend further
+    # you will have to create an empty body with default query structure.
+    
+    body = {'query': {'match_all': {}}}
+    
+    # Now append your aggregation of a filter that you are trying to further use
+    # body.update(facet_dict) or body.update(aggr)
+    
     # Convert to Search object
     s = Search.from_dict(body)
 
