@@ -178,8 +178,6 @@ class DocType(ObjectBase):
             id=id,
             **kwargs
         )
-        if not doc['found']:
-            return None
         return cls.from_es(doc)
 
     @classmethod
