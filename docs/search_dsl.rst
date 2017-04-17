@@ -69,7 +69,7 @@ iterate over the ``Search`` object:
 
 .. code:: python
 
-    for hit in s:
+    for hit in response:
         print(hit.title)
 
 Search results will be cached. Subsequent calls to ``execute`` or trying to
@@ -82,7 +82,7 @@ explicitly:
 
 .. code:: python
 
-    print(s.to_dict())
+    print(response.to_dict())
 
 
 Delete By Query
