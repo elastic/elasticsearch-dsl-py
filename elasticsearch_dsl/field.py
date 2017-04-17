@@ -221,6 +221,9 @@ class Date(Field):
             return datetime.utcfromtimestamp(data / 1000)
 
         try:
+            if data is None and self._allow_blank:
+                return
+
             # TODO: add format awareness
             return parser.parse(data)
         except Exception as e:
