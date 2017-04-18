@@ -17,7 +17,7 @@ DELETE_META_FIELDS = frozenset((
 ))
 
 DOC_META_FIELDS = frozenset((
-    'timestamp', 'ttl'
+    'timestamp', 'ttl', 'retry_on_conflict'
 )).union(DELETE_META_FIELDS)
 
 META_FIELDS = frozenset((
