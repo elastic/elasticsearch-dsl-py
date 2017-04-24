@@ -133,7 +133,7 @@ class Index(object):
 
     def search(self):
         """
-        Rteurn a :class:`~elasticsearch_dsl.Search` object searching over this
+        Return a :class:`~elasticsearch_dsl.Search` object searching over this
         index and its ``DocType``\s.
         """
         return Search(
