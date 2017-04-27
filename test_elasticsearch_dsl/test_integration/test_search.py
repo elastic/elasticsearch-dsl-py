@@ -74,7 +74,7 @@ def test_inner_hits_are_wrapped_in_doc_type(data_client):
 
 
 def test_suggest_can_be_run_separately(data_client):
-    s = Search()
+    s = Search(index='git')
     s = s.suggest('simple_suggestion', 'elasticserach', term={'field': 'organization'})
     response = s.execute_suggest()
 
