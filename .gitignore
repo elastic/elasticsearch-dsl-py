@@ -1,5 +1,7 @@
 .*.swp
 *~
+*.iml
+.idea
 *.py[co]
 .coverage
 *.egg-info
