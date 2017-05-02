@@ -179,10 +179,7 @@ class Boosting(Query):
 
 class ConstantScore(Query):
     name = 'constant_score'
-    _param_defs = {
-        'query': {'type': 'query', 'multi': True},
-        'filter': {'type': 'query', 'multi': True}
-    }
+    _param_defs = {'query': {'type': 'query'}, 'filter': {'type': 'query'}}
 
 class DisMax(Query):
     name = 'dis_max'
