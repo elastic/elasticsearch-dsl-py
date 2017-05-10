@@ -15,7 +15,7 @@ def Q(name_or_query='match_all', **params):
             raise ValueError('Q() can only accept dict with a single query ({"match": {...}}). '
                  'Instead it got (%r)' % name_or_query)
         name, params = name_or_query.copy().popitem()
-        return Query.get_dsl_class(name)(**params)
+        return Query.get_dsl_class(name)(_expand__to_dot=False, **params)
 
     # MatchAll()
     if isinstance(name_or_query, Query):

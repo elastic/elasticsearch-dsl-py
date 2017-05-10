@@ -3,6 +3,11 @@ from copy import deepcopy
 from elasticsearch_dsl import search, query, Q, DocType, utils
 
 
+def test_expand__to_dot_is_respected():
+    s = search.Search().query('match', a__b=42, _expand__to_dot=False)
+
+    assert {"query": {"match": {"a__b": 42}}} == s.to_dict()
+
 def test_execute_uses_cache():
     s = search.Search()
     r = object()
