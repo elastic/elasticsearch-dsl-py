@@ -25,7 +25,7 @@ def A(name_or_agg, filter=None, **params):
         if aggs:
             params = params.copy()
             params['aggs'] = aggs
-        return Agg.get_dsl_class(agg_type)(**params)
+        return Agg.get_dsl_class(agg_type)(_expand__to_dot=False, **params)
 
     # Terms(...) just return the nested agg
     elif isinstance(name_or_agg, Agg):
