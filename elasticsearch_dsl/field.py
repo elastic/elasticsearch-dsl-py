@@ -220,11 +220,12 @@ class Date(Field):
         if isinstance(data, int):
             return datetime.utcfromtimestamp(data / 1000)
 
-        try:
-            # TODO: add format awareness
-            return parser.parse(data)
-        except Exception as e:
-            raise ValidationException('Could not parse date from the value (%r)' % data, e)
+        if data is not None:
+            try:
+                # TODO: add format awareness
+                return parser.parse(data)
+            except Exception as e:
+                raise ValidationException('Could not parse date from the value (%r)' % data, e)
 
 class String(Field):
     _param_defs = {
