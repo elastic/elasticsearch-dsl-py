@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Boolean
+from elasticsearch_dsl import DocType, Boolean, Date
 from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
 
 class CommitSearch(FacetedSearch):
@@ -15,13 +15,22 @@ class CommitSearch(FacetedSearch):
 
 class Repos(DocType):
     is_public = Boolean()
+    created_at = Date()
 
 class RepoSearch(FacetedSearch):
     doc_types = [Repos]
 
     facets = {
-      'public': TermsFacet(field='is_public')
+      'public': TermsFacet(field='is_public'),
+      'created': DateHistogramFacet(field='created_at', interval='month')
     }
+
+def test_datehistogram_facet(data_client):
+    rs = RepoSearch()
+    r = rs.execute()
+
+    assert r.hits.total == 1
+    assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 def test_boolean_facet(data_client):
     rs = RepoSearch()
