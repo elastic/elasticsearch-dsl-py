@@ -140,7 +140,10 @@ class DateHistogramFacet(Facet):
         super(DateHistogramFacet, self).__init__(**kwargs)
 
     def get_value(self, bucket):
-        return datetime.utcfromtimestamp(int(bucket['key']) / 1000)
+        if not isinstance(bucket['key'], datetime):
+            return datetime.utcfromtimestamp(int(bucket['key']) / 1000)
+        else:
+            return bucket['key']
 
     def get_value_filter(self, filter_value):
         return Q('range', **{
