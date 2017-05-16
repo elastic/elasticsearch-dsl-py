@@ -283,6 +283,9 @@ class Search(Request):
             s._extra['size'] = 1
             return s
 
+    def __iter__(self):
+        return iter(self.execute())
+
     @classmethod
     def from_dict(cls, d):
         """
