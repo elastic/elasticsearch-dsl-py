@@ -3,6 +3,12 @@
 Changelog
 =========
 
+5.3.0 (2017-05-18)
+------------------
+ * fix constant score query definition
+ * ``DateHistogramFacet`` now works with ``datetime`` objects
+ * respect ``__`` in field names when creating queries from dict
+
 5.2.0 (2017-03-26)
 ------------------
  * make sure all response structers are pickleable (for caching)
