@@ -100,14 +100,14 @@ Let's rewrite the example using the Python DSL:
 .. code:: python
 
     from elasticsearch import Elasticsearch
-    from elasticsearch_dsl import Search, Q
+    from elasticsearch_dsl import Search
 
     client = Elasticsearch()
 
     s = Search(using=client, index="my-index") \
         .filter("term", category="search") \
         .query("match", title="python")   \
-        .query(~Q("match", description="beta"))
+        .exclude("match", description="beta")
 
     s.aggs.bucket('per_tag', 'terms', field='tags') \
         .metric('max_lines', 'max', field='lines')
