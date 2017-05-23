@@ -151,6 +151,12 @@ class InnerObject(object):
                 for inner_f in f._collect_fields():
                     yield inner_f
 
+    def __getitem__(self, name):
+        return self.properties[name]
+
+    def __contains__(self, name):
+        return name in self.properties
+
     def update(self, other_object):
         if not hasattr(other_object, 'properties'):
             # not an inner/nested object, no merge possible
