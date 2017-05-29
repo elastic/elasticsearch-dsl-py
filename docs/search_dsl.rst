@@ -192,6 +192,36 @@ to directly construct the combined query:
     )
     s = Search().query(q)
 
+You may  `unpack Q queries dynamically` as given below
+
+.. code:: python
+    q_queries = [
+              {
+                "operation": "or",
+                "queries":
+                  [
+                    {"status": "PASS"}, {"status": "FAIL"}, {"status": "ABSE"}, {"status": "WITH"}
+                  ]
+                }
+
+             ]
+    
+    
+    def create_q_queries(self, q_queries, search_query):
+    """
+    create q queries and chain if multiple q queries.
+    :param q_queries: Q queries with operation and query params as a dict.
+    :param search_query: Search() object.
+    :return: search_query updated with q queries.
+    """
+    if q_queries:
+        logical_operator_mappings = {'or': 'should', 'and': 'must'}
+        for query in q_queries:
+            queries = [Q('match', **query) for query in query['queries']]
+            search_query = search_query.query(Q('bool', **{
+                logical_operator_mappings.get(query.get('operation')): queries
+            }))
+    return search_query  
 
 Filters
 ~~~~~~~
