@@ -143,6 +143,9 @@ class Bool(Query):
                 elif not q.should:
                     q.minimum_should_match = min_should_match
                     q.should = qx.should
+                # all queries are optional, just extend should
+                elif q.minimum_should_match == 0 and min_should_match == 0:
+                    q.should.extend(qx.should)
                 # not all are required, add a should list to the must with proper min_should_match
                 else:
                     q.must.append(Bool(should=qx.should, minimum_should_match=min_should_match))
