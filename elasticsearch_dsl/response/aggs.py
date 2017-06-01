@@ -9,9 +9,13 @@ def _resolve_field(search, field):
 
 class Bucket(AggResponse):
     def __init__(self, aggs, search, data, field=None):
+        super(Bucket, self).__init__(aggs, search, data)
+
+class FieldBucket(Bucket):
+    def __init__(self, aggs, search, data, field=None):
         if field:
             data['key'] = field.deserialize(data['key'])
-        super(Bucket, self).__init__(aggs, search, data)
+        super(FieldBucket, self).__init__(aggs, search, data, field)
 
 class BucketData(AggResponse):
     _bucket_class = Bucket
@@ -43,6 +47,9 @@ class BucketData(AggResponse):
                 bs = AttrDict(dict((k, self._wrap_bucket(bs[k])) for k in bs))
             super(AttrDict, self).__setattr__('_buckets', bs)
         return self._buckets
+
+class FieldBucketData(BucketData):
+    _bucket_class = FieldBucket
 
 class TopHitsData(Response):
     def __init__(self, agg, search, data):

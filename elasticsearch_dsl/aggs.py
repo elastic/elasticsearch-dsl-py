@@ -1,7 +1,7 @@
 import collections
 
 from .utils import DslBase
-from .response.aggs import BucketData, AggResponse, TopHitsData
+from .response.aggs import BucketData, FieldBucketData, AggResponse, TopHitsData
 
 def A(name_or_agg, filter=None, **params):
     if filter is not None:
@@ -148,6 +148,9 @@ class Children(Bucket):
 class DateHistogram(Bucket):
     name = 'date_histogram'
 
+    def result(self, search, data):
+        return FieldBucketData(self, search, data)
+
 class DateRange(Bucket):
     name = 'date_range'
 
@@ -165,6 +168,8 @@ class Global(Bucket):
 
 class Histogram(Bucket):
     name = 'histogram'
+    def result(self, search, data):
+        return FieldBucketData(self, search, data)
 
 class Iprange(Bucket):
     name = 'iprange'
@@ -186,6 +191,9 @@ class SignificantTerms(Bucket):
 
 class Terms(Bucket):
     name = 'terms'
+
+    def result(self, search, data):
+        return FieldBucketData(self, search, data)
 
 class Sampler(Bucket):
     name = 'sampler'
