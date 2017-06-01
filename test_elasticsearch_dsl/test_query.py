@@ -98,6 +98,9 @@ def test_bool_and_other_sets_min_should_match_if_needed():
         minimum_should_match=1
     )
 
+def test_empty_bool_has_min_should_match_0():
+    assert 0 == query.Bool()._min_should_match
+
 def test_query_and_query_creates_bool():
     q1 = query.Match(f=42)
     q2 = query.Match(g=47)

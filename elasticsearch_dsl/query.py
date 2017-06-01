@@ -109,7 +109,7 @@ class Bool(Query):
 
     @property
     def _min_should_match(self):
-        return getattr(self, 'minimum_should_match', 0 if (self.must or self.filter) else 1)
+        return getattr(self, 'minimum_should_match', 0 if not self.should or (self.must or self.filter) else 1)
 
     def __invert__(self):
         negations = []
