@@ -9,7 +9,7 @@ The ``Search`` object represents the entire search request:
   * queries
 
   * filters
-
+  
   * aggregations
 
   * sort
@@ -494,6 +494,18 @@ convenient helpers:
 If you want to inspect the contents of the ``response`` objects, just use its
 ``to_dict`` method to get access to the raw data for pretty printing.
 
+Response Filtering
+~~~~~~~~~~~~~~~~~~
+The response by from the ES API can be verbose. To reduce the response
+you can add a ``filter_path`` filter.
+
+.. code:: python
+
+    s = Search()
+    s = s.params(filter_path=['hits.total','hits.hits.id'])
+    
+Do note, when using ``filter_path`` you maynot have access to the dsl Response object
+and will have to parse the result using .to_dict()
 
 Hits
 ~~~~
