@@ -130,4 +130,3 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
         },
         'highlight': {'fields': {'body': {}, 'title': {}}}
     } == d
-
