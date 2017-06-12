@@ -131,3 +131,10 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
         'highlight': {'fields': {'body': {}, 'title': {}}}
     } == d
 
+
+def test_response_facets():
+    bs = BlogSearch('python search', filters={'category': 'elastic', 'tags': ['python', 'django']})
+    s = bs.build_search()
+    r = s.execute()
+    facets = r.facets()
+    assert facets == {'category': 'elastic', 'tags': ['python', 'django']}
