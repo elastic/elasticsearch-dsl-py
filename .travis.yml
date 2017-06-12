@@ -11,22 +11,23 @@ before_install:
   - java -version
 
 python:
-  - "2.6"
-  - "2.7"
-  - "3.3"
-  - "3.4"
+#  - "2.6"
+#  - "2.7"
+#  - "3.3"
+#  - "3.4"
   - "3.5"
-  - "3.6"
-  - "3.6-dev"
-  - "3.7-dev"
-  - "nightly"
+#  - "3.6"
+#  - "3.6-dev"
+#  - "3.7-dev"
+#  - "nightly"
 
 env:
   global:
     - WAIT_FOR_ES=1
   matrix:
-    - ES_VERSION=5.0.2
-    - ES_VERSION=5.1.1
+    #- ES_VERSION=5.0.2
+    #- ES_VERSION=5.1.1
+    - ES_VERSION=5.4.1
 
 install:
   - mkdir /tmp/elasticsearch
