@@ -36,6 +36,8 @@ def test_boolean_facet(data_client):
     rs = RepoSearch()
     r = rs.execute()
 
+    assert r.facets == {}
+
     assert r.hits.total == 1
     assert [(True, 1, False)] == r.facets.public
 
