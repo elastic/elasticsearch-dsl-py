@@ -30,7 +30,7 @@ def test_datehistogram_facet(data_client):
     r = rs.execute()
 
     assert r.hits.total == 1
-    assert [(datetime(1970, 1, 1, 0, 0), 1, False)] == r.facets.created
+    assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 def test_boolean_facet(data_client):
     rs = RepoSearch()
