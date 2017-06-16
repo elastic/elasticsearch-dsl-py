@@ -52,7 +52,7 @@ def test_get(data_client):
 
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == 'elasticsearch'
-    assert datetime(2014, 3, 3) == elasticsearch_repo.created_at
+    assert datetime(1970, 1, 1) == elasticsearch_repo.created_at
 
 def test_get_with_tz_date(data_client):
     first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
