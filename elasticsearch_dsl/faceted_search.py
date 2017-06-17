@@ -141,7 +141,7 @@ class DateHistogramFacet(Facet):
 
     def get_value(self, bucket):
         if not isinstance(bucket['key'], datetime):
-            # Elasticsearch returns key=None instead 0 for date 1970-01-01,
+            # Elasticsearch returns key=None instead of 0 for date 1970-01-01,
             # so we need to set key to 0 to avoid TypeError exception
             if bucket['key'] is None:
                 bucket['key'] = 0
