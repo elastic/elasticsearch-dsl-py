@@ -382,10 +382,11 @@ class DocType(ObjectBase):
             for k in DOC_META_FIELDS
             if k in self.meta
         )
-        body = {'doc': doc}
-        if doc_as_upsert:
-            body['doc_as_upsert'] = True
-        body['detect_noop'] = True if detect_noop else False
+        body = {
+            'doc': doc,
+            'doc_as_upsert': doc_as_upsert,
+            'detect_noop': detect_noop,
+        }
 
         meta = es.update(
             index=self._get_index(index),
