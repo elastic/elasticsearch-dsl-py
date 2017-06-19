@@ -2,19 +2,8 @@ import collections
 
 from itertools import chain
 
-from .utils import DslBase, _make_dsl_class
+from .utils import DslBase
 from .function import SF, ScoreFunction
-
-__all__ = [
-    'Q', 'Bool', 'Boosting', 'Common', 'ConstantScore', 'DisMax', 'Filtered',
-    'FunctionScore', 'Fuzzy', 'FuzzyLikeThis', 'FuzzyLikeThisField',
-    'GeoShape', 'HasChild', 'HasParent', 'Ids', 'Indices', 'Match', 'MatchAll',
-    'MatchPhrase', 'MatchPhrasePrefix', 'MoreLikeThis', 'MoreLikeThisField',
-    'MultiMatch', 'Nested', 'Prefix', 'Query', 'QueryString', 'Range',
-    'Regexp', 'SF', 'ScoreFunction', 'SimpleQueryString', 'SpanFirst',
-    'SpanMulti', 'SpanNear', 'SpanNot', 'SpanOr', 'SpanTerm', 'Template',
-    'Term', 'Terms', 'TopChildren', 'Wildcard'
-]
 
 
 def Q(name_or_query='match_all', **params):
@@ -26,7 +15,7 @@ def Q(name_or_query='match_all', **params):
             raise ValueError('Q() can only accept dict with a single query ({"match": {...}}). '
                  'Instead it got (%r)' % name_or_query)
         name, params = name_or_query.copy().popitem()
-        return Query.get_dsl_class(name)(**params)
+        return Query.get_dsl_class(name)(_expand__to_dot=False, **params)
 
     # MatchAll()
     if isinstance(name_or_query, Query):
@@ -120,7 +109,7 @@ class Bool(Query):
 
     @property
     def _min_should_match(self):
-        return getattr(self, 'minimum_should_match', 0 if (self.must or self.filter) else 1)
+        return getattr(self, 'minimum_should_match', 0 if not self.should or (self.must or self.filter) else 1)
 
     def __invert__(self):
         negations = []
@@ -154,6 +143,9 @@ class Bool(Query):
                 elif not q.should:
                     q.minimum_should_match = min_should_match
                     q.should = qx.should
+                # all queries are optional, just extend should
+                elif q._min_should_match == 0 and min_should_match == 0:
+                    q.should.extend(qx.should)
                 # not all are required, add a should list to the must with proper min_should_match
                 else:
                     q.must.append(Bool(should=qx.should, minimum_should_match=min_should_match))
@@ -182,64 +174,173 @@ class FunctionScore(Query):
                     fns.append({name: kwargs.pop(name)})
         super(FunctionScore, self).__init__(**kwargs)
 
-QUERIES = (
-    # compound queries
-    ('boosting', {'positive': {'type': 'query'}, 'negative': {'type': 'query'}}),
-    ('constant_score', {'query': {'type': 'query'}, 'filter': {'type': 'query'}}),
-    ('dis_max', {'queries': {'type': 'query', 'multi': True}}),
-    ('filtered', {'query': {'type': 'query'}, 'filter': {'type': 'query'}}),
-    ('indices', {'query': {'type': 'query'}, 'no_match_query': {'type': 'query'}}),
 
-    # relationship queries
-    ('nested', {'query': {'type': 'query'}}),
-    ('has_child', {'query': {'type': 'query'}}),
-    ('has_parent', {'query': {'type': 'query'}}),
-    ('top_children', {'query': {'type': 'query'}}),
+# compound queries
+class Boosting(Query):
+    name = 'boosting'
+    _param_defs = {'positive': {'type': 'query'}, 'negative': {'type': 'query'}}
 
-    # compount span queries
-    ('span_first', {'match': {'type': 'query'}}),
-    ('span_multi', {'match': {'type': 'query'}}),
-    ('span_near', {'clauses': {'type': 'query', 'multi': True}}),
-    ('span_not', {'exclude': {'type': 'query'}, 'include': {'type': 'query'}}),
-    ('span_or', {'clauses': {'type': 'query', 'multi': True}}),
+class ConstantScore(Query):
+    name = 'constant_score'
+    _param_defs = {'query': {'type': 'query'}, 'filter': {'type': 'query'}}
 
-    # core queries
-    ('common', None),
-    ('fuzzy', None),
-    ('fuzzy_like_this', None),
-    ('fuzzy_like_this_field', None),
-    ('geo_bounding_box', None),
-    ('geo_distance', None),
-    ('geo_distance_range', None),
-    ('geo_polygon', None),
-    ('geo_shape', None),
-    ('geohash_cell', None),
-    ('ids', None),
-    ('limit', None),
-    ('match', None),
-    ('match_phrase', None),
-    ('match_phrase_prefix', None),
-    ('exists', None),
-    ('more_like_this', None),
-    ('more_like_this_field', None),
-    ('multi_match', None),
-    ('prefix', None),
-    ('query_string', None),
-    ('range', None),
-    ('regexp', None),
-    ('simple_query_string', None),
-    ('span_term', None),
-    ('template', None),
-    ('term', None),
-    ('terms', None),
-    ('wildcard', None),
-    ('script', None),
-    ('type', None),
-)
+class DisMax(Query):
+    name = 'dis_max'
+    _param_defs = {'queries': {'type': 'query', 'multi': True}}
 
-# generate the query classes dynamically
-for qname, params_def in QUERIES:
-    qclass = _make_dsl_class(Query, qname, params_def)
-    globals()[qclass.__name__] = qclass
-    qclass.__module__ = __name__
+class Filtered(Query):
+    name = 'filtered'
+    _param_defs = {'query': {'type': 'query'}, 'filter': {'type': 'query'}}
 
+class Indices(Query):
+    name = 'indices'
+    _param_defs = {'query': {'type': 'query'}, 'no_match_query': {'type': 'query'}}
+
+
+# relationship queries
+class Nested(Query):
+    name = 'nested'
+    _param_defs = {'query': {'type': 'query'}}
+
+class HasChild(Query):
+    name = 'has_child'
+    _param_defs = {'query': {'type': 'query'}}
+
+class HasParent(Query):
+    name = 'has_parent'
+    _param_defs = {'query': {'type': 'query'}}
+
+class TopChildren(Query):
+    name = 'top_children'
+    _param_defs = {'query': {'type': 'query'}}
+
+
+# compount span queries
+class SpanFirst(Query):
+    name = 'span_first'
+    _param_defs = {'match': {'type': 'query'}}
+
+class SpanMulti(Query):
+    name = 'span_multi'
+    _param_defs = {'match': {'type': 'query'}}
+
+class SpanNear(Query):
+    name = 'span_near'
+    _param_defs = {'clauses': {'type': 'query', 'multi': True}}
+
+class SpanNot(Query):
+    name = 'span_not'
+    _param_defs = {'exclude': {'type': 'query'}, 'include': {'type': 'query'}}
+
+class SpanOr(Query):
+    name = 'span_or'
+    _param_defs = {'clauses': {'type': 'query', 'multi': True}}
+
+class FieldMaskingSpan(Query):
+    name = 'field_masking_span'
+    _param_defs = {'query': {'type': 'query'}}
+
+class SpanContainining(Query):
+    name = 'span_containing'
+    _param_defs = {'little': {'type': 'query'}, 'big': {'type': 'query'}}
+
+class SpanWithin(Query):
+    name = 'span_within'
+    _param_defs = {'little': {'type': 'query'}, 'big': {'type': 'query'}}
+
+# core queries
+class Common(Query):
+    name = 'common'
+
+class Fuzzy(Query):
+    name = 'fuzzy'
+
+class FuzzyLikeThis(Query):
+    name = 'fuzzy_like_this'
+
+class FuzzyLikeThisField(Query):
+    name = 'fuzzy_like_this_field'
+
+class GeoBoundingBox(Query):
+    name = 'geo_bounding_box'
+
+class GeoDistance(Query):
+    name = 'geo_distance'
+
+class GeoDistanceRange(Query):
+    name = 'geo_distance_range'
+
+class GeoPolygon(Query):
+    name = 'geo_polygon'
+
+class GeoShape(Query):
+    name = 'geo_shape'
+
+class GeohashCell(Query):
+    name = 'geohash_cell'
+
+class Ids(Query):
+    name = 'ids'
+
+class Limit(Query):
+    name = 'limit'
+
+class Match(Query):
+    name = 'match'
+
+class MatchPhrase(Query):
+    name = 'match_phrase'
+
+class MatchPhrasePrefix(Query):
+    name = 'match_phrase_prefix'
+
+class Exists(Query):
+    name = 'exists'
+
+class MoreLikeThis(Query):
+    name = 'more_like_this'
+
+class MoreLikeThisField(Query):
+    name = 'more_like_this_field'
+
+class MultiMatch(Query):
+    name = 'multi_match'
+
+class Prefix(Query):
+    name = 'prefix'
+
+class QueryString(Query):
+    name = 'query_string'
+
+class Range(Query):
+    name = 'range'
+
+class Regexp(Query):
+    name = 'regexp'
+
+class SimpleQueryString(Query):
+    name = 'simple_query_string'
+
+class SpanTerm(Query):
+    name = 'span_term'
+
+class Template(Query):
+    name = 'template'
+
+class Term(Query):
+    name = 'term'
+
+class Terms(Query):
+    name = 'terms'
+
+class Wildcard(Query):
+    name = 'wildcard'
+
+class Script(Query):
+    name = 'script'
+
+class Type(Query):
+    name = 'type'
+
+class ParentId(Query):
+    name = 'parent_id'

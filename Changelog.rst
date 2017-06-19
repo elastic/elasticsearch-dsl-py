@@ -3,16 +3,31 @@
 Changelog
 =========
 
-5.1.0 (dev)
------------
+5.3.0 (2017-05-18)
+------------------
+ * fix constant score query definition
+ * ``DateHistogramFacet`` now works with ``datetime`` objects
+ * respect ``__`` in field names when creating queries from dict
+
+5.2.0 (2017-03-26)
+------------------
+ * make sure all response structers are pickleable (for caching)
+ * adding ``exclude`` to ``Search``
+ * fix metric aggregation deserialization
+ * expose all index-level APIs on ``Index`` class
+ * adding ``delete`` to ``Search`` which calls ``delete_by_query`` API
+
+5.1.0 (2017-01-08)
+------------------
  * Renamed ``Result`` and ``ResultMeta`` to ``Hit`` and ``HitMeta`` respectively
  * ``Response`` now stores ``Search`` which it gets as first arg to ``__init__``
  * aggregation results are now wrapped in classes and properly deserialized
  * ``Date`` fields now allow for numerical timestamps in the java format (in millis)
+ * Added API documentation
+ * replaced generated classes with manually created
 
 5.0.0 (2016-11-04)
 ------------------
-
 Version compatible with elasticsearch 5.0.
 
 Breaking changes:

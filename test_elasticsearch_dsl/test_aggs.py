@@ -177,6 +177,3 @@ def test_filters_correctly_identifies_the_hash():
     } == a.to_dict()
     assert a.filters.group_a == query.Q('term', group='a')
 
-def test_import__all__():
-    for name in aggs.__all__:
-        assert hasattr(aggs, name)

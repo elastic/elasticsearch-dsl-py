@@ -1,13 +1,37 @@
+import pickle
 from datetime import date
 from pytest import raises, fixture
 
 from elasticsearch_dsl import response, Search, DocType, Date, Object
 from elasticsearch_dsl.aggs import Terms
-from elasticsearch_dsl.response.aggs import AggData, BucketData, Bucket
+from elasticsearch_dsl.response.aggs import AggResponse, BucketData, Bucket
 
 @fixture
 def agg_response(aggs_search, aggs_data):
     return response.Response(aggs_search, aggs_data)
+
+def test_agg_response_is_pickleable(agg_response):
+    agg_response.hits
+    r = pickle.loads(pickle.dumps(agg_response))
+
+    assert r == agg_response
+    assert r._search == agg_response._search
+    assert r.hits == agg_response.hits
+
+def test_response_is_pickleable(dummy_response):
+    res = response.Response(Search(), dummy_response)
+    res.hits
+    r = pickle.loads(pickle.dumps(res))
+
+    assert r == res
+    assert r._search == res._search
+    assert r.hits == res.hits
+
+def test_hit_is_pickleable(dummy_response):
+    res = response.Response(Search(), dummy_response)
+    hits = pickle.loads(pickle.dumps(res.hits))
+
+    assert hits == res.hits
 
 def test_response_stores_search(dummy_response):
     s = Search()
@@ -100,18 +124,21 @@ def test_aggregation_base(agg_response):
     assert agg_response.aggs is agg_response.aggregations
     assert isinstance(agg_response.aggs, response.AggResponse)
 
+def test_metric_agg_works(agg_response):
+    assert 25052.0 == agg_response.aggs.sum_lines.value
+
 def test_aggregations_can_be_iterated_over(agg_response):
     aggs = [a for a in agg_response.aggs]
 
-    assert len(aggs) == 2
-    assert all(map(lambda a: isinstance(a, AggData), aggs))
+    assert len(aggs) == 3
+    assert all(map(lambda a: isinstance(a, AggResponse), aggs))
 
 def test_aggregations_can_be_retrieved_by_name(agg_response, aggs_search):
     a = agg_response.aggs['popular_files']
 
     assert isinstance(a, BucketData)
-    assert isinstance(a.meta.agg, Terms)
-    assert a.meta.agg is aggs_search.aggs.aggs['popular_files']
+    assert isinstance(a._meta['aggs'], Terms)
+    assert a._meta['aggs'] is aggs_search.aggs.aggs['popular_files']
 
 def test_bucket_response_can_be_iterated_over(agg_response):
     popular_files = agg_response.aggregations.popular_files

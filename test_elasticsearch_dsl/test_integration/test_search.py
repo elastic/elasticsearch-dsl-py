@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from elasticsearch import TransportError
 
@@ -23,6 +24,19 @@ class Commit(DocType):
         doc_type = 'commits'
         index = 'git'
         parent = MetaField(type='repos')
+
+def test_filters_aggregation_buckets_are_accessible(data_client):
+    has_tests_query = Q('term', files='test_elasticsearch_dsl')
+    s = Commit.search()[0:0]
+    s.aggs\
+        .bucket('top_authors', 'terms', field='author.name.raw')\
+        .bucket('has_tests', 'filters', filters={'yes': has_tests_query, 'no': ~has_tests_query})\
+        .metric('lines', 'stats', field='stats.lines')
+    response = s.execute()
+
+    assert isinstance(response.aggregations.top_authors.buckets[0].has_tests.buckets.yes, aggs.Bucket)
+    assert 35 == response.aggregations.top_authors.buckets[0].has_tests.buckets.yes.doc_count
+    assert 228 == response.aggregations.top_authors.buckets[0].has_tests.buckets.yes.lines.max
 
 def test_top_hits_are_wrapped_in_response(data_client):
     s = Commit.search()[0:0]
@@ -60,7 +74,7 @@ def test_inner_hits_are_wrapped_in_doc_type(data_client):
 
 
 def test_suggest_can_be_run_separately(data_client):
-    s = Search()
+    s = Search(index='git')
     s = s.suggest('simple_suggestion', 'elasticserach', term={'field': 'organization'})
     response = s.execute_suggest()
 
@@ -72,6 +86,7 @@ def test_scan_respects_doc_types(data_client):
 
     assert 1 == len(repos)
     assert isinstance(repos[0], Repository)
+    assert repos[0].organization == 'elasticsearch'
 
 def test_scan_iterates_through_all_docs(data_client):
     s = Search(index='git').filter('term', _type='commits')
@@ -125,3 +140,13 @@ def test_multi_missing(data_client):
     assert r2._search is s2
 
     assert r3 is None
+
+def test_raw_subfield_can_be_used_in_aggs(data_client):
+    s = Search(index='git', doc_type='commits')[0:0]
+    s.aggs.bucket('authors', 'terms', field='author.name.raw', size=1)
+
+    r = s.execute()
+
+    authors = r.aggregations.authors
+    assert 1 == len(authors)
+    assert {'key': 'Honza Král', 'doc_count': 52} == authors[0]

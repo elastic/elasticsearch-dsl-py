@@ -23,6 +23,9 @@ Compatibility
 The library is compatible with all Elasticsearch versions since ``1.x`` but you
 **have to use a matching major version**:
 
+For **Elasticsearch 5.0** and later, use the major version 5 (``5.x.y``) of the
+library.
+
 For **Elasticsearch 2.0** and later, use the major version 2 (``2.x.y``) of the
 library.
 
@@ -32,6 +35,9 @@ library.
 
 The recommended way to set your requirements in your `setup.py` or
 `requirements.txt` is::
+
+    # Elasticsearch 5.x
+    elasticsearch-dsl>=5.0.0,<6.0.0
 
     # Elasticsearch 2.x
     elasticsearch-dsl>=2.0.0,<3.0.0
@@ -94,14 +100,14 @@ Let's rewrite the example using the Python DSL:
 .. code:: python
 
     from elasticsearch import Elasticsearch
-    from elasticsearch_dsl import Search, Q
+    from elasticsearch_dsl import Search
 
     client = Elasticsearch()
 
     s = Search(using=client, index="my-index") \
         .filter("term", category="search") \
         .query("match", title="python")   \
-        .query(~Q("match", description="beta"))
+        .exclude("match", description="beta")
 
     s.aggs.bucket('per_tag', 'terms', field='tags') \
         .metric('max_lines', 'max', field='lines')
@@ -156,7 +162,7 @@ Let's have a simple Python class representing an article in a blogging system:
             return super(Article, self).save(** kwargs)
 
         def is_published(self):
-            return datetime.now() < self.published_from
+            return datetime.now() >= self.published_from
 
     # create the mappings in elasticsearch
     Article.init()
@@ -284,5 +290,6 @@ Contents
    search_dsl
    persistence
    faceted_search
+   api
+   CONTRIBUTING
    Changelog
-

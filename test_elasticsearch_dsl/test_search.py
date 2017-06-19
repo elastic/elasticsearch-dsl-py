@@ -3,6 +3,11 @@ from copy import deepcopy
 from elasticsearch_dsl import search, query, Q, DocType, utils
 
 
+def test_expand__to_dot_is_respected():
+    s = search.Search().query('match', a__b=42, _expand__to_dot=False)
+
+    assert {"query": {"match": {"a__b": 42}}} == s.to_dict()
+
 def test_execute_uses_cache():
     s = search.Search()
     r = object()
@@ -485,3 +490,34 @@ def test_suggest():
             }
         }
     } == s.to_dict()
+
+def test_exclude():
+    s = search.Search()
+    s = s.exclude('match', title='python')
+
+    assert {
+        'query': {
+            'bool': {
+                'filter': [{
+                    'bool': {
+                        'must_not': [{
+                            'match': {
+                                'title': 'python'
+                            }
+                        }]
+                    }
+                }]
+            }
+        }
+    } == s.to_dict()
+
+def test_delete_by_query(mock_client):
+    s = search.Search(using='mock') \
+        .query("match", lang="java")
+    s.delete()
+
+    mock_client.delete_by_query.assert_called_once_with(
+        doc_type=[],
+        index=None,
+        body={"query": {"match": {"lang": "java"}}}
+    )

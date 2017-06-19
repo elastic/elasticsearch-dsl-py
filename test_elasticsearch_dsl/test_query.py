@@ -28,6 +28,9 @@ def test_bool_to_dict():
 
     assert {"bool": {"must": [{"match": {"f": "value"}}]}} == bool.to_dict()
 
+def test_dismax_to_dict():
+    assert {"dis_max":{"queries": [{"term": {"_type": "article"}}]}} == query.DisMax(queries=[query.Term(_type='article')]).to_dict()
+
 def test_bool_from_dict_issue_318():
     d = {
         "bool": {
@@ -94,6 +97,9 @@ def test_bool_and_other_sets_min_should_match_if_needed():
         should=[query.Q('term', name='aaa'), query.Q('term', name='bbb')],
         minimum_should_match=1
     )
+
+def test_empty_bool_has_min_should_match_0():
+    assert 0 == query.Bool()._min_should_match
 
 def test_query_and_query_creates_bool():
     q1 = query.Match(f=42)
