@@ -365,15 +365,11 @@ class DocType(ObjectBase):
         # update given fields locally
         merge(self._d_, fields)
 
-        # prepare data for ES
-        doc = self.to_dict()
-
         # if fields were given: partial update
-        if fields:
-            doc = dict(
-                (k, doc.get(k))
-                for k in fields.keys()
-            )
+        doc = dict(
+            (k, self.to_dict())
+            for k in fields.keys()
+        )
 
         # extract parent, routing etc from meta
         doc_meta = dict(
