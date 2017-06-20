@@ -365,9 +365,12 @@ class DocType(ObjectBase):
         # update given fields locally
         merge(self._d_, fields)
 
+        # prepare data for ES
+        values = self.to_dict()
+
         # if fields were given: partial update
         doc = dict(
-            (k, self.to_dict())
+            (k, values.get(k))
             for k in fields.keys()
         )
 
