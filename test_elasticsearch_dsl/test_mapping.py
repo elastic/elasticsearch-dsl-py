@@ -62,7 +62,7 @@ def test_properties_can_iterate_over_all_the_fields():
 
     assert set(('f1', 'f2', 'f3', 'f4')) == set(f.test_attr for f in m.properties._collect_fields())
 
-def test_mapping_can_collect_all_analyzers():
+def test_mapping_can_collect_all_analyzers_and_normalizers():
     a1 = analysis.analyzer('my_analyzer1',
         tokenizer='keyword',
         filter=['lowercase', analysis.token_filter('my_filter1', 'stop', stopwords=['a', 'b'])],
@@ -74,6 +74,13 @@ def test_mapping_can_collect_all_analyzers():
         filter=[analysis.token_filter('my_filter2', 'stop', stopwords=['c', 'd'])],
     )
     a5 = analysis.analyzer('my_analyzer3', tokenizer='keyword')
+    n1 = analysis.normalizer('my_normalizer1',
+        filter=['lowercase']
+    )
+    n2 = analysis.normalizer('my_normalizer2',
+        filter=['my_filter1', 'my_filter2', analysis.token_filter('my_filter3', 'stop', stopwords=['e', 'f'])]
+    )
+    n3 = analysis.normalizer('unknown_custom')
 
     m = mapping.Mapping('article')
     m.field('title', 'text', analyzer=a1,
@@ -85,6 +92,9 @@ def test_mapping_can_collect_all_analyzers():
     m.field('comments', Nested(properties={
         'author': Text(analyzer=a4)
     }))
+    m.field('normalized_title', 'keyword', normalizer=n1)
+    m.field('normalized_comment', 'keyword', normalizer=n2)
+    m.field('unknown', 'keyword', normalizer=n3)
     m.meta('_all', analyzer=a5)
 
     assert {
@@ -93,9 +103,14 @@ def test_mapping_can_collect_all_analyzers():
             'my_analyzer2': {'filter': ['my_filter2'], 'tokenizer': 'trigram', 'type': 'custom'},
             'my_analyzer3': {'tokenizer': 'keyword', 'type': 'custom'},
         },
+        'normalizer': {
+            'my_normalizer1': {'filter': ['lowercase'], 'type': 'custom'},
+            'my_normalizer2': {'filter': ['my_filter1', 'my_filter2', 'my_filter3'], 'type': 'custom'},
+        },
         'filter': {
             'my_filter1': {'stopwords': ['a', 'b'], 'type': 'stop'},
             'my_filter2': {'stopwords': ['c', 'd'], 'type': 'stop'},
+            'my_filter3': {'stopwords': ['e', 'f'], 'type': 'stop'},
         },
         'tokenizer': {
             'trigram': {'max_gram': 3, 'min_gram': 3, 'type': 'nGram'},
