@@ -7,6 +7,7 @@ Changelog
 -----------
  * fix ``ip_range`` aggregation and rename the class to ``IPRange``.
    ``Iprange`` is kept for bw compatibility
+ * fix bug in loading an aggregation with meta data from dict
 
 5.3.0 (2017-05-18)
 ------------------
