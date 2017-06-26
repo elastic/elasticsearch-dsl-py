@@ -17,6 +17,8 @@ def A(name_or_agg, filter=None, **params):
         agg = name_or_agg.copy()
         # pop out nested aggs
         aggs = agg.pop('aggs', None)
+        # pop out meta data
+        meta = agg.pop('meta', None)
         # should be {"terms": {"field": "tags"}}
         if len(agg) != 1:
             raise ValueError('A() can only accept dict with an aggregation ({"terms": {...}}). '
@@ -25,6 +27,9 @@ def A(name_or_agg, filter=None, **params):
         if aggs:
             params = params.copy()
             params['aggs'] = aggs
+        if meta:
+            params = params.copy()
+            params['meta'] = meta
         return Agg.get_dsl_class(agg_type)(_expand__to_dot=False, **params)
 
     # Terms(...) just return the nested agg
