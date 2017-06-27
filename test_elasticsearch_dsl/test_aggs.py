@@ -18,6 +18,12 @@ def test_meta():
         'meta': {'some': 'metadata'}
     } == a.to_dict()
 
+def test_meta_from_dict():
+    max_score = aggs.Max(field='score')
+    a = aggs.A('terms', field='tags', aggs={'max_score': max_score}, meta={'some': 'metadata'})
+
+    assert aggs.A(a.to_dict()) == a
+
 def test_A_creates_proper_agg():
     a = aggs.A('terms', field='tags')
 
