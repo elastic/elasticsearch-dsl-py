@@ -25,15 +25,18 @@ META_FIELDS = frozenset((
     'index', 'using', 'score',
 )).union(DOC_META_FIELDS)
 
+
 class MetaField(object):
     def __init__(self, *args, **kwargs):
         self.args, self.kwargs = args, kwargs
+
 
 class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
         # DocTypeMeta filters attrs in place
         attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
         return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+
 
 class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
@@ -337,7 +340,7 @@ class DocType(ObjectBase):
         meta['_source'] = d
         return meta
 
-    def update(self, using=None, index=None, **fields):
+    def update(self, using=None, index=None,  detect_noop=True, doc_as_upsert=False, **fields):
         """
         Partial update of the document, specify fields you wish to update and
         both the instance and the document in elasticsearch will be updated::
@@ -356,10 +359,20 @@ class DocType(ObjectBase):
         if not fields:
             raise IllegalOperation('You cannot call update() without updating individual fields. '
                                    'If you wish to update the entire object use save().')
+
         es = self._get_connection(using)
 
-        # update the data locally
+        # update given fields locally
         merge(self._d_, fields)
+
+        # prepare data for ES
+        values = self.to_dict()
+
+        # if fields were given: partial update
+        doc = dict(
+            (k, values.get(k))
+            for k in fields.keys()
+        )
 
         # extract parent, routing etc from meta
         doc_meta = dict(
@@ -367,10 +380,16 @@ class DocType(ObjectBase):
             for k in DOC_META_FIELDS
             if k in self.meta
         )
+        body = {
+            'doc': doc,
+            'doc_as_upsert': doc_as_upsert,
+            'detect_noop': detect_noop,
+        }
+
         meta = es.update(
             index=self._get_index(index),
             doc_type=self._doc_type.name,
-            body={'doc': fields},
+            body=body,
             **doc_meta
         )
         # update meta information from ES
