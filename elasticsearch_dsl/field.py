@@ -247,6 +247,7 @@ class Keyword(Field):
     _param_defs = {
         'fields': {'type': 'field', 'hash': True},
         'search_analyzer': {'type': 'analyzer'},
+        'normalizer': {'type': 'normalizer'}
     }
     name = 'keyword'
 

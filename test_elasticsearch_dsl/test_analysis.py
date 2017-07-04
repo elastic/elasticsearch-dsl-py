@@ -19,6 +19,24 @@ def test_analyzer_has_definition():
         'filter': ["lowercase"],
     } == a.get_definition()
 
+def test_normalizer_serializes_as_name():
+    n = analysis.normalizer('my_normalizer')
+
+    assert 'my_normalizer' == n.to_dict()
+
+def test_normalizer_has_definition():
+    n = analysis.CustomNormalizer(
+        'my_normalizer',
+        filter=['lowercase', 'asciifolding'],
+        char_filter=['quote']
+    )
+
+    assert {
+        'type': 'custom',
+        'filter': ['lowercase', 'asciifolding'],
+        'char_filter': ['quote']
+    } == n.get_definition()
+
 def test_tokenizer():
     t = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
 

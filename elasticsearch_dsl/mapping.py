@@ -57,7 +57,7 @@ class Mapping(object):
             fields.append(Text(**self._meta['_all']))
 
         for f in chain(fields, self.properties._collect_fields()):
-            for analyzer_name in ('analyzer', 'search_analyzer', 'search_quote_analyzer'):
+            for analyzer_name in ('analyzer', 'normalizer', 'search_analyzer', 'search_quote_analyzer'):
                 if not hasattr(f, analyzer_name):
                     continue
                 analyzer = getattr(f, analyzer_name)

@@ -1,7 +1,7 @@
 from .utils import DslBase
 
 __all__ = [
-    'tokenizer', 'analyzer', 'char_filter', 'token_filter'
+    'tokenizer', 'analyzer', 'char_filter', 'token_filter', 'normalizer'
 ]
 
 class AnalysisBase(object):
@@ -79,6 +79,35 @@ class CustomAnalyzer(CustomAnalysis, Analyzer):
 
         return out
 
+class Normalizer(AnalysisBase, DslBase):
+    _type_name = 'normalizer'
+    name = None
+
+class BuiltinNormalizer(BuiltinAnalysis, Normalizer):
+    def get_analysis_definition(self):
+        return {}
+
+class CustomNormalizer(CustomAnalysis, Normalizer):
+    _param_defs = {
+        'filter': {'type': 'token_filter', 'multi': True},
+        'char_filter': {'type': 'char_filter', 'multi': True}
+    }
+
+    def get_analysis_definition(self):
+        out = {'normalizer': {self._name: self.get_definition()}}
+
+        filters = dict((f._name, f.get_definition())
+                for f in self.filter if hasattr(f, 'get_definition'))
+        if filters:
+            out['filter'] = filters
+
+
+        char_filters = dict((f._name, f.get_definition())
+                for f in self.char_filter if hasattr(f, 'get_definition'))
+        if char_filters:
+            out['char_filter'] = char_filters
+
+        return out
 
 class Tokenizer(AnalysisBase, DslBase):
     _type_name = 'tokenizer'
@@ -119,3 +148,4 @@ analyzer = Analyzer._type_shortcut
 tokenizer = Tokenizer._type_shortcut
 token_filter = TokenFilter._type_shortcut
 char_filter = CharFilter._type_shortcut
+normalizer = Normalizer._type_shortcut
