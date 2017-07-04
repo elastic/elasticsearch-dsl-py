@@ -8,6 +8,7 @@ from six.moves import map
 from .exceptions import UnknownDslObject, ValidationException
 
 SKIP_VALUES = ('', None)
+EXPAND__TO_DOT=True
 
 def _wrap(val, obj_wrapper=None):
     if isinstance(val, collections.Mapping):
@@ -205,7 +206,7 @@ class DslBase(object):
         except KeyError:
             raise UnknownDslObject('DSL class `%s` does not exist in %s.' % (name, cls._type_name))
 
-    def __init__(self, _expand__to_dot=True, **params):
+    def __init__(self, _expand__to_dot=EXPAND__TO_DOT, **params):
         self._params = {}
         for pname, pvalue in iteritems(params):
             if '__' in pname and _expand__to_dot:
