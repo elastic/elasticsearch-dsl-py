@@ -33,6 +33,7 @@ def client(request):
 def write_client(request, client):
     yield client
     client.indices.delete('test-*', ignore=404)
+    client.indices.delete_template('test-template', ignore=404)
 
 @yield_fixture
 def mock_client(request):

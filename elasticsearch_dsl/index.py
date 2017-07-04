@@ -2,7 +2,7 @@ from .connections import connections
 from .search import Search
 from .exceptions import IllegalOperation
 
-class Index(object):
+class IndexBody(object):
     def __init__(self, name, using='default'):
         """
         :arg name: name of the index
@@ -36,7 +36,6 @@ class Index(object):
                      '_analysis'):
             setattr(i, attr, getattr(self, attr).copy())
         return i
-
 
     def _get_connection(self):
         return connections.get_connection(self._using)
@@ -78,7 +77,7 @@ class Index(object):
 
         if not doc_type._doc_type.index:
             doc_type._doc_type.index = self._name
-        return doc_type # to use as decorator???
+        return doc_type  # to use as decorator???
 
     def settings(self, **kwargs):
         """
@@ -131,17 +130,6 @@ class Index(object):
         for key in d:
             self._analysis.setdefault(key, {}).update(d[key])
 
-    def search(self):
-        """
-        Return a :class:`~elasticsearch_dsl.Search` object searching over this
-        index and its ``DocType``\s.
-        """
-        return Search(
-            using=self._using,
-            index=self._name,
-            doc_type=[self._doc_types.get(k, k) for k in self._mappings]
-        )
-
     def _get_mappings(self):
         analysis, mappings = {}, {}
         for mapping in self._mappings.values():
@@ -168,6 +156,42 @@ class Index(object):
                 analysis.setdefault(key, {}).update(self._analysis[key])
             out.setdefault('settings', {})['analysis'] = analysis
         return out
+
+class IndexTemplate(IndexBody):
+    def __init__(self, name, template, **kwargs):
+        super(IndexTemplate, self).__init__(name, **kwargs)
+        self._template = template
+
+    def to_dict(self):
+        d = super(IndexTemplate, self).to_dict()
+        d['template'] = self._template
+        return d
+
+    def save(self):
+        self.connection.indices.put_template(name=self._name, body=self.to_dict())
+
+    def search(self):
+        """
+        Return a :class:`~elasticsearch_dsl.Search` object searching over all
+        the indices belonging to this template and its ``DocType``\s.
+        """
+        return Search(
+            using=self._using,
+            index=self._template,
+            doc_type=[self._doc_types.get(k, k) for k in self._mappings]
+        )
+
+class Index(IndexBody):
+    def search(self):
+        """
+        Return a :class:`~elasticsearch_dsl.Search` object searching over this
+        index and its ``DocType``\s.
+        """
+        return Search(
+            using=self._using,
+            index=self._name,
+            doc_type=[self._doc_types.get(k, k) for k in self._mappings]
+        )
 
     def create(self, **kwargs):
         """

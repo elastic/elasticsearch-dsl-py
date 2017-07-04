@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Index, Text, Keyword, Date, analysis
+from elasticsearch_dsl import DocType, Index, Text, Keyword, Date, analysis, IndexTemplate
 
 class Post(DocType):
     title = Text(analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
@@ -8,8 +8,37 @@ class User(DocType):
     username = Keyword()
     joined_date = Date()
 
-def test_index_exists(write_client):
+def test_index_template_works(write_client):
+    it = IndexTemplate('test-template', 'test-*')
+    it.doc_type(Post)
+    it.doc_type(User)
+    it.settings(number_of_replicas=0, number_of_shards=1)
+    it.save()
 
+    i = Index('test-blog')
+    i.create()
+
+    assert {
+        'test-blog': {
+            'mappings': {
+                'post': {
+                    'properties': {
+                        'title': {'type': 'text', 'analyzer': 'my_analyzer'},
+                        'published_from': {'type': 'date'}
+                    }
+                },
+                'user': {
+                    'properties': {
+                        'username': {'type': 'keyword'},
+                        'joined_date': {'type': 'date'}
+                    }
+                },
+            }
+        }
+    } == write_client.indices.get_mapping(index='test-blog')
+
+
+def test_index_exists(write_client):
     assert Index('git').exists()
     assert not Index('not-there').exists()
 

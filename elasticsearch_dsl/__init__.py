@@ -5,7 +5,7 @@ from .search import Search, MultiSearch
 from .field import *
 from .document import DocType, MetaField
 from .mapping import Mapping
-from .index import Index
+from .index import Index, IndexTemplate
 from .analysis import analyzer, token_filter, char_filter, tokenizer
 from .faceted_search import *
 

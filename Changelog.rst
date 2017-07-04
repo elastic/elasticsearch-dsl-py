@@ -9,6 +9,7 @@ Changelog
    ``Iprange`` is kept for bw compatibility
  * fix bug in loading an aggregation with meta data from dict
  * add support for ``normalizer`` paramter of ``Keyword`` fields
+ * ``IndexTemplate`` can now be specified using the same API as ``Index``
 
 5.3.0 (2017-05-18)
 ------------------
