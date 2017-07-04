@@ -162,6 +162,16 @@ def test_search_index():
     s2 = s.index('i3')
     assert s._index == ['i', 'i2']
     assert s2._index == ['i', 'i2', 'i3']
+    s = search.Search()
+    s = s.index(['i', 'i2'], 'i3')
+    assert s._index == ['i', 'i2', 'i3']
+    s2 = s.index('i4')
+    assert s._index == ['i', 'i2', 'i3']
+    assert s2._index == ['i', 'i2', 'i3', 'i4']
+    s2 = s.index(['i4'])
+    assert s2._index == ['i', 'i2', 'i3', 'i4']
+    s2 = s.index(('i4', 'i5'))
+    assert s2._index == ['i', 'i2', 'i3', 'i4', 'i5']
 
 def test_search_doc_type():
     s = search.Search(doc_type='i')

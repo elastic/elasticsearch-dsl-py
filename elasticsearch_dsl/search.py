@@ -135,13 +135,24 @@ class Request(object):
 
             s = Search()
             s = s.index('twitter-2015.01.01', 'twitter-2015.01.02')
+            s = s.index(['twitter-2015.01.01', 'twitter-2015.01.02'])
         """
         # .index() resets
         s = self._clone()
         if not index:
             s._index = None
         else:
-            s._index = (self._index or []) + list(index)
+            indexes = []
+            for i in index:
+                if isinstance(i, str):
+                    indexes.append(i)
+                elif isinstance(i, list):
+                    indexes += i
+                elif isinstance(i, tuple):
+                    indexes += list(i)
+
+            s._index = (self._index or []) + indexes
+
         return s
 
     def _add_doc_type(self, doc_type):
