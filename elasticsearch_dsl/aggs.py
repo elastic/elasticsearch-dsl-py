@@ -171,8 +171,12 @@ class Histogram(Bucket):
     def result(self, search, data):
         return FieldBucketData(self, search, data)
 
+# TODO: remove in 6.0
 class Iprange(Bucket):
-    name = 'iprange'
+    name = 'ip_range'
+
+class IPRange(Bucket):
+    name = 'ip_range'
 
 class Missing(Bucket):
     name = 'missing'

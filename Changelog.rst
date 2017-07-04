@@ -3,6 +3,11 @@
 Changelog
 =========
 
+5.4.0 (dev)
+-----------
+ * fix ``ip_range`` aggregation and rename the class to ``IPRange``.
+   ``Iprange`` is kept for bw compatibility
+
 5.3.0 (2017-05-18)
 ------------------
  * fix constant score query definition
