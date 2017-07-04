@@ -566,7 +566,7 @@ class Search(Request):
 
             d.update(self._extra)
 
-            if not self._source in (None, {}):
+            if self._source not in (None, {}):
                 d['_source'] = self._source
 
             if self._highlight:
@@ -654,7 +654,7 @@ class Search(Request):
                 index=self._index,
                 doc_type=self._doc_type,
                 **self._params
-            ):
+        ):
             callback = self._doc_type_map.get(hit['_type'], Hit)
             callback = getattr(callback, 'from_es', callback)
             yield callback(hit)
@@ -674,7 +674,6 @@ class Search(Request):
                 **self._params
             )
         )
-
 
 
 class MultiSearch(Request):
