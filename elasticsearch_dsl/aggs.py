@@ -20,7 +20,7 @@ def A(name_or_agg, filter=None, **params):
         # should be {"terms": {"field": "tags"}}
         if len(agg) != 1:
             raise ValueError('A() can only accept dict with an aggregation ({"terms": {...}}). '
-                 'Instead it got (%r)' % name_or_agg)
+                             'Instead it got (%r)' % name_or_agg)
         agg_type, params = agg.popitem()
         if aggs:
             params = params.copy()
@@ -62,7 +62,7 @@ class AggBase(object):
         return key in self._params.get('aggs', {})
 
     def __getitem__(self, agg_name):
-        agg = self._params.setdefault('aggs', {})[agg_name] # propagate KeyError
+        agg = self._params.setdefault('aggs', {})[agg_name]  # propagate KeyError
 
         # make sure we're not mutating a shared state - whenever accessing a
         # bucket, return a shallow copy of it to be safe
