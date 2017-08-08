@@ -25,7 +25,7 @@ class Response(AttrDict):
     __bool__ = __nonzero__
 
     def __repr__(self):
-        return '<Response: %r>' % self.hits
+        return '<Response: %r>' % (self.hits or self.aggregations)
 
     def __len__(self):
         return len(self.hits)
