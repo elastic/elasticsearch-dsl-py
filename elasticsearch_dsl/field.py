@@ -208,7 +208,7 @@ class Nested(InnerObject, Field):
         kwargs.setdefault('multi', True)
         super(Nested, self).__init__(*args, **kwargs)
 
-class Date(Field):
+class DateTime(Field):
     name = 'date'
     _coerce = True
 
@@ -223,6 +223,24 @@ class Date(Field):
         try:
             # TODO: add format awareness
             return parser.parse(data)
+        except Exception as e:
+            raise ValidationException('Could not parse date from the value (%r)' % data, e)
+
+class Date(Field):
+    name = 'date'
+    _coerce = True
+
+    def _deserialize(self, data):
+        if not data:
+            return None
+        if isinstance(data, date):
+            return data
+        if isinstance(data, int):
+            return datetime.utcfromtimestamp(data / 1000)
+
+        try:
+            # TODO: add format awareness
+            return parser.parse(data).date()
         except Exception as e:
             raise ValidationException('Could not parse date from the value (%r)' % data, e)
 
