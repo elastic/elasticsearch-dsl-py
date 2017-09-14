@@ -130,7 +130,7 @@ class DateHistogramFacet(Facet):
     agg_type = 'date_histogram'
 
     DATE_INTERVALS = {
-        'year': lambda d: (d+timedelta(days=366)).replace(day=1),
+        'year': lambda d: d.replace(year=d.year+1),
         'month': lambda d: (d+timedelta(days=32)).replace(day=1),
         'week': lambda d: d+timedelta(days=7),
         'day': lambda d: d+timedelta(days=1),
