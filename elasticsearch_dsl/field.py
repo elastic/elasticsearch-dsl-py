@@ -217,7 +217,7 @@ class Date(Field):
             return None
         if isinstance(data, date):
             return data
-        if isinstance(data, int):
+        if isinstance(data, int) or isinstance(data, long):
             return datetime.utcfromtimestamp(data / 1000)
 
         try:
