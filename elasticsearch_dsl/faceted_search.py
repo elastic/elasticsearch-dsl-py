@@ -220,6 +220,7 @@ class FacetedSearch(object):
     doc_types = ['_all']
     fields = ('*', )
     facets = {}
+    using = 'default'
 
     def __init__(self, query=None, filters={}, sort=()):
         """
@@ -274,7 +275,7 @@ class FacetedSearch(object):
         """
         Construct the Search object.
         """
-        s = Search(doc_type=self.doc_types, index=self.index)
+        s = Search(doc_type=self.doc_types, index=self.index, using=self.using)
         return s.response_class(FacetedResponse)
 
     def query(self, search, query):
