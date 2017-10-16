@@ -218,7 +218,8 @@ class Date(Field):
         if isinstance(data, date):
             return data
         if isinstance(data, int):
-            return datetime.utcfromtimestamp(data / 1000)
+            # Divide by a float to preserve milliseconds on the datetime.
+            return datetime.utcfromtimestamp(data / 1000.0)
 
         try:
             # TODO: add format awareness
