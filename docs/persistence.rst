@@ -13,7 +13,7 @@ The mapping definition follows a similar pattern to the query dsl:
 
 .. code:: python
 
-    from elasticsearch_dsl import Keyword, Mapping, Nested, Text
+    from elasticsearch_dsl import Date, Keyword, Mapping, Nested, Text
 
     # name your type
     m = Mapping('my-type')
