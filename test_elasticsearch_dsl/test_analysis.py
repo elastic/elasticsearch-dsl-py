@@ -79,3 +79,11 @@ def test_custom_analyzer_can_collect_custom_items():
         }
     } == a.get_analysis_definition()
 
+def test_stemmer_analyzer_can_pass_name():
+    t = analysis.token_filter('my_english_filter', name="minimal_english", type="stemmer")
+    assert t.to_dict() == 'my_english_filter'
+    assert {
+        "type" : "stemmer",
+        "name" : "minimal_english"
+    } == t.get_definition()
+
