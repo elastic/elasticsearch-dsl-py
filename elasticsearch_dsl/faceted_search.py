@@ -145,7 +145,8 @@ class DateHistogramFacet(Facet):
             # so we need to set key to 0 to avoid TypeError exception
             if bucket['key'] is None:
                 bucket['key'] = 0
-            return datetime.utcfromtimestamp(int(bucket['key']) / 1000)
+            # Preserve milliseconds in the datetime
+            return datetime.utcfromtimestamp(int(bucket['key']) / 1000.0)
         else:
             return bucket['key']
 
