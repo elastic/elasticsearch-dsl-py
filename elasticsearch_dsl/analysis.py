@@ -19,9 +19,9 @@ class AnalysisBase(object):
 
 class CustomAnalysis(object):
     name = 'custom'
-    def __init__(self, name, builtin_type='custom', **kwargs):
+    def __init__(self, filter_name, builtin_type='custom', **kwargs):
         self._builtin_type = builtin_type
-        self._name = name
+        self._name = filter_name
         super(CustomAnalysis, self).__init__(**kwargs)
 
     def to_dict(self):
