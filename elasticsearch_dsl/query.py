@@ -162,6 +162,7 @@ class FunctionScore(Query):
         'query': {'type': 'query'},
         'filter': {'type': 'query'},
         'functions': {'type': 'score_function', 'multi': True},
+        'boost_mode': {},
     }
 
     def __init__(self, **kwargs):
