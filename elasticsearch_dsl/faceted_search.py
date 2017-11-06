@@ -217,8 +217,8 @@ class FacetedSearch(object):
             )
 
     """
-    index = '_all'
-    doc_types = ['_all']
+    index = None
+    doc_types = None
     fields = ('*', )
     facets = {}
     using = 'default'
