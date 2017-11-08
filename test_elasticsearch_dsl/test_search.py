@@ -119,6 +119,15 @@ def test_source_copied_on_clone():
     assert s3._clone()._source == s3._source
     assert s3._clone()._source == ["some", "fields"]
 
+def test_copy_clones():
+    from copy import copy
+    s1 = search.Search().source(["some", "fields"])
+    s2 = copy(s1)
+
+    assert s1 == s2
+    assert s1 is not s2
+
+
 def test_aggs_get_copied_on_change():
     s = search.Search()
     s.aggs.bucket('per_tag', 'terms', field='f').metric('max_score', 'max', field='score')

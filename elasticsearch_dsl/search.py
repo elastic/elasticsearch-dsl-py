@@ -112,6 +112,9 @@ class Request(object):
             other.to_dict() == self.to_dict()
         )
 
+    def __copy__(self):
+        return self._clone()
+
     def params(self, **kwargs):
         """
         Specify query params to be used when executing the search. All the
