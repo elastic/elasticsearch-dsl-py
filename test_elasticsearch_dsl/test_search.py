@@ -1,6 +1,9 @@
 from copy import deepcopy
 
 from elasticsearch_dsl import search, query, Q, DocType, utils
+from elasticsearch_dsl.exceptions import IllegalOperation
+
+from pytest import raises
 
 
 def test_expand__to_dot_is_respected():
@@ -215,6 +218,15 @@ def test_sort():
     s = s.sort()
     assert [] == s._sort
     assert search.Search().to_dict() == s.to_dict()
+
+def test_sort_by_score():
+    s = search.Search()
+    s = s.sort('_score')
+    assert {'query': {'match_all': {}}, 'sort': ['_score']} == s.to_dict()
+
+    s = search.Search()
+    with raises(IllegalOperation):
+        s.sort('-_score')
 
 def test_slice():
     s = search.Search()

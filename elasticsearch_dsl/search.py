@@ -11,6 +11,7 @@ from .aggs import A, AggBase
 from .utils import DslBase, AttrDict
 from .response import Response, Hit, SuggestResponse
 from .connections import connections
+from .exceptions import IllegalOperation
 
 class QueryProxy(object):
     """
@@ -481,6 +482,8 @@ class Search(Request):
         s._sort = []
         for k in keys:
             if isinstance(k, string_types) and k.startswith('-'):
+                if k[1:] == '_score':
+                    raise IllegalOperation('Sorting by `-_score` is not allowed.')
                 k = {k[1:]: {"order": "desc"}}
             s._sort.append(k)
         return s
