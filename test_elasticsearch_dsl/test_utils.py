@@ -16,7 +16,7 @@ def test_attrlist_pickle():
     assert al == pickle.loads(pickled_al)
 
 def test_merge():
-    a = {'a': {'b': 42, 'c': 47}}
+    a = utils.AttrDict({'a': {'b': 42, 'c': 47}})
     b = {'a': {'b': 123, 'd': -12}, 'e': [1, 2, 3]}
 
     utils.merge(a, b)

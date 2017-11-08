@@ -400,7 +400,8 @@ def merge(data, new_data):
         raise ValueError('You can only merge two dicts! Got %r and %r instead.' % (data, new_data))
 
     for key, value in iteritems(new_data):
-        if key in data and isinstance(data[key], (AttrDict, collections.Mapping)):
-            merge(data[key], value)
+        if key in data and isinstance(getattr(data, key), (AttrDict, collections.Mapping)) and \
+                isinstance(value, (AttrDict, collections.Mapping)):
+            merge(getattr(data, key), value)
         else:
-            data[key] = value
+            setattr(data, key, value)

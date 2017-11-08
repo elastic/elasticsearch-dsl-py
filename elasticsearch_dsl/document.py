@@ -363,7 +363,7 @@ class DocType(ObjectBase):
         es = self._get_connection(using)
 
         # update given fields locally
-        merge(self._d_, fields)
+        merge(self, fields)
 
         # prepare data for ES
         values = self.to_dict()

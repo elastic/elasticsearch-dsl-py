@@ -11,6 +11,12 @@ from pytest import raises
 user_field = construct_field('object')
 user_field.field('name', 'text', fields={'raw': construct_field('keyword')})
 
+class Wiki(DocType):
+    owner = user_field
+
+    class Meta:
+        index = 'test-wiki'
+
 class Repository(DocType):
     owner = user_field
     created_at = Date()
@@ -30,6 +36,19 @@ class Commit(DocType):
         index = 'git'
         mapping = Mapping('commits')
         mapping.meta('_parent', type='repos')
+
+def test_update_object_field(write_client):
+    Wiki.init()
+    w = Wiki(owner={'name': 'Honza Kral'}, _id='elasticsearch-py')
+    w.save()
+
+    w.update(owner=[{'name': 'Honza'}, {'name': 'Nick'}])
+    assert w.owner[0].name == 'Honza'
+    assert w.owner[1].name == 'Nick'
+
+    w = Wiki.get(id='elasticsearch-py')
+    assert w.owner[0].name == 'Honza'
+    assert w.owner[1].name == 'Nick'
 
 def test_parent_type_is_exposed():
     assert Commit._doc_type.parent == 'repos'
