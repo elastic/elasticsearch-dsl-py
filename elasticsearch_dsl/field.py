@@ -273,6 +273,9 @@ class Float(Field):
 class HalfFloat(Field):
     name = 'half_float'
 
+class ScaledFloat(Field):
+    name = 'scaled_float'
+
 class Double(Field):
     name = 'double'
 
@@ -305,3 +308,18 @@ class Completion(Field):
 
 class Percolator(Field):
     name = 'percolator'
+
+class IntegerRange(Field):
+    name = 'integer_range'
+
+class FloatRange(Field):
+    name = 'float_range'
+
+class LongRange(Field):
+    name = 'long_range'
+
+class DoubleRange(Field):
+    name = 'double_ranged'
+
+class DateRange(Field):
+    name = 'date_range'
