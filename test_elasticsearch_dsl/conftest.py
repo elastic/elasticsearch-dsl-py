@@ -2,43 +2,32 @@
 
 import os
 
-from elasticsearch.helpers.test import get_test_client, SkipTest
 from elasticsearch.helpers import bulk
-
-from pytest import fixture, yield_fixture, skip
+from elasticsearch.helpers.test import SkipTest, get_test_client
 from mock import Mock
+from pytest import fixture, skip
 
+from elasticsearch_dsl.connections import connections
 from .test_integration.test_data import DATA, create_git_index
 
-_client_loaded = False
 
 @fixture(scope='session')
 def client(request):
-    # inner import to avoid throwing off coverage
-    from elasticsearch_dsl.connections import connections
-    # hack to workaround pytest not caching skip on fixtures (#467)
-    global _client_loaded
-    if _client_loaded:
-        skip()
-
-    _client_loaded = True
     try:
-        client = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
-        connections.add_connection('default', client)
-        return client
+        connection = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
+        connections.add_connection('default', connection)
+        return connection
     except SkipTest:
         skip()
 
-@yield_fixture
+@fixture
 def write_client(request, client):
     yield client
     client.indices.delete('test-*', ignore=404)
     client.indices.delete_template('test-template', ignore=404)
 
-@yield_fixture
+@fixture
 def mock_client(request):
-    # inner import to avoid throwing off coverage
-    from elasticsearch_dsl.connections import connections
     client = Mock()
     client.search.return_value = dummy_response()
     connections.add_connection('mock', client)
@@ -50,10 +39,10 @@ def mock_client(request):
 def data_client(request, client):
     # create mappings
     create_git_index(client, 'git')
-    # load data
-    bulk(client, DATA, raise_on_error=True, refresh=True)
     # make sure we clean up after ourselves
     request.addfinalizer(lambda: client.indices.delete('git'))
+    # load data
+    bulk(client, DATA, raise_on_error=True, refresh=True)
     return client
 
 @fixture
