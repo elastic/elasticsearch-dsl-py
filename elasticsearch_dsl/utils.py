@@ -362,6 +362,10 @@ class ObjectBase(AttrDict):
                 if f._coerce:
                     v = f.serialize(v)
 
+            # if someone assigned AttrList, unwrap it
+            if isinstance(v, AttrList):
+                v = v._l_
+
             # don't serialize empty values
             # careful not to include numeric zeros
             if v in ([], {}, None):

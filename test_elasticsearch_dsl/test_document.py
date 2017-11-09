@@ -3,7 +3,7 @@ import codecs
 from hashlib import md5
 from datetime import datetime
 
-from elasticsearch_dsl import document, field, Mapping
+from elasticsearch_dsl import document, field, Mapping, utils
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
@@ -65,6 +65,13 @@ class NestedSecret(document.DocType):
 
 class OptionalObjectWithRequiredField(document.DocType):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
+
+def test_assigning_attrlist_to_field():
+    sc = SimpleCommit()
+    l = ['README', 'README.rst']
+    sc.files = utils.AttrList(l)
+
+    assert sc.to_dict()['files'] is l
 
 def test_optional_inner_objects_are_not_validated_if_missing():
     d = OptionalObjectWithRequiredField()
