@@ -40,7 +40,7 @@ class AttrList(object):
     def __getitem__(self, k):
         l = self._l_[k]
         if isinstance(k, slice):
-            return AttrList(l)
+            return AttrList(l, obj_wrapper=self._obj_wrapper)
         return _wrap(l, self._obj_wrapper)
 
     def __setitem__(self, k, value):

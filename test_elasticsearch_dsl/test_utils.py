@@ -15,6 +15,13 @@ def test_attrlist_pickle():
     pickled_al = pickle.dumps(al)
     assert al == pickle.loads(pickled_al)
 
+def test_attrlist_slice():
+    class MyAttrDict(utils.AttrDict):
+        pass
+
+    l = utils.AttrList([{}, {}], obj_wrapper=MyAttrDict)
+    assert isinstance(l[:][0], MyAttrDict)
+
 def test_merge():
     a = utils.AttrDict({'a': {'b': 42, 'c': 47}})
     b = {'a': {'b': 123, 'd': -12}, 'e': [1, 2, 3]}
