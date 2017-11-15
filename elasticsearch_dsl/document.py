@@ -434,4 +434,4 @@ class DocType(ObjectBase):
                 setattr(self.meta, k, meta['_' + k])
 
         # return True/False if the document has been created/updated
-        return meta['created']
+        return 'created' in meta['result']
