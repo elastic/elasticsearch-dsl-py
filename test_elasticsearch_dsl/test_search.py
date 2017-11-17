@@ -598,3 +598,32 @@ def test_rescore():
           }
        }]
     } == s.to_dict()
+
+def test_rescore_from_dict():
+    s = search.Search.from_dict({
+       'query' : {'match_all' : {} },
+       'rescore' : [{
+          'window_size' : 50,
+          'query' : {
+             'rescore_query' : {
+                'match' : {
+                   'title': 'test test test'
+                }
+             }
+          }
+       }]
+    })
+
+    assert {
+       'query' : {'match_all' : {} },
+       'rescore' : [{
+          'window_size' : 50,
+          'query' : {
+             'rescore_query' : {
+                'match' : {
+                   'title': 'test test test'
+                }
+             }
+          }
+       }]
+    } == s.to_dict()
