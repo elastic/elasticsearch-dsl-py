@@ -350,6 +350,8 @@ class Search(Request):
             high = d.pop('highlight').copy()
             self._highlight = high.pop('fields')
             self._highlight_opts = high
+        if 'rescore' in d:
+            self._rescore = d.pop('rescore')
         if 'suggest' in d:
             self._suggest = d.pop('suggest')
             if 'text' in self._suggest:
@@ -533,6 +535,26 @@ class Search(Request):
         Add a rescore request to the search.
 
         :arg query: query to be used during the rescore process.
+        Example::
+
+            s = Search()
+            s = s.rescore(query=Q('match', title='myDocument'), window_size=50)
+
+        will produce the equivalent of::
+
+           {
+               'query' : {'match_all' : {} },
+               'rescore' : [{
+                  'window_size' : 50,
+                  'query' : {
+                     'rescore_query' : {
+                        'match' : {
+                           'title': 'myDocument'
+                        }
+                     }
+                  }
+               }]
+            }
 
         All keyword arguments will be added to the rescore request body.
         """
