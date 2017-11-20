@@ -8,12 +8,6 @@ def test_mapping_saved_into_es(write_client):
     m.field('tags', 'keyword')
     m.save('test-mapping', using=write_client)
 
-    m = mapping.Mapping('other-type')
-    m.field('title', 'text').field('categories', 'keyword')
-
-    m.save('test-mapping', using=write_client)
-
-
     assert write_client.indices.exists_type(index='test-mapping', doc_type='test-type')
     assert {
         'test-mapping': {
@@ -22,12 +16,6 @@ def test_mapping_saved_into_es(write_client):
                     'properties': {
                         'name': {'type': 'text', 'analyzer': 'my_analyzer'},
                         'tags': {'type': 'keyword'}
-                    }
-                },
-                'other-type': {
-                    'properties': {
-                        'title': {'type': 'text'},
-                        'categories': {'type': 'keyword'}
                     }
                 }
             }
