@@ -12,13 +12,9 @@ from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
 
-DELETE_META_FIELDS = frozenset((
-    'id', 'parent', 'routing', 'version', 'version_type'
-))
-
 DOC_META_FIELDS = frozenset((
-    'timestamp', 'ttl'
-)).union(DELETE_META_FIELDS)
+    'id', 'routing', 'version', 'version_type'
+))
 
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
@@ -251,7 +247,7 @@ class DocType(ObjectBase):
         if missing_docs:
             missing_ids = [doc['_id'] for doc in missing_docs]
             message = 'Documents %s not found.' % ', '.join(missing_ids)
-            raise NotFoundError(404, message, missing_docs)
+            raise NotFoundError(404, message, {'docs': missing_docs})
         return objs
 
     @classmethod
@@ -301,7 +297,7 @@ class DocType(ObjectBase):
         # extract parent, routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
-            for k in DELETE_META_FIELDS
+            for k in DOC_META_FIELDS
             if k in self.meta
         )
         doc_meta.update(kwargs)
@@ -434,4 +430,4 @@ class DocType(ObjectBase):
                 setattr(self.meta, k, meta['_' + k])
 
         # return True/False if the document has been created/updated
-        return meta['created']
+        return meta['result'] == 'created'

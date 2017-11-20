@@ -134,11 +134,11 @@ def test_inherited_doc_types_can_override_index():
 
 def test_to_dict_with_meta():
     d = MySubDoc(title='hello')
-    d.meta.parent = 'some-parent'
+    d.meta.routing = 'some-parent'
 
     assert {
         '_index': 'default-index',
-        '_parent': 'some-parent',
+        '_routing': 'some-parent',
         '_type': 'my_custom_doc',
         '_source': {'title': 'hello'},
     } == d.to_dict(True)
@@ -390,11 +390,11 @@ def test_meta_inheritance():
 def test_meta_fields_can_be_accessed_directly_with_underscore():
     p = object()
     md = MyDoc(_id=42, title='Hello World!')
-    md._parent = p
+    md._routing = p
 
     assert md.meta.id == 42
     assert md._id == 42
-    assert md.meta.parent is md._parent is p
+    assert md.meta.routing is md._routing is p
 
 def test_save_no_index(mock_client):
     md = MyDoc()
