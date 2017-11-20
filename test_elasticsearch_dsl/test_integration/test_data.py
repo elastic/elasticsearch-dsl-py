@@ -1,5 +1,56 @@
 from __future__ import unicode_literals
 
+def create_flat_git_index(client, index):
+    # we will use user on several places
+    user_mapping = {
+      'properties': {
+        'name': {
+          'type': 'text',
+          'fields': {
+            'raw': {'type' : 'keyword'},
+          }
+        }
+      }
+    }
+
+    client.indices.create(
+        index=index,
+        body={
+          'settings': {
+            # just one shard, no replicas for testing
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+
+            # custom analyzer for analyzing file paths
+            'analysis': {
+              'analyzer': {
+                'file_path': {
+                  'type': 'custom',
+                  'tokenizer': 'path_hierarchy',
+                  'filter': ['lowercase']
+                }
+              }
+            }
+          },
+          'mappings': {
+            'doc': {
+              'properties': {
+                'description': {'type': 'text', 'analyzer': 'snowball'},
+                'author': user_mapping,
+                'authored_date': {'type': 'date'},
+                'committer': user_mapping,
+                'committed_date': {'type': 'date'},
+                'parent_shas': {'type': 'keyword'},
+                'files': {'type': 'text', 'analyzer': 'file_path', 'fielddata': True},
+
+              }
+            }
+          }
+        },
+        # ignore already existing index
+        ignore=400
+    )
+
 def create_git_index(client, index):
     # we will use user on several places
     user_mapping = {
@@ -40,7 +91,6 @@ def create_git_index(client, index):
                 'commit_repo': {'type': 'join', 'relations': {'repo': 'commit'}},
 
                 # COMMIT mappings
-                'repository': {'type': 'keyword'},
                 'author': user_mapping,
                 'authored_date': {'type': 'date'},
                 'committer': user_mapping,
@@ -60,6 +110,7 @@ def create_git_index(client, index):
         # ignore already existing index
         ignore=400
     )
+
 
 DATA = [
     # repository
@@ -117,4 +168,19 @@ DATA = [
     {'_type': 'doc', '_id': 'fcff47ddcc6d08be5739d03dd30f504fb9db2608', '_routing': 'elasticsearch-dsl-py', '_source': {'commit_repo': {'name': 'commit', 'parent': 'elasticsearch-dsl-py'}, 'files': ['docs/Makefile', 'CONTRIBUTING.md', 'docs/conf.py', 'LICENSE', 'Changelog.rst', 'docs/index.rst', 'docs/Changelog.rst'], 'committer': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'stats': {'deletions': 0, 'insertions': 692, 'lines': 692, 'files': 7}, 'description': 'Docs template', 'author': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'parent_shas': ['febe8127ae48fcc81778c0fb2d628f1bcc0a0350'], 'committed_date': '2014-03-04T01:42:31', 'authored_date': '2014-03-04T01:42:31'}, '_index': 'git'},
     {'_type': 'doc', '_id': 'febe8127ae48fcc81778c0fb2d628f1bcc0a0350', '_routing': 'elasticsearch-dsl-py', '_source': {'commit_repo': {'name': 'commit', 'parent': 'elasticsearch-dsl-py'}, 'files': ['elasticsearch_dsl/__init__.py', 'test_elasticsearch_dsl/run_tests.py', 'setup.py', 'README.rst', 'test_elasticsearch_dsl/__init__.py'], 'committer': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'stats': {'deletions': 0, 'insertions': 82, 'lines': 82, 'files': 5}, 'description': 'Empty project structure', 'author': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'parent_shas': ['2a8f1ce89760bfc72808f3945b539eae650acac9'], 'committed_date': '2014-03-04T01:37:49', 'authored_date': '2014-03-03T18:23:55'}, '_index': 'git'},
     {'_type': 'doc', '_id': '2a8f1ce89760bfc72808f3945b539eae650acac9', '_routing': 'elasticsearch-dsl-py', '_source': {'commit_repo': {'name': 'commit', 'parent': 'elasticsearch-dsl-py'}, 'files': ['.gitignore'], 'committer': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'stats': {'deletions': 0, 'insertions': 9, 'lines': 9, 'files': 1}, 'description': 'Initial commit, .gitignore', 'author': {'name': 'Honza Kr\xe1l', 'email': 'honza.kral@gmail.com'}, 'parent_shas': [], 'committed_date': '2014-03-03T18:15:05', 'authored_date': '2014-03-03T18:15:05'}, '_index': 'git'},
+]
+
+def flatten_doc(d):
+    src = d['_source'].copy()
+    del src['commit_repo']
+    return {
+        '_index': 'flat-git',
+        '_type': 'doc',
+        '_id': d['_id'],
+        '_source': src
+    }
+
+
+FLAT_DATA = [
+    flatten_doc(d) for d in DATA if '_routing' in d
 ]

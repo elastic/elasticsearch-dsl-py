@@ -25,7 +25,7 @@ class Repository(DocType):
 
     class Meta:
         index = 'git'
-        doc_type = 'repos'
+        doc_type = 'doc'
 
 class Commit(DocType):
     committed_date = Date()
@@ -34,8 +34,8 @@ class Commit(DocType):
 
     class Meta:
         index = 'git'
+        doc_type = 'doc'
         mapping = Mapping('commits')
-        mapping.meta('_parent', type='repos')
 
 def test_update_object_field(write_client):
     Wiki.init()
@@ -260,7 +260,7 @@ def test_parent_value(data_client):
 def test_refresh_mapping(data_client):
     class Commit(DocType):
         class Meta:
-            doc_type = 'commits'
+            doc_type = 'doc'
             index = 'git'
 
     Commit._doc_type.refresh()

@@ -6,7 +6,7 @@ from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch,
     Index, Q
 from elasticsearch_dsl.response import aggs
 
-from .test_data import DATA
+from .test_data import FLAT_DATA
 
 from pytest import raises
 
@@ -24,13 +24,9 @@ class Repository(DocType):
         doc_type = 'doc'
 
 class Commit(DocType):
-    @classmethod
-    def search(cls):
-        return super(Commit, cls).search().exclude('term', commit_repo='repo')
-
     class Meta:
         doc_type = 'doc'
-        index = 'git'
+        index = 'flat-git'
 
 def test_filters_aggregation_buckets_are_accessible(data_client):
     has_tests_query = Q('term', files='test_elasticsearch_dsl')
@@ -75,12 +71,12 @@ def test_scan_respects_doc_types(data_client):
     assert repos[0].organization == 'elasticsearch'
 
 def test_scan_iterates_through_all_docs(data_client):
-    s = Search(index='git').exclude('term', commit_repo='repo')
+    s = Search(index='flat-git')
 
     commits = list(s.scan())
 
     assert 52 == len(commits)
-    assert set(d['_id'] for d in DATA if 'name' in d['_source']['commit_repo']) == set(c.meta.id for c in commits)
+    assert set(d['_id'] for d in FLAT_DATA) == set(c.meta.id for c in commits)
 
 def test_response_is_cached(data_client):
     s = Repository.search()
@@ -91,9 +87,9 @@ def test_response_is_cached(data_client):
 
 def test_multi_search(data_client):
     s1 = Repository.search()
-    s2 = Search(index='git').exclude('term', commit_repo='repo')
+    s2 = Search(index='flat-git')
 
-    ms = MultiSearch(index='git')
+    ms = MultiSearch()
     ms = ms.add(s1).add(s2)
 
     r1, r2 = ms.execute()
@@ -107,7 +103,7 @@ def test_multi_search(data_client):
 
 def test_multi_missing(data_client):
     s1 = Repository.search()
-    s2 = Search(index='git').exclude('term', commit_repo='repo')
+    s2 = Search(index='flat-git')
     s3 = Search(index='does_not_exist')
 
     ms = MultiSearch()

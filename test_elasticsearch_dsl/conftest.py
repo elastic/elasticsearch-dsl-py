@@ -8,7 +8,8 @@ from mock import Mock
 from pytest import fixture, skip
 
 from elasticsearch_dsl.connections import connections
-from .test_integration.test_data import DATA, create_git_index
+from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
+    create_flat_git_index
 
 
 @fixture(scope='session')
@@ -39,11 +40,13 @@ def mock_client(request):
 def data_client(request, client):
     # create mappings
     create_git_index(client, 'git')
-    # make sure we clean up after ourselves
-    request.addfinalizer(lambda: client.indices.delete('git'))
+    create_flat_git_index(client, 'flat-git')
     # load data
     bulk(client, DATA, raise_on_error=True, refresh=True)
-    return client
+    bulk(client, FLAT_DATA, raise_on_error=True, refresh=True)
+    yield client
+    client.indices.delete('git')
+    client.indices.delete('flat-git')
 
 @fixture
 def dummy_response():
