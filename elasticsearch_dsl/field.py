@@ -323,3 +323,6 @@ class DoubleRange(Field):
 
 class DateRange(Field):
     name = 'date_range'
+
+class Join(Field):
+    name = 'join'
