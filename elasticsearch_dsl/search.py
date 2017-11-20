@@ -9,7 +9,7 @@ from elasticsearch.exceptions import TransportError
 from .query import Q, EMPTY_QUERY, Bool
 from .aggs import A, AggBase
 from .utils import DslBase, AttrDict
-from .response import Response, Hit, SuggestResponse
+from .response import Response, Hit
 from .connections import connections
 from .exceptions import IllegalOperation
 
@@ -638,20 +638,6 @@ class Search(Request):
                 )
             )
         return self._response
-
-    def execute_suggest(self):
-        """
-        Execute just the suggesters. Ignores all parts of the request that are
-        not relevant, including ``query`` and ``doc_type``.
-        """
-        es = connections.get_connection(self._using)
-        return SuggestResponse(
-            es.suggest(
-                index=self._index,
-                body=self._suggest,
-                **self._params
-            )
-        )
 
     def scan(self):
         """

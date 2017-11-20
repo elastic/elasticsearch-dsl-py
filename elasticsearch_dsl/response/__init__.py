@@ -2,10 +2,6 @@ from ..utils import AttrDict, AttrList
 
 from .hit import Hit, HitMeta
 
-class SuggestResponse(AttrDict):
-    def success(self):
-        return not self._shards.failed
-
 class Response(AttrDict):
     def __init__(self, search, response):
         super(AttrDict, self).__setattr__('_search', search)
