@@ -4,7 +4,6 @@ from elasticsearch_dsl import DocType, Boolean, Date
 from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
 
 class CommitSearch(FacetedSearch):
-    doc_types = ['commits']
     fields = ('description', 'files', )
 
     facets = {
@@ -13,17 +12,24 @@ class CommitSearch(FacetedSearch):
         'deletions': RangeFacet(field='stats.deletions', ranges=[('ok', (None, 1)), ('good', (1, 5)), ('better', (5, None))])
     }
 
+    def search(self):
+        s = super(CommitSearch, self).search()
+        return s.exclude('term', commit_repo='repo')
+
+
 class Repos(DocType):
     is_public = Boolean()
     created_at = Date()
 
 class RepoSearch(FacetedSearch):
-    doc_types = [Repos]
-
     facets = {
       'public': TermsFacet(field='is_public'),
       'created': DateHistogramFacet(field='created_at', interval='month')
     }
+
+    def search(self):
+        s = super(RepoSearch, self).search()
+        return s.filter('term', commit_repo='repo')
 
 def test_datehistogram_facet(data_client):
     rs = RepoSearch()
