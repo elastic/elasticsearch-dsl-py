@@ -79,8 +79,7 @@ def test_multifield_supports_multiple_analyzers():
 
 
 def test_scaled_float():
-    with pytest.raises(TypeError) as exc:
+    with pytest.raises(TypeError):
         field.ScaledFloat()
-    assert "required positional argument: 'scaling_factor'" in str(exc.value)
     f = field.ScaledFloat(123)
     assert f.to_dict() == {'scaling_factor': 123, 'type': 'scaled_float'}
