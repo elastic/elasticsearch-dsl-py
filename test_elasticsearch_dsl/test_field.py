@@ -1,4 +1,7 @@
+import pytest
+
 from elasticsearch_dsl import field
+
 
 def test_custom_field_car_wrap_other_field():
     class MyField(field.CustomField):
@@ -73,3 +76,11 @@ def test_multifield_supports_multiple_analyzers():
        },
        'type': 'text'
     } == f.to_dict()
+
+
+def test_scaled_float():
+    with pytest.raises(TypeError) as exc:
+        field.ScaledFloat()
+    assert "required positional argument: 'scaling_factor'" in str(exc.value)
+    f = field.ScaledFloat(123)
+    assert f.to_dict() == {'scaling_factor': 123, 'type': 'scaled_float'}
