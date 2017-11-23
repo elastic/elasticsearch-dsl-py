@@ -37,3 +37,8 @@ install:
 
 script:
   - python setup.py test
+
+notifications:
+  email:
+    recipients:
+      - honza.kral@gmail.com
