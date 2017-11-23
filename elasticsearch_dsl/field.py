@@ -276,6 +276,10 @@ class HalfFloat(Field):
 class ScaledFloat(Field):
     name = 'scaled_float'
 
+    def __init__(self, scaling_factor, *args, **kwargs):
+        super(ScaledFloat, self).__init__(scaling_factor=scaling_factor, *args, **kwargs)
+
+
 class Double(Field):
     name = 'double'
 
