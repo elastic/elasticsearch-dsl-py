@@ -207,6 +207,9 @@ class Terms(Bucket):
 class Sampler(Bucket):
     name = 'sampler'
 
+class DiversifiedSampler(Bucket):
+    name = 'diversified_sampler'
+
 # metric aggregations
 class TopHits(Agg):
     name = 'top_hits'
