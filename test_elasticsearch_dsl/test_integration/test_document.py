@@ -59,12 +59,19 @@ def test_init(write_client):
 
     assert write_client.indices.exists_type(index='test-git', doc_type='doc')
 
+def test_get_raises_404_on_index_missing(data_client):
+    with raises(NotFoundError):
+        Repository.get('elasticsearch-dsl-php', index='not-there')
+
 def test_get_raises_404_on_non_existent_id(data_client):
     with raises(NotFoundError):
         Repository.get('elasticsearch-dsl-php')
 
 def test_get_returns_none_if_404_ignored(data_client):
     assert None is Repository.get('elasticsearch-dsl-php', ignore=404)
+
+def test_get_returns_none_if_404_ignored_and_index_doesnt_exist(data_client):
+    assert None is Repository.get('42', index='not-there', ignore=404)
 
 def test_get(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
