@@ -400,8 +400,10 @@ class Search(Request):
             s = s.script_fields(times_two="doc['field'].value * 2")
             s = s.script_fields(
                 times_three={
-                    'script': "doc['field'].value * n",
-                    'params': {'n': 3}
+                    'script': {
+                        'inline': "doc['field'].value * params.n",
+                        'params': {'n': 3}
+                    }
                 }
             )
 
