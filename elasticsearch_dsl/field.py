@@ -1,8 +1,8 @@
 import collections
 
 from datetime import date, datetime
-from dateutil import parser
-from six import itervalues
+from dateutil import parser, tz
+from six import itervalues, string_types
 from six.moves import map
 
 from .utils import DslBase, ObjectBase, AttrDict, AttrList
@@ -212,20 +212,33 @@ class Date(Field):
     name = 'date'
     _coerce = True
 
+    def __init__(self, *args, **kwargs):
+        self._default_timezone = kwargs.pop('default_timezone', None)
+        if isinstance(self._default_timezone, string_types):
+            self._default_timezone = tz.gettz(self._default_timezone)
+        super(Date, self).__init__(*args, **kwargs)
+
     def _deserialize(self, data):
+        if isinstance(data, string_types):
+            try:
+                data = parser.parse(data)
+            except Exception as e:
+                raise ValidationException('Could not parse date from the value (%r)' % data, e)
+
         if not data:
             return None
+
+        if isinstance(data, datetime):
+            if self._default_timezone and data.tzinfo is None:
+                data = data.replace(tzinfo=self._default_timezone)
+            return data
         if isinstance(data, date):
             return data
         if isinstance(data, int):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
 
-        try:
-            # TODO: add format awareness
-            return parser.parse(data)
-        except Exception as e:
-            raise ValidationException('Could not parse date from the value (%r)' % data, e)
+        raise ValidationException('Could not parse date from the value (%r)' % data)
 
 class String(Field):
     _param_defs = {

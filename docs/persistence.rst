@@ -151,6 +151,22 @@ If you want to create a model-like wrapper around your documents, use the
             self.created_at = datetime.now()
             return super().save(** kwargs)
 
+Note on dates
+~~~~~~~~~~~~~
+
+``elasticsearch-dsl`` will always respect the timezone information (or lack
+thereof) on the ``datetime`` objects passed in or stored in Elasticsearch.
+Elasticsearch itself interprets all datetimes with no timezone information as
+``UTC``. If you wish to reflect this in your python code, you can specify
+``default_timezone`` when instantiating a ``Date`` field:
+
+.. code:: python
+
+    class Post(DocType):
+        created_at = Date(default_timezone='UTC')
+
+In that case any ``datetime`` object passed in (or parsed from elasticsearch)
+will be treated as if it were in ``UTC`` timezone.
 
 Document life cycle
 ~~~~~~~~~~~~~~~~~~~
