@@ -258,6 +258,8 @@ class Boolean(Field):
     def _deserialize(self, data):
         if data is None:
             return None
+        if data == "false":
+            return False
         return bool(data)
 
     def clean(self, data):
