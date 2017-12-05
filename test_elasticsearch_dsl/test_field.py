@@ -5,6 +5,18 @@ import pytest
 
 from elasticsearch_dsl import field
 
+def test_boolean_deserialization():
+    bf = field.Boolean()
+
+    assert not bf.deserialize("false")
+    assert not bf.deserialize(False)
+    assert not bf.deserialize("")
+    assert not bf.deserialize(0)
+
+    assert bf.deserialize(True)
+    assert bf.deserialize("true")
+    assert bf.deserialize(1)
+
 def test_date_field_can_have_default_tz():
     f = field.Date(default_timezone='UTC')
     now = datetime.now()
