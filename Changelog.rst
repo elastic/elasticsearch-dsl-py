@@ -3,13 +3,14 @@
 Changelog
 =========
 
-5.4.0 (dev)
------------
+5.4.0 (2017-12-06)
+------------------
  * fix ``ip_range`` aggregation and rename the class to ``IPRange``.
    ``Iprange`` is kept for bw compatibility
  * fix bug in loading an aggregation with meta data from dict
- * add support for ``normalizer`` paramter of ``Keyword`` fields
+ * add support for ``normalizer`` parameter of ``Keyword`` fields
  * ``IndexTemplate`` can now be specified using the same API as ``Index``
+ * ``Boolean`` field now accepts ``"false"`` as ``False``
 
 5.3.0 (2017-05-18)
 ------------------
