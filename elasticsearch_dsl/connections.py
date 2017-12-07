@@ -94,3 +94,8 @@ class Connections(object):
             raise KeyError('There is no connection with alias %r.' % alias)
 
 connections = Connections()
+configure = connections.configure
+add_connection = connections.add_connection
+remove_connection = connections.remove_connection
+create_connection = connections.create_connection
+get_connection = connections.get_connection
