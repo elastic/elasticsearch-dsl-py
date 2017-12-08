@@ -95,6 +95,13 @@ class DocTypeOptions(object):
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
 
+@add_metaclass(DocTypeMeta)
+class InnerDoc(ObjectBase):
+    """
+    Common class for inner documents like Object or Nested
+    """
+    pass
+
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):

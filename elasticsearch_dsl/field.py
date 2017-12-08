@@ -105,6 +105,50 @@ class InnerObjectWrapper(ObjectBase):
         super(AttrDict, self).__setattr__('_doc_type', type('Meta', (), {'mapping': mapping}))
         super(InnerObjectWrapper, self).__init__(**kwargs)
 
+class OtherNested(Field):
+    _coerce = True
+
+    def __init__(self, doc_class, **kwargs):
+        self._doc_class = doc_class
+        kwargs.setdefault('multi', True)
+        super(OtherNested, self).__init__(**kwargs)
+
+    def to_dict(self):
+        d = self._doc_class._doc_type.mapping.to_dict()
+        _, d = d.popitem()
+        d["type"] = "nested"
+        return d
+
+    def _collect_fields(self):
+        return self._doc_class._doc_type.mapping.properties._collect_fields()
+
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        # don't wrap already wrapped data
+        if isinstance(data, self._doc_class):
+            return data
+
+        if isinstance(data, AttrDict):
+            data = data._d_
+
+        return self._doc_class(**data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return data.to_dict()
+
+    def clean(self, data):
+        data = super(OtherNested, self).clean(data)
+        if data is None:
+            return None
+        if isinstance(data, (list, AttrList)):
+            for d in data:
+                d.full_clean()
+        else:
+            data.full_clean()
+        return data
 
 class InnerObject(object):
     " Common functionality for nested and object fields. "
