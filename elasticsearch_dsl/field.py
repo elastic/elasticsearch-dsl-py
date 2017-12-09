@@ -1,3 +1,6 @@
+import base64
+import ipaddress
+
 import collections
 
 from datetime import date, datetime
@@ -282,39 +285,72 @@ class Boolean(Field):
             raise ValidationException("Value required for this field.")
         return data
 
+
 class Float(Field):
     name = 'float'
 
-class HalfFloat(Field):
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return float(data)
+
+class HalfFloat(Float):
     name = 'half_float'
 
-class ScaledFloat(Field):
+class ScaledFloat(Float):
     name = 'scaled_float'
 
     def __init__(self, scaling_factor, *args, **kwargs):
         super(ScaledFloat, self).__init__(scaling_factor=scaling_factor, *args, **kwargs)
 
 
-class Double(Field):
+class Double(Float):
     name = 'double'
 
-class Byte(Field):
-    name = 'byte'
-
-class Short(Field):
-    name = 'short'
 
 class Integer(Field):
     name = 'integer'
 
-class Long(Field):
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return int(data)
+
+
+class Byte(Integer):
+    name = 'byte'
+
+class Short(Integer):
+    name = 'short'
+
+class Long(Integer):
     name = 'long'
 
 class Ip(Field):
     name = 'ip'
 
-class Attachment(Field):
-    name = 'attachment'
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return ipaddress.ip_interface(data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return str(data)
+
+class Binary(Field):
+    name = 'binary'
+
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return base64.b64decode(data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return base64.b64encode(data)
 
 class GeoPoint(Field):
     name = 'geo_point'
@@ -345,3 +381,12 @@ class DateRange(Field):
 
 class Join(Field):
     name = 'join'
+
+class TokenCount(Field):
+    name = 'token_count'
+
+class Murmur3:
+    name = 'murmur3'
+
+class Percolator:
+    name = 'percolator'

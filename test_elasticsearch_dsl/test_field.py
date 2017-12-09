@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 from dateutil import tz
 
@@ -111,3 +112,44 @@ def test_scaled_float():
         field.ScaledFloat()
     f = field.ScaledFloat(123)
     assert f.to_dict() == {'scaling_factor': 123, 'type': 'scaled_float'}
+
+
+def test_ipaddress():
+    import ipaddress
+    f = field.Ip()
+    assert f.deserialize('127.0.0.1/32') == ipaddress.ip_interface('127.0.0.1/32')
+    assert f.deserialize('::1/128') == ipaddress.ip_interface('::1/128')
+    assert f.serialize(f.deserialize('::1/128')) == '::1/128'
+    assert f.deserialize(None) is None
+    with pytest.raises(ValueError):
+        assert f.deserialize('not_an_ipaddress')
+
+
+def test_float():
+    f = field.Float()
+    assert f.deserialize('42') == 42.0
+    assert f.deserialize(None) is None
+    with pytest.raises(ValueError):
+        assert f.deserialize('not_a_float')
+
+
+def test_integer():
+    f = field.Integer()
+    assert f.deserialize('42') == 42
+    assert f.deserialize(None) is None
+    with pytest.raises(ValueError):
+        assert f.deserialize('not_an_integer')
+
+
+def test_binary():
+    f = field.Binary()
+    assert f.deserialize(base64.b64encode(b'42')) == b'42'
+    assert f.deserialize(f.serialize(b'42')) == b'42'
+    assert f.deserialize(None) is None
+
+
+
+
+
+
+
