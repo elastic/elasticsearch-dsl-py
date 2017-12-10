@@ -4,6 +4,8 @@ import ipaddress
 import collections
 
 from datetime import date, datetime
+
+import six
 from dateutil import parser, tz
 from six import itervalues, string_types
 from six.moves import map
@@ -332,7 +334,9 @@ class Ip(Field):
     def _deserialize(self, data):
         if data is None:
             return None
-        return ipaddress.ip_interface(data)
+
+        # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
+        return ipaddress.ip_interface(six.u(data))
 
     def _serialize(self, data):
         if data is None:

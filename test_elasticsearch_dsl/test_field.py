@@ -117,8 +117,8 @@ def test_scaled_float():
 def test_ipaddress():
     import ipaddress
     f = field.Ip()
-    assert f.deserialize('127.0.0.1/32') == ipaddress.ip_interface('127.0.0.1/32')
-    assert f.deserialize('::1/128') == ipaddress.ip_interface('::1/128')
+    assert f.deserialize('127.0.0.1/32') == ipaddress.ip_interface(u'127.0.0.1/32')
+    assert f.deserialize('::1/128') == ipaddress.ip_interface(u'::1/128')
     assert f.serialize(f.deserialize('::1/128')) == '::1/128'
     assert f.deserialize(None) is None
     with pytest.raises(ValueError):
