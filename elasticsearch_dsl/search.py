@@ -148,7 +148,7 @@ class Request(object):
         else:
             indexes = []
             for i in index:
-                if isinstance(i, str):
+                if isinstance(i, string_types):
                     indexes.append(i)
                 elif isinstance(i, list):
                     indexes += i
