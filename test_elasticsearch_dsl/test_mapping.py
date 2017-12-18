@@ -20,17 +20,16 @@ def test_mapping_update_is_recursive():
     m1 = mapping.Mapping('article')
     m1.field('title', 'text')
     m1.field('author', 'object')
-    m1['author'].field('name', 'text')
+    m1.field('author', 'object', properties={'name': {'type': 'text'}})
     m1.meta('_all', enabled=False)
     m1.meta('dynamic', False)
 
     m2 = mapping.Mapping('article')
     m2.field('published_from', 'date')
-    m2.field('author', 'object')
+    m2.field('author', 'object', properties={'email': {'type': 'text'}})
     m2.field('title', 'text')
     m2.field('lang', 'keyword')
     m2.meta('_analyzer', path='lang')
-    m2['author'].field('email', 'text')
 
     m1.update(m2, update_only=True)
 

@@ -64,20 +64,8 @@ def test_multi_fields_are_accepted_and_parsed():
         }
     } == f.to_dict()
 
-def test_modifying_nested():
-    f = field.Nested()
-    f.field('name', 'text', index='not_analyzed')
-
-    assert {
-        'type': 'nested',
-        'properties': {
-            'name': {'type': 'text', 'index': 'not_analyzed'}
-        },
-    } == f.to_dict()
-
 def test_nested_provides_direct_access_to_its_fields():
-    f = field.Nested()
-    f.field('name', 'text', index='not_analyzed')
+    f = field.Nested(properties={'name': {'type': 'text', 'index': 'not_analyzed'}})
 
     assert 'name' in f
     assert f['name'] == field.Text(index='not_analyzed')

@@ -3,13 +3,15 @@ from pytz import timezone
 
 from elasticsearch import ConflictError, NotFoundError, RequestError
 
-from elasticsearch_dsl import DocType, Date, Text, Keyword, construct_field, Mapping
+from elasticsearch_dsl import DocType, Date, Text, Keyword, Mapping, InnerDoc, Object
 from elasticsearch_dsl.utils import AttrList
 
 from pytest import raises
 
-user_field = construct_field('object')
-user_field.field('name', 'text', fields={'raw': construct_field('keyword')})
+class User(InnerDoc):
+    name = Text(fields={'raw': Keyword()})
+
+user_field = Object(User)
 
 class Wiki(DocType):
     owner = user_field

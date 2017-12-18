@@ -3,19 +3,19 @@ import codecs
 from hashlib import md5
 from datetime import datetime
 
-from elasticsearch_dsl import document, field, Mapping, utils
+from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
 
-class MyInner(field.InnerObjectWrapper):
-    pass
+class MyInner(InnerDoc):
+    old_field = field.Text()
 
 class MyDoc(document.DocType):
     title = field.Keyword()
     name = field.Text()
     created_at = field.Date()
-    inner = field.Object(properties={'old_field': field.Text()}, doc_class=MyInner)
+    inner = field.Object(MyInner)
 
 class MySubDoc(MyDoc):
     name = field.Keyword()
@@ -35,7 +35,7 @@ class Comment(document.InnerDoc):
     tags = field.Keyword(multi=True)
 
 class DocWithNested(document.DocType):
-    comments = field.OtherNested(Comment)
+    comments = field.Nested(Comment)
 
 class SimpleCommit(document.DocType):
     files = field.Text(multi=True)
@@ -60,7 +60,7 @@ class SecretDoc(document.DocType):
     title = SecretField(index='no')
 
 class NestedSecret(document.DocType):
-    secrets = field.Nested(properties={'title': SecretField()})
+    secrets = field.Nested(SecretDoc)
 
 class OptionalObjectWithRequiredField(document.DocType):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
