@@ -13,7 +13,7 @@ from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
 
 
 @fixture(scope='session')
-def client(request):
+def client():
     try:
         connection = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
         connections.add_connection('default', connection)
@@ -22,13 +22,13 @@ def client(request):
         skip()
 
 @fixture
-def write_client(request, client):
+def write_client(client):
     yield client
     client.indices.delete('test-*', ignore=404)
     client.indices.delete_template('test-template', ignore=404)
 
 @fixture
-def mock_client(request):
+def mock_client():
     client = Mock()
     client.search.return_value = dummy_response()
     connections.add_connection('mock', client)
@@ -37,7 +37,7 @@ def mock_client(request):
     connections._kwargs = {}
 
 @fixture(scope='session')
-def data_client(request, client):
+def data_client(client):
     # create mappings
     create_git_index(client, 'git')
     create_flat_git_index(client, 'flat-git')
