@@ -11,16 +11,14 @@ from pytest import raises
 class User(InnerDoc):
     name = Text(fields={'raw': Keyword()})
 
-user_field = Object(User)
-
 class Wiki(DocType):
-    owner = user_field
+    owner = Object(User)
 
     class Meta:
         index = 'test-wiki'
 
 class Repository(DocType):
-    owner = user_field
+    owner = Object(User)
     created_at = Date()
     description = Text(analyzer='snowball')
     tags = Keyword()
