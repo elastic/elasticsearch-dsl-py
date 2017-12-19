@@ -3,8 +3,9 @@ from ..utils import AttrDict, AttrList
 from .hit import Hit, HitMeta
 
 class Response(AttrDict):
-    def __init__(self, search, response):
+    def __init__(self, search, response, doc_class=None):
         super(AttrDict, self).__setattr__('_search', search)
+        super(AttrDict, self).__setattr__('_doc_class', doc_class)
         super(Response, self).__init__(response)
 
     def __iter__(self):
@@ -27,21 +28,32 @@ class Response(AttrDict):
         return len(self.hits)
 
     def __getstate__(self):
-        return (self._d_, self._search)
+        return (self._d_, self._search, self._doc_class)
 
     def __setstate__(self, state):
         super(AttrDict, self).__setattr__('_d_', state[0])
         super(AttrDict, self).__setattr__('_search', state[1])
+        super(AttrDict, self).__setattr__('_doc_class', state[2])
 
     def success(self):
         return self._shards.total == self._shards.successful and not self.timed_out
 
     def _get_result(self, hit):
+        doc_class = Hit
         dt = hit.get('_type')
+
+        if hasattr(self._doc_class, '_doc_type') and '_nested' in hit:
+            nested_field = self._doc_class._doc_type.resolve_field(hit['_nested']['field'])
+            if nested_field is not None:
+                doc_class = nested_field._doc_class
+
+        elif dt in self._search._doc_type_map:
+            doc_class = self._search._doc_type_map[dt]
+
         for t in hit.get('inner_hits', ()):
-            hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t])
-        callback = self._search._doc_type_map.get(dt, Hit)
-        callback = getattr(callback, 'from_es', callback)
+            hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t], doc_class=doc_class)
+
+        callback = getattr(doc_class, 'from_es', doc_class)
         return callback(hit)
 
     @property

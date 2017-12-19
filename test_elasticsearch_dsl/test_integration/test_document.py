@@ -3,10 +3,11 @@ from pytz import timezone
 
 from elasticsearch import ConflictError, NotFoundError, RequestError
 
-from elasticsearch_dsl import DocType, Date, Text, Keyword, Mapping, InnerDoc, Object
+from elasticsearch_dsl import DocType, Date, Text, Keyword, Mapping, InnerDoc, \
+    Object, Nested, MetaField, Q
 from elasticsearch_dsl.utils import AttrList
 
-from pytest import raises
+from pytest import raises, fixture
 
 class User(InnerDoc):
     name = Text(fields={'raw': Keyword()})
@@ -40,6 +41,37 @@ class Commit(DocType):
         index = 'flat-git'
         doc_type = 'doc'
         mapping = Mapping('doc')
+
+class Comment(InnerDoc):
+    content = Text()
+    author = Object(User)
+    class Meta:
+        dynamic = MetaField(False)
+
+class PullRequest(DocType):
+    comments = Nested(Comment)
+    class Meta:
+        index = 'test-prs'
+
+@fixture
+def pull_request(write_client):
+    PullRequest.init()
+    pr = PullRequest(_id=42, comments=[Comment(content='Hello World!', author=User(name='honzakral'))])
+    pr.save(refresh=True)
+    return pr
+
+def test_nested_inner_hits_are_wrapped_properly(pull_request):
+    s = PullRequest.search().query('nested', inner_hits={}, path='comments',
+                                   query=Q('match', comments__content='hello'))
+
+    response = s.execute()
+    pr = response.hits[0]
+    assert isinstance(pr, PullRequest)
+    assert isinstance(pr.comments[0], Comment)
+
+    comment = pr.meta.inner_hits.comments.hits[0]
+    assert isinstance(comment, Comment)
+
 
 def test_update_object_field(write_client):
     Wiki.init()
