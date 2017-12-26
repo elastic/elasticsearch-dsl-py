@@ -72,6 +72,15 @@ def test_nested_inner_hits_are_wrapped_properly(pull_request):
     comment = pr.meta.inner_hits.comments.hits[0]
     assert isinstance(comment, Comment)
 
+def test_nested_top_hits_are_wrapped_properly(pull_request):
+    s = PullRequest.search()
+    s.aggs.bucket('comments', 'nested', path='comments').metric('hits', 'top_hits', size=1)
+
+    r = s.execute()
+
+    print(r._d_)
+    assert isinstance(r.aggregations.comments.hits.hits[0], Comment)
+
 
 def test_update_object_field(write_client):
     Wiki.init()
