@@ -51,7 +51,7 @@ To define a default connection that will be used globally, use the
 
 .. code:: python
 
-    from elasticsearch_dsl.connections import connections
+    from elasticsearch_dsl import connections
 
     connections.create_connection(hosts=['localhost'], timeout=20)
 
@@ -68,7 +68,7 @@ time using the ``configure`` method:
 
 .. code:: python
 
-    from elasticsearch_dsl.connections import connections
+    from elasticsearch_dsl import connections
 
     connections.configure(
         default={'hosts': 'localhost'},
