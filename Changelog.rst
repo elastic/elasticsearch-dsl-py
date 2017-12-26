@@ -3,6 +3,28 @@
 Changelog
 =========
 
+6.0.0 (dev)
+-----------
+
+Release compatible with elasticsearch 6.0, changes include:
+
+ * use ``doc`` as default ``DocType`` name, this change includes:
+   * ``DocType._doc_type.matches`` method is now used to determine which
+   ``DocType`` should be used for a hit instead of just checking ``_type``
+ * ``Nested`` and ``Object`` field refactoring using newly introduced
+   ``InnerDoc`` class. To define a ``Nested``/``Object`` field just define the
+   ``InnerDoc`` subclass and then use it when defining the field::
+
+      class Comment(InnerDoc):
+          body = Text()
+          created_at = Date()
+
+      class Blog(DocType):
+          comments = Nested(Comment)
+
+ * methods on ``connections`` singleton are now exposed on the ``connections``
+   module directly.
+
 5.4.0 (2017-12-06)
 ------------------
  * fix ``ip_range`` aggregation and rename the class to ``IPRange``.
