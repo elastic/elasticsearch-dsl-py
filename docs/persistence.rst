@@ -370,8 +370,9 @@ metadata for your document:
 ``matches(self, hit)``
   method that returns ``True`` if a given raw hit (``dict`` returned from
   elasticsearch) should be deserialized using this ``DocType`` subclass. Can be
-  overriden, by default will just check that values for ``_index`` and
-  ``_type`` in the document matches those in ``_doc_type``.
+  overriden, by default will just check that values for ``_index`` (including
+  any wildcard expansions) and ``_type`` in the document matches those in
+  ``_doc_type``.
 
 Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
 used to control the mapping of the meta fields (``_all``, ``dynamic`` etc).

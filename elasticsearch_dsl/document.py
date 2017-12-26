@@ -1,5 +1,5 @@
 import collections
-import re
+from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
 from six import iteritems, add_metaclass
@@ -88,12 +88,12 @@ class DocTypeOptions(object):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
 
     def matches(self, hit):
-        print(self.index, self.name, hit)
         if self._matches is not None:
             return self._matches(hit)
 
-        print(self.index, self.name, hit)
-        return (self.index is None or self.index == hit.get('_index')) and self.name == hit.get('_type')
+        return (
+                self.index is None or fnmatch(hit.get('_index', ''), self.index)
+            ) and self.name == hit.get('_type')
 
 @add_metaclass(DocTypeMeta)
 class InnerDoc(ObjectBase):

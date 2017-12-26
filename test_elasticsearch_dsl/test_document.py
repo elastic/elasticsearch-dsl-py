@@ -65,6 +65,42 @@ class NestedSecret(document.DocType):
 class OptionalObjectWithRequiredField(document.DocType):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
 
+def test_matches_uses_index_name_and_doc_type():
+    assert SimpleCommit._doc_type.matches({
+        '_type': 'doc',
+        '_index': 'test-git'
+    })
+    assert not SimpleCommit._doc_type.matches({
+        '_type': 'doc',
+        '_index': 'not-test-git'
+    })
+    assert MySubDoc._doc_type.matches({
+        '_type': 'my_custom_doc',
+        '_index': 'default-index'
+    })
+    assert not MySubDoc._doc_type.matches({
+        '_type': 'doc',
+        '_index': 'default-index'
+    })
+    assert not MySubDoc._doc_type.matches({
+        '_type': 'my_custom_doc',
+        '_index': 'test-git'
+    })
+
+def test_matches_accepts_wildcards():
+    class MyDoc(document.DocType):
+        class Meta:
+            index = 'my-*'
+
+    assert MyDoc._doc_type.matches({
+        '_type': 'doc',
+        '_index': 'my-index'
+    })
+    assert not MyDoc._doc_type.matches({
+        '_type': 'doc',
+        '_index': 'not-my-index'
+    })
+
 def test_assigning_attrlist_to_field():
     sc = SimpleCommit()
     l = ['README', 'README.rst']
