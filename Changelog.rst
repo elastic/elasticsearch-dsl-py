@@ -24,6 +24,9 @@ Release compatible with elasticsearch 6.0, changes include:
 
  * methods on ``connections`` singleton are now exposed on the ``connections``
    module directly.
+ * field values are now only deserialized when coming from elasticsearch (via
+   ``from_es`` method) and not when assigning values in python (either by
+   direct assignment or in ``__init__``).
 
 5.4.0 (2017-12-06)
 ------------------

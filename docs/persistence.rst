@@ -150,7 +150,7 @@ If you want to create a model-like wrapper around your documents, use the
 
         def add_comment(self, author, content):
             self.comments.append(
-              {'author': author, 'content': content})
+              Comment(author=author, content=content, created_at=datetime.now()))
 
         def save(self, ** kwargs):
             self.created_at = datetime.now()
