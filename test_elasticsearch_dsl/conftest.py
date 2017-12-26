@@ -13,7 +13,7 @@ from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
 
 
 @fixture(scope='session')
-def client(request):
+def client():
     try:
         connection = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
         connections.add_connection('default', connection)
@@ -22,13 +22,13 @@ def client(request):
         skip()
 
 @fixture
-def write_client(request, client):
+def write_client(client):
     yield client
     client.indices.delete('test-*', ignore=404)
     client.indices.delete_template('test-template', ignore=404)
 
 @fixture
-def mock_client(request):
+def mock_client():
     client = Mock()
     client.search.return_value = dummy_response()
     connections.add_connection('mock', client)
@@ -37,7 +37,7 @@ def mock_client(request):
     connections._kwargs = {}
 
 @fixture(scope='session')
-def data_client(request, client):
+def data_client(client):
     # create mappings
     create_git_index(client, 'git')
     create_flat_git_index(client, 'flat-git')
@@ -74,7 +74,7 @@ def dummy_response():
             "_type": "employee",
             "_id": "42",
             "_score": 11.123,
-            "_parent": "elasticsearch",
+            "_routing": "elasticsearch",
 
             "_source": {
               "name": {
@@ -90,7 +90,7 @@ def dummy_response():
             "_type": "employee",
             "_id": "47",
             "_score": 1,
-            "_parent": "elasticsearch",
+            "_routing": "elasticsearch",
 
             "_source": {
               "name": {
@@ -106,7 +106,7 @@ def dummy_response():
             "_type": "employee",
             "_id": "53",
             "_score": 16.0,
-            "_parent": "elasticsearch",
+            "_routing": "elasticsearch",
           },
         ],
         "max_score": 12.0,
@@ -119,7 +119,7 @@ def dummy_response():
 @fixture
 def aggs_search():
     from elasticsearch_dsl import Search
-    s = Search(index='git', doc_type='commits')
+    s = Search(index='flat-git')
     s.aggs\
         .bucket('popular_files', 'terms', field='files', size=2)\
         .metric('line_stats', 'stats', field='stats.lines')\
@@ -156,27 +156,23 @@ def aggs_data():
                                 'hits': [
                                     {
                                         '_id': '3ca6e1e73a071a705b4babd2f581c91a2a3e5037',
-                                        '_type': 'commits',
+                                        '_type': 'doc',
                                         '_source': {
                                             'stats': {'files': 4, 'deletions': 7, 'lines': 30, 'insertions': 23},
                                             'committed_date': '2014-05-02T13:47:19'
                                         },
                                         '_score': 1.0,
-                                        '_parent': 'elasticsearch-dsl-py',
-                                        '_routing': 'elasticsearch-dsl-py',
-                                        '_index': 'git'
+                                        '_index': 'flat-git'
                                     },
                                     {
                                         '_id': 'eb3e543323f189fd7b698e66295427204fff5755',
-                                        '_type': 'commits',
+                                        '_type': 'doc',
                                         '_source': {
                                             'stats': {'files': 1, 'deletions': 0, 'lines': 18, 'insertions': 18},
                                             'committed_date': '2014-05-01T13:32:14'
                                         },
                                         '_score': 1.0,
-                                        '_parent': 'elasticsearch-dsl-py',
-                                        '_routing': 'elasticsearch-dsl-py',
-                                        '_index': 'git'
+                                        '_index': 'flat-git'
                                     }
                                 ],
                                 'max_score': 1.0
@@ -193,26 +189,22 @@ def aggs_data():
                                 'hits': [
                                     {
                                         '_id': '3ca6e1e73a071a705b4babd2f581c91a2a3e5037',
-                                        '_type': 'commits',
+                                        '_type': 'doc',
                                         '_source': {
                                             'stats': {'files': 4, 'deletions': 7, 'lines': 30, 'insertions': 23},
                                             'committed_date': '2014-05-02T13:47:19'
                                         },
                                         '_score': 1.0,
-                                        '_parent': 'elasticsearch-dsl-py',
-                                        '_routing': 'elasticsearch-dsl-py',
-                                        '_index': 'git'
+                                        '_index': 'flat-git'
                                     }, {
                                         '_id': 'dd15b6ba17dd9ba16363a51f85b31f66f1fb1157',
-                                        '_type': 'commits',
+                                        '_type': 'doc',
                                         '_source': {
                                             'stats': {'files': 3, 'deletions': 18, 'lines': 62, 'insertions': 44},
                                             'committed_date': '2014-05-01T13:30:44'
                                         },
                                         '_score': 1.0,
-                                        '_parent': 'elasticsearch-dsl-py',
-                                        '_routing': 'elasticsearch-dsl-py',
-                                        '_index': 'git'
+                                        '_index': 'flat-git'
                                     }
                                 ],
                                 'max_score': 1.0

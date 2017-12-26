@@ -10,6 +10,15 @@ from .exceptions import UnknownDslObject, ValidationException
 SKIP_VALUES = ('', None)
 EXPAND__TO_DOT=True
 
+DOC_META_FIELDS = frozenset((
+    'id', 'routing', 'version', 'version_type'
+))
+
+META_FIELDS = frozenset((
+    # Elasticsearch metadata fields, except 'type'
+    'index', 'using', 'score',
+)).union(DOC_META_FIELDS)
+
 def _wrap(val, obj_wrapper=None):
     if isinstance(val, collections.Mapping):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
@@ -331,6 +340,19 @@ class ObjectBase(AttrDict):
             if k in kwargs and m[k]._coerce:
                 kwargs[k] = m[k].deserialize(kwargs[k])
         super(ObjectBase, self).__init__(kwargs)
+
+    @classmethod
+    def from_es(cls, hit):
+        meta = hit.copy()
+        doc = meta.pop('_source', {})
+        if 'fields' in meta:
+            for k, v in iteritems(meta.pop('fields')):
+                if k.startswith('_') and k[1:] in META_FIELDS:
+                    meta[k] = v
+                else:
+                    doc[k] = v
+
+        return cls(meta=meta, **doc)
 
     def __getattr__(self, name):
         try:

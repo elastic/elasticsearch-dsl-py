@@ -1,10 +1,13 @@
+from six import itervalues
+
 from ..utils import AttrDict, AttrList
 
 from .hit import Hit, HitMeta
 
 class Response(AttrDict):
-    def __init__(self, search, response):
+    def __init__(self, search, response, doc_class=None):
         super(AttrDict, self).__setattr__('_search', search)
+        super(AttrDict, self).__setattr__('_doc_class', doc_class)
         super(Response, self).__init__(response)
 
     def __iter__(self):
@@ -27,21 +30,45 @@ class Response(AttrDict):
         return len(self.hits)
 
     def __getstate__(self):
-        return (self._d_, self._search)
+        return (self._d_, self._search, self._doc_class)
 
     def __setstate__(self, state):
         super(AttrDict, self).__setattr__('_d_', state[0])
         super(AttrDict, self).__setattr__('_search', state[1])
+        super(AttrDict, self).__setattr__('_doc_class', state[2])
 
     def success(self):
         return self._shards.total == self._shards.successful and not self.timed_out
 
+    def _resolve_nested(self, field, doc_class):
+        if hasattr(self._doc_class, '_doc_type'):
+            nested_field = self._doc_class._doc_type.resolve_field(field)
+
+        else:
+            for dt in itervalues(self._search._doc_type_map):
+                nested_field = dt._doc_type.resolve_field(field)
+                if nested_field is not None:
+                    break
+
+        if nested_field is not None:
+            return nested_field._doc_class
+
+        return doc_class
+
     def _get_result(self, hit):
+        doc_class = Hit
         dt = hit.get('_type')
+
+        if '_nested' in hit:
+            doc_class = self._resolve_nested(hit['_nested']['field'], doc_class)
+
+        elif dt in self._search._doc_type_map:
+            doc_class = self._search._doc_type_map[dt]
+
         for t in hit.get('inner_hits', ()):
-            hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t])
-        callback = self._search._doc_type_map.get(dt, Hit)
-        callback = getattr(callback, 'from_es', callback)
+            hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t], doc_class=doc_class)
+
+        callback = getattr(doc_class, 'from_es', doc_class)
         return callback(hit)
 
     @property

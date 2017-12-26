@@ -1,25 +1,21 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Nested, Text, Date, Object, Boolean, Integer
-from elasticsearch_dsl.field import InnerObjectWrapper
+from elasticsearch_dsl import DocType, Nested, Text, Date, Object, Boolean, Integer, InnerDoc
 from elasticsearch_dsl.exceptions import ValidationException
 
 from pytest import raises
 
-class Author(InnerObjectWrapper):
+class Author(InnerDoc):
+    name = Text(required=True)
+    email = Text(required=True)
+
     def clean(self):
+        print(self, type(self), self.name)
         if self.name.lower() not in self.email:
             raise ValidationException('Invalid email!')
 
 class BlogPost(DocType):
-    authors = Nested(
-        required=True,
-        doc_class=Author,
-        properties={
-            'name': Text(required=True),
-            'email': Text(required=True)
-        }
-    )
+    authors = Nested(Author, required=True)
     created = Date()
     inner = Object()
 

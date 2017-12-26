@@ -6,20 +6,11 @@ from six import iteritems, add_metaclass
 
 from .field import Field
 from .mapping import Mapping
-from .utils import ObjectBase, AttrDict, merge
+from .utils import ObjectBase, AttrDict, merge, DOC_META_FIELDS, META_FIELDS
 from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
-
-DOC_META_FIELDS = frozenset((
-    'id', 'routing', 'version', 'version_type'
-))
-
-META_FIELDS = frozenset((
-    # Elasticsearch metadata fields, except 'type'
-    'index', 'using', 'score',
-)).union(DOC_META_FIELDS)
 
 
 class MetaField(object):
@@ -94,6 +85,12 @@ class DocTypeOptions(object):
 
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
+
+@add_metaclass(DocTypeMeta)
+class InnerDoc(ObjectBase):
+    """
+    Common class for inner documents like Object or Nested
+    """
 
 
 @add_metaclass(DocTypeMeta)
@@ -249,27 +246,6 @@ class DocType(ObjectBase):
             message = 'Documents %s not found.' % ', '.join(missing_ids)
             raise NotFoundError(404, message, {'docs': missing_docs})
         return objs
-
-    @classmethod
-    def from_es(cls, hit):
-        """
-        Helper method to construct an instance from a dictionary returned by
-        elasticsearch.
-        """
-        # don't modify in place
-        meta = hit.copy()
-        doc = meta.pop('_source', {})
-
-        if 'fields' in meta:
-            for k, v in iteritems(meta.pop('fields')):
-                if k == '_source':
-                    doc.update(v)
-                if k.startswith('_') and k[1:] in META_FIELDS:
-                    meta[k] = v
-                else:
-                    doc[k] = v
-
-        return cls(meta=meta, **doc)
 
     def _get_connection(self, using=None):
         return connections.get_connection(using or self._doc_type.using)

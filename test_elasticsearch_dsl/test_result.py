@@ -90,7 +90,7 @@ def test_iterating_over_response_gives_you_hits(dummy_response):
     assert 'elasticsearch' == h.meta.id
     assert 12 == h.meta.score
 
-    assert hits[1].meta.parent == 'elasticsearch'
+    assert hits[1].meta.routing == 'elasticsearch'
 
 def test_hits_get_wrapped_to_contain_additional_attrs(dummy_response):
     res = response.Response(Search(), dummy_response)
