@@ -25,9 +25,11 @@ The mapping definition follows a similar pattern to the query dsl:
     m.field('category', 'text', fields={'raw': Keyword()})
 
     # you can also create a field manually
-    comment = Nested()
-    comment.field('author', Text())
-    comment.field('created_at', Date())
+    comment = Nested(
+                     properties={
+                        'author': Text(),
+                        'created_at': Date()
+                     })
 
     # and attach it to the mapping
     m.field('comments', comment)
@@ -109,7 +111,7 @@ If you want to create a model-like wrapper around your documents, use the
 
     from datetime import datetime
     from elasticsearch_dsl import DocType, Date, Nested, Boolean, \
-        analyzer, InnerObjectWrapper, Completion, Keyword, Text
+        analyzer, InnerDoc, Completion, Keyword, Text
 
     html_strip = analyzer('html_strip',
         tokenizer="standard",
@@ -117,7 +119,11 @@ If you want to create a model-like wrapper around your documents, use the
         char_filter=["html_strip"]
     )
 
-    class Comment(InnerObjectWrapper):
+    class Comment(InnerDoc):
+        author = Text(fields={'raw': Keyword()})
+        content = Text(analyzer='snowball')
+        created_at = Date()
+
         def age(self):
             return datetime.now() - self.created_at
 
@@ -131,14 +137,7 @@ If you want to create a model-like wrapper around your documents, use the
             fields={'raw': Keyword()}
         )
 
-        comments = Nested(
-            doc_class=Comment,
-            properties={
-                'author': Text(fields={'raw': Keyword()}),
-                'content': Text(analyzer='snowball'),
-                'created_at': Date()
-            }
-        )
+        comments = Nested(Comment)
 
         class Meta:
             index = 'blog'
