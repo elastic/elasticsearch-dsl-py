@@ -16,7 +16,7 @@ def test_index_template_works(write_client):
     assert {
         'test-blog': {
             'mappings': {
-                'post': {
+                'doc': {
                     'properties': {
                         'title': {'type': 'text', 'analyzer': 'my_analyzer'},
                         'published_from': {'type': 'date'},
@@ -40,7 +40,7 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
     assert {
         'test-blog': {
             'mappings': {
-                'post': {
+                'doc': {
                     'properties': {
                         'title': {'type': 'text', 'analyzer': 'my_analyzer'},
                         'published_from': {'type': 'date'}

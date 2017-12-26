@@ -9,7 +9,11 @@ layer for your application.
 Mappings
 --------
 
-The mapping definition follows a similar pattern to the query dsl:
+If you wish to create mappings manually you can use the ``Mapping`` class, for
+more advanced use cases, however, we recommend you use the :ref:`doc_type`
+abstraction in combination with :ref:`index` (or ``IndexTemplate``) to define
+index-level settings and properties. The mapping definition follows a similar
+pattern to the query dsl:
 
 .. code:: python
 
@@ -100,6 +104,8 @@ specify type (``nGram`` in our example).
     When creating a mapping which relies on a custom analyzer the index must
     either not exist or be closed. To create multiple ``DocType``-defined
     mappings you can use the :ref:`index` object.
+
+.. _doc_type:
 
 DocType
 -------
@@ -198,7 +204,7 @@ explicitly:
     first.save()
 
 
-All the metadata fields (``id``, ``parent``, ``routing``, ``index`` etc) can be
+All the metadata fields (``id``, ``routing``, ``index`` etc) can be
 accessed (and set) via a ``meta`` attribute or directly using the underscored
 variant:
 
@@ -270,15 +276,11 @@ accessed through the ``_doc_type`` attribute of the class:
 
 .. code:: python
 
-    # name of the type and index in elasticsearch
-    Post._doc_type.name
+    # name of the index in elasticsearch
     Post._doc_type.index
 
     # the raw Mapping object
     Post._doc_type.mapping
-
-    # the optional name of the parent type (if defined)
-    Post._doc_type.parent
 
 The ``_doc_type`` attribute is also home to the ``refresh`` method which will
 update the mapping on the ``DocType`` from elasticsearch. This is very useful
@@ -351,8 +353,8 @@ In the ``Meta`` class inside your document definition you can define various
 metadata for your document:
 
 ``doc_type``
-  name of the doc_type in elasticsearch. By default it will be constructed from
-  the class name (MyDocument -> my_document)
+  name of the doc_type in elasticsearch. By default it will be set to ``doc``,
+  it is not recommended to change.
 
 ``index``
   default index for the document, by default it is empty and every operation
@@ -366,7 +368,7 @@ metadata for your document:
   created from the fields on the document class itself.
 
 Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
-used to control the mapping of the meta fields (``_all``, ``_parent`` etc).
+used to control the mapping of the meta fields (``_all``, ``dynamic`` etc).
 Just name the parameter (without the leading underscore) as the field you wish
 to map and pass any parameters to the ``MetaField`` class:
 
@@ -377,7 +379,6 @@ to map and pass any parameters to the ``MetaField`` class:
 
         class Meta:
             all = MetaField(enabled=False)
-            parent = MetaField(type='blog')
             dynamic = MetaField('strict')
 
 .. _index:

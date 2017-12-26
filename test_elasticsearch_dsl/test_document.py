@@ -89,7 +89,7 @@ def test_custom_field():
 
 def test_custom_field_mapping():
     assert {
-        'secret_doc': {
+        'doc': {
             'properties': {
                 'title': {'index': 'no', 'type': 'text'}
             }
@@ -186,7 +186,7 @@ def test_meta_field_mapping():
             dynamic_templates = document.MetaField([42])
 
     assert {
-        'user': {
+        'doc': {
             'properties': {
                 'username': {'type': 'text'}
             },
@@ -277,9 +277,8 @@ def test_to_dict_ignores_empty_collections():
 def test_declarative_mapping_definition():
     assert issubclass(MyDoc, document.DocType)
     assert hasattr(MyDoc, '_doc_type')
-    assert 'my_doc' == MyDoc._doc_type.name
     assert {
-        'my_doc': {
+        'doc': {
             'properties': {
                 'created_at': {'type': 'date'},
                 'name': {'type': 'text'},
@@ -368,13 +367,11 @@ def test_meta_inheritance():
     assert issubclass(MyMultiSubDoc, MyDoc2)
     assert issubclass(MyMultiSubDoc, document.DocType)
     assert hasattr(MyMultiSubDoc, '_doc_type')
-    # doc_type should not be inherited
-    assert 'my_multi_sub_doc' == MyMultiSubDoc._doc_type.name
     # index and using should be
     assert MyMultiSubDoc._doc_type.index == MySubDoc._doc_type.index
     assert MyMultiSubDoc._doc_type.using == MySubDoc._doc_type.using
     assert {
-        'my_multi_sub_doc': {
+        'doc': {
             'properties': {
                 'created_at': {'type': 'date'},
                 'name': {'type': 'keyword'},

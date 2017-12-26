@@ -209,13 +209,14 @@ def test_doc_type_can_be_document_class():
         pass
 
     s = search.Search(doc_type=MyDocType)
-    assert s._doc_type == ['my_doc_type']
-    assert s._doc_type_map == {'my_doc_type': MyDocType}
+    assert s._doc_type == [MyDocType]
+    assert s._doc_type_map == {}
+    assert s._get_doc_type() == ['doc']
 
     s = search.Search().doc_type(MyDocType)
-    assert s._doc_type == ['my_doc_type']
-    assert s._doc_type_map == {'my_doc_type': MyDocType}
-
+    assert s._doc_type == [MyDocType]
+    assert s._doc_type_map == {}
+    assert s._get_doc_type() == ['doc']
 
 def test_sort():
     s = search.Search()

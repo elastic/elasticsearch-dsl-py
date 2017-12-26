@@ -92,13 +92,12 @@ class Request(object):
         self._doc_type = []
         self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
-            for dt in doc_type:
-                self._add_doc_type(dt)
+            self._doc_type.extend(doc_type)
         elif isinstance(doc_type, collections.Mapping):
             self._doc_type.extend(doc_type.keys())
             self._doc_type_map.update(doc_type)
         elif doc_type:
-            self._add_doc_type(doc_type)
+            self._doc_type.append(doc_type)
 
         self._params = {}
         self._extra = extra or {}
@@ -159,11 +158,52 @@ class Request(object):
 
         return s
 
-    def _add_doc_type(self, doc_type):
-        if hasattr(doc_type, '_doc_type'):
-            self._doc_type_map[doc_type._doc_type.name] = doc_type
-            doc_type = doc_type._doc_type.name
-        self._doc_type.append(doc_type)
+    def _get_doc_type(self):
+        """
+        Return a list of doc_type names to be used
+        """
+        return list(set(dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type))
+
+    def _resolve_nested(self, field, parent_class=None):
+        doc_class = Hit
+        if hasattr(parent_class, '_doc_type'):
+            nested_field = parent_class._doc_type.resolve_field(field)
+
+        else:
+            for dt in self._doc_type:
+                if not hasattr(dt, '_doc_type'):
+                    continue
+                nested_field = dt._doc_type.resolve_field(field)
+                if nested_field is not None:
+                    break
+
+        if nested_field is not None:
+            return nested_field._doc_class
+
+        return doc_class
+
+    def _get_result(self, hit, parent_class=None):
+        doc_class = Hit
+        dt = hit.get('_type')
+
+        if '_nested' in hit:
+            doc_class = self._resolve_nested(hit['_nested']['field'], parent_class)
+
+        elif dt in self._doc_type_map:
+            doc_class = self._doc_type_map[dt]
+
+        else:
+            for doc_type in self._doc_type:
+                if hasattr(doc_type, '_doc_type') and doc_type._doc_type.matches(hit):
+                    doc_class = doc_type
+                    break
+
+        for t in hit.get('inner_hits', ()):
+            hit['inner_hits'][t] = Response(self, hit['inner_hits'][t], doc_class=doc_class)
+
+        callback = getattr(doc_class, 'from_es', doc_class)
+        return callback(hit)
+
 
     def doc_type(self, *doc_type, **kwargs):
         """
@@ -186,8 +226,7 @@ class Request(object):
             s._doc_type = []
             s._doc_type_map = {}
         else:
-            for dt in doc_type:
-                s._add_doc_type(dt)
+            s._doc_type.extend(doc_type)
             s._doc_type.extend(kwargs.keys())
             s._doc_type_map.update(kwargs)
         return s
@@ -528,6 +567,7 @@ class Search(Request):
             Search().highlight('title', fragment_size=50).highlight('body', fragment_size=100)
 
         which will produce::
+
             {
                 "highlight": {
                     "fields": {
@@ -615,7 +655,7 @@ class Search(Request):
         # TODO: failed shards detection
         return es.count(
             index=self._index,
-            doc_type=self._doc_type,
+            doc_type=self._get_doc_type(),
             body=d,
             **self._params
         )['count']
@@ -634,7 +674,7 @@ class Search(Request):
                 self,
                 es.search(
                     index=self._index,
-                    doc_type=self._doc_type,
+                    doc_type=self._get_doc_type(),
                     body=self.to_dict(),
                     **self._params
                 )
@@ -657,12 +697,10 @@ class Search(Request):
                 es,
                 query=self.to_dict(),
                 index=self._index,
-                doc_type=self._doc_type,
+                doc_type=self._get_doc_type(),
                 **self._params
         ):
-            callback = self._doc_type_map.get(hit['_type'], Hit)
-            callback = getattr(callback, 'from_es', callback)
-            yield callback(hit)
+            yield self._get_result(hit)
 
     def delete(self):
         """
@@ -675,7 +713,7 @@ class Search(Request):
             es.delete_by_query(
                 index=self._index,
                 body=self.to_dict(),
-                doc_type=self._doc_type,
+                doc_type=self._get_doc_type(),
                 **self._params
             )
         )
@@ -720,7 +758,7 @@ class MultiSearch(Request):
             if s._index:
                 meta['index'] = s._index
             if s._doc_type:
-                meta['type'] = s._doc_type
+                meta['type'] = s._get_doc_type()
             meta.update(s._params)
 
             out.append(meta)
@@ -737,7 +775,7 @@ class MultiSearch(Request):
 
             responses = es.msearch(
                 index=self._index,
-                doc_type=self._doc_type,
+                doc_type=self._get_doc_type(),
                 body=self.to_dict(),
                 **self._params
             )

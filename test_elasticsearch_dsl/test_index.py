@@ -64,7 +64,7 @@ def test_registered_doc_type_included_in_to_dict():
     assert Post._doc_type.index == 'i'
     assert {
         'mappings': {
-            'post': {
+            'doc': {
                 'properties': {
                     'title': {'type': 'text'},
                     'published_from': {'type': 'date'},
@@ -79,7 +79,7 @@ def test_registered_doc_type_included_in_search():
 
     s = i.search()
 
-    assert s._doc_type_map == {'post': Post}
+    assert s._doc_type == [Post]
 
 
 def test_aliases_add_to_object():

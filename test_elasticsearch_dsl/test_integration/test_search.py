@@ -21,11 +21,9 @@ class Repository(DocType):
 
     class Meta:
         index = 'git'
-        doc_type = 'doc'
 
 class Commit(DocType):
     class Meta:
-        doc_type = 'doc'
         index = 'flat-git'
 
 def test_filters_aggregation_buckets_are_accessible(data_client):

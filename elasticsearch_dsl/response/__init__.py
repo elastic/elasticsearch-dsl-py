@@ -1,5 +1,3 @@
-from six import itervalues
-
 from ..utils import AttrDict, AttrList
 
 from .hit import Hit, HitMeta
@@ -40,46 +38,13 @@ class Response(AttrDict):
     def success(self):
         return self._shards.total == self._shards.successful and not self.timed_out
 
-    def _resolve_nested(self, field, doc_class):
-        if hasattr(self._doc_class, '_doc_type'):
-            nested_field = self._doc_class._doc_type.resolve_field(field)
-
-        else:
-            for dt in itervalues(self._search._doc_type_map):
-                if not hasattr(dt, '_doc_type'):
-                    continue
-                nested_field = dt._doc_type.resolve_field(field)
-                if nested_field is not None:
-                    break
-
-        if nested_field is not None:
-            return nested_field._doc_class
-
-        return doc_class
-
-    def _get_result(self, hit):
-        doc_class = Hit
-        dt = hit.get('_type')
-
-        if '_nested' in hit:
-            doc_class = self._resolve_nested(hit['_nested']['field'], doc_class)
-
-        elif dt in self._search._doc_type_map:
-            doc_class = self._search._doc_type_map[dt]
-
-        for t in hit.get('inner_hits', ()):
-            hit['inner_hits'][t] = Response(self._search, hit['inner_hits'][t], doc_class=doc_class)
-
-        callback = getattr(doc_class, 'from_es', doc_class)
-        return callback(hit)
-
     @property
     def hits(self):
         if not hasattr(self, '_hits'):
             h = self._d_['hits']
 
             try:
-                hits = AttrList(map(self._get_result, h['hits']))
+                hits = AttrList(map(self._search._get_result, h['hits']))
             except AttributeError as e:
                 # avoid raising AttributeError since it will be hidden by the property
                 raise TypeError("Could not parse hits.", e)
