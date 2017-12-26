@@ -46,6 +46,8 @@ class Response(AttrDict):
 
         else:
             for dt in itervalues(self._search._doc_type_map):
+                if not hasattr(dt, '_doc_type'):
+                    continue
                 nested_field = dt._doc_type.resolve_field(field)
                 if nested_field is not None:
                     break
