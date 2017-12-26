@@ -335,10 +335,6 @@ class DslBase(object):
 
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
-        m = self._doc_type.mapping
-        for k in m:
-            if k in kwargs and m[k]._coerce:
-                kwargs[k] = m[k].deserialize(kwargs[k])
         super(ObjectBase, self).__init__(kwargs)
 
     @classmethod
@@ -352,6 +348,10 @@ class ObjectBase(AttrDict):
                 else:
                     doc[k] = v
 
+        m = cls._doc_type.mapping
+        for k in m:
+            if k in doc and m[k]._coerce:
+                doc[k] = m[k].deserialize(doc[k])
         return cls(meta=meta, **doc)
 
     def __getattr__(self, name):
@@ -367,11 +367,6 @@ class ObjectBase(AttrDict):
                         value = getattr(self, name)
                     return value
             raise
-
-    def __setattr__(self, name, value):
-        if name in self._doc_type.mapping:
-            value = self._doc_type.mapping[name].deserialize(value)
-        super(ObjectBase, self).__setattr__(name, value)
 
     def to_dict(self):
         out = {}

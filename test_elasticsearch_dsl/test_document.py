@@ -119,7 +119,7 @@ def test_custom_field():
     assert {'title': 'Uryyb'} == s.to_dict()
     assert s.title == 'Hello'
 
-    s.title = 'Uryyb'
+    s = SecretDoc.from_es({'_source': {'title': 'Uryyb'}})
     assert s.title == 'Hello'
     assert isinstance(s.title, Secret)
 
@@ -148,7 +148,7 @@ def test_multi_works_after_doc_has_been_saved():
 
 def test_multi_works_in_nested_after_doc_has_been_serialized():
     # Issue #359
-    c = DocWithNested(comments=[{'title': 'First!'}])
+    c = DocWithNested(comments=[Comment(title='First!')])
 
     assert [] == c.comments[0].tags
     assert {'comments': [{'title': 'First!'}]} == c.to_dict()
@@ -195,7 +195,7 @@ def test_attribute_can_be_removed():
     assert 'title' not in d._d_
 
 def test_doc_type_can_be_correctly_pickled():
-    d = DocWithNested(title='Hello World!', comments=[{'title': 'hellp'}], meta={'id': 42})
+    d = DocWithNested(title='Hello World!', comments=[Comment(title='hellp')], meta={'id': 42})
     s = pickle.dumps(d)
 
     d2 = pickle.loads(s)
@@ -271,7 +271,7 @@ def test_docs_with_properties():
         u.password
 
 def test_nested_can_be_assigned_to():
-    d1 = DocWithNested(comments=[{'title': 'First!'}])
+    d1 = DocWithNested(comments=[Comment(title='First!')])
     d2 = DocWithNested()
 
     d2.comments = d1.comments
@@ -295,7 +295,7 @@ def test_nested_defaults_to_list_and_can_be_updated():
 
 def test_to_dict_is_recursive_and_can_cope_with_multi_values():
     md = MyDoc(name=['a', 'b', 'c'])
-    md.inner = [{'old_field': 'of1'}, {'old_field': 'of2'}]
+    md.inner = [MyInner(old_field='of1'), MyInner(old_field='of2')]
 
     assert isinstance(md.inner[0], MyInner)
 
@@ -367,8 +367,9 @@ def test_document_can_be_created_dynamically():
 
 def test_invalid_date_will_raise_exception():
     md = MyDoc()
+    md.created_at = 'not-a-date'
     with raises(ValidationException):
-        md.created_at = 'not-a-date'
+        md.full_clean()
 
 def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)

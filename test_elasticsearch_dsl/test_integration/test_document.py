@@ -84,7 +84,7 @@ def test_nested_top_hits_are_wrapped_properly(pull_request):
 
 def test_update_object_field(write_client):
     Wiki.init()
-    w = Wiki(owner={'name': 'Honza Kral'}, _id='elasticsearch-py')
+    w = Wiki(owner=User(name='Honza Kral'), _id='elasticsearch-py')
     w.save()
 
     w.update(owner=[{'name': 'Honza'}, {'name': 'Nick'}])

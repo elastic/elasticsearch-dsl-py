@@ -53,8 +53,9 @@ def test_validation_works_for_lists_of_values():
     class DT(DocType):
         i = Date(required=True)
 
+    dt = DT(i=[datetime.now(), 'not date'])
     with raises(ValidationException):
-        DT(i=[datetime.now(), 'not date'])
+        dt.full_clean()
 
     dt = DT(i=[datetime.now(), datetime.now()])
     assert None is dt.full_clean()
@@ -97,7 +98,7 @@ def test_boolean_doesnt_treat_false_as_empty():
 
 
 def test_custom_validation_on_nested_gets_run():
-    d = BlogPost(authors=[{'name': 'Honza', 'email': 'king@example.com'}], created=None)
+    d = BlogPost(authors=[Author(name='Honza', email='king@example.com')], created=None)
 
     assert isinstance(d.authors[0], Author)
 
