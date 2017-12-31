@@ -75,8 +75,13 @@ class Field(DslBase):
 
     def deserialize(self, data):
         if isinstance(data, (list, AttrList)):
-            data[:] = map(self._deserialize, data)
+            data[:] = [
+                None if d is None else self._deserialize(d)
+                for d in data
+            ]
             return data
+        if data is None:
+            return None
         return self._deserialize(data)
 
     def clean(self, data):
@@ -150,8 +155,6 @@ class Object(Field):
         return self._mapping.properties._collect_fields()
 
     def _deserialize(self, data):
-        if data is None:
-            return None
         # don't wrap already wrapped data
         if isinstance(data, self._doc_class):
             return data
@@ -213,9 +216,6 @@ class Date(Field):
             except Exception as e:
                 raise ValidationException('Could not parse date from the value (%r)' % data, e)
 
-        if not data:
-            return None
-
         if isinstance(data, datetime):
             if self._default_timezone and data.tzinfo is None:
                 data = data.replace(tzinfo=self._default_timezone)
@@ -258,8 +258,6 @@ class Boolean(Field):
     _coerce = True
 
     def _deserialize(self, data):
-        if data is None:
-            return None
         if data == "false":
             return False
         return bool(data)
@@ -276,8 +274,6 @@ class Float(Field):
     _coerce = True
 
     def _deserialize(self, data):
-        if data is None:
-            return None
         return float(data)
 
 class HalfFloat(Float):
@@ -297,8 +293,6 @@ class Integer(Field):
     _coerce = True
 
     def _deserialize(self, data):
-        if data is None:
-            return None
         return int(data)
 
 class Byte(Integer):
@@ -315,9 +309,6 @@ class Ip(Field):
     _coerce = True
 
     def _deserialize(self, data):
-        if data is None:
-            return None
-
         # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
         return ipaddress.ip_interface(six.u(data))
 
@@ -331,8 +322,6 @@ class Binary(Field):
     _coerce = True
 
     def _deserialize(self, data):
-        if data is None:
-            return None
         return base64.b64decode(data)
 
     def _serialize(self, data):
