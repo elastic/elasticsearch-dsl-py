@@ -1,4 +1,5 @@
 import base64
+import ipaddress
 from datetime import datetime
 from dateutil import tz
 
@@ -103,11 +104,10 @@ def test_scaled_float():
 
 
 def test_ipaddress():
-    import ipaddress
     f = field.Ip()
-    assert f.deserialize('127.0.0.1/32') == ipaddress.ip_interface(u'127.0.0.1/32')
-    assert f.deserialize('::1/128') == ipaddress.ip_interface(u'::1/128')
-    assert f.serialize(f.deserialize('::1/128')) == '::1/128'
+    assert f.deserialize('127.0.0.1') == ipaddress.ip_address(u'127.0.0.1')
+    assert f.deserialize('::1') == ipaddress.ip_address(u'::1')
+    assert f.serialize(f.deserialize('::1')) == '::1'
     assert f.deserialize(None) is None
     with pytest.raises(ValueError):
         assert f.deserialize('not_an_ipaddress')
@@ -134,10 +134,3 @@ def test_binary():
     assert f.deserialize(base64.b64encode(b'42')) == b'42'
     assert f.deserialize(f.serialize(b'42')) == b'42'
     assert f.deserialize(None) is None
-
-
-
-
-
-
-

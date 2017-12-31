@@ -310,7 +310,7 @@ class Ip(Field):
 
     def _deserialize(self, data):
         # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
-        return ipaddress.ip_interface(six.u(data))
+        return ipaddress.ip_address(six.u(data))
 
     def _serialize(self, data):
         if data is None:
