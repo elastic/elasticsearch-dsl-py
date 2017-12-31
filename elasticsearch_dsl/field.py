@@ -272,6 +272,7 @@ class Keyword(Field):
 
 class Boolean(Field):
     name = 'boolean'
+    _coerce = True
 
     def _deserialize(self, data):
         if data is None:
@@ -287,9 +288,9 @@ class Boolean(Field):
             raise ValidationException("Value required for this field.")
         return data
 
-
 class Float(Field):
     name = 'float'
+    _coerce = True
 
     def _deserialize(self, data):
         if data is None:
@@ -305,19 +306,17 @@ class ScaledFloat(Float):
     def __init__(self, scaling_factor, *args, **kwargs):
         super(ScaledFloat, self).__init__(scaling_factor=scaling_factor, *args, **kwargs)
 
-
 class Double(Float):
     name = 'double'
 
-
 class Integer(Field):
     name = 'integer'
+    _coerce = True
 
     def _deserialize(self, data):
         if data is None:
             return None
         return int(data)
-
 
 class Byte(Integer):
     name = 'byte'
@@ -330,6 +329,7 @@ class Long(Integer):
 
 class Ip(Field):
     name = 'ip'
+    _coerce = True
 
     def _deserialize(self, data):
         if data is None:
@@ -345,6 +345,7 @@ class Ip(Field):
 
 class Binary(Field):
     name = 'binary'
+    _coerce = True
 
     def _deserialize(self, data):
         if data is None:
@@ -391,6 +392,3 @@ class TokenCount(Field):
 
 class Murmur3:
     name = 'murmur3'
-
-class Percolator:
-    name = 'percolator'
