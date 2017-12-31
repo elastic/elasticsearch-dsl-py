@@ -362,5 +362,5 @@ class Join(Field):
 class TokenCount(Field):
     name = 'token_count'
 
-class Murmur3:
+class Murmur3(Field):
     name = 'murmur3'
