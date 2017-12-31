@@ -14,6 +14,7 @@ f.close()
 install_requires = [
     'six',
     'python-dateutil',
+    'ipaddress',
     'elasticsearch>=6.0.0,<7.0.0'
 ]
 tests_require = [

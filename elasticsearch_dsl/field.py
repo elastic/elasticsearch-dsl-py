@@ -1,6 +1,11 @@
+import base64
+import ipaddress
+
 import collections
 
 from datetime import date, datetime
+
+import six
 from dateutil import parser, tz
 from six import itervalues, string_types, iteritems
 from six.moves import map
@@ -250,6 +255,7 @@ class Keyword(Field):
 
 class Boolean(Field):
     name = 'boolean'
+    _coerce = True
 
     def _deserialize(self, data):
         if data is None:
@@ -267,37 +273,72 @@ class Boolean(Field):
 
 class Float(Field):
     name = 'float'
+    _coerce = True
 
-class HalfFloat(Field):
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return float(data)
+
+class HalfFloat(Float):
     name = 'half_float'
 
-class ScaledFloat(Field):
+class ScaledFloat(Float):
     name = 'scaled_float'
 
     def __init__(self, scaling_factor, *args, **kwargs):
         super(ScaledFloat, self).__init__(scaling_factor=scaling_factor, *args, **kwargs)
 
-
-class Double(Field):
+class Double(Float):
     name = 'double'
-
-class Byte(Field):
-    name = 'byte'
-
-class Short(Field):
-    name = 'short'
 
 class Integer(Field):
     name = 'integer'
+    _coerce = True
 
-class Long(Field):
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return int(data)
+
+class Byte(Integer):
+    name = 'byte'
+
+class Short(Integer):
+    name = 'short'
+
+class Long(Integer):
     name = 'long'
 
 class Ip(Field):
     name = 'ip'
+    _coerce = True
 
-class Attachment(Field):
-    name = 'attachment'
+    def _deserialize(self, data):
+        if data is None:
+            return None
+
+        # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
+        return ipaddress.ip_interface(six.u(data))
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return str(data)
+
+class Binary(Field):
+    name = 'binary'
+    _coerce = True
+
+    def _deserialize(self, data):
+        if data is None:
+            return None
+        return base64.b64decode(data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return base64.b64encode(data)
 
 class GeoPoint(Field):
     name = 'geo_point'
@@ -328,3 +369,9 @@ class DateRange(Field):
 
 class Join(Field):
     name = 'join'
+
+class TokenCount(Field):
+    name = 'token_count'
+
+class Murmur3:
+    name = 'murmur3'
