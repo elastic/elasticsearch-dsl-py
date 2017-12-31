@@ -1,10 +1,11 @@
 from datetime import datetime
 from pytz import timezone
+from ipaddress import ip_address
 
-from elasticsearch import ConflictError, NotFoundError, RequestError
+from elasticsearch import ConflictError, NotFoundError
 
 from elasticsearch_dsl import DocType, Date, Text, Keyword, Mapping, InnerDoc, \
-    Object, Nested, MetaField, Q
+    Object, Nested, MetaField, Q, Long, Boolean, Double, Binary, Ip
 from elasticsearch_dsl.utils import AttrList
 
 from pytest import raises, fixture
@@ -53,12 +54,49 @@ class PullRequest(DocType):
     class Meta:
         index = 'test-prs'
 
+class SerializationDoc(DocType):
+    i = Long()
+    b = Boolean()
+    d = Double()
+    bin = Binary()
+    ip = Ip()
+
+    class Meta:
+        index = 'test-serialization'
+
 @fixture
 def pull_request(write_client):
     PullRequest.init()
     pr = PullRequest(_id=42, comments=[Comment(content='Hello World!', author=User(name='honzakral'))])
     pr.save(refresh=True)
     return pr
+
+def test_serialization(write_client):
+    SerializationDoc.init()
+    write_client.index(index='test-serialization', doc_type='doc', id=42,
+                       body={
+                           'i': [1, 2, "3", None],
+                           'b': [True, False, "true", "false", None],
+                           'd': [0.1, "-0.1", None],
+                           "bin": ['SGVsbG8gV29ybGQ=', None],
+                           'ip': ['::1', '127.0.0.1', None]
+                       })
+    sd = SerializationDoc.get(id=42)
+
+    assert sd.i == [1, 2, 3, None]
+    assert sd.b == [True, False, True, False, None]
+    assert sd.d == [0.1, -0.1, None]
+    assert sd.bin == [b'Hello World', None]
+    assert sd.ip == [ip_address('::1'), ip_address('127.0.0.1'), None]
+
+    assert sd.to_dict() == {
+        'b': [True, False, True, False, None],
+        'bin': [b'SGVsbG8gV29ybGQ=', None],
+        'd': [0.1, -0.1, None],
+        'i': [1, 2, 3, None],
+        'ip': ['::1', '127.0.0.1', None]
+    }
+
 
 def test_nested_inner_hits_are_wrapped_properly(pull_request):
     s = PullRequest.search().query('nested', inner_hits={}, path='comments',
