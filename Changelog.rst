@@ -3,10 +3,11 @@
 Changelog
 =========
 
-6.0.0 (dev)
------------
+6.0.0 (2018-01-01)
+------------------
 
-Release compatible with elasticsearch 6.0, changes include:
+Backwards incompatible release compatible with elasticsearch 6.0, changes
+include:
 
  * use ``doc`` as default ``DocType`` name, this change includes:
    * ``DocType._doc_type.matches`` method is now used to determine which
