@@ -106,7 +106,7 @@ def test_scaled_float():
 def test_ipaddress():
     f = field.Ip()
     assert f.deserialize('127.0.0.1') == ipaddress.ip_address(u'127.0.0.1')
-    assert f.deserialize('::1') == ipaddress.ip_address(u'::1')
+    assert f.deserialize(u'::1') == ipaddress.ip_address(u'::1')
     assert f.serialize(f.deserialize('::1')) == '::1'
     assert f.deserialize(None) is None
     with pytest.raises(ValueError):

@@ -14,9 +14,13 @@ f.close()
 install_requires = [
     'six',
     'python-dateutil',
-    'ipaddress',
     'elasticsearch>=6.0.0,<7.0.0'
 ]
+
+# ipaddress is included in stdlib sincxe py 3.3
+if sys.version_info[:2] < (3, 3):
+    install_requires.append('ipaddress')
+
 tests_require = [
     "mock",
     "pytest>=3.0.0",

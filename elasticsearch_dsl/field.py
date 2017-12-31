@@ -5,13 +5,14 @@ import collections
 
 from datetime import date, datetime
 
-import six
 from dateutil import parser, tz
 from six import itervalues, string_types, iteritems
 from six.moves import map
 
 from .utils import DslBase, ObjectBase, AttrDict, AttrList
 from .exceptions import ValidationException
+
+unicode = type(u'')
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
@@ -310,7 +311,7 @@ class Ip(Field):
 
     def _deserialize(self, data):
         # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
-        return ipaddress.ip_address(six.u(data))
+        return ipaddress.ip_address(unicode(data))
 
     def _serialize(self, data):
         if data is None:
