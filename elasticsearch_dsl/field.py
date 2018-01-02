@@ -229,14 +229,6 @@ class Date(Field):
 
         raise ValidationException('Could not parse date from the value (%r)' % data)
 
-class String(Field):
-    _param_defs = {
-        'fields': {'type': 'field', 'hash': True},
-        'analyzer': {'type': 'analyzer'},
-        'search_analyzer': {'type': 'analyzer'},
-    }
-    name = 'string'
-
 class Text(Field):
     _param_defs = {
         'fields': {'type': 'field', 'hash': True},
