@@ -347,6 +347,13 @@ class Search(Request):
         s._extra["from"] = size * (page_no - 1)
         return s.execute()
 
+    def get_next_page(self, last_hit, step=1):
+        size = self._extra.get("size", 10)
+        s = self._clone()
+        s._extra["from"] = size * (step - 1)
+        s._extra["search_after"] = last_hit
+        return s.execute()
+
     @classmethod
     def from_dict(cls, d):
         """
