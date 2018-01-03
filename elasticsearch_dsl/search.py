@@ -379,7 +379,7 @@ class Search(Request):
         s._extra["from"] = size * (step - 1)
         s._extra["search_after"] = first_hit
         # reverse the sort order
-        s._sort = [_reverse_sort_entry(s) for s in self._sort]
+        s._sort = [_reverse_sort_entry(se) for se in self._sort]
         resp = s.execute()
         # reverse the hits in the page
         resp['hits']['hits'] = resp['hits']['hits'][::-1]
