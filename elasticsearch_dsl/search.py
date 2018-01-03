@@ -264,6 +264,25 @@ class Request(object):
         return s
 
 
+
+
+def _reverse_sort_entry(sort_entry):
+    # "field"
+    if isinstance(sort_entry, string_types):
+        if sort_entry == '_score':
+            return {'_score': 'asc'}
+        return {sort_entry: 'desc'}
+
+    f, sort_entry = sort_entry.copy().popitem()
+    # {"field": "asc/desc"}
+    if isinstance(sort_entry, string_types):
+        return {f: 'asc' if sort_entry == 'desc' else 'desc'}
+
+    # {"field": {"order": "asc/desc"}}
+    sort_entry = sort_entry.copy()
+    sort_entry['order'] = 'asc' if sort_entry['order'] == 'desc' else 'desc'
+    return {f: sort_entry}
+
 class Search(Request):
     query = ProxyDescriptor('query')
     post_filter = ProxyDescriptor('post_filter')
@@ -353,6 +372,18 @@ class Search(Request):
         s._extra["from"] = size * (step - 1)
         s._extra["search_after"] = last_hit
         return s.execute()
+
+    def get_previous_page(self, first_hit, step=1):
+        size = self._extra.get("size", 10)
+        s = self._clone()
+        s._extra["from"] = size * (step - 1)
+        s._extra["search_after"] = first_hit
+        # reverse the sort order
+        s._sort = [_reverse_sort_entry(s) for s in self._sort]
+        resp = s.execute()
+        # reverse the hits in the page
+        resp['hits']['hits'] = resp['hits']['hits'][::-1]
+        return resp
 
     @classmethod
     def from_dict(cls, d):
