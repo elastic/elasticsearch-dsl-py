@@ -337,6 +337,16 @@ class Search(Request):
             s._extra['size'] = 1
             return s
 
+    def get_page(self, page_no):
+        if page_no < 0:
+            raise ValueError("Search pagination does not support negative indexing.")
+        elif page_no == 0:
+            raise ValueError("Search pagination is 1-based.")
+        size = self._extra.get("size", 10)
+        s = self._clone()
+        s._extra["from"] = size * (page_no - 1)
+        return s.execute()
+
     @classmethod
     def from_dict(cls, d):
         """
