@@ -26,11 +26,9 @@ def test_pages_respect_page_size():
     assert body['req']["size"] == 6
     assert body['req']["from"] == 6
 
-def test_get_page_doesnt_allow_0_or_negative_pages():
+def test_get_page_doesnt_allow_0():
     with raises(ValueError):
         DummySearch().get_page(0)
-    with raises(ValueError):
-        DummySearch().get_page(-1)
 
 def test_next_page_respects_size():
     body = DummySearch()[123:124].get_next_page([1, 2])

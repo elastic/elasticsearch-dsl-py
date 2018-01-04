@@ -357,24 +357,31 @@ class Search(Request):
             return s
 
     def get_page(self, page_no):
-        if page_no < 0:
-            raise ValueError("Search pagination does not support negative indexing.")
-        elif page_no == 0:
+        if page_no == 0:
             raise ValueError("Search pagination is 1-based.")
         size = self._extra.get("size", 10)
         s = self._clone()
-        s._extra["from"] = size * (page_no - 1)
-        return s.execute()
+        s._extra["from"] = size * (abs(page_no) - 1)
+
+        # reverse the sort order when pagination from back
+        if page_no < 0:
+            s._sort = [_reverse_sort_entry(se) for se in self._sort]
+
+        resp = s.execute()
+
+        # reverse the hits in the page when pagination from back
+        if page_no < 0:
+            resp['hits']['hits'] = resp.to_dict()['hits']['hits'][::-1]
+
+        return resp
 
     def get_next_page(self, last_hit):
-        size = self._extra.get("size", 10)
         s = self._clone()
         s._extra["from"] = 0
         s._extra["search_after"] = list(last_hit)
         return s.execute()
 
     def get_previous_page(self, first_hit):
-        size = self._extra.get("size", 10)
         s = self._clone()
         s._extra["from"] = 0
         s._extra["search_after"] = list(first_hit)

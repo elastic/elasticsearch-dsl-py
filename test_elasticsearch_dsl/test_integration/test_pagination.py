@@ -30,7 +30,7 @@ def test_get_page(sorted_search, commits):
     s = sorted_search[:2]
 
     # process pages in random order to avoid possible side effects
-    pages = list(range(1, 26))
+    pages = list(range(1, 27))
     shuffle(pages)
 
     for page_no in pages:
@@ -40,6 +40,22 @@ def test_get_page(sorted_search, commits):
     # non existing page returns empty
     assert len(s.get_page(27).hits) == 0
     assert len(s.get_page(42).hits) == 0
+
+def test_get_negative_page(sorted_search, commits):
+    # set page size to 2
+    s = sorted_search[:2]
+
+    # process pages in random order to avoid possible side effects
+    pages = list(range(-1, -27, -1))
+    shuffle(pages)
+
+    for page_no in pages:
+        page = get_commit_page(commits, 27 + page_no, 2)
+        assert page == s.get_page(page_no).hits
+
+    # non existing page returns empty
+    assert len(s.get_page(-27).hits) == 0
+    assert len(s.get_page(-42).hits) == 0
 
 def test_get_next_page(sorted_search, commits):
     # manually retrieve page 4 of size 5
