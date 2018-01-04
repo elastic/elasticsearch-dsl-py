@@ -366,23 +366,23 @@ class Search(Request):
         s._extra["from"] = size * (page_no - 1)
         return s.execute()
 
-    def get_next_page(self, last_hit, step=1):
+    def get_next_page(self, last_hit):
         size = self._extra.get("size", 10)
         s = self._clone()
-        s._extra["from"] = size * (step - 1)
-        s._extra["search_after"] = last_hit
+        s._extra["from"] = 0
+        s._extra["search_after"] = list(last_hit)
         return s.execute()
 
-    def get_previous_page(self, first_hit, step=1):
+    def get_previous_page(self, first_hit):
         size = self._extra.get("size", 10)
         s = self._clone()
-        s._extra["from"] = size * (step - 1)
-        s._extra["search_after"] = first_hit
+        s._extra["from"] = 0
+        s._extra["search_after"] = list(first_hit)
         # reverse the sort order
         s._sort = [_reverse_sort_entry(se) for se in self._sort]
         resp = s.execute()
         # reverse the hits in the page
-        resp['hits']['hits'] = resp['hits']['hits'][::-1]
+        resp['hits']['hits'] = resp.to_dict()['hits']['hits'][::-1]
         return resp
 
     @classmethod

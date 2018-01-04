@@ -1,3 +1,4 @@
+from elasticsearch_dsl.utils import AttrDict
 from elasticsearch_dsl.search import Search
 
 from pytest import raises
@@ -8,17 +9,17 @@ class DummySearch(Search):
         self._executions = []
 
     def execute(self, *args, **kwargs):
-        return {
+        return AttrDict({
             'req': self.to_dict(),
             'hits': {
                 'hits': list(range(self._extra.get('size', 10)))
             }
-        }
+        })
 
 def test_pages_are_1_based():
     body = DummySearch().get_page(1)
-    assert body['req'].get("size", 10) == 10
-    assert body['req'].get("from", 0) == 0
+    assert "size" not in body['req']
+    assert body['req']["from"] == 0
 
 def test_pages_respect_page_size():
     body = DummySearch()[:6].get_page(2)
@@ -35,12 +36,6 @@ def test_next_page_respects_size():
     body = DummySearch()[123:124].get_next_page([1, 2])
     assert body['req']["size"] == 1
     assert body['req']["from"] == 0
-    assert body['req']["search_after"] == [1, 2]
-
-def test_next_page_can_skip_pages():
-    body = DummySearch()[123:124].get_next_page([1, 2], 3)
-    assert body['req']["size"] == 1
-    assert body['req']["from"] == 2
     assert body['req']["search_after"] == [1, 2]
 
 def test_previous_page_reverses_sort_and_hits():
