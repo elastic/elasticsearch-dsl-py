@@ -356,6 +356,15 @@ class Search(Request):
             s._extra['size'] = 1
             return s
 
+    def get_page_count(self):
+        size = self._extra.get("size", 10)
+        if size == 0:
+            return 0
+        pages, docs_left = divmod(self.count(), size)
+        if docs_left:
+            pages += 1
+        return pages
+
     def get_page(self, page_no):
         if page_no == 0:
             raise ValueError("Search pagination is 1-based.")

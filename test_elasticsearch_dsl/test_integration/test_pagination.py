@@ -25,6 +25,13 @@ def get_commit_page(commits, page, size=10):
     start = (page - 1) * size
     return commits[start:start + size]
 
+def test_get_page_count(sorted_search):
+    assert sorted_search.get_page_count() == 6
+    assert sorted_search[:2].get_page_count() == 26
+    assert sorted_search[:1].get_page_count() == 52
+    assert sorted_search[:100].get_page_count() == 1
+    assert sorted_search[:0].get_page_count() == 0
+
 def test_get_page(sorted_search, commits):
     # set page size to 2
     s = sorted_search[:2]
