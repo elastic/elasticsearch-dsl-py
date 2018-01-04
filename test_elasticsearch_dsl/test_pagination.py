@@ -18,13 +18,18 @@ class DummySearch(Search):
 
 def test_pages_are_1_based():
     body = DummySearch().get_page(1)
-    assert "size" not in body['req']
+    assert body['req']["size"] == 10
     assert body['req']["from"] == 0
 
 def test_pages_respect_page_size():
     body = DummySearch()[:6].get_page(2)
     assert body['req']["size"] == 6
     assert body['req']["from"] == 6
+
+def test_page_size_can_be_overwritten():
+    body = DummySearch()[:6].get_page(2, size=10)
+    assert body['req']["size"] == 10
+    assert body['req']["from"] == 10
 
 def test_get_page_doesnt_allow_0():
     with raises(ValueError):

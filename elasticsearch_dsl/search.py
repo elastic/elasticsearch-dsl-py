@@ -356,8 +356,8 @@ class Search(Request):
             s._extra['size'] = 1
             return s
 
-    def get_page_count(self):
-        size = self._extra.get("size", 10)
+    def get_page_count(self, size=None):
+        size = size if size is not None else self._extra.get("size", 10)
         if size == 0:
             return 0
         pages, docs_left = divmod(self.count(), size)
@@ -365,12 +365,13 @@ class Search(Request):
             pages += 1
         return pages
 
-    def get_page(self, page_no):
+    def get_page(self, page_no, size=None):
         if page_no == 0:
             raise ValueError("Search pagination is 1-based.")
-        size = self._extra.get("size", 10)
+        size = size if size is not None else self._extra.get("size", 10)
         s = self._clone()
         s._extra["from"] = size * (abs(page_no) - 1)
+        s._extra["size"] = size
 
         # reverse the sort order when pagination from back
         if page_no < 0:
@@ -384,15 +385,19 @@ class Search(Request):
 
         return resp
 
-    def get_next_page(self, last_hit):
+    def get_next_page(self, last_hit, size=None):
+        size = size if size is not None else self._extra.get("size", 10)
         s = self._clone()
         s._extra["from"] = 0
+        s._extra["size"] = size
         s._extra["search_after"] = list(last_hit)
         return s.execute()
 
-    def get_previous_page(self, first_hit):
+    def get_previous_page(self, first_hit, size=None):
+        size = size if size is not None else self._extra.get("size", 10)
         s = self._clone()
         s._extra["from"] = 0
+        s._extra["size"] = size
         s._extra["search_after"] = list(first_hit)
         # reverse the sort order
         s._sort = [_reverse_sort_entry(se) for se in self._sort]
