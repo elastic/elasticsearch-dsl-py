@@ -3,6 +3,12 @@
 Changelog
 =========
 
+6.1.0 (2018-01-09)
+------------------
+
+* Removed ``String`` field.
+* Fixed issue with ``Object``/``Nested`` deserialization
+
 6.0.1 (2018-01-02)
 ------------------
 
