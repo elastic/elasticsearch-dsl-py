@@ -134,7 +134,7 @@ def test_custom_field_mapping():
 
 def test_custom_field_in_nested():
     s = NestedSecret()
-    s.secrets.append({'title': Secret('Hello')})
+    s.secrets.append(SecretDoc(title=Secret('Hello')))
 
     assert {'secrets': [{'title': 'Uryyb'}]} == s.to_dict()
     assert s.secrets[0].title == 'Hello'

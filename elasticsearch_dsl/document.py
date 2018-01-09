@@ -101,6 +101,14 @@ class InnerDoc(ObjectBase):
     Common class for inner documents like Object or Nested
     """
 
+    @classmethod
+    def from_es(cls, doc):
+        m = cls._doc_type.mapping
+        for k in m:
+            if k in doc and m[k]._coerce:
+                doc[k] = m[k].deserialize(doc[k])
+        return cls(**doc)
+
 
 @add_metaclass(DocTypeMeta)
 class DocType(ObjectBase):

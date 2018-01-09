@@ -126,6 +126,7 @@ def test_nested_inner_hits_are_deserialized_properly(pull_request):
     response = s.execute()
     pr = response.hits[0]
     assert isinstance(pr.created_at, datetime)
+    assert isinstance(pr.comments[0], Comment)
     assert isinstance(pr.comments[0].created_at, datetime)
 
 
