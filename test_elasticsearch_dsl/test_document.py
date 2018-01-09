@@ -70,7 +70,7 @@ class Host(document.DocType):
     ip = field.Ip()
 
 def test_ip_address_serializes_properly():
-    host = Host(ip=ipaddress.IPv4Address('10.0.0.1'))
+    host = Host(ip=ipaddress.IPv4Address(u'10.0.0.1'))
 
     assert {'ip': '10.0.0.1'} == host.to_dict()
 
