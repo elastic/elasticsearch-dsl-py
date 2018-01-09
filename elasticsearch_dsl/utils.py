@@ -340,19 +340,21 @@ class ObjectBase(AttrDict):
     @classmethod
     def from_es(cls, hit):
         meta = hit.copy()
-        doc = meta.pop('_source', {})
+        data = meta.pop('_source', {})
         if 'fields' in meta:
             for k, v in iteritems(meta.pop('fields')):
                 if k.startswith('_') and k[1:] in META_FIELDS:
                     meta[k] = v
                 else:
-                    doc[k] = v
+                    data[k] = v
 
+        doc = cls(meta=meta)
         m = cls._doc_type.mapping
-        for k in m:
-            if k in doc and m[k]._coerce:
-                doc[k] = m[k].deserialize(doc[k])
-        return cls(meta=meta, **doc)
+        for k, v in iteritems(data):
+            if k in m and m[k]._coerce:
+                v = m[k].deserialize(v)
+            setattr(doc, k, v)
+        return doc
 
     def __getattr__(self, name):
         try:
