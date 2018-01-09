@@ -2,6 +2,7 @@ import pickle
 import codecs
 from hashlib import md5
 from datetime import datetime
+import ipaddress
 
 from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
@@ -64,6 +65,14 @@ class NestedSecret(document.DocType):
 
 class OptionalObjectWithRequiredField(document.DocType):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
+
+class Host(document.DocType):
+    ip = field.Ip()
+
+def test_ip_address_serializes_properly():
+    host = Host(ip=ipaddress.IPv4Address('10.0.0.1'))
+
+    assert {'ip': '10.0.0.1'} == host.to_dict()
 
 def test_matches_uses_index_name_and_doc_type():
     assert SimpleCommit._doc_type.matches({
