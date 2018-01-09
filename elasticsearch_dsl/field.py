@@ -224,7 +224,7 @@ class Date(Field):
     def __init__(self, default_timezone=None, *args, **kwargs):
         """
         :param default_timezone: timezone that will be automatically used for tz-naive values
-            May be instance of datetime.tzinfo or string containing TZ offset
+            May be instance of `datetime.tzinfo` or string containing TZ offset
         """
         self._default_timezone = default_timezone
         if isinstance(self._default_timezone, string_types):
