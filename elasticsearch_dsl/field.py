@@ -48,6 +48,10 @@ class Field(DslBase):
     _coerce = False
 
     def __init__(self, multi=False, required=False, *args, **kwargs):
+        """
+        :param bool multi: specifies whether field can contain array of values
+        :param bool required: specifies whether field is required
+        """
         self._multi = multi
         self._required = required
         super(Field, self).__init__(*args, **kwargs)
@@ -115,9 +119,18 @@ class Object(Field):
     _coerce = True
 
     def __init__(self, doc_class=None, dynamic=None, properties=None, **kwargs):
+        """
+        :param document.InnerDoc doc_class: base doc class that handles mapping.
+            If no `doc_class` is provided, new instance of `InnerDoc` will be created,
+            populated with `properties` and used
+        :param dynamic: whether new properties may be created dynamically.
+            Valid values are `True`, `False`, `'strict'`.
+            See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html
+            for more details
+        :param dict properties: used to construct underlying mapping if no `doc_class` is provided
+        """
         if properties is None:
             properties = {}
-        self._doc_class = doc_class
         if doc_class is None:
             # FIXME import
             from .document import InnerDoc
@@ -127,6 +140,8 @@ class Object(Field):
                 self._doc_class._doc_type.mapping.field(name, field)
             if dynamic:
                 self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
+        else:
+            self._doc_class = doc_class
 
         self._mapping = self._doc_class._doc_type.mapping
         super(Object, self).__init__(**kwargs)
@@ -207,6 +222,10 @@ class Date(Field):
     _coerce = True
 
     def __init__(self, default_timezone=None, *args, **kwargs):
+        """
+        :param default_timezone: timezone that will be automatically used for tz-naive values
+            May be instance of datetime.tzinfo or string containing TZ offset
+        """
         self._default_timezone = default_timezone
         if isinstance(self._default_timezone, string_types):
             self._default_timezone = tz.gettz(self._default_timezone)
