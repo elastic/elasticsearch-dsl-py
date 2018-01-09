@@ -45,12 +45,14 @@ class Commit(DocType):
 
 class Comment(InnerDoc):
     content = Text()
+    created_at = Date()
     author = Object(User)
     class Meta:
         dynamic = MetaField(False)
 
 class PullRequest(DocType):
     comments = Nested(Comment)
+    created_at = Date()
     class Meta:
         index = 'test-prs'
 
@@ -67,7 +69,13 @@ class SerializationDoc(DocType):
 @fixture
 def pull_request(write_client):
     PullRequest.init()
-    pr = PullRequest(_id=42, comments=[Comment(content='Hello World!', author=User(name='honzakral'))])
+    pr = PullRequest(_id=42,
+                     comments=[
+                         Comment(content='Hello World!',
+                                 author=User(name='honzakral'),
+                                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184)),
+                     ],
+                     created_at=datetime(2018, 1, 9, 9, 17, 3, 21184))
     pr.save(refresh=True)
     return pr
 
@@ -109,6 +117,17 @@ def test_nested_inner_hits_are_wrapped_properly(pull_request):
 
     comment = pr.meta.inner_hits.comments.hits[0]
     assert isinstance(comment, Comment)
+
+
+def test_nested_inner_hits_are_deserialized_properly(pull_request):
+    s = PullRequest.search().query('nested', inner_hits={}, path='comments',
+                                   query=Q('match', comments__content='hello'))
+
+    response = s.execute()
+    pr = response.hits[0]
+    assert isinstance(pr.created_at, datetime)
+    assert isinstance(pr.comments[0].created_at, datetime)
+
 
 def test_nested_top_hits_are_wrapped_properly(pull_request):
     s = PullRequest.search()
