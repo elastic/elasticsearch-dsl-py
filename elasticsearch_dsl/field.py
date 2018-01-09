@@ -47,9 +47,9 @@ class Field(DslBase):
     name = None
     _coerce = False
 
-    def __init__(self, *args, **kwargs):
-        self._multi = kwargs.pop('multi', False)
-        self._required = kwargs.pop('required', False)
+    def __init__(self, multi=False, required=False, *args, **kwargs):
+        self._multi = multi
+        self._required = required
         super(Field, self).__init__(*args, **kwargs)
 
     def __getitem__(self, subfield):
@@ -114,17 +114,19 @@ class Object(Field):
     name = 'object'
     _coerce = True
 
-    def __init__(self, doc_class=None, **kwargs):
+    def __init__(self, doc_class=None, dynamic=None, properties=None, **kwargs):
+        if properties is None:
+            properties = {}
         self._doc_class = doc_class
         if doc_class is None:
             # FIXME import
             from .document import InnerDoc
             # no InnerDoc subclass, creating one instead...
             self._doc_class = type('InnerDoc', (InnerDoc, ), {})
-            for name, field in iteritems(kwargs.pop('properties', {})):
+            for name, field in iteritems(properties):
                 self._doc_class._doc_type.mapping.field(name, field)
-            if 'dynamic' in kwargs:
-                self._doc_class._doc_type.mapping.meta('dynamic', kwargs.pop('dynamic'))
+            if dynamic:
+                self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
 
         self._mapping = self._doc_class._doc_type.mapping
         super(Object, self).__init__(**kwargs)
@@ -204,8 +206,8 @@ class Date(Field):
     name = 'date'
     _coerce = True
 
-    def __init__(self, *args, **kwargs):
-        self._default_timezone = kwargs.pop('default_timezone', None)
+    def __init__(self, default_timezone=None, *args, **kwargs):
+        self._default_timezone = default_timezone
         if isinstance(self._default_timezone, string_types):
             self._default_timezone = tz.gettz(self._default_timezone)
         super(Date, self).__init__(*args, **kwargs)
