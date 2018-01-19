@@ -301,7 +301,7 @@ class DocType(ObjectBase):
             **doc_meta
         )
 
-    def to_dict(self, include_meta=False):
+    def to_dict(self, include_meta=False, skip_empty=True):
         """
         Serialize the instance into a dictionary so that it can be saved in elasticsearch.
 
@@ -309,8 +309,11 @@ class DocType(ObjectBase):
             (``_index``, ``_type``, ``_id`` etc). Otherwise just the document's
             data is serialized. This is useful when passing multiple instances into
             ``elasticsearch.helpers.bulk``.
+        :arg skip_empty: if set to ``False`` will cause empty values (``None``,
+            ``[]``, ``{}``) to be left on the document. Those values will be
+            stripped out otherwise as they make no difference in elasticsearch.
         """
-        d = super(DocType, self).to_dict()
+        d = super(DocType, self).to_dict(skip_empty=skip_empty)
         if not include_meta:
             return d
 

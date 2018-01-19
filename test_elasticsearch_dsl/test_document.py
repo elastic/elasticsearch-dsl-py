@@ -197,6 +197,16 @@ def test_to_dict_with_meta_includes_custom_index():
         '_source': {'title': 'hello'},
     } == d.to_dict(True)
 
+def test_to_dict_without_skip_empty_will_include_empty_fields():
+    d = MySubDoc(tags=[], title=None, inner={})
+
+    assert {} == d.to_dict()
+    assert {
+        "tags": [],
+        "title": None,
+        "inner": {}
+    } == d.to_dict(skip_empty=False)
+
 def test_attribute_can_be_removed():
     d = MyDoc(title='hello')
 

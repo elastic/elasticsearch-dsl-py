@@ -370,7 +370,7 @@ class ObjectBase(AttrDict):
                     return value
             raise
 
-    def to_dict(self):
+    def to_dict(self, skip_empty=True):
         out = {}
         for k, v in iteritems(self._d_):
             try:
@@ -385,10 +385,11 @@ class ObjectBase(AttrDict):
             if isinstance(v, AttrList):
                 v = v._l_
 
-            # don't serialize empty values
-            # careful not to include numeric zeros
-            if v in ([], {}, None):
-                continue
+            if skip_empty:
+                # don't serialize empty values
+                # careful not to include numeric zeros
+                if v in ([], {}, None):
+                    continue
 
             out[k] = v
         return out
