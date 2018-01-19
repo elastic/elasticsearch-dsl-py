@@ -194,6 +194,9 @@ class ReverseNested(Bucket):
 class SignificantTerms(Bucket):
     name = 'significant_terms'
 
+class SignificantText(Bucket):
+    name = 'significant_text'
+
 class Terms(Bucket):
     name = 'terms'
 
