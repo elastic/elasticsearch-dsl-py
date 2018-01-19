@@ -231,11 +231,7 @@ class FacetedSearch(object):
         """
         self._query = query
         self._filters = {}
-        # TODO: remove in 6.0
-        if isinstance(sort, string_types):
-            self._sort = (sort,)
-        else:
-            self._sort = sort
+        self._sort = sort
         self.filter_values = {}
         for name, value in iteritems(filters):
             self.add_filter(name, value)
