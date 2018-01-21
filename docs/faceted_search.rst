@@ -58,6 +58,10 @@ There are several different facets available:
   allows you to define your own ranges for a numerical fields:
   ``RangeFacet(field="comment_count", ranges=[("few", (None, 2)), ("lots", (2, None))])``
 
+``NestedFacet``
+  is just a simple facet that wraps another to provide access to nested documents:
+  ``NestedFacet('variants', TermsFacet(field='variants.color'))``
+
 Advanced
 ~~~~~~~~
 
