@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from elasticsearch_dsl import DocType, Boolean, Date
-from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
+from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, \
+    DateHistogramFacet, RangeFacet, NestedFacet
+
+from .test_document import PullRequest
 
 class CommitSearch(FacetedSearch):
     index = 'flat-git'
@@ -28,6 +31,37 @@ class RepoSearch(FacetedSearch):
     def search(self):
         s = super(RepoSearch, self).search()
         return s.filter('term', commit_repo='repo')
+
+class PRSearch(FacetedSearch):
+    index = 'test-prs'
+    doc_types = [PullRequest]
+    facets = {
+        'comments': NestedFacet(
+            'comments',
+            DateHistogramFacet(
+                field='comments.created_at',
+                interval='month'
+            )
+        )
+    }
+
+def test_nested_facet(pull_request):
+    prs = PRSearch()
+    r = prs.execute()
+
+    assert r.hits.total == 1
+    assert [(datetime(2018, 1, 1, 0, 0), 1, False)] == r.facets.comments
+
+def test_nested_facet_with_filter(pull_request):
+    prs = PRSearch(filters={'comments': datetime(2018, 1, 1, 0, 0)})
+    r = prs.execute()
+
+    assert r.hits.total == 1
+    assert [(datetime(2018, 1, 1, 0, 0), 1, True)] == r.facets.comments
+
+    prs = PRSearch(filters={'comments': datetime(2018, 2, 1, 0, 0)})
+    r = prs.execute()
+    assert not r.hits
 
 def test_datehistogram_facet(data_client):
     rs = RepoSearch()

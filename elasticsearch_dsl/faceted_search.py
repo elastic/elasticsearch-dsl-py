@@ -64,7 +64,7 @@ class Facet(object):
         selected or not.
         """
         out = []
-        for bucket in data:
+        for bucket in data.buckets:
             key = self.get_value(bucket)
             out.append((
                 key,
@@ -158,6 +158,21 @@ class DateHistogramFacet(Facet):
             }
         })
 
+class NestedFacet(Facet):
+    agg_type = 'nested'
+
+    def __init__(self, path, nested_facet):
+        self._path = path
+        self._inner = nested_facet
+        super(NestedFacet, self).__init__(path=path, aggs={'inner': nested_facet.get_aggregation()})
+
+    def get_values(self, data, filter_values):
+        return self._inner.get_values(data.inner, filter_values)
+
+    def add_filter(self, filter_values):
+        inner_q = self._inner.add_filter(filter_values)
+        if inner_q:
+            return Q('nested', path=self._path, query=inner_q)
 
 class FacetedResponse(Response):
     @property
@@ -170,7 +185,7 @@ class FacetedResponse(Response):
             super(AttrDict, self).__setattr__('_facets', AttrDict({}))
             for name, facet in iteritems(self._faceted_search.facets):
                 self._facets[name] = facet.get_values(
-                    getattr(getattr(self.aggregations, '_filter_' + name), name).buckets,
+                    getattr(getattr(self.aggregations, '_filter_' + name), name),
                     self._faceted_search.filter_values.get(name, ())
                 )
         return self._facets

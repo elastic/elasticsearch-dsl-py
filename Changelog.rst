@@ -3,6 +3,15 @@
 Changelog
 =========
 
+6.2.0 (dev)
+-----------
+
+* Implemented ``NestedFacet`` for ``FacetedSearch``. This brought a need to
+  slightly change the semantics of ``Facet.get_values`` which now expects the
+  whole data dict for the aggregation, not just the ``buckets``. This is
+  a backwards incompatible change for custom aggregations that redefine that
+  method.
+
 6.1.0 (2018-01-09)
 ------------------
 
