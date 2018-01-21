@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from datetime import datetime
 
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers.test import SkipTest, get_test_client
@@ -10,6 +11,7 @@ from pytest import fixture, skip
 from elasticsearch_dsl.connections import connections
 from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
     create_flat_git_index
+from .test_integration.test_document import PullRequest, Comment, User
 
 
 @fixture(scope='session')
@@ -217,3 +219,16 @@ def aggs_data():
             }
         }
     }
+
+@fixture
+def pull_request(write_client):
+    PullRequest.init()
+    pr = PullRequest(_id=42,
+                     comments=[
+                         Comment(content='Hello World!',
+                                 author=User(name='honzakral'),
+                                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184)),
+                     ],
+                     created_at=datetime(2018, 1, 9, 9, 17, 3, 21184))
+    pr.save(refresh=True)
+    return pr

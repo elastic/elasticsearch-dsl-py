@@ -66,19 +66,6 @@ class SerializationDoc(DocType):
     class Meta:
         index = 'test-serialization'
 
-@fixture
-def pull_request(write_client):
-    PullRequest.init()
-    pr = PullRequest(_id=42,
-                     comments=[
-                         Comment(content='Hello World!',
-                                 author=User(name='honzakral'),
-                                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184)),
-                     ],
-                     created_at=datetime(2018, 1, 9, 9, 17, 3, 21184))
-    pr.save(refresh=True)
-    return pr
-
 def test_serialization(write_client):
     SerializationDoc.init()
     write_client.index(index='test-serialization', doc_type='doc', id=42,
