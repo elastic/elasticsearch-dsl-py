@@ -98,6 +98,21 @@ def test_bool_and_other_sets_min_should_match_if_needed():
         minimum_should_match=1
     )
 
+def test_bool_with_different_minimum_should_match_should_not_be_combined():
+    q1 = query.Q('bool', minimum_should_match=2, should=[query.Q('term', field='aa1'), query.Q('term', field='aa2'), query.Q('term', field='aa3'), query.Q('term', field='aa4')])
+    q2 = query.Q('bool', minimum_should_match=3, should=[query.Q('term', field='bb1'), query.Q('term', field='bb2'), query.Q('term', field='bb3'), query.Q('term', field='bb4')])
+    q3 = query.Q('bool', minimum_should_match=4, should=[query.Q('term', field='cc1'), query.Q('term', field='cc2'), query.Q('term', field='cc3'), query.Q('term', field='cc4')])
+
+    q4 = q1 | q2
+    assert q4 == query.Bool(
+        should=[q1, q2]
+    )
+
+    q5 = q1 | q2 | q3
+    assert q5 == query.Bool(
+        should=[q1, q2, q3]
+    )
+
 def test_empty_bool_has_min_should_match_0():
     assert 0 == query.Bool()._min_should_match
 
