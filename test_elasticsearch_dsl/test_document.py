@@ -49,7 +49,7 @@ class Secret(str): pass
 class SecretField(field.CustomField):
     builtin_type = 'text'
 
-    def _serialize(self, data):
+    def _serialize(self, data, skip_empty):
         return codecs.encode(data, 'rot_13')
 
     def _deserialize(self, data):
@@ -160,7 +160,7 @@ def test_multi_works_in_nested_after_doc_has_been_serialized():
     c = DocWithNested(comments=[Comment(title='First!')])
 
     assert [] == c.comments[0].tags
-    assert {'comments': [{'tags': [], 'title': 'First!'}]} == c.to_dict()
+    assert {'comments': [{'title': 'First!'}]} == c.to_dict()
     assert [] == c.comments[0].tags
 
 def test_null_value_for_object():

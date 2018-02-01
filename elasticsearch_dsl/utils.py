@@ -379,7 +379,7 @@ class ObjectBase(AttrDict):
                 pass
             else:
                 if f._coerce:
-                    v = f.serialize(v)
+                    v = f.serialize(v, skip_empty)
 
             # if someone assigned AttrList, unwrap it
             if isinstance(v, AttrList):
