@@ -160,7 +160,7 @@ def test_multi_works_in_nested_after_doc_has_been_serialized():
     c = DocWithNested(comments=[Comment(title='First!')])
 
     assert [] == c.comments[0].tags
-    assert {'comments': [{'title': 'First!'}]} == c.to_dict()
+    assert {'comments': [{'tags': [], 'title': 'First!'}]} == c.to_dict()
     assert [] == c.comments[0].tags
 
 def test_null_value_for_object():

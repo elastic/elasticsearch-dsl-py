@@ -173,7 +173,7 @@ class Object(Field):
         if isinstance(data, collections.Mapping):
             return data
 
-        return data.to_dict()
+        return data.to_dict(skip_empty=False)
 
     def clean(self, data):
         data = super(Object, self).clean(data)
