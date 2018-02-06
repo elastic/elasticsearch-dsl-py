@@ -116,6 +116,28 @@ def test_match_all_and_query_equals_other():
     q = q1 & q2
     assert q1 == q
 
+def test_not_match_all_is_match_none():
+    q = query.MatchAll()
+
+    assert ~q == query.MatchNone()
+
+def test_not_match_none_is_match_all():
+    q = query.MatchNone()
+
+    assert ~q == query.MatchAll()
+
+def test_match_none_or_query_equals_query():
+    q1 = query.Match(f=42)
+    q2 = query.MatchNone()
+
+    assert q1 | q2 == query.Match(f=42)
+
+def test_match_none_and_query_equals_match_none():
+    q1 = query.Match(f=42)
+    q2 = query.MatchNone()
+
+    assert q1 & q2 == query.MatchNone()
+
 def test_bool_and_bool():
     qt1, qt2, qt3 = query.Match(f=1), query.Match(f=2), query.Match(f=3)
 

@@ -69,7 +69,23 @@ class MatchAll(Query):
     def __or__(self, other):
         return self
     __ror__ = __or__
+
+    def __invert__(self):
+        return MatchNone()
 EMPTY_QUERY = MatchAll()
+
+class MatchNone(Query):
+    name = 'match_none'
+    def __add__(self, other):
+        return self
+    __and__ = __rand__ = __radd__ = __add__
+
+    def __or__(self, other):
+        return other._clone()
+    __ror__ = __or__
+
+    def __invert__(self):
+        return MatchAll()
 
 class Bool(Query):
     name = 'bool'
