@@ -1,22 +1,23 @@
 from .connections import connections
 from .search import Search
 from .exceptions import IllegalOperation
+from .mapping import Mapping
 
 class IndexBody(object):
-    def __init__(self, name, using='default'):
+    def __init__(self, name, doc_type='doc', using='default'):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
         self._name = name
-        self._doc_types = {}
-        self._mappings = {}
+        self._doc_types = []
         self._using = using
         self._settings = {}
         self._aliases = {}
         self._analysis = {}
+        self._mapping = Mapping(doc_type)
 
-    def clone(self, name, using=None):
+    def clone(self, name, doc_type=None, using=None):
         """
         Create a copy of the instance with another name or connection alias.
         Useful for creating multiple indices with shared configuration::
@@ -31,10 +32,13 @@ class IndexBody(object):
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
-        i = Index(name, using=using or self._using)
-        for attr in ('_doc_types', '_mappings', '_settings', '_aliases',
-                     '_analysis'):
-            setattr(i, attr, getattr(self, attr).copy())
+        i = Index(name, doc_type=doc_type or self._mapping.doc_type,
+                  using=using or self._using)
+        i._settings = self._settings.copy()
+        i._aliases = self._aliases.copy()
+        i._analysis = self._analysis.copy()
+        i._doc_types = self._doc_types[:]
+        i._mapping._update_from_dict(self._mapping.to_dict())
         return i
 
     def _get_connection(self):
@@ -48,7 +52,11 @@ class IndexBody(object):
         This means that, when this index is created, it will contain the
         mappings for the document type defined by those mappings.
         """
-        self._mappings[mapping.doc_type] = mapping
+        if mapping.doc_type != self._mapping.doc_type:
+            raise IllegalOperation(
+                'Index object cannot have multiple types, %s already set, '
+                'trying to assign %s.' % (self._mapping.doc_type, mapping.doc_type))
+        self._mapping.update(mapping)
 
     def doc_type(self, doc_type):
         """
@@ -72,8 +80,12 @@ class IndexBody(object):
             s = i.search()
         """
         name = doc_type._doc_type.name
-        self._doc_types[name] = doc_type
-        self._mappings[name] = doc_type._doc_type.mapping
+        if name != self._mapping.doc_type:
+            raise IllegalOperation(
+                'Index object cannot have multiple types, %s already set, '
+                'trying to assign %s.' % (self._mapping.doc_type, name))
+        self._doc_types.append(doc_type)
+        self._mapping.update(doc_type._doc_type.mapping)
 
         if not doc_type._doc_type.index:
             doc_type._doc_type.index = self._name
@@ -130,26 +142,15 @@ class IndexBody(object):
         for key in d:
             self._analysis.setdefault(key, {}).update(d[key])
 
-    def _get_mappings(self):
-        analysis, mappings = {}, {}
-        for mapping in self._mappings.values():
-            mappings.update(mapping.to_dict())
-            a = mapping._collect_analysis()
-            # merge the definition
-            # TODO: conflict detection/resolution
-            for key in a:
-                analysis.setdefault(key, {}).update(a[key])
-
-        return mappings, analysis
-
     def to_dict(self):
         out = {}
         if self._settings:
             out['settings'] = self._settings
         if self._aliases:
             out['aliases'] = self._aliases
-        mappings, analysis = self._get_mappings()
-        if mappings:
+        mappings = self._mapping.to_dict()
+        analysis = self._mapping._collect_analysis()
+        if mappings[self._mapping.doc_type]:
             out['mappings'] = mappings
         if analysis or self._analysis:
             for key in self._analysis:
@@ -173,24 +174,24 @@ class IndexTemplate(IndexBody):
     def search(self):
         """
         Return a :class:`~elasticsearch_dsl.Search` object searching over all
-        the indices belonging to this template and its ``DocType``\s.
+        the indices belonging to this template and its ``DocType``\\s.
         """
         return Search(
             using=self._using,
             index=self._template,
-            doc_type=[self._doc_types.get(k, k) for k in self._mappings]
+            doc_type=self._doc_types
         )
 
 class Index(IndexBody):
     def search(self):
         """
         Return a :class:`~elasticsearch_dsl.Search` object searching over this
-        index and its ``DocType``\s.
+        index and its ``DocType``\\s.
         """
         return Search(
             using=self._using,
             index=self._name,
-            doc_type=[self._doc_types.get(k, k) for k in self._mappings]
+            doc_type=self._doc_types
         )
 
     def create(self, **kwargs):

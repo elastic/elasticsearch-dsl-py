@@ -1,13 +1,55 @@
-from elasticsearch_dsl import DocType, Index, Text, Date, analyzer
+from elasticsearch_dsl import DocType, Index, Text, Date, analyzer, Mapping, \
+    exceptions
 
 from random import choice
-
 import string
+
+from pytest import raises
 
 class Post(DocType):
     title = Text()
     published_from = Date()
 
+def test_doc_type_can_be_set():
+    i = Index('i', doc_type='t')
+    m = Mapping('t')
+    m.field('title', Text())
+    i.mapping(m)
+
+    assert {
+        'mappings': {
+            't': {
+                'properties': {
+                    'title': {'type': 'text'}
+                }
+            }
+        }
+    } == i.to_dict()
+
+def test_conflicting_doc_types_cause_exception():
+    i = Index('i', doc_type='t')
+
+    with raises(exceptions.IllegalOperation):
+        i.doc_type(Post)
+
+def test_multiple_doc_types_will_combine_mappings():
+    class User(DocType):
+        username = Text()
+
+    i = Index('i')
+    i.doc_type(Post)
+    i.doc_type(User)
+    assert {
+        'mappings': {
+            'doc': {
+                'properties': {
+                    'title': {'type': 'text'},
+                    'username': {'type': 'text'},
+                    'published_from': {'type': 'date'}
+                }
+            }
+        }
+    } == i.to_dict()
 
 def test_search_is_limited_to_index_name():
     i = Index('my-index')

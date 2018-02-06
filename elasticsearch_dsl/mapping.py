@@ -6,8 +6,6 @@ from itertools import chain
 from .utils import DslBase
 from .field import Text, construct_field
 from .connections import connections
-from .exceptions import IllegalOperation
-from .index import Index
 
 META_FIELDS = frozenset((
     'dynamic', 'transform', 'dynamic_date_formats', 'date_detection',
@@ -111,7 +109,8 @@ class Mapping(object):
         return analysis
 
     def save(self, index, using='default'):
-        index = Index(index, using=using)
+        from .index import Index
+        index = Index(index, doc_type=self.doc_type, using=using)
         index.mapping(self)
         return index.save()
 
@@ -119,9 +118,11 @@ class Mapping(object):
         es = connections.get_connection(using)
         raw = es.indices.get_mapping(index=index, doc_type=self.doc_type)
         _, raw = raw.popitem()
-        raw = raw['mappings'][self.doc_type]
+        self._update_from_dict(raw['mappings'])
 
-        for name, definition in iteritems(raw['properties']):
+    def _update_from_dict(self, raw):
+        raw = raw[self.doc_type]
+        for name, definition in iteritems(raw.get('properties', {})):
             self.field(name, definition)
 
         # metadata like _all etc
