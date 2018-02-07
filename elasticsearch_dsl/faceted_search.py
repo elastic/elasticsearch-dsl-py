@@ -284,8 +284,10 @@ class FacetedSearch(object):
         self._filters[name] = f
 
     def search(self):
-        """
-        Construct the Search object.
+        """ Returns the base Search object to which the facets are added.
+
+        You can customize the query by overriding this method and returning and
+        modified search object.
         """
         s = Search(doc_type=self.doc_types, index=self.index, using=self.using)
         return s.response_class(FacetedResponse)
