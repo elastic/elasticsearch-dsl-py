@@ -158,35 +158,11 @@ class IndexBody(object):
             out.setdefault('settings', {})['analysis'] = analysis
         return out
 
-class IndexTemplate(IndexBody):
-    def __init__(self, name, template, **kwargs):
-        super(IndexTemplate, self).__init__(name, **kwargs)
-        self._template = template
-
-    def to_dict(self):
-        d = super(IndexTemplate, self).to_dict()
-        d['template'] = self._template
-        return d
-
-    def save(self):
-        self.connection.indices.put_template(name=self._name, body=self.to_dict())
-
     def search(self):
         """
-        Return a :class:`~elasticsearch_dsl.Search` object searching over all
-        the indices belonging to this template and its ``DocType``\\s.
-        """
-        return Search(
-            using=self._using,
-            index=self._template,
-            doc_type=self._doc_types
-        )
-
-class Index(IndexBody):
-    def search(self):
-        """
-        Return a :class:`~elasticsearch_dsl.Search` object searching over this
-        index and its ``DocType``\\s.
+        Return a :class:`~elasticsearch_dsl.Search` object searching over the
+        index (or all the indices belonging to this template) and its
+        ``DocType``\\s.
         """
         return Search(
             using=self._using,
@@ -194,6 +170,21 @@ class Index(IndexBody):
             doc_type=self._doc_types
         )
 
+class IndexTemplate(IndexBody):
+    def __init__(self, name, template, **kwargs):
+        super(IndexTemplate, self).__init__(template, **kwargs)
+        self._template_name = name
+
+    def to_dict(self):
+        d = super(IndexTemplate, self).to_dict()
+        d['template'] = self._name
+        return d
+
+    def save(self):
+        self.connection.indices.put_template(name=self._template_name, body=self.to_dict())
+
+
+class Index(IndexBody):
     def create(self, **kwargs):
         """
         Creates the index in elasticsearch.
