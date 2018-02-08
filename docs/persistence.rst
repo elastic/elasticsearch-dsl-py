@@ -6,112 +6,14 @@ Persistence
 You can use the dsl library to define your mappings and a basic persistent
 layer for your application.
 
-Mappings
---------
-
-If you wish to create mappings manually you can use the ``Mapping`` class, for
-more advanced use cases, however, we recommend you use the :ref:`doc_type`
-abstraction in combination with :ref:`index` (or ``IndexTemplate``) to define
-index-level settings and properties. The mapping definition follows a similar
-pattern to the query dsl:
-
-.. code:: python
-
-    from elasticsearch_dsl import Keyword, Mapping, Nested, Text
-
-    # name your type
-    m = Mapping('my-type')
-
-    # add fields
-    m.field('title', 'text')
-
-    # you can use multi-fields easily
-    m.field('category', 'text', fields={'raw': Keyword()})
-
-    # you can also create a field manually
-    comment = Nested(
-                     properties={
-                        'author': Text(),
-                        'created_at': Date()
-                     })
-
-    # and attach it to the mapping
-    m.field('comments', comment)
-
-    # you can also define mappings for the meta fields
-    m.meta('_all', enabled=False)
-
-    # save the mapping into index 'my-index'
-    m.save('my-index')
-
-.. note::
-
-    By default all fields (with the exception of ``Nested``) will expect single
-    values. You can always override this expectation during the field
-    creation/definition by passing in ``multi=True`` into the constructor
-    (``m.field('tags', Keyword(multi=True))``). Then the
-    value of the field, even if the field hasn't been set, will be an empty
-    list enabling you to write ``doc.tags.append('search')``.
-
-Especially if you are using dynamic mappings it might be useful to update the
-mapping based on an existing type in Elasticsearch, or create the mapping
-directly from an existing type:
-
-.. code:: python
-
-    # get the mapping from our production cluster
-    m = Mapping.from_es('my-index', 'my-type', using='prod')
-
-    # update based on data in QA cluster
-    m.update_from_es('my-index', using='qa')
-
-    # update the mapping on production
-    m.save('my-index', using='prod')
-
-Common field options:
-
-``multi``
-  If set to ``True`` the field's value will be set to ``[]`` at first access.
-
-``required``
-  Indicates if a field requires a value for the document to be valid.
-
-Analysis
---------
-
-To specify ``analyzer`` values for ``Text`` fields you can just use the name
-of the analyzer (as a string) and either rely on the analyzer being defined
-(like built-in analyzers) or define the analyzer yourself manually.
-
-Alternatively you can create your own analyzer and have the persistence layer
-handle its creation:
-
-.. code:: python
-
-    from elasticsearch_dsl import analyzer, tokenizer
-
-    my_analyzer = analyzer('my_analyzer',
-        tokenizer=tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
-        filter=['lowercase']
-    )
-
-Each analysis object needs to have a name (``my_analyzer`` and ``trigram`` in
-our example) and tokenizers, token filters and char filters also need to
-specify type (``nGram`` in our example).
-
-.. note::
-
-    When creating a mapping which relies on a custom analyzer the index must
-    either not exist or be closed. To create multiple ``DocType``-defined
-    mappings you can use the :ref:`index` object.
-
 .. _doc_type:
 
 DocType
 -------
 
 If you want to create a model-like wrapper around your documents, use the
-``DocType`` class:
+``DocType`` class. It can also be used to create all the necessary mappings and
+settings in elasticsearch (see :ref:`life-cycle` for details).
 
 .. code:: python
 
@@ -172,6 +74,8 @@ Elasticsearch itself interprets all datetimes with no timezone information as
 
 In that case any ``datetime`` object passed in (or parsed from elasticsearch)
 will be treated as if it were in ``UTC`` timezone.
+
+.. _life-cycle:
 
 Document life cycle
 ~~~~~~~~~~~~~~~~~~~
@@ -298,6 +202,35 @@ To delete a document just call its ``delete`` method:
     first = Post.get(id=42)
     first.delete()
 
+Analysis
+~~~~~~~~
+
+To specify ``analyzer`` values for ``Text`` fields you can just use the name
+of the analyzer (as a string) and either rely on the analyzer being defined
+(like built-in analyzers) or define the analyzer yourself manually.
+
+Alternatively you can create your own analyzer and have the persistence layer
+handle its creation, from our example earlier:
+
+.. code:: python
+
+    from elasticsearch_dsl import analyzer, tokenizer
+
+    my_analyzer = analyzer('my_analyzer',
+        tokenizer=tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
+        filter=['lowercase']
+    )
+
+Each analysis object needs to have a name (``my_analyzer`` and ``trigram`` in
+our example) and tokenizers, token filters and char filters also need to
+specify type (``nGram`` in our example).
+
+.. note::
+
+    When creating a mapping which relies on a custom analyzer the index must
+    either not exist or be closed. To create multiple ``DocType``-defined
+    mappings you can use the :ref:`index` object.
+
 Search
 ~~~~~~
 
@@ -358,7 +291,8 @@ metadata for your document:
 
 ``index``
   default index for the document, by default it is empty and every operation
-  such as ``get`` or ``save`` requires an explicit ``index`` parameter
+  such as ``get`` or ``save`` requires an explicit ``index`` parameter, same as
+  when you use a string containing a wildcard (such as ``logstash-*``).
 
 ``using``
   default connection alias to use, defaults to ``'default'``
@@ -456,3 +390,53 @@ create specific copies:
     dev_blogs = blogs.clone('blogs', using='dev')
     # and change its settings
     dev_blogs.setting(number_of_shards=1)
+
+.. _index-template:
+
+IndexTemplate
+~~~~~~~~~~~~~
+
+``elasticsearch-dsl`` also exposes an option to manage `index templates
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html>`_
+in elasticsearch using the ``IndexTemplate`` class which has very similar API to ``Index``.
+
+
+Once an index template is saved in elasticsearch it's contents will be
+automatically applied to new indices (existing indices are completely
+unaffected by templates) that match the template pattern (any index starting
+with ``blogs-`` in our example), even if the index is created automatically
+upon indexing a document into that index.
+
+Potential workflow for a set of time based indices governed by a single template:
+
+.. code:: python
+
+    from datetime import datetime
+
+    from elasticsearch_dsl import DocType, Date, Text IndexTemplate
+
+
+    class Log(DocType):
+        content = Text()
+        timestamp = Date()
+
+        class Meta:
+            index = "logs-*"
+
+        def save(self, **kwargs):
+            # assign now if no timestamp given
+            if not self.timestamp:
+                self.timestamp = datetime.now()
+
+            # override the index to go to the proper timeslot
+            kwargs['index'] = self.timestamp.strftime('logs-%Y%m%d')
+            return super().save(**kwargs)
+
+    # once, as part of application setup, during deploy/migrations:
+    logs = IndexTemplate('logs', 'logs-*')
+    logs.setting(number_of_shards=2)
+    logs.doc_type(Log)
+    logs.save()
+
+    # to perform search across all logs:
+    search = Log.search()
