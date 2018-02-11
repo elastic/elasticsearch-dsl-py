@@ -72,12 +72,6 @@ class DocTypeOptions(object):
     def name(self):
         return self.mapping.properties.name
 
-    @property
-    def parent(self):
-        if '_parent' in self.mapping._meta:
-            return self.mapping._meta['_parent']['type']
-        return
-
     def resolve_field(self, field_path):
         return self.mapping.resolve_field(field_path)
 
@@ -256,7 +250,7 @@ class DocType(ObjectBase):
 
         if error_docs:
             error_ids = [doc['_id'] for doc in error_docs]
-            message = 'Required routing/parent not provided for documents %s.'
+            message = 'Required routing not provided for documents %s.'
             message %= ', '.join(error_ids)
             raise RequestError(400, message, error_docs)
         if missing_docs:
@@ -288,7 +282,7 @@ class DocType(ObjectBase):
         ``Elasticsearch.delete`` unchanged.
         """
         es = self._get_connection(using)
-        # extract parent, routing etc from meta
+        # extract routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
             for k in DOC_META_FIELDS
@@ -367,7 +361,7 @@ class DocType(ObjectBase):
             for k in fields.keys()
         )
 
-        # extract parent, routing etc from meta
+        # extract routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
             for k in DOC_META_FIELDS
@@ -408,7 +402,7 @@ class DocType(ObjectBase):
             self.full_clean()
 
         es = self._get_connection(using)
-        # extract parent, routing etc from meta
+        # extract routing etc from meta
         doc_meta = dict(
             (k, self.meta[k])
             for k in DOC_META_FIELDS
