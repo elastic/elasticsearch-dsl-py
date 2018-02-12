@@ -2,7 +2,7 @@ import collections
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
-from six import iteritems, add_metaclass
+from six import iteritems, add_metaclass, string_types
 
 from .field import Field
 from .mapping import Mapping
@@ -11,6 +11,7 @@ from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
+from .index import Index
 
 
 class MetaField(object):
@@ -22,7 +23,10 @@ class DocTypeMeta(type):
     def __new__(cls, name, bases, attrs):
         # DocTypeMeta filters attrs in place
         attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
-        return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+        new_cls = super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+        if new_cls._doc_type._index is not None:
+            new_cls._doc_type._index.doc_type(new_cls)
+        return new_cls
 
 
 class DocTypeOptions(object):
@@ -30,13 +34,23 @@ class DocTypeOptions(object):
         meta = attrs.pop('Meta', None)
 
         # default index, if not overriden by doc.meta
-        self.index = getattr(meta, 'index', None)
+        index = getattr(meta, 'index', None)
 
         # default cluster alias, can be overriden in doc.meta
         self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined use 'doc'
         doc_type = getattr(meta, 'doc_type', 'doc')
+
+        # initiate the index object
+        self._index = None
+        if index is not None:
+            if isinstance(index, string_types):
+                self._index = Index(
+                    name=index,
+                    doc_type=doc_type,
+                    using=self.using
+                )
 
         # create the mapping instance
         self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
@@ -59,10 +73,16 @@ class DocTypeOptions(object):
             if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
                 self.mapping.update(b._doc_type.mapping, update_only=True)
                 self._using = self._using or b._doc_type._using
-                self.index = self.index or b._doc_type.index
+                self._index = self._index or b._doc_type._index
+
 
         # custom method to determine if a hit belongs to this DocType
         self._matches = getattr(meta, 'matches', None)
+
+    @property
+    def index(self):
+        if self._index:
+            return self._index._name
 
     @property
     def using(self):
@@ -75,8 +95,16 @@ class DocTypeOptions(object):
     def resolve_field(self, field_path):
         return self.mapping.resolve_field(field_path)
 
-    def init(self, index=None, using=None):
-        self.mapping.save(index or self.index, using=using or self.using)
+    def init(self, index=None):
+        if index:
+            if self._index:
+                i = self._index.clone(name=index)
+            else:
+                i = Index(name=index, doc_type=self.name)
+        else:
+            i = self._index
+
+        i.save()
 
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
@@ -148,11 +176,11 @@ class DocType(ObjectBase):
         return super(DocType, self).__setattr__(name, value)
 
     @classmethod
-    def init(cls, index=None, using=None):
+    def init(cls, index=None):
         """
         Create the index and populate the mappings in elasticsearch.
         """
-        cls._doc_type.init(index, using)
+        cls._doc_type.init(index)
 
     @classmethod
     def search(cls, using=None, index=None):

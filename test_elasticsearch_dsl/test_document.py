@@ -22,7 +22,6 @@ class MySubDoc(MyDoc):
     name = field.Keyword()
 
     class Meta:
-        doc_type = 'my_custom_doc'
         index = 'default-index'
 
 class MyDoc2(document.DocType):
@@ -84,15 +83,15 @@ def test_matches_uses_index_name_and_doc_type():
         '_index': 'not-test-git'
     })
     assert MySubDoc._doc_type.matches({
-        '_type': 'my_custom_doc',
-        '_index': 'default-index'
-    })
-    assert not MySubDoc._doc_type.matches({
         '_type': 'doc',
         '_index': 'default-index'
     })
     assert not MySubDoc._doc_type.matches({
-        '_type': 'my_custom_doc',
+        '_type': 'not_doc',
+        '_index': 'default-index'
+    })
+    assert not MySubDoc._doc_type.matches({
+        '_type': 'doc',
         '_index': 'test-git'
     })
 
@@ -183,7 +182,7 @@ def test_to_dict_with_meta():
     assert {
         '_index': 'default-index',
         '_routing': 'some-parent',
-        '_type': 'my_custom_doc',
+        '_type': 'doc',
         '_source': {'title': 'hello'},
     } == d.to_dict(True)
 
@@ -193,7 +192,7 @@ def test_to_dict_with_meta_includes_custom_index():
 
     assert {
         '_index': 'other-index',
-        '_type': 'my_custom_doc',
+        '_type': 'doc',
         '_source': {'title': 'hello'},
     } == d.to_dict(True)
 
@@ -394,9 +393,9 @@ def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)
     assert issubclass(MySubDoc, document.DocType)
     assert hasattr(MySubDoc, '_doc_type')
-    assert 'my_custom_doc' == MySubDoc._doc_type.name
+    assert 'doc' == MySubDoc._doc_type.name
     assert {
-        'my_custom_doc': {
+        'doc': {
             'properties': {
                 'created_at': {'type': 'date'},
                 'name': {'type': 'keyword'},

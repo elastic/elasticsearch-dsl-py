@@ -87,8 +87,8 @@ class IndexBody(object):
         self._doc_types.append(doc_type)
         self._mapping.update(doc_type._doc_type.mapping)
 
-        if not doc_type._doc_type.index:
-            doc_type._doc_type.index = self._name
+        if not doc_type._doc_type._index:
+            doc_type._doc_type._index = self
         return doc_type  # to use as decorator???
 
     def settings(self, **kwargs):
