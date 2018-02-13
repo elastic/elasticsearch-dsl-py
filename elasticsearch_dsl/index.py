@@ -3,7 +3,25 @@ from .search import Search
 from .exceptions import IllegalOperation
 from .mapping import Mapping
 
-class IndexBody(object):
+
+class IndexTemplate(object):
+    def __init__(self, name, template, **kwargs):
+        self._index = Index(template, **kwargs)
+        self._template_name = name
+
+    def __getattr__(self, attr_name):
+        return getattr(self._index, attr_name)
+
+    def to_dict(self):
+        d = self._index.to_dict()
+        d['template'] = self._name
+        return d
+
+    def save(self, using=None):
+        es = connections.get_connection(using or self._index._using)
+        es.indices.put_template(name=self._template_name, body=self.to_dict())
+
+class Index(object):
     def __init__(self, name, doc_type='doc', using='default'):
         """
         :arg name: name of the index
@@ -172,21 +190,6 @@ class IndexBody(object):
             doc_type=self._doc_types
         )
 
-class IndexTemplate(IndexBody):
-    def __init__(self, name, template, **kwargs):
-        super(IndexTemplate, self).__init__(template, **kwargs)
-        self._template_name = name
-
-    def to_dict(self):
-        d = super(IndexTemplate, self).to_dict()
-        d['template'] = self._name
-        return d
-
-    def save(self, using=None):
-        self._get_connection(using).indices.put_template(name=self._template_name, body=self.to_dict())
-
-
-class Index(IndexBody):
     def create(self, using=None, **kwargs):
         """
         Creates the index in elasticsearch.
