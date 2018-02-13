@@ -49,6 +49,9 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
 
         class Meta:
             index = 'blog'
+            settings = {
+              'number_of_shards': 1
+            }
 
         def add_comment(self, author, content):
             self.comments.append(
@@ -202,6 +205,8 @@ To delete a document just call its ``delete`` method:
     first = Post.get(id=42)
     first.delete()
 
+.. _analysis:
+
 Analysis
 ~~~~~~~~
 
@@ -286,13 +291,8 @@ In the ``Meta`` class inside your document definition you can define various
 metadata for your document:
 
 ``doc_type``
-  name of the doc_type in elasticsearch. By default it will be set to ``doc``,
-  it is not recommended to change.
-
-``index``
-  default index for the document, by default it is empty and every operation
-  such as ``get`` or ``save`` requires an explicit ``index`` parameter, same as
-  when you use a string containing a wildcard (such as ``logstash-*``).
+  (**deprecated**, do not set unless needed when working with a legacy index)
+  name of the ``_type`` in elasticsearch.
 
 ``using``
   default connection alias to use, defaults to ``'default'``
@@ -307,6 +307,32 @@ metadata for your document:
   overriden, by default will just check that values for ``_index`` (including
   any wildcard expansions) and ``_type`` in the document matches those in
   ``_doc_type``.
+
+
+Index-level options:
+
+``index``
+  default index for the document, by default it is empty and every operation
+  such as ``init``, ``get``, or ``save`` requires an explicit ``index``
+  parameter, same as when you use a string containing a wildcard (such as
+  ``logstash-*``).
+
+``settings``
+  dictionary defining settings to be used when creating the index. Used only if
+  ``index`` is specified as well. Example:
+
+.. code:: python
+
+    {"number_of_shards": 1}
+
+``analyzers``
+  list of ``analyzer`` objects (see :ref:`analysis` for details) to be added
+  to the index. Example:
+
+``aliases``
+  dictionary of aliases with parameters to be associated with the ``index``
+  when created.
+
 
 Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
 used to control the mapping of the meta fields (``_all``, ``dynamic`` etc).

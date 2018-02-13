@@ -4,7 +4,8 @@ from hashlib import md5
 from datetime import datetime
 import ipaddress
 
-from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc
+from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc,\
+    Index, analyzer
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
@@ -67,6 +68,34 @@ class OptionalObjectWithRequiredField(document.DocType):
 
 class Host(document.DocType):
     ip = field.Ip()
+
+def test_meta_index_settings():
+    alias_sentinel = object()
+    class DT(document.DocType):
+        class Meta:
+            index = 'i'
+            settings = {
+                'number_of_shards': 42
+            }
+            aliases = {
+                'new_alias': alias_sentinel
+            }
+            analyzers = [
+                analyzer('my_a', tokenizer='keyword')
+            ]
+
+    i = DT._doc_type._index
+    assert isinstance(i, Index)
+    assert i._settings == {'number_of_shards': 42}
+    assert i._aliases == {'new_alias': alias_sentinel}
+    assert i._analysis == {
+        'analyzer': {
+            'my_a': {
+                'type': 'custom',
+                'tokenizer': 'keyword'
+            }
+        }
+    }
 
 def test_ip_address_serializes_properly():
     host = Host(ip=ipaddress.IPv4Address(u'10.0.0.1'))

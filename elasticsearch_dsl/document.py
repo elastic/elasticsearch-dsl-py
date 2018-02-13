@@ -33,24 +33,30 @@ class DocTypeOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
 
-        # default index, if not overriden by doc.meta
-        index = getattr(meta, 'index', None)
-
         # default cluster alias, can be overriden in doc.meta
         self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined use 'doc'
         doc_type = getattr(meta, 'doc_type', 'doc')
 
+        # index name, if not overriden by doc.meta
+        index = getattr(meta, 'index', None)
+
         # initiate the index object
         self._index = None
         if index is not None:
-            if isinstance(index, string_types):
-                self._index = Index(
-                    name=index,
-                    doc_type=doc_type,
-                    using=self.using
-                )
+            i = self._index = Index(
+                name=index,
+                # make sure the index respects our doc_type name
+                doc_type=doc_type,
+                using=self.using
+            )
+
+            i.settings(**getattr(meta, 'settings', {}))
+            i.aliases(**getattr(meta, 'aliases', {}))
+            for a in getattr(meta, 'analyzers', ()):
+                i.analyzer(a)
+
 
         # create the mapping instance
         self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
