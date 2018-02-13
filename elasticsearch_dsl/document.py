@@ -101,7 +101,7 @@ class DocTypeOptions(object):
     def resolve_field(self, field_path):
         return self.mapping.resolve_field(field_path)
 
-    def init(self, index=None):
+    def init(self, index=None, using=None):
         if index:
             if self._index:
                 i = self._index.clone(name=index)
@@ -110,7 +110,7 @@ class DocTypeOptions(object):
         else:
             i = self._index
 
-        i.save()
+        i.save(using=using)
 
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
@@ -182,11 +182,11 @@ class DocType(ObjectBase):
         return super(DocType, self).__setattr__(name, value)
 
     @classmethod
-    def init(cls, index=None):
+    def init(cls, index=None, using=None):
         """
         Create the index and populate the mappings in elasticsearch.
         """
-        cls._doc_type.init(index)
+        cls._doc_type.init(index, using)
 
     @classmethod
     def search(cls, using=None, index=None):
