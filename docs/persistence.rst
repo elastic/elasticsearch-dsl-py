@@ -156,7 +156,7 @@ If the document is not found in elasticsearch an exception
     p = Post.get(id='not-in-es', ignore=404)
     p is None
 
-When you wish to retrive multiple documents at the same time by their ``id``
+When you wish to retrieve multiple documents at the same time by their ``id``
 you can use the ``mget`` method:
 
 .. code:: python
@@ -164,8 +164,8 @@ you can use the ``mget`` method:
     posts = Post.mget([42, 47, 256])
 
 ``mget`` will, by default, raise a ``NotFoundError`` if any of the documents
-wasn't found and ``RequestError`` if any of the document had resulted in error.
-You can control this behavior by setting parameters:
+  wasn't found and ``RequestError`` if any of the document had resulted in error.
+  You can control this behavior by setting parameters:
 
 ``raise_on_error``
   If ``True`` (default) then any error will cause an exception to be raised.
@@ -177,6 +177,18 @@ You can control this behavior by setting parameters:
   with ``None``, an exception will be raised or the document will be skipped in
   the output list entirely.
 
+To delete a document just call its ``delete`` method:
+
+.. code:: python
+
+    first = Post.get(id=42)
+    first.delete()
+
+
+.. _metadata:
+
+Document metadata
+~~~~~~~~~~~~~~~~~
 
 All the information about the ``DocType``, including its ``Mapping`` can be
 accessed through the ``_doc_type`` attribute of the class:
@@ -189,6 +201,13 @@ accessed through the ``_doc_type`` attribute of the class:
     # the raw Mapping object
     Post._doc_type.mapping
 
+    # get the IndexTemplate instance
+    index_template = Post._doc_type.as_template('posts')
+
+    # you can also directly save the template to elasticsearch under a given
+    # name (Meta.template will be used by default)
+    Post._doc_type.save_template('posts')
+
 The ``_doc_type`` attribute is also home to the ``refresh`` method which will
 update the mapping on the ``DocType`` from elasticsearch. This is very useful
 if you use dynamic mappings and want the class to be aware of those fields (for
@@ -197,13 +216,6 @@ example if you wish the ``Date`` fields to be properly (de)serialized):
 .. code:: python
 
     Post._doc_type.refresh()
-
-To delete a document just call its ``delete`` method:
-
-.. code:: python
-
-    first = Post.get(id=42)
-    first.delete()
 
 .. _analysis:
 
@@ -333,6 +345,10 @@ Index-level options:
   dictionary of aliases with parameters to be associated with the ``index``
   when created.
 
+``template``
+  default template name to be used when ``as_template`` or ``save_template``
+  methods are used.
+
 
 Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
 used to control the mapping of the meta fields (``_all``, ``dynamic`` etc).
@@ -426,6 +442,10 @@ IndexTemplate
 <https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html>`_
 in elasticsearch using the ``IndexTemplate`` class which has very similar API to ``Index``.
 
+Typically an ``IndexTemplate`` will be instantiated by calling
+``as_template()``  method on the ``_doc_type`` class attribute or any
+``DocType`` subclass (see :ref:`metadata`)`
+
 
 Once an index template is saved in elasticsearch it's contents will be
 automatically applied to new indices (existing indices are completely
@@ -448,6 +468,7 @@ Potential workflow for a set of time based indices governed by a single template
 
         class Meta:
             index = "logs-*"
+            settings = {'number_of_shards': 2}
 
         def save(self, **kwargs):
             # assign now if no timestamp given
@@ -459,10 +480,7 @@ Potential workflow for a set of time based indices governed by a single template
             return super().save(**kwargs)
 
     # once, as part of application setup, during deploy/migrations:
-    logs = IndexTemplate('logs', 'logs-*')
-    logs.setting(number_of_shards=2)
-    logs.doc_type(Log)
-    logs.save()
+    logs = Log._doc_type.save_template('logs')
 
     # to perform search across all logs:
     search = Log.search()

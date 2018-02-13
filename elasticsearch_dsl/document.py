@@ -57,6 +57,8 @@ class DocTypeOptions(object):
             for a in getattr(meta, 'analyzers', ()):
                 i.analyzer(a)
 
+        # optional template name
+        self.template = getattr(meta, 'template', None)
 
         # create the mapping instance
         self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
@@ -111,6 +113,15 @@ class DocTypeOptions(object):
             i = self._index
 
         i.save(using=using)
+
+    def as_template(self, name=None, using=None):
+        if name is None and not self.template:
+            raise IllegalOperation('Template requires a name, either pass one '
+                                   'in or define one in class Meta.')
+        return self._index.as_template(name or self.template, using=using)
+
+    def save_template(self, name=None, using=None):
+        return self.as_template(name=name, using=using).save()
 
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)

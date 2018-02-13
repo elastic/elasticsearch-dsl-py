@@ -5,8 +5,15 @@ from .mapping import Mapping
 
 
 class IndexTemplate(object):
-    def __init__(self, name, template, **kwargs):
-        self._index = Index(template, **kwargs)
+    def __init__(self, name, template=None, index=None, **kwargs):
+        if index and kwargs:
+            raise IllegalOperation('Cannot pass both index and kwargs to IndexTemplate')
+        if index:
+            self._index = index
+        else:
+            if not template:
+                raise IllegalOperation('You cannot instantiate IndexTemplate with no template.')
+            self._index = Index(template, **kwargs)
         self._template_name = name
 
     def __getattr__(self, attr_name):
@@ -34,6 +41,9 @@ class Index(object):
         self._aliases = {}
         self._analysis = {}
         self._mapping = Mapping(doc_type)
+
+    def as_template(self, template_name):
+        return IndexTemplate(template_name, index=self)
 
     def clone(self, name, doc_type=None, using=None):
         """
