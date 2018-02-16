@@ -123,7 +123,7 @@ class Object(Field):
         :arg document.InnerDoc doc_class: base doc class that handles mapping.
             If no `doc_class` is provided, new instance of `InnerDoc` will be created,
             populated with `properties` and used. Can not be provided together with `properties`
-        :arg bool dynamic: whether new properties may be created dynamically.
+        :arg dynamic: whether new properties may be created dynamically.
             Valid values are `True`, `False`, `'strict'`.
             Can not be provided together with `doc_class`.
             See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html
