@@ -123,7 +123,7 @@ class Object(Field):
         :arg document.InnerDoc doc_class: base doc class that handles mapping.
             If no `doc_class` is provided, new instance of `InnerDoc` will be created,
             populated with `properties` and used
-        :arg dynamic: whether new properties may be created dynamically.
+        :arg bool dynamic: whether new properties may be created dynamically.
             Valid values are `True`, `False`, `'strict'`.
             See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html
             for more details
@@ -138,7 +138,7 @@ class Object(Field):
             self._doc_class = type('InnerDoc', (InnerDoc, ), {})
             for name, field in iteritems(properties):
                 self._doc_class._doc_type.mapping.field(name, field)
-            if dynamic:
+            if dynamic is not None:
                 self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
         else:
             self._doc_class = doc_class
@@ -216,7 +216,6 @@ class Nested(Object):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('multi', True)
         super(Nested, self).__init__(*args, **kwargs)
-
 
 class Date(Field):
     name = 'date'

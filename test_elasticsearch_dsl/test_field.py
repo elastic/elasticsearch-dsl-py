@@ -134,3 +134,10 @@ def test_binary():
     assert f.deserialize(base64.b64encode(b'42')) == b'42'
     assert f.deserialize(f.serialize(b'42')) == b'42'
     assert f.deserialize(None) is None
+
+
+@pytest.mark.parametrize('value', [True, False, 'strict'])
+def test_object_dynamic_values(value):
+    f = field.Object(dynamic=value)
+    assert f.to_dict()['dynamic'] == value
+
