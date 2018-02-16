@@ -49,8 +49,8 @@ class Field(DslBase):
 
     def __init__(self, multi=False, required=False, *args, **kwargs):
         """
-        :param bool multi: specifies whether field can contain array of values
-        :param bool required: specifies whether field is required
+        :arg bool multi: specifies whether field can contain array of values
+        :arg bool required: specifies whether field is required
         """
         self._multi = multi
         self._required = required
@@ -120,14 +120,14 @@ class Object(Field):
 
     def __init__(self, doc_class=None, dynamic=None, properties=None, **kwargs):
         """
-        :param document.InnerDoc doc_class: base doc class that handles mapping.
+        :arg document.InnerDoc doc_class: base doc class that handles mapping.
             If no `doc_class` is provided, new instance of `InnerDoc` will be created,
             populated with `properties` and used
-        :param dynamic: whether new properties may be created dynamically.
+        :arg dynamic: whether new properties may be created dynamically.
             Valid values are `True`, `False`, `'strict'`.
             See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html
             for more details
-        :param dict properties: used to construct underlying mapping if no `doc_class` is provided
+        :arg dict properties: used to construct underlying mapping if no `doc_class` is provided
         """
         if properties is None:
             properties = {}
@@ -217,13 +217,14 @@ class Nested(Object):
         kwargs.setdefault('multi', True)
         super(Nested, self).__init__(*args, **kwargs)
 
+
 class Date(Field):
     name = 'date'
     _coerce = True
 
     def __init__(self, default_timezone=None, *args, **kwargs):
         """
-        :param default_timezone: timezone that will be automatically used for tz-naive values
+        :arg default_timezone: timezone that will be automatically used for tz-naive values
             May be instance of `datetime.tzinfo` or string containing TZ offset
         """
         self._default_timezone = default_timezone
