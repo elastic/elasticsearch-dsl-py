@@ -122,26 +122,29 @@ class Object(Field):
         """
         :arg document.InnerDoc doc_class: base doc class that handles mapping.
             If no `doc_class` is provided, new instance of `InnerDoc` will be created,
-            populated with `properties` and used
+            populated with `properties` and used. Can not be provided together with `properties`
         :arg bool dynamic: whether new properties may be created dynamically.
             Valid values are `True`, `False`, `'strict'`.
+            Can not be provided together with `doc_class`.
             See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html
             for more details
-        :arg dict properties: used to construct underlying mapping if no `doc_class` is provided
+        :arg dict properties: used to construct underlying mapping if no `doc_class` is provided.
+            Can not be provided together with `doc_class`
         """
-        if properties is None:
-            properties = {}
-        if doc_class is None:
+        if doc_class and (properties or dynamic is not None):
+            raise ValidationException(
+                'doc_class and properties/dynamic should not be provided together')
+        if doc_class:
+            self._doc_class = doc_class
+        else:
             # FIXME import
             from .document import InnerDoc
             # no InnerDoc subclass, creating one instead...
             self._doc_class = type('InnerDoc', (InnerDoc, ), {})
-            for name, field in iteritems(properties):
+            for name, field in iteritems(properties or {}):
                 self._doc_class._doc_type.mapping.field(name, field)
             if dynamic is not None:
                 self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
-        else:
-            self._doc_class = doc_class
 
         self._mapping = self._doc_class._doc_type.mapping
         super(Object, self).__init__(**kwargs)

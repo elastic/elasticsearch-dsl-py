@@ -5,7 +5,8 @@ from dateutil import tz
 
 import pytest
 
-from elasticsearch_dsl import field
+from elasticsearch_dsl import field, InnerDoc, ValidationException
+
 
 def test_boolean_deserialization():
     bf = field.Boolean()
@@ -136,8 +137,26 @@ def test_binary():
     assert f.deserialize(None) is None
 
 
-@pytest.mark.parametrize('value', [True, False, 'strict'])
-def test_object_dynamic_values(value):
-    f = field.Object(dynamic=value)
-    assert f.to_dict()['dynamic'] == value
+def test_object_dynamic_values():
+    for dynamic in True, False, 'strict':
+        f = field.Object(dynamic=dynamic)
+        assert f.to_dict()['dynamic'] == dynamic
 
+
+def test_object_constructor():
+    expected = {'type': 'object', 'properties': {'inner_int': {'type': 'integer'}}}
+
+    class Inner(InnerDoc):
+        inner_int = field.Integer()
+
+    obj_from_doc = field.Object(doc_class=Inner)
+    assert obj_from_doc.to_dict() == expected
+
+    obj_from_props = field.Object(properties={'inner_int': field.Integer()})
+    assert obj_from_props.to_dict() == expected
+
+    with pytest.raises(ValidationException):
+        field.Object(doc_class=Inner, properties={'inner_int': field.Integer()})
+
+    with pytest.raises(ValidationException):
+        field.Object(doc_class=Inner, dynamic=False)
