@@ -47,9 +47,13 @@ class Field(DslBase):
     name = None
     _coerce = False
 
-    def __init__(self, *args, **kwargs):
-        self._multi = kwargs.pop('multi', False)
-        self._required = kwargs.pop('required', False)
+    def __init__(self, multi=False, required=False, *args, **kwargs):
+        """
+        :arg bool multi: specifies whether field can contain array of values
+        :arg bool required: specifies whether field is required
+        """
+        self._multi = multi
+        self._required = required
         super(Field, self).__init__(*args, **kwargs)
 
     def __getitem__(self, subfield):
@@ -114,17 +118,33 @@ class Object(Field):
     name = 'object'
     _coerce = True
 
-    def __init__(self, doc_class=None, **kwargs):
-        self._doc_class = doc_class
-        if doc_class is None:
+    def __init__(self, doc_class=None, dynamic=None, properties=None, **kwargs):
+        """
+        :arg document.InnerDoc doc_class: base doc class that handles mapping.
+            If no `doc_class` is provided, new instance of `InnerDoc` will be created,
+            populated with `properties` and used. Can not be provided together with `properties`
+        :arg dynamic: whether new properties may be created dynamically.
+            Valid values are `True`, `False`, `'strict'`.
+            Can not be provided together with `doc_class`.
+            See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html
+            for more details
+        :arg dict properties: used to construct underlying mapping if no `doc_class` is provided.
+            Can not be provided together with `doc_class`
+        """
+        if doc_class and (properties or dynamic is not None):
+            raise ValidationException(
+                'doc_class and properties/dynamic should not be provided together')
+        if doc_class:
+            self._doc_class = doc_class
+        else:
             # FIXME import
             from .document import InnerDoc
             # no InnerDoc subclass, creating one instead...
             self._doc_class = type('InnerDoc', (InnerDoc, ), {})
-            for name, field in iteritems(kwargs.pop('properties', {})):
+            for name, field in iteritems(properties or {}):
                 self._doc_class._doc_type.mapping.field(name, field)
-            if 'dynamic' in kwargs:
-                self._doc_class._doc_type.mapping.meta('dynamic', kwargs.pop('dynamic'))
+            if dynamic is not None:
+                self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
 
         self._mapping = self._doc_class._doc_type.mapping
         super(Object, self).__init__(**kwargs)
@@ -204,8 +224,12 @@ class Date(Field):
     name = 'date'
     _coerce = True
 
-    def __init__(self, *args, **kwargs):
-        self._default_timezone = kwargs.pop('default_timezone', None)
+    def __init__(self, default_timezone=None, *args, **kwargs):
+        """
+        :arg default_timezone: timezone that will be automatically used for tz-naive values
+            May be instance of `datetime.tzinfo` or string containing TZ offset
+        """
+        self._default_timezone = default_timezone
         if isinstance(self._default_timezone, string_types):
             self._default_timezone = tz.gettz(self._default_timezone)
         super(Date, self).__init__(*args, **kwargs)
