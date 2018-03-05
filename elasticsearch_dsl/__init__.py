@@ -6,7 +6,7 @@ from .field import *
 from .document import DocType, MetaField, InnerDoc
 from .mapping import Mapping
 from .index import Index, IndexTemplate
-from .analysis import analyzer, token_filter, char_filter, tokenizer
+from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
 from .faceted_search import *
 
 VERSION = (6, 1, 0)
