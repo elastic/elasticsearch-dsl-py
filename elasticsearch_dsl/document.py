@@ -327,7 +327,8 @@ class DocType(ObjectBase):
         meta['_source'] = d
         return meta
 
-    def update(self, using=None, index=None,  detect_noop=True, doc_as_upsert=False, **fields):
+    def update(self, using=None, index=None,  detect_noop=True,
+               doc_as_upsert=False, refresh=False, **fields):
         """
         Partial update of the document, specify fields you wish to update and
         both the instance and the document in elasticsearch will be updated::
@@ -377,6 +378,7 @@ class DocType(ObjectBase):
             index=self._get_index(index),
             doc_type=self._doc_type.name,
             body=body,
+            refresh=refresh,
             **doc_meta
         )
         # update meta information from ES

@@ -11,6 +11,7 @@ Changelog
   whole data dict for the aggregation, not just the ``buckets``. This is
   a backwards incompatible change for custom aggregations that redefine that
   method.
+* ``DocType.update`` now supports ``refresh`` kwarg
 
 6.1.0 (2018-01-09)
 ------------------
