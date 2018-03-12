@@ -49,7 +49,7 @@ class Secret(str): pass
 class SecretField(field.CustomField):
     builtin_type = 'text'
 
-    def _serialize(self, data):
+    def _serialize(self, data, skip_empty):
         return codecs.encode(data, 'rot_13')
 
     def _deserialize(self, data):

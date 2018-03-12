@@ -59,7 +59,7 @@ class Field(DslBase):
     def __getitem__(self, subfield):
         return self._params.get('fields', {})[subfield]
 
-    def _serialize(self, data):
+    def _serialize(self, data, skip_empty):
         return data
 
     def _deserialize(self, data):
@@ -73,10 +73,10 @@ class Field(DslBase):
             return AttrList([])
         return self._empty()
 
-    def serialize(self, data):
+    def serialize(self, data, skip_empty=True):
         if isinstance(data, (list, AttrList)):
-            return list(map(self._serialize, data))
-        return self._serialize(data)
+            return [self._serialize(d, skip_empty) for d in data]
+        return self._serialize(data, skip_empty)
 
     def deserialize(self, data):
         if isinstance(data, (list, AttrList)):
@@ -185,7 +185,7 @@ class Object(Field):
 
         return self._wrap(data)
 
-    def _serialize(self, data):
+    def _serialize(self, data, skip_empty):
         if data is None:
             return None
 
@@ -193,7 +193,7 @@ class Object(Field):
         if isinstance(data, collections.Mapping):
             return data
 
-        return data.to_dict()
+        return data.to_dict(skip_empty=skip_empty)
 
     def clean(self, data):
         data = super(Object, self).clean(data)
@@ -329,7 +329,7 @@ class Ip(Field):
         # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
         return ipaddress.ip_address(unicode(data))
 
-    def _serialize(self, data):
+    def _serialize(self, data, skip_empty):
         if data is None:
             return None
         return str(data)
@@ -341,7 +341,7 @@ class Binary(Field):
     def _deserialize(self, data):
         return base64.b64decode(data)
 
-    def _serialize(self, data):
+    def _serialize(self, data, skip_empty):
         if data is None:
             return None
         return base64.b64encode(data)
