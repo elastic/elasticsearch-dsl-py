@@ -166,6 +166,7 @@ class Request(object):
 
     def _resolve_nested(self, field, parent_class=None):
         doc_class = Hit
+        nested_field = None
         if hasattr(parent_class, '_doc_type'):
             nested_field = parent_class._doc_type.resolve_field(field)
 
