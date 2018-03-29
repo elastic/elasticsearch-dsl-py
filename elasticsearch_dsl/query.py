@@ -211,6 +211,8 @@ class Indices(Query):
     name = 'indices'
     _param_defs = {'query': {'type': 'query'}, 'no_match_query': {'type': 'query'}}
 
+class Percolate(Query):
+    name = 'percolate'
 
 # relationship queries
 class Nested(Query):
