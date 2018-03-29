@@ -213,7 +213,6 @@ class Indices(Query):
 
 class Percolate(Query):
     name = 'percolate'
-    _param_defs = {'percolate': {'field': 'query', 'document': {'field': 'query'}}}    
 
 # relationship queries
 class Nested(Query):
