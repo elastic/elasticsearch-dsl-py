@@ -85,8 +85,12 @@ class Question(Post):
     tags = Keyword(multi=True)
     title = Text(fields={'keyword': Keyword()})
 
-    def add_answer(self, user, content, created=None, accepted=False):
-        Answer(
+    @classmethod
+    def search(cls, **kwargs):
+        return base_search(**kwargs).filter('term', question_answer='question')
+
+    def add_answer(self, user, body, created=None, accepted=False, commit=True):
+        answer = Answer(
             # required make sure the answer is stored in the same shard
             _routing=self.meta.id,
             # since we don't have explicit index, ensure same index as self
@@ -97,27 +101,38 @@ class Question(Post):
             # pass in the field values
             author=user,
             created=created,
-            content=content,
+            body=body,
             accepted=accepted
-        ).save()
+        )
+        if commit:
+            answer.save()
+        return answer
 
     def search_answers(self):
         # search only our index
-        s = self.search(index=self.meta.index)
+        s = Answer.search(index=self.meta.index)
         # filter for answers belonging to us
         s = s.filter('parent_id', type="answer", id=self.meta.id)
         # add routing to only go to specific shard
         s = s.params(routing=self.meta.id)
         return s
 
+    def save(self, **kwargs):
+        self.question_answer = 'question'
+        return super(Question, self).save(**kwargs)
+
     class Meta:
-        def matches(self, hit):
+        def matches(hit):
             " Use Question class for parent documents "
-            return hit.question_answer == 'question'
+            return hit['_source']['question_answer'] == 'question'
 
 
 class Answer(Post):
     is_accepted = Boolean()
+
+    @classmethod
+    def search(cls, **kwargs):
+        return super(Answer, cls).search(**kwargs).exclude('term', question_answer='question')
 
     @property
     def question(self):
@@ -128,10 +143,14 @@ class Answer(Post):
                     id=self.question_answer.parent, index=self.meta.index)
         return self.meta.question
 
+    def save(self, **kwargs):
+        self.meta.routing = self.question_answer.parent
+        return super(Answer, self).save(**kwargs)
+
     class Meta:
-        def matches(self, hit):
+        def matches(hit):
             " Use Answer class for child documents with child name 'answer' "
-            return getattr(hit.question_answer, 'name', None) == 'answer'
+            return isinstance(hit['_source']['question_answer'], dict) and hit['_source']['question_answer'].get('name') == 'answer'
 
 
 # construct basic index and populate with default settings. This will then be
@@ -164,5 +183,70 @@ def get_index(site):
         i = INDICES[site] = BASE_INDEX.clone(name=site)
         return i
 
-def base_search():
-    return get_index(CURRENT_SITE).search()
+def base_search(**kwargs):
+    return get_index(CURRENT_SITE).search(**kwargs)
+
+
+# USAGE example:
+
+from elasticsearch_dsl import Q
+
+# create the template, safe to run every time
+setup()
+
+# (re)create the index
+index = get_index(CURRENT_SITE)
+if index.exists():
+    index.delete()
+
+
+me = User()
+
+honza = User(id=42, signed_up=datetime(2013, 4, 3), username='honzakral',
+             email='honza@elastic.co', localtion='Prague')
+
+nick = User(id=47, signed_up=datetime(2017, 4, 3), username='fxdgear',
+            email='nick.lang@elastic.co', localtion='Colorado')
+
+# create a question object
+q1 = Question(
+    _id=1,
+    _index=CURRENT_SITE,
+    author=nick,
+    tags=['elasticsearch', 'python'],
+    title='How do I use elasticsearch from Python?',
+    body='''
+    I want to use elasticsearch, how do I do it from Python?
+    ''',
+)
+q1.save()
+
+a1 = q1.add_answer(honza, "Just use `elasticsearch-py`!")
+
+# refresj the index so we can search right away
+index.refresh()
+
+def print_question(question):
+    """
+    Simple helper function that prints out a question. Also print out the
+    answers, if those are already present on the question via inner_hits, use
+    the cached set.
+    """
+    print(question.author.username, 'Asked:', question.title)
+    if 'inner_hits' in question.meta:
+        print('matching answers:')
+        for a in question.meta.inner_hits.answer.hits:
+            print(a.author.username, 'replied:', a.body)
+    else:
+        for a in question.search_answers():
+            print(a.author.username, 'replied:', a.body)
+
+print_question(q1)
+
+for q in Question.search()\
+        .query('has_child',
+               type='answer',
+               inner_hits={},
+               query=Q('term', author__username__keyword='honzakral'),
+        ):
+    print_question(q)
