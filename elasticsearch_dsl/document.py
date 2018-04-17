@@ -39,6 +39,9 @@ class DocTypeOptions(object):
         # get doc_type name, if not defined use 'doc'
         doc_type = getattr(meta, 'doc_type', 'doc')
 
+        # index pattern when using templates/aliases
+        self.index_pattern = getattr(meta, 'index_pattern', None)
+
         # index name, if not overriden by doc.meta
         index = getattr(meta, 'index', None)
 
@@ -131,7 +134,12 @@ class DocTypeOptions(object):
             return self._matches(hit)
 
         return (
-                self.index is None or fnmatch(hit.get('_index', ''), self.index)
+                (
+                    self.index_pattern is not None
+                    and fnmatch(hit.get('_index', ''), self.index_pattern)
+                )
+                or self.index is None
+                or fnmatch(hit.get('_index', ''), self.index)
             ) and self.name == hit.get('_type')
 
 @add_metaclass(DocTypeMeta)

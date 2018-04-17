@@ -329,6 +329,11 @@ Index-level options:
   parameter, same as when you use a string containing a wildcard (such as
   ``logstash-*``).
 
+``index_pattern``
+  pattern to match against when determining whether a hit should be
+  deserialized into a ``DocType`` subclass. Useful when the actual index name
+  differs from ``index`` attribute because ``index`` points to an alias.
+
 ``settings``
   dictionary defining settings to be used when creating the index. Used only if
   ``index`` is specified as well. Example:

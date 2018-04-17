@@ -23,6 +23,7 @@ class BlogPost(DocType):
 
     class Meta:
         index = ALIAS
+        index_pattern = PATTERN
 
 def setup():
     """
