@@ -122,6 +122,7 @@ class Question(Post):
         return super(Question, self).save(**kwargs)
 
     class Meta:
+        @staticmethod
         def matches(hit):
             " Use Question class for parent documents "
             return hit['_source']['question_answer'] == 'question'
@@ -148,6 +149,7 @@ class Answer(Post):
         return super(Answer, self).save(**kwargs)
 
     class Meta:
+        @staticmethod
         def matches(hit):
             " Use Answer class for child documents with child name 'answer' "
             return isinstance(hit['_source']['question_answer'], dict) and hit['_source']['question_answer'].get('name') == 'answer'
