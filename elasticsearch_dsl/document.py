@@ -343,6 +343,8 @@ class DocType(ObjectBase):
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.update`` unchanged.
+
+        :return operation result noop/updated
         """
         if not fields:
             raise IllegalOperation('You cannot call update() without updating individual fields. '
@@ -386,6 +388,8 @@ class DocType(ObjectBase):
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
 
+        return meta['result']
+
     def save(self, using=None, index=None, validate=True, **kwargs):
         """
         Save the document into elasticsearch. If the document doesn't exist it
@@ -399,6 +403,8 @@ class DocType(ObjectBase):
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
+
+        :return operation result created/updated
         """
         if validate:
             self.full_clean()
@@ -422,5 +428,4 @@ class DocType(ObjectBase):
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
 
-        # return True/False if the document has been created/updated
-        return meta['result'] == 'created'
+        return meta['result']
