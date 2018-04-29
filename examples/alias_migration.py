@@ -76,6 +76,8 @@ def migrate(move_data=True, update_alias=True):
             body={"source": {"index": ALIAS}, "dest": {"index": next_index}},
             request_timeout=3600
         )
+        # refresh the index to make the changes visible
+        es.indices.refresh(index=next_index)
 
     if update_alias:
         # repoint the alias to point to the newly created index
