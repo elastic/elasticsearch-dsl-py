@@ -61,14 +61,11 @@ def migrate(move_data=True, update_alias=True):
     any and all searches without any loss of functionality. It should, however,
     not perform any writes at this time as those might be lost.
     """
+    # construct a new index name by appending current timestamp
+    next_index = PATTERN.replace('*', datetime.now().strftime('%Y%m%d%H%M%S'))
+
     # get the low level connection
     es = connections.get_connection()
-    # retrieve the list of indices matching the pattern...
-    indices = es.cat.indices(index=PATTERN, h='index').split()
-    # ... and extract the index versions
-    versions = (int(i[len(PATTERN)-1:]) for i in indices)
-    # construct a new index name
-    next_index = PATTERN.replace('*', str(max(versions, default=0) + 1))
 
     # create new index, it will use the settings from the template
     es.indices.create(index=next_index)
