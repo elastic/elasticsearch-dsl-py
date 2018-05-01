@@ -132,7 +132,7 @@ def test_update_object_field(write_client):
     w = Wiki(owner=User(name='Honza Kral'), _id='elasticsearch-py')
     w.save()
 
-    w.update(owner=[{'name': 'Honza'}, {'name': 'Nick'}])
+    assert 'updated' == w.update(owner=[{'name': 'Honza'}, {'name': 'Nick'}])
     assert w.owner[0].name == 'Honza'
     assert w.owner[1].name == 'Nick'
 
@@ -241,7 +241,7 @@ def test_save_updates_existing_doc(data_client):
 
     elasticsearch_repo.new_field = 'testing-save'
     v = elasticsearch_repo.meta.version
-    assert not elasticsearch_repo.save()
+    assert 'updated' == elasticsearch_repo.save()
 
     # assert version has been updated
     assert elasticsearch_repo.meta.version == v + 1
