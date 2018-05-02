@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import collections
+from copy import copy
 
 from six import iteritems, add_metaclass
 from six.moves import map
@@ -198,7 +199,7 @@ class DslBase(object):
 
     Provides several feature:
         - attribute access to the wrapped dictionary (.field instead of ['field'])
-        - _clone method returning a deep copy of self
+        - _clone method returning a copy of self
         - to_dict method to serialize into dict (to be sent via elasticsearch-py)
         - basic logical operators (&, | and ~) using a Bool(Filter|Query) TODO:
           move into a class specific for Query/Filter
@@ -330,8 +331,10 @@ class DslBase(object):
         return {self.name: d}
 
     def _clone(self):
-        return self._type_shortcut(self.to_dict())
-
+        c = self.__class__()
+        for attr in self._params:
+            c._params[attr] = copy(self._params[attr])
+        return c
 
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
