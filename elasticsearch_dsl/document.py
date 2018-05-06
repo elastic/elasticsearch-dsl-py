@@ -203,7 +203,7 @@ class DocBase(ObjectBase):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.get`` unchanged.
         """
-        es = connections.get_connection(using or cls._doc_type.using)
+        es = cls._get_connection(using)
         doc = es.get(
             index=index or cls._doc_type.index,
             doc_type=cls._doc_type.name,
@@ -236,7 +236,7 @@ class DocBase(ObjectBase):
         """
         if missing not in ('raise', 'skip', 'none'):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
-        es = connections.get_connection(using or cls._doc_type.using)
+        es = cls._get_connection(using)
         body = {
             'docs': [
                 doc if isinstance(doc, collections.Mapping) else {'_id': doc}
@@ -282,10 +282,6 @@ class DocBase(ObjectBase):
             message = 'Documents %s not found.' % ', '.join(missing_ids)
             raise NotFoundError(404, message, {'docs': missing_docs})
         return objs
-
-    def _get_connection(self, using=None):
-        return connections.get_connection(using or self._doc_type.using)
-    connection = property(_get_connection)
 
     def delete(self, using=None, index=None, **kwargs):
         """
@@ -450,6 +446,11 @@ class DocType(DocBase):
             or fnmatch(hit.get('_index', ''), cls._doc_type.index)
         ) and cls._doc_type.name == hit.get('_type')
 
+    @classmethod
+    def _get_connection(cls, using=None):
+        return connections.get_connection(using or cls._doc_type.using)
+    connection = property(_get_connection)
+
     def _get_index(self, index=None, required=True):
         if index is None:
             index = getattr(self.meta, 'index', self._doc_type.index)
@@ -465,6 +466,11 @@ class Document(DocBase):
             cls._index is None
             or fnmatch(hit.get('_index', ''), cls._index._name)
         ) and cls._doc_type.name == hit.get('_type')
+
+    @classmethod
+    def _get_connection(cls, using=None):
+        return connections.get_connection(using or cls._index._using)
+    connection = property(_get_connection)
 
     def _get_index(self, index=None, required=True):
         if index is None:
