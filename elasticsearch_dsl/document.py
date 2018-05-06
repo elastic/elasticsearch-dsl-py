@@ -11,6 +11,7 @@ from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
+from .index import Index
 
 
 class MetaField(object):
@@ -24,16 +25,27 @@ class DocTypeMeta(type):
         attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
         return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
 
+class DocumentMeta(type):
+    def __new__(cls, name, bases, attrs):
+        # DoccumentMeta filters attrs in place
+        attrs['_doc_type'] = DocumentOptions(name, bases, attrs)
+        return super(DocumentMeta, cls).__new__(cls, name, bases, attrs)
 
-class DocTypeOptions(object):
+class IndexMeta(DocumentMeta):
+    def __new__(cls, name, bases, attrs):
+        # DoccumentMeta filters attrs in place
+        attrs['_index'] = cls.construct_index(attrs.pop('Index', None))
+        return super(IndexMeta, cls).__new__(cls, name, bases, attrs)
+
+    @classmethod
+    def construct_index(cls, opts):
+        i = Index(getattr(opts, 'name', '*'))
+        return i
+
+
+class DocumentOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
-
-        # default index, if not overriden by doc.meta
-        self.index = getattr(meta, 'index', None)
-
-        # default cluster alias, can be overriden in doc.meta
-        self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined use 'doc'
         doc_type = getattr(meta, 'doc_type', 'doc')
@@ -53,16 +65,40 @@ class DocTypeOptions(object):
                 params = getattr(meta, name)
                 self.mapping.meta(name, *params.args, **params.kwargs)
 
-        # document inheritance - include the fields from parents' mappings and
-        # index/using values
+        # document inheritance - include the fields from parents' mappings
         for b in bases:
             if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
                 self.mapping.update(b._doc_type.mapping, update_only=True)
-                self._using = self._using or b._doc_type._using
-                self.index = self.index or b._doc_type.index
 
         # custom method to determine if a hit belongs to this DocType
         self._matches = getattr(meta, 'matches', None)
+
+    def matches(self, hit):
+        if self._matches is not None:
+            return self._matches(hit)
+
+        return (
+                self.index is None or fnmatch(hit.get('_index', ''), self.index)
+            ) and self.name == hit.get('_type')
+
+
+
+class DocTypeOptions(DocumentOptions):
+    def __init__(self, name, bases, attrs):
+        meta = attrs.get('Meta', None)
+        super(DocTypeOptions, self).__init__(name, bases, attrs)
+
+        # default index, if not overriden by doc.meta
+        self.index = getattr(meta, 'index', None)
+
+        # default cluster alias, can be overriden in doc.meta
+        self._using = getattr(meta, 'using', None)
+
+        # document inheritance - include the fields from parents' index/using values
+        for b in bases:
+            if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
+                self._using = self._using or b._doc_type._using
+                self.index = self.index or b._doc_type.index
 
     @property
     def using(self):
@@ -80,14 +116,6 @@ class DocTypeOptions(object):
 
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
-
-    def matches(self, hit):
-        if self._matches is not None:
-            return self._matches(hit)
-
-        return (
-                self.index is None or fnmatch(hit.get('_index', ''), self.index)
-            ) and self.name == hit.get('_type')
 
 @add_metaclass(DocTypeMeta)
 class InnerDoc(ObjectBase):
