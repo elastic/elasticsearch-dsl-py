@@ -195,7 +195,7 @@ class Request(object):
 
         else:
             for doc_type in self._doc_type:
-                if hasattr(doc_type, '_doc_type') and doc_type._doc_type.matches(hit):
+                if hasattr(doc_type, '_matches') and doc_type._matches(hit):
                     doc_class = doc_type
                     break
 

@@ -76,6 +76,43 @@ class Index(object):
                 'trying to assign %s.' % (self._mapping.doc_type, mapping.doc_type))
         self._mapping.update(mapping)
 
+    def _add_document(self, document):
+        name = document._doc_type.name
+        if name != self._mapping.doc_type:
+            raise IllegalOperation(
+                'Index object cannot have multiple types, %s already set, '
+                'trying to assign %s.' % (self._mapping.doc_type, name))
+        self._doc_types.append(document)
+        # TODO: do this at save time to allow DocType to be modified after
+        # creation?
+        self._mapping.update(document._doc_type.mapping)
+
+    def document(self, document):
+        """
+        Associate a :class:`~elasticsearch_dsl.Document` subclass with an index.
+        This means that, when this index is created, it will contain the
+        mappings for the ``Document``. If the ``Document`` class doesn't have a
+        default index yet (by defining ``class Index``), this instance will be
+        used. Can be used as a decorator::
+
+            i = Index('blog')
+
+            @i.document
+            class Post(DocType):
+                title = Text()
+
+            # create the index, including Post mappings
+            i.create()
+
+            # .search() will now return a Search object that will return
+            # properly deserialized Post instances
+            s = i.search()
+        """
+        self._add_document(document)
+        if document._index is None:
+            document._index = self
+        return document
+
     def doc_type(self, doc_type):
         """
         Associate a :class:`~elasticsearch_dsl.DocType` subclass with an index.
@@ -97,19 +134,10 @@ class Index(object):
             # properly deserialized Post instances
             s = i.search()
         """
-        name = doc_type._doc_type.name
-        if name != self._mapping.doc_type:
-            raise IllegalOperation(
-                'Index object cannot have multiple types, %s already set, '
-                'trying to assign %s.' % (self._mapping.doc_type, name))
-        self._doc_types.append(doc_type)
-        # TODO: do this at save time to allow DocType to be modified after
-        # creation?
-        self._mapping.update(doc_type._doc_type.mapping)
-
+        self._add_document(doc_type)
         if not doc_type._doc_type.index:
             doc_type._doc_type.index = self._name
-        return doc_type  # to use as decorator???
+        return doc_type
 
     def settings(self, **kwargs):
         """

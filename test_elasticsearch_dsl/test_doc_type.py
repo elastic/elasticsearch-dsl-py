@@ -12,7 +12,7 @@ from pytest import raises
 class MyInner(InnerDoc):
     old_field = field.Text()
 
-class MyDoc(document.Document):
+class MyDoc(document.DocType):
     title = field.Keyword()
     name = field.Text()
     created_at = field.Date()
@@ -23,11 +23,9 @@ class MySubDoc(MyDoc):
 
     class Meta:
         doc_type = 'my_custom_doc'
+        index = 'default-index'
 
-    class Index:
-        name = 'default-index'
-
-class MyDoc2(document.Document):
+class MyDoc2(document.DocType):
     extra = field.Long()
 
 class MyMultiSubDoc(MyDoc2, MySubDoc):
@@ -37,14 +35,14 @@ class Comment(document.InnerDoc):
     title = field.Text()
     tags = field.Keyword(multi=True)
 
-class DocWithNested(document.Document):
+class DocWithNested(document.DocType):
     comments = field.Nested(Comment)
 
-class SimpleCommit(document.Document):
+class SimpleCommit(document.DocType):
     files = field.Text(multi=True)
 
-    class Index:
-        name = 'test-git'
+    class Meta:
+        index = 'test-git'
 
 class Secret(str): pass
 
@@ -59,16 +57,16 @@ class SecretField(field.CustomField):
             return data
         return Secret(codecs.decode(data, 'rot_13'))
 
-class SecretDoc(document.Document):
+class SecretDoc(document.DocType):
     title = SecretField(index='no')
 
-class NestedSecret(document.Document):
+class NestedSecret(document.DocType):
     secrets = field.Nested(SecretDoc)
 
-class OptionalObjectWithRequiredField(document.Document):
+class OptionalObjectWithRequiredField(document.DocType):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
 
-class Host(document.Document):
+class Host(document.DocType):
     ip = field.Ip()
 
 def test_ip_address_serializes_properly():
@@ -99,9 +97,9 @@ def test_matches_uses_index_name_and_doc_type():
     })
 
 def test_matches_accepts_wildcards():
-    class MyDoc(document.Document):
-        class Index:
-            name = 'my-*'
+    class MyDoc(document.DocType):
+        class Meta:
+            index = 'my-*'
 
     assert MyDoc._matches({
         '_type': 'doc',
@@ -172,10 +170,10 @@ def test_null_value_for_object():
 
 def test_inherited_doc_types_can_override_index():
     class MyDocDifferentIndex(MySubDoc):
-        class Index:
-            name = 'not-default-index'
+        class Meta:
+            index = 'not-default-index'
 
-    assert MyDocDifferentIndex._index._name == 'not-default-index'
+    assert MyDocDifferentIndex._doc_type.index == 'not-default-index'
     assert MyDocDifferentIndex()._get_index() == 'not-default-index'
 
 def test_to_dict_with_meta():
@@ -234,7 +232,7 @@ def test_meta_is_accessible_even_on_empty_doc():
     d.meta
 
 def test_meta_field_mapping():
-    class User(document.Document):
+    class User(document.DocType):
         username = field.Text()
         class Meta:
             all = document.MetaField(enabled=False)
@@ -255,7 +253,7 @@ def test_meta_field_mapping():
     } == User._doc_type.mapping.to_dict()
 
 def test_multi_value_fields():
-    class Blog(document.Document):
+    class Blog(document.DocType):
         tags = field.Keyword(multi=True)
 
     b = Blog()
@@ -265,7 +263,7 @@ def test_multi_value_fields():
     assert ['search', 'python'] == b.tags
 
 def test_docs_with_properties():
-    class User(document.Document):
+    class User(document.DocType):
         pwd_hash = field.Text()
 
         def check_password(self, pwd):
@@ -332,7 +330,7 @@ def test_to_dict_ignores_empty_collections():
 
 
 def test_declarative_mapping_definition():
-    assert issubclass(MyDoc, document.Document)
+    assert issubclass(MyDoc, document.DocType)
     assert hasattr(MyDoc, '_doc_type')
     assert {
         'doc': {
@@ -349,7 +347,7 @@ def test_declarative_mapping_definition():
     } == MyDoc._doc_type.mapping.to_dict()
 
 def test_you_can_supply_own_mapping_instance():
-    class MyD(document.Document):
+    class MyD(document.DocType):
         title = field.Text()
 
         class Meta:
@@ -394,7 +392,7 @@ def test_invalid_date_will_raise_exception():
 
 def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)
-    assert issubclass(MySubDoc, document.Document)
+    assert issubclass(MySubDoc, document.DocType)
     assert hasattr(MySubDoc, '_doc_type')
     assert 'my_custom_doc' == MySubDoc._doc_type.name
     assert {
@@ -420,15 +418,14 @@ def test_meta_fields_are_stored_in_meta_and_ignored_by_to_dict():
     assert {'name': 'My First doc!'} == md.to_dict()
     assert {'id': 42, 'index': 'my-index'} == md.meta.to_dict()
 
-def test_index_inheritance():
+def test_meta_inheritance():
     assert issubclass(MyMultiSubDoc, MySubDoc)
     assert issubclass(MyMultiSubDoc, MyDoc2)
-    assert issubclass(MyMultiSubDoc, document.Document)
+    assert issubclass(MyMultiSubDoc, document.DocType)
     assert hasattr(MyMultiSubDoc, '_doc_type')
-    assert hasattr(MyMultiSubDoc, '_index')
     # index and using should be
-    assert MyMultiSubDoc._index._name == MySubDoc._index._name
-    assert MyMultiSubDoc._index._using == MySubDoc._index._using
+    assert MyMultiSubDoc._doc_type.index == MySubDoc._doc_type.index
+    assert MyMultiSubDoc._doc_type.using == MySubDoc._doc_type.using
     assert {
         'doc': {
             'properties': {
@@ -497,7 +494,7 @@ def test_from_es_respects_underscored_non_meta_fields():
         }
     }
 
-    class Company(document.Document):
+    class Company(document.DocType):
         pass
 
     c = Company.from_es(doc)

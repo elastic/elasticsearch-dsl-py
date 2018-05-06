@@ -34,11 +34,19 @@ class DocumentMeta(type):
 class IndexMeta(DocumentMeta):
     def __new__(cls, name, bases, attrs):
         # DoccumentMeta filters attrs in place
-        attrs['_index'] = cls.construct_index(attrs.pop('Index', None))
-        return super(IndexMeta, cls).__new__(cls, name, bases, attrs)
+        index_opts = attrs.pop('Index', None)
+        new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
+        new_cls._index = cls.construct_index(index_opts, bases)
+        return new_cls
 
     @classmethod
-    def construct_index(cls, opts):
+    def construct_index(cls, opts, bases):
+        if opts is None:
+            for b in bases:
+                if getattr(b, '_index', None) is not None:
+                    return b._index
+            return None
+
         i = Index(getattr(opts, 'name', '*'))
         return i
 
@@ -73,13 +81,9 @@ class DocumentOptions(object):
         # custom method to determine if a hit belongs to this DocType
         self._matches = getattr(meta, 'matches', None)
 
-    def matches(self, hit):
-        if self._matches is not None:
-            return self._matches(hit)
-
-        return (
-                self.index is None or fnmatch(hit.get('_index', ''), self.index)
-            ) and self.name == hit.get('_type')
+    @property
+    def name(self):
+        return self.mapping.properties.name
 
 
 
@@ -104,10 +108,6 @@ class DocTypeOptions(DocumentOptions):
     def using(self):
         return self._using or 'default'
 
-    @property
-    def name(self):
-        return self.mapping.properties.name
-
     def resolve_field(self, field_path):
         return self.mapping.resolve_field(field_path)
 
@@ -117,7 +117,7 @@ class DocTypeOptions(DocumentOptions):
     def refresh(self, index=None, using=None):
         self.mapping.update_from_es(index or self.index, using=using or self.using)
 
-@add_metaclass(DocTypeMeta)
+@add_metaclass(DocumentMeta)
 class InnerDoc(ObjectBase):
     """
     Common class for inner documents like Object or Nested
@@ -132,9 +132,7 @@ class InnerDoc(ObjectBase):
             setattr(doc, k, v)
         return doc
 
-
-@add_metaclass(DocTypeMeta)
-class DocType(ObjectBase):
+class DocBase(ObjectBase):
     """
     Model-like class for persisting documents in elasticsearch.
     """
@@ -144,11 +142,9 @@ class DocType(ObjectBase):
             if k.startswith('_') and k[1:] in META_FIELDS:
                 meta[k] = kwargs.pop(k)
 
-        if self._doc_type.index:
-            meta.setdefault('_index', self._doc_type.index)
         super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
-        super(DocType, self).__init__(**kwargs)
+        super(DocBase, self).__init__(**kwargs)
 
     def __getstate__(self):
         return (self.to_dict(), self.meta._d_)
@@ -161,7 +157,7 @@ class DocType(ObjectBase):
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return getattr(self.meta, name[1:])
-        return super(DocType, self).__getattr__(name)
+        return super(DocBase, self).__getattr__(name)
 
     def __repr__(self):
         return '%s(%s)' % (
@@ -173,7 +169,7 @@ class DocType(ObjectBase):
     def __setattr__(self, name, value):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return setattr(self.meta, name[1:], value)
-        return super(DocType, self).__setattr__(name, value)
+        return super(DocBase, self).__setattr__(name, value)
 
     @classmethod
     def init(cls, index=None, using=None):
@@ -291,13 +287,6 @@ class DocType(ObjectBase):
         return connections.get_connection(using or self._doc_type.using)
     connection = property(_get_connection)
 
-    def _get_index(self, index=None):
-        if index is None:
-            index = getattr(self.meta, 'index', self._doc_type.index)
-        if index is None:
-            raise ValidationException('No index')
-        return index
-
     def delete(self, using=None, index=None, **kwargs):
         """
         Delete the instance in elasticsearch.
@@ -335,7 +324,7 @@ class DocType(ObjectBase):
             ``[]``, ``{}``) to be left on the document. Those values will be
             stripped out otherwise as they make no difference in elasticsearch.
         """
-        d = super(DocType, self).to_dict(skip_empty=skip_empty)
+        d = super(DocBase, self).to_dict(skip_empty=skip_empty)
         if not include_meta:
             return d
 
@@ -346,10 +335,9 @@ class DocType(ObjectBase):
         )
 
         # in case of to_dict include the index unlike save/update/delete
-        if 'index' in self.meta:
-            meta['_index'] = self.meta.index
-        elif self._doc_type.index:
-            meta['_index'] = self._doc_type.index
+        index = self._get_index(required=False)
+        if index is not None:
+            meta['_index'] = index
 
         meta['_type'] = self._doc_type.name
         meta['_source'] = d
@@ -452,3 +440,37 @@ class DocType(ObjectBase):
 
         # return True/False if the document has been created/updated
         return meta['result'] == 'created'
+
+@add_metaclass(DocTypeMeta)
+class DocType(DocBase):
+    @classmethod
+    def _matches(cls, hit):
+        return (
+            cls._doc_type.index is None
+            or fnmatch(hit.get('_index', ''), cls._doc_type.index)
+        ) and cls._doc_type.name == hit.get('_type')
+
+    def _get_index(self, index=None, required=True):
+        if index is None:
+            index = getattr(self.meta, 'index', self._doc_type.index)
+        if index is None and required:
+            raise ValidationException('No index')
+        return index
+
+@add_metaclass(IndexMeta)
+class Document(DocBase):
+    @classmethod
+    def _matches(cls, hit):
+        return (
+            cls._index is None
+            or fnmatch(hit.get('_index', ''), cls._index._name)
+        ) and cls._doc_type.name == hit.get('_type')
+
+    def _get_index(self, index=None, required=True):
+        if index is None:
+            index = getattr(self.meta, 'index', None)
+        if index is None:
+            index = getattr(self._index, '_name', None)
+        if index is None and required:
+            raise ValidationException('No index')
+        return index
