@@ -63,6 +63,13 @@ class SecretDoc(document.DocType):
 class NestedSecret(document.DocType):
     secrets = field.Nested(SecretDoc)
 
+class NestedWithParams(document.DocType):
+    my_nested = field.Nested(
+        include_in_parent=True,
+        dynamic=False,
+        properties={'title': field.Text()})
+
+
 class OptionalObjectWithRequiredField(document.DocType):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
 
@@ -140,6 +147,25 @@ def test_custom_field_mapping():
             }
         }
     } == SecretDoc._doc_type.mapping.to_dict()
+
+def test_nested_with_params():
+    my_mapping = NestedWithParams._doc_type.mapping.to_dict()
+    assert {
+        'doc': {
+            'properties': {
+                'my_nested': {
+                    'type': 'nested',
+                    'include_in_parent': True,
+                    'dynamic': False,
+                    'properties': {
+                        'title': {
+                            'type': 'text'
+                        }
+                    }
+                }
+            }
+        }
+    } == my_mapping
 
 def test_custom_field_in_nested():
     s = NestedSecret()
