@@ -13,3 +13,5 @@ docs/_build
 .cache
 venv
 .idea
+.vscode
+.pytest_cache
