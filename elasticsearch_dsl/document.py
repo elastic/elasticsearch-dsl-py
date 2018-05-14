@@ -19,12 +19,6 @@ class MetaField(object):
         self.args, self.kwargs = args, kwargs
 
 
-class DocTypeMeta(type):
-    def __new__(cls, name, bases, attrs):
-        # DocTypeMeta filters attrs in place
-        attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
-        return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
-
 class DocumentMeta(type):
     def __new__(cls, name, bases, attrs):
         # DoccumentMeta filters attrs in place
@@ -37,17 +31,19 @@ class IndexMeta(DocumentMeta):
         index_opts = attrs.pop('Index', None)
         new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
         new_cls._index = cls.construct_index(index_opts, bases)
+        new_cls._index.document(new_cls)
         return new_cls
 
     @classmethod
     def construct_index(cls, opts, bases):
         if opts is None:
             for b in bases:
-                if getattr(b, '_index', None) is not None:
+                if getattr(b, '_index', DEFAULT_INDEX) is not DEFAULT_INDEX:
                     return b._index
             return DEFAULT_INDEX
 
         i = Index(getattr(opts, 'name', '*'))
+        # TODO settings etc
         return i
 
 
@@ -81,42 +77,13 @@ class DocumentOptions(object):
         # custom method to determine if a hit belongs to this DocType
         self._matches = getattr(meta, 'matches', None)
 
+    def resolve_field(self, field_path):
+        return self.mapping.resolve_field(field_path)
+
     @property
     def name(self):
         return self.mapping.properties.name
 
-
-
-class DocTypeOptions(DocumentOptions):
-    def __init__(self, name, bases, attrs):
-        meta = attrs.get('Meta', None)
-        super(DocTypeOptions, self).__init__(name, bases, attrs)
-
-        # default index, if not overriden by doc.meta
-        self.index = getattr(meta, 'index', None)
-
-        # default cluster alias, can be overriden in doc.meta
-        self._using = getattr(meta, 'using', None)
-
-        # document inheritance - include the fields from parents' index/using values
-        for b in bases:
-            if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
-                self._using = self._using or b._doc_type._using
-                self.index = self.index or b._doc_type.index
-
-    @property
-    def using(self):
-        return self._using or 'default'
-
-    def resolve_field(self, field_path):
-        return self.mapping.resolve_field(field_path)
-
-    def init(self, index=None, using=None):
-        self.mapping.save(index or self.index, using=using or self.using)
-
-    def refresh(self, index=None, using=None):
-        # TODO - move/copy to Index.load()
-        self.mapping.update_from_es(index or self.index, using=using or self.using)
 
 @add_metaclass(DocumentMeta)
 class InnerDoc(ObjectBase):
@@ -133,7 +100,8 @@ class InnerDoc(ObjectBase):
             setattr(doc, k, v)
         return doc
 
-class DocBase(ObjectBase):
+@add_metaclass(IndexMeta)
+class Document(ObjectBase):
     """
     Model-like class for persisting documents in elasticsearch.
     """
@@ -145,7 +113,47 @@ class DocBase(ObjectBase):
 
         super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
-        super(DocBase, self).__init__(**kwargs)
+        super(Document, self).__init__(**kwargs)
+
+    @classmethod
+    def _matches(cls, hit):
+        return (
+            cls._index is None
+            or fnmatch(hit.get('_index', ''), cls._index._name)
+        ) and cls._doc_type.name == hit.get('_type')
+
+    @classmethod
+    def _get_using(cls, using=None):
+        return using or cls._index._using
+
+    @classmethod
+    def _get_connection(cls, using=None):
+        return connections.get_connection(cls._get_using(using))
+
+    @classmethod
+    def _default_index(cls, index=None):
+        return index or cls._index._name
+
+    @classmethod
+    def init(cls, index=None, using=None):
+        """
+        Create the index and populate the mappings in elasticsearch.
+        """
+        i = cls._index
+        if index:
+            i = i.clone(name=index)
+        i.save(using=using)
+
+    def _get_index(self, index=None, required=True):
+        if index is None:
+            index = getattr(self.meta, 'index', None)
+        if index is None:
+            index = getattr(self._index, '_name', None)
+        if index is None and required:
+            raise ValidationException('No index')
+        if index and '*' in index:
+            raise ValidationException('You cannot write to a wildcard index.')
+        return index
 
     def __getstate__(self):
         return (self.to_dict(), self.meta._d_)
@@ -158,7 +166,7 @@ class DocBase(ObjectBase):
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return getattr(self.meta, name[1:])
-        return super(DocBase, self).__getattr__(name)
+        return super(Document, self).__getattr__(name)
 
     def __repr__(self):
         return '%s(%s)' % (
@@ -170,14 +178,7 @@ class DocBase(ObjectBase):
     def __setattr__(self, name, value):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return setattr(self.meta, name[1:], value)
-        return super(DocBase, self).__setattr__(name, value)
-
-    @classmethod
-    def init(cls, index=None, using=None):
-        """
-        Create the index and populate the mappings in elasticsearch.
-        """
-        cls._doc_type.init(index, using)
+        return super(Document, self).__setattr__(name, value)
 
     @classmethod
     def search(cls, using=None, index=None):
@@ -186,7 +187,7 @@ class DocBase(ObjectBase):
         over this ``DocType``.
         """
         return Search(
-            using=cls._get_connection(using),
+            using=cls._get_using(using),
             index=cls._default_index(index),
             doc_type=[cls]
         )
@@ -321,7 +322,7 @@ class DocBase(ObjectBase):
             ``[]``, ``{}``) to be left on the document. Those values will be
             stripped out otherwise as they make no difference in elasticsearch.
         """
-        d = super(DocBase, self).to_dict(skip_empty=skip_empty)
+        d = super(Document, self).to_dict(skip_empty=skip_empty)
         if not include_meta:
             return d
 
@@ -438,64 +439,3 @@ class DocBase(ObjectBase):
         # return True/False if the document has been created/updated
         return meta['result'] == 'created'
 
-@add_metaclass(DocTypeMeta)
-class DocType(DocBase):
-    @classmethod
-    def _matches(cls, hit):
-        return (
-            cls._doc_type.index is None
-            or fnmatch(hit.get('_index', ''), cls._doc_type.index)
-        ) and cls._doc_type.name == hit.get('_type')
-
-    @classmethod
-    def _get_connection(cls, using=None):
-        return connections.get_connection(using or cls._doc_type.using)
-    connection = property(_get_connection)
-
-    @classmethod
-    def _default_index(cls, index=None):
-        return index or cls._doc_type.index
-
-    def _get_index(self, index=None, required=True):
-        if index is None:
-            index = getattr(self.meta, 'index', self._doc_type.index)
-        if index is None and required:
-            raise ValidationException('No index')
-        return index
-
-@add_metaclass(IndexMeta)
-class Document(DocBase):
-    @classmethod
-    def _matches(cls, hit):
-        return (
-            cls._index is None
-            or fnmatch(hit.get('_index', ''), cls._index._name)
-        ) and cls._doc_type.name == hit.get('_type')
-
-    @classmethod
-    def _get_connection(cls, using=None):
-        return connections.get_connection(using or cls._index._using)
-    connection = property(_get_connection)
-
-    @classmethod
-    def _default_index(cls, index=None):
-        return index or cls._index._name
-
-    @classmethod
-    def init(cls, index=None, using=None):
-        """
-        Create the index and populate the mappings in elasticsearch.
-        """
-        i = cls._index
-        if index:
-            i = i.clone(name=index)
-        i.save(using=using)
-
-    def _get_index(self, index=None, required=True):
-        if index is None:
-            index = getattr(self.meta, 'index', None)
-        if index is None:
-            index = getattr(self._index, '_name', None)
-        if index is None and required:
-            raise ValidationException('No index')
-        return index

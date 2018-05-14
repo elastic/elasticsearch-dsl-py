@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Boolean, Date
+from elasticsearch_dsl import Document, Boolean, Date
 from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, \
     DateHistogramFacet, RangeFacet, NestedFacet
 
@@ -17,7 +17,7 @@ class CommitSearch(FacetedSearch):
     }
 
 
-class Repos(DocType):
+class Repos(Document):
     is_public = Boolean()
     created_at = Date()
 

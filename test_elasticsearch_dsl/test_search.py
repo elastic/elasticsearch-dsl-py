@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from elasticsearch_dsl import search, query, Q, DocType, utils
+from elasticsearch_dsl import search, query, Q, Document, utils
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 from pytest import raises
@@ -207,16 +207,16 @@ def test_search_doc_type():
 
 
 def test_doc_type_can_be_document_class():
-    class MyDocType(DocType):
+    class MyDocument(Document):
         pass
 
-    s = search.Search(doc_type=MyDocType)
-    assert s._doc_type == [MyDocType]
+    s = search.Search(doc_type=MyDocument)
+    assert s._doc_type == [MyDocument]
     assert s._doc_type_map == {}
     assert s._get_doc_type() == ['doc']
 
-    s = search.Search().doc_type(MyDocType)
-    assert s._doc_type == [MyDocType]
+    s = search.Search().doc_type(MyDocument)
+    assert s._doc_type == [MyDocument]
     assert s._doc_type_map == {}
     assert s._get_doc_type() == ['doc']
 

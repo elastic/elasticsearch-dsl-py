@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, Index, Text, Date, analyzer, Mapping, \
+from elasticsearch_dsl import Document, Index, Text, Date, analyzer, Mapping, \
     exceptions
 
 from random import choice
@@ -6,7 +6,7 @@ import string
 
 from pytest import raises
 
-class Post(DocType):
+class Post(Document):
     title = Text()
     published_from = Date()
 
@@ -30,15 +30,15 @@ def test_conflicting_doc_types_cause_exception():
     i = Index('i', doc_type='t')
 
     with raises(exceptions.IllegalOperation):
-        i.doc_type(Post)
+        i.document(Post)
 
 def test_multiple_doc_types_will_combine_mappings():
-    class User(DocType):
+    class User(Document):
         username = Text()
 
     i = Index('i')
-    i.doc_type(Post)
-    i.doc_type(User)
+    i.document(Post)
+    i.document(User)
     assert {
         'mappings': {
             'doc': {
@@ -101,9 +101,8 @@ def test_settings_are_saved():
 
 def test_registered_doc_type_included_in_to_dict():
     i = Index('i', using='alias')
-    i.doc_type(Post)
+    i.document(Post)
 
-    assert Post._doc_type.index == 'i'
     assert {
         'mappings': {
             'doc': {
@@ -117,7 +116,7 @@ def test_registered_doc_type_included_in_to_dict():
 
 def test_registered_doc_type_included_in_search():
     i = Index('i', using='alias')
-    i.doc_type(Post)
+    i.document(Post)
 
     s = i.search()
 

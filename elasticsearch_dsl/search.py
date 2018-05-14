@@ -209,7 +209,7 @@ class Request(object):
     def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or
-        multiple. Values can be strings or subclasses of ``DocType``.
+        multiple. Values can be strings or subclasses of ``Document``.
 
         You can also pass in any keyword arguments, mapping a doc_type to a
         callback that should be used instead of the Hit class.
