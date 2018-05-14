@@ -74,12 +74,6 @@ class DocumentOptions(object):
             if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
                 self.mapping.update(b._doc_type.mapping, update_only=True)
 
-        # custom method to determine if a hit belongs to this DocType
-        self._matches = getattr(meta, 'matches', None)
-
-    def resolve_field(self, field_path):
-        return self.mapping.resolve_field(field_path)
-
     @property
     def name(self):
         return self.mapping.properties.name

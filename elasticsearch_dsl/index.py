@@ -34,6 +34,12 @@ class Index(object):
         self._analysis = {}
         self._mapping = Mapping(doc_type)
 
+    def resolve_field(self, field_path):
+        return self._mapping.resolve_field(field_path)
+
+    def load_mappings(self, using=None):
+        self._mapping.update_from_es(self._name, using=using or self._using)
+
     def clone(self, name, doc_type=None, using=None):
         """
         Create a copy of the instance with another name or connection alias.
@@ -75,17 +81,6 @@ class Index(object):
                 'trying to assign %s.' % (self._mapping.doc_type, mapping.doc_type))
         self._mapping.update(mapping)
 
-    def _add_document(self, document):
-        name = document._doc_type.name
-        if name != self._mapping.doc_type:
-            raise IllegalOperation(
-                'Index object cannot have multiple types, %s already set, '
-                'trying to assign %s.' % (self._mapping.doc_type, name))
-        self._doc_types.append(document)
-        # TODO: do this at save time to allow Document to be modified after
-        # creation?
-        self._mapping.update(document._doc_type.mapping)
-
     def document(self, document):
         """
         Associate a :class:`~elasticsearch_dsl.Document` subclass with an index.
@@ -107,7 +102,16 @@ class Index(object):
             # properly deserialized Post instances
             s = i.search()
         """
-        self._add_document(document)
+        name = document._doc_type.name
+        if name != self._mapping.doc_type:
+            raise IllegalOperation(
+                'Index object cannot have multiple types, %s already set, '
+                'trying to assign %s.' % (self._mapping.doc_type, name))
+        self._doc_types.append(document)
+        # TODO: do this at save time to allow Document to be modified after
+        # creation?
+        self._mapping.update(document._doc_type.mapping)
+
         if document._index is DEFAULT_INDEX:
             document._index = self
         return document

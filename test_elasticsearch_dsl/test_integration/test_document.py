@@ -307,11 +307,11 @@ def test_refresh_mapping(data_client):
 
     Commit._index.load_mappings()
 
-    assert 'stats' in Commit._doc_type.mapping
-    assert 'committer' in Commit._doc_type.mapping
-    assert 'description' in Commit._doc_type.mapping
-    assert 'committed_date' in Commit._doc_type.mapping
-    assert isinstance(Commit._doc_type.mapping['committed_date'], Date)
+    assert 'stats' in Commit._index._mapping
+    assert 'committer' in Commit._index._mapping
+    assert 'description' in Commit._index._mapping
+    assert 'committed_date' in Commit._index._mapping
+    assert isinstance(Commit._index._mapping['committed_date'], Date)
 
 def test_highlight_in_meta(data_client):
     commit = Commit.search().query('match', description='inverting').highlight('description').execute()[0]

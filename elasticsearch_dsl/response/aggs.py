@@ -3,7 +3,7 @@ from . import Response, AggResponse
 
 def _resolve_field(search, field):
     for dt in search._doc_type_map.values():
-        f = dt._doc_type.resolve_field(field)
+        f = dt._index.resolve_field(field)
         if f:
             return f
 
