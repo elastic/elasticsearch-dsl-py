@@ -11,7 +11,7 @@ from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
-from .index import Index
+from .index import Index, DEFAULT_INDEX
 
 
 class MetaField(object):
@@ -45,7 +45,7 @@ class IndexMeta(DocumentMeta):
             for b in bases:
                 if getattr(b, '_index', None) is not None:
                     return b._index
-            return None
+            return DEFAULT_INDEX
 
         i = Index(getattr(opts, 'name', '*'))
         return i
@@ -115,6 +115,7 @@ class DocTypeOptions(DocumentOptions):
         self.mapping.save(index or self.index, using=using or self.using)
 
     def refresh(self, index=None, using=None):
+        # TODO - move/copy to Index.load()
         self.mapping.update_from_es(index or self.index, using=using or self.using)
 
 @add_metaclass(DocumentMeta)
@@ -185,8 +186,8 @@ class DocBase(ObjectBase):
         over this ``DocType``.
         """
         return Search(
-            using=using or cls._doc_type.using,
-            index=index or cls._doc_type.index,
+            using=cls._get_connection(using),
+            index=cls._default_index(index),
             doc_type=[cls]
         )
 
@@ -205,7 +206,7 @@ class DocBase(ObjectBase):
         """
         es = cls._get_connection(using)
         doc = es.get(
-            index=index or cls._doc_type.index,
+            index=cls._default_index(index),
             doc_type=cls._doc_type.name,
             id=id,
             **kwargs
@@ -245,7 +246,7 @@ class DocBase(ObjectBase):
         }
         results = es.mget(
             body,
-            index=index or cls._doc_type.index,
+            index=cls._default_index(index),
             doc_type=cls._doc_type.name,
             **kwargs
         )
@@ -451,6 +452,10 @@ class DocType(DocBase):
         return connections.get_connection(using or cls._doc_type.using)
     connection = property(_get_connection)
 
+    @classmethod
+    def _default_index(cls, index=None):
+        return index or cls._doc_type.index
+
     def _get_index(self, index=None, required=True):
         if index is None:
             index = getattr(self.meta, 'index', self._doc_type.index)
@@ -471,6 +476,20 @@ class Document(DocBase):
     def _get_connection(cls, using=None):
         return connections.get_connection(using or cls._index._using)
     connection = property(_get_connection)
+
+    @classmethod
+    def _default_index(cls, index=None):
+        return index or cls._index._name
+
+    @classmethod
+    def init(cls, index=None, using=None):
+        """
+        Create the index and populate the mappings in elasticsearch.
+        """
+        i = cls._index
+        if index:
+            i = i.clone(name=index)
+        i.save(using=using)
 
     def _get_index(self, index=None, required=True):
         if index is None:

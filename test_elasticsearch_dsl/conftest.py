@@ -11,7 +11,7 @@ from pytest import fixture, skip
 from elasticsearch_dsl.connections import connections
 from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
     create_flat_git_index
-from .test_integration.test_document import PullRequest, Comment, User
+from .test_integration.test_doc_type import PullRequest, Comment, User
 
 
 @fixture(scope='session')

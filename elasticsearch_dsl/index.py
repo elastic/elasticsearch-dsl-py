@@ -3,7 +3,6 @@ from .search import Search
 from .exceptions import IllegalOperation
 from .mapping import Mapping
 
-
 class IndexTemplate(object):
     def __init__(self, name, template, **kwargs):
         self._index = Index(template, **kwargs)
@@ -109,7 +108,7 @@ class Index(object):
             s = i.search()
         """
         self._add_document(document)
-        if document._index is None:
+        if document._index is DEFAULT_INDEX:
             document._index = self
         return document
 
@@ -556,3 +555,5 @@ class Index(object):
         ``Elasticsearch.indices.shrink`` unchanged.
         """
         return self._get_connection(using).indices.shrink(index=self._name, **kwargs)
+
+DEFAULT_INDEX = Index('*')
