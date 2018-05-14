@@ -42,8 +42,14 @@ class IndexMeta(DocumentMeta):
                     return b._index
             return DEFAULT_INDEX
 
-        i = Index(getattr(opts, 'name', '*'))
-        # TODO settings etc
+        i = Index(
+            getattr(opts, 'name', '*'),
+            using=getattr(opts, 'using', 'default')
+        )
+        i.settings(**getattr(opts, 'settings', {}))
+        i.aliases(**getattr(opts, 'aliases', {}))
+        for a in getattr(opts, 'analyzers', ()):
+            i.analyzer(a)
         return i
 
 

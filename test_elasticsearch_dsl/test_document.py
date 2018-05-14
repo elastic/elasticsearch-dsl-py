@@ -4,7 +4,7 @@ from hashlib import md5
 from datetime import datetime
 import ipaddress
 
-from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc
+from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc, analyzer
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
@@ -167,9 +167,42 @@ def test_inherited_doc_types_can_override_index():
     class MyDocDifferentIndex(MySubDoc):
         class Index:
             name = 'not-default-index'
+            settings = {
+                'number_of_replicas': 0
+            }
+            aliases = {'a': {}}
+            analyzers = [analyzer('my_analizer', tokenizer='keyword')]
 
     assert MyDocDifferentIndex._index._name == 'not-default-index'
     assert MyDocDifferentIndex()._get_index() == 'not-default-index'
+    assert MyDocDifferentIndex._index.to_dict() == {
+        'aliases': {'a': {}},
+        'mappings': {
+            'doc': {
+                'properties': {
+                    'created_at': {'type': 'date'},
+                    'inner': {
+                        'type': 'object',
+                        'properties': {
+                            'old_field': {'type': 'text'}
+                        },
+                    },
+                    'name': {'type': 'keyword'},
+                    'title': {'type': 'keyword'}
+                }
+            }
+        },
+        'settings': {
+            'analysis': {
+                'analyzer': {
+                    'my_analizer': {'tokenizer': 'keyword', 'type': 'custom'}
+                }
+            },
+            'number_of_replicas': 0
+        }
+    }
+
+
 
 def test_to_dict_with_meta():
     d = MySubDoc(title='hello')
