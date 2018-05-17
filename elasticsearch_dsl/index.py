@@ -5,7 +5,10 @@ from .mapping import Mapping
 
 class IndexTemplate(object):
     def __init__(self, name, template, **kwargs):
-        self._index = Index(template, **kwargs)
+        if not isinstance(template, Index):
+            self._index = Index(template, **kwargs)
+        else:
+            self._index = template
         self._template_name = name
 
     def __getattr__(self, attr_name):
@@ -13,7 +16,7 @@ class IndexTemplate(object):
 
     def to_dict(self):
         d = self._index.to_dict()
-        d['template'] = self._name
+        d['index_patterns'] = [self._index._name]
         return d
 
     def save(self, using=None):
@@ -33,6 +36,9 @@ class Index(object):
         self._aliases = {}
         self._analysis = {}
         self._mapping = Mapping(doc_type)
+
+    def as_template(self, template_name):
+        return IndexTemplate(template_name, self)
 
     def resolve_field(self, field_path):
         return self._mapping.resolve_field(field_path)
