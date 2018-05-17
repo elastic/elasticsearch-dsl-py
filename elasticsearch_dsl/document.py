@@ -184,7 +184,7 @@ class Document(ObjectBase):
     def search(cls, using=None, index=None):
         """
         Create an :class:`~elasticsearch_dsl.Search` instance that will search
-        over this ``DocType``.
+        over this ``Document``.
         """
         return Search(
             using=cls._get_using(using),
@@ -198,7 +198,7 @@ class Document(ObjectBase):
         Retrieve a single document from elasticsearch using it's ``id``.
 
         :arg id: ``id`` of the document to be retireved
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
 
@@ -226,7 +226,7 @@ class Document(ObjectBase):
         :arg docs: list of ``id``\s of the documents to be retireved or a list
             of document specifications as per
             https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
         :arg missing: what to do when one of the documents requested is not
@@ -289,7 +289,7 @@ class Document(ObjectBase):
         """
         Delete the instance in elasticsearch.
 
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
 
@@ -351,7 +351,7 @@ class Document(ObjectBase):
             doc.save()
             doc.update(title='New Document Title!')
 
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
 
@@ -406,7 +406,7 @@ class Document(ObjectBase):
         is created, it is overwritten otherwise. Returns ``True`` if this
         operations resulted in new document being created.
 
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
         :arg validate: set to ``False`` to skip validating the document

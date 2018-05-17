@@ -141,21 +141,24 @@ Let's have a simple Python class representing an article in a blogging system:
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch_dsl import DocType, Date, Integer, Keyword, Text
+    from elasticsearch_dsl import Document, Date, Integer, Keyword, Text
     from elasticsearch_dsl.connections import connections
 
     # Define a default Elasticsearch client
     connections.create_connection(hosts=['localhost'])
 
-    class Article(DocType):
+    class Article(Document):
         title = Text(analyzer='snowball', fields={'raw': Keyword()})
         body = Text(analyzer='snowball')
         tags = Keyword()
         published_from = Date()
         lines = Integer()
 
-        class Meta:
-            index = 'blog'
+        class Index:
+            name = 'blog'
+            settings = {
+              "number_of_shards": 2,
+            }
 
         def save(self, ** kwargs):
             self.lines = len(self.body.split())
@@ -203,7 +206,7 @@ You can see more in the :ref:`persistence` chapter.
 Pre-built Faceted Search
 ------------------------
 
-If you have your ``DocType``\ s defined you can very easily create a faceted
+If you have your ``Doccument``\ s defined you can very easily create a faceted
 search class to simplify searching and filtering.
 
 .. note::
@@ -212,8 +215,7 @@ search class to simplify searching and filtering.
 
 .. code:: python
 
-    from elasticsearch_dsl import FacetedSearch
-    from elasticsearch_dsl.aggs import Terms, DateHistogram
+    from elasticsearch_dsl import FacetedSearch, TermsFacet, DateHistogramFacet
 
     class BlogSearch(FacetedSearch):
         doc_types = [Article, ]
@@ -222,8 +224,8 @@ search class to simplify searching and filtering.
 
         facets = {
             # use bucket aggregations to define facets
-            'tags': Terms(field='tags'),
-            'publishing_frequency': DateHistogram(field='published_from', interval='month')
+            'tags': TermsFacet(field='tags'),
+            'publishing_frequency': DateHistogramFacet(field='published_from', interval='month')
         }
 
     # empty search

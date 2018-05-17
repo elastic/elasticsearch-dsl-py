@@ -193,7 +193,7 @@ class Index(object):
         """
         Return a :class:`~elasticsearch_dsl.Search` object searching over the
         index (or all the indices belonging to this template) and its
-        ``DocType``\\s.
+        ``Document``\\s.
         """
         return Search(
             using=using or self._using,
