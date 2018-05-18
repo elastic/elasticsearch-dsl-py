@@ -19,7 +19,7 @@ class BlogPost(Document):
     content = Text()
 
     def is_published(self):
-        return datetime.now() > self.published
+        return self.published and datetime.now() > self.published
 
     @classmethod
     def _matches(cls, hit):

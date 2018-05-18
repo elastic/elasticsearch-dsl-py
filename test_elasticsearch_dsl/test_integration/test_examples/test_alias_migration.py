@@ -28,6 +28,7 @@ def test_alias_migration(write_client):
     # _matches work which means we get BlogPost instance
     bp = BlogPost.search().execute()[0]
     assert isinstance(bp, BlogPost)
+    assert not bp.is_published()
     assert '0' == bp.meta.id
 
     # create new index
