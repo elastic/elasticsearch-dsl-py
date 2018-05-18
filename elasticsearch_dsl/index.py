@@ -4,11 +4,15 @@ from .exceptions import IllegalOperation
 from .mapping import Mapping
 
 class IndexTemplate(object):
-    def __init__(self, name, template, **kwargs):
-        if not isinstance(template, Index):
+    def __init__(self, name, template, index=None, **kwargs):
+        if index is None:
             self._index = Index(template, **kwargs)
         else:
-            self._index = template
+            if kwargs:
+                raise ValueError("You cannot specify options for Index when"
+                                 " passing an Index instance.")
+            self._index = index.clone()
+            self._index._name = template
         self._template_name = name
 
     def __getattr__(self, attr_name):
@@ -37,8 +41,11 @@ class Index(object):
         self._analysis = {}
         self._mapping = Mapping(doc_type)
 
-    def as_template(self, template_name):
-        return IndexTemplate(template_name, self)
+    def as_template(self, template_name, pattern=None):
+        # TODO: should we allow pattern to be a top-level arg?
+        # or maybe have an IndexPattern that allows for it and have
+        # Document._index be that?
+        return IndexTemplate(template_name, pattern or self._name, index=self)
 
     def resolve_field(self, field_path):
         return self._mapping.resolve_field(field_path)
@@ -46,7 +53,7 @@ class Index(object):
     def load_mappings(self, using=None):
         self._mapping.update_from_es(self._name, using=using or self._using)
 
-    def clone(self, name, doc_type=None, using=None):
+    def clone(self, name=None, doc_type=None, using=None):
         """
         Create a copy of the instance with another name or connection alias.
         Useful for creating multiple indices with shared configuration::
@@ -61,7 +68,8 @@ class Index(object):
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
-        i = Index(name, doc_type=doc_type or self._mapping.doc_type,
+        i = Index(name or self._name,
+                  doc_type=doc_type or self._mapping.doc_type,
                   using=using or self._using)
         i._settings = self._settings.copy()
         i._aliases = self._aliases.copy()
