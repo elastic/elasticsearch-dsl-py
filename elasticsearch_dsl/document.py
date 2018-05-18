@@ -117,10 +117,8 @@ class Document(ObjectBase):
 
     @classmethod
     def _matches(cls, hit):
-        return (
-            cls._index is None
-            or fnmatch(hit.get('_index', ''), cls._index._name)
-        ) and cls._doc_type.name == hit.get('_type')
+        return fnmatch(hit.get('_index', ''), cls._index._name) \
+            and cls._doc_type.name == hit.get('_type')
 
     @classmethod
     def _get_using(cls, using=None):
