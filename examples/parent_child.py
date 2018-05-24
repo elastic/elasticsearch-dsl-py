@@ -69,15 +69,15 @@ class Post(Document):
         }
 
     def add_comment(self, user, content, created=None, commit=True):
-        self.comments.append(
-            Comment(
-                author=user,
-                content=content,
-                created=created or datetime.now()
-            )
+        c = Comment(
+            author=user,
+            content=content,
+            created=created or datetime.now()
         )
+        self.comments.append(c)
         if commit:
             self.save()
+        return c
 
     def save(self, **kwargs):
         # if there is no date, use now
@@ -97,7 +97,7 @@ class Question(Post):
 
     @classmethod
     def search(cls, **kwargs):
-        return cls._index.search().filter('term', question_answer='question')
+        return cls._index.search(**kwargs).filter('term', question_answer='question')
 
     def add_answer(self, user, body, created=None, accepted=False, commit=True):
         answer = Answer(
@@ -120,7 +120,7 @@ class Question(Post):
 
     def search_answers(self):
         # search only our index
-        s = Answer.search(index=self.meta.index)
+        s = Answer.search()
         # filter for answers belonging to us
         s = s.filter('parent_id', type="answer", id=self.meta.id)
         # add routing to only go to specific shard
@@ -152,7 +152,7 @@ class Answer(Post):
 
     @classmethod
     def search(cls, **kwargs):
-        return super(Answer, cls).search(**kwargs).exclude('term', question_answer='question')
+        return cls._index.search(**kwargs).exclude('term', question_answer='question')
 
     @property
     def question(self):

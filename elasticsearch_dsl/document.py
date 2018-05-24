@@ -21,13 +21,12 @@ class MetaField(object):
 
 class DocumentMeta(type):
     def __new__(cls, name, bases, attrs):
-        # DoccumentMeta filters attrs in place
+        # DocumentMeta filters attrs in place
         attrs['_doc_type'] = DocumentOptions(name, bases, attrs)
         return super(DocumentMeta, cls).__new__(cls, name, bases, attrs)
 
 class IndexMeta(DocumentMeta):
     def __new__(cls, name, bases, attrs):
-        # DoccumentMeta filters attrs in place
         index_opts = attrs.pop('Index', None)
         new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
         new_cls._index = cls.construct_index(index_opts, bases)

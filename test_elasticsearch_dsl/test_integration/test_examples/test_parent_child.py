@@ -48,7 +48,7 @@ def test_question_answer(write_client, question):
 
     assert isinstance(a, Answer)
 
-    # refresj the index so we can search right away
+    # refresh the index so we can search right away
     Question._index.refresh()
 
     # we can now fetch answers from elasticsearch
