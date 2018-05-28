@@ -52,7 +52,6 @@ def test_query_clone():
 
     assert bool == bool_clone
     assert bool is not bool_clone
-    assert bool.must[0] is not bool_clone.must[0]
 
 def test_bool_converts_its_init_args_to_queries():
     q = query.Bool(must=[{"match": {"f": "value"}}])
