@@ -12,7 +12,7 @@ SKIP_VALUES = ('', None)
 EXPAND__TO_DOT=True
 
 DOC_META_FIELDS = frozenset((
-    'id', 'routing', 'version', 'version_type'
+    'id', 'routing', 'version', 'version_type', 'parent'
 ))
 
 META_FIELDS = frozenset((
