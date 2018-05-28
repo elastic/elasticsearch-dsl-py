@@ -142,6 +142,13 @@ def test_object_dynamic_values():
         f = field.Object(dynamic=dynamic)
         assert f.to_dict()['dynamic'] == dynamic
 
+def test_object_disabled():
+    f = field.Object(enabled=False)
+    assert f.to_dict() == {
+        "type": "object",
+        "enabled": False
+    }
+
 
 def test_object_constructor():
     expected = {'type': 'object', 'properties': {'inner_int': {'type': 'integer'}}}

@@ -169,7 +169,7 @@ class Object(Field):
     def to_dict(self):
         d = self._mapping.to_dict()
         _, d = d.popitem()
-        d["type"] = self.name
+        d.update(super(Object, self).to_dict())
         return d
 
     def _collect_fields(self):
