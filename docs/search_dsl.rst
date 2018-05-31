@@ -132,6 +132,8 @@ parameters or the raw ``dict``:
 
 .. code:: python
 
+    from elasticsearch_dsl import Q
+
     Q("multi_match", query='python django', fields=['title', 'body'])
     Q({"multi_match": {"query": "python django", "fields": ["title", "body"]}})
 
@@ -234,6 +236,8 @@ Aggregations
 To define an aggregation, you can use the ``A`` shortcut:
 
 .. code:: python
+
+    from elasticsearch_dsl import A
 
     A('terms', field='tags')
     # {"terms": {"field": "tags"}}
