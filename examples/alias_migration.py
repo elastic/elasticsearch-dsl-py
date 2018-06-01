@@ -24,12 +24,14 @@ class BlogPost(Document):
     @classmethod
     def _matches(cls, hit):
         # override _matches to match indices in a pattern instead of just ALIAS
+        # hit is the raw dict as returned by elasticsearch
         return fnmatch(hit['_index'], PATTERN)
 
     class Index:
         # we will use an alias instead of the index
         name = ALIAS
-        # set settings and possibly other attributes
+        # set settings and possibly other attributes of the index like
+        # analyzers
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0
