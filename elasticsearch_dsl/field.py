@@ -348,7 +348,7 @@ class Binary(Field):
     def _serialize(self, data):
         if data is None:
             return None
-        return base64.b64encode(data)
+        return base64.b64encode(data).decode()
 
 class GeoPoint(Field):
     name = 'geo_point'
