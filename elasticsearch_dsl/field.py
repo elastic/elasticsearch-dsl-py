@@ -342,6 +342,11 @@ class Binary(Field):
     name = 'binary'
     _coerce = True
 
+    def clean(self, data):
+        # Binary fields are opaque, so there's not much cleaning
+        # that can be done.
+        return data
+
     def _deserialize(self, data):
         return base64.b64decode(data)
 
