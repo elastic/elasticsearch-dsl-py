@@ -95,7 +95,7 @@ def test_serialization(write_client):
 
     assert sd.to_dict() == {
         'b': [True, False, True, False, None],
-        'bin': [b'SGVsbG8gV29ybGQ=', None],
+        'bin': ['SGVsbG8gV29ybGQ=', None],
         'd': [0.1, -0.1, None],
         'i': [1, 2, 3, None],
         'ip': ['::1', '127.0.0.1', None]
