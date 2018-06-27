@@ -206,7 +206,7 @@ You can see more in the :ref:`persistence` chapter.
 Pre-built Faceted Search
 ------------------------
 
-If you have your ``Doccument``\ s defined you can very easily create a faceted
+If you have your ``Document``\ s defined you can very easily create a faceted
 search class to simplify searching and filtering.
 
 .. note::
