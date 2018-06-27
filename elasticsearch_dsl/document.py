@@ -11,6 +11,7 @@ from .response import HitMeta
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
+from .index import Index, DEFAULT_INDEX
 
 
 class MetaField(object):
@@ -18,22 +19,42 @@ class MetaField(object):
         self.args, self.kwargs = args, kwargs
 
 
-class DocTypeMeta(type):
+class DocumentMeta(type):
     def __new__(cls, name, bases, attrs):
-        # DocTypeMeta filters attrs in place
-        attrs['_doc_type'] = DocTypeOptions(name, bases, attrs)
-        return super(DocTypeMeta, cls).__new__(cls, name, bases, attrs)
+        # DocumentMeta filters attrs in place
+        attrs['_doc_type'] = DocumentOptions(name, bases, attrs)
+        return super(DocumentMeta, cls).__new__(cls, name, bases, attrs)
+
+class IndexMeta(DocumentMeta):
+    def __new__(cls, name, bases, attrs):
+        index_opts = attrs.pop('Index', None)
+        new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
+        new_cls._index = cls.construct_index(index_opts, bases)
+        new_cls._index.document(new_cls)
+        return new_cls
+
+    @classmethod
+    def construct_index(cls, opts, bases):
+        if opts is None:
+            for b in bases:
+                if getattr(b, '_index', DEFAULT_INDEX) is not DEFAULT_INDEX:
+                    return b._index
+            return DEFAULT_INDEX
+
+        i = Index(
+            getattr(opts, 'name', '*'),
+            using=getattr(opts, 'using', 'default')
+        )
+        i.settings(**getattr(opts, 'settings', {}))
+        i.aliases(**getattr(opts, 'aliases', {}))
+        for a in getattr(opts, 'analyzers', ()):
+            i.analyzer(a)
+        return i
 
 
-class DocTypeOptions(object):
+class DocumentOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
-
-        # default index, if not overriden by doc.meta
-        self.index = getattr(meta, 'index', None)
-
-        # default cluster alias, can be overriden in doc.meta
-        self._using = getattr(meta, 'using', None)
 
         # get doc_type name, if not defined use 'doc'
         doc_type = getattr(meta, 'doc_type', 'doc')
@@ -53,43 +74,17 @@ class DocTypeOptions(object):
                 params = getattr(meta, name)
                 self.mapping.meta(name, *params.args, **params.kwargs)
 
-        # document inheritance - include the fields from parents' mappings and
-        # index/using values
+        # document inheritance - include the fields from parents' mappings
         for b in bases:
             if hasattr(b, '_doc_type') and hasattr(b._doc_type, 'mapping'):
                 self.mapping.update(b._doc_type.mapping, update_only=True)
-                self._using = self._using or b._doc_type._using
-                self.index = self.index or b._doc_type.index
-
-        # custom method to determine if a hit belongs to this DocType
-        self._matches = getattr(meta, 'matches', None)
-
-    @property
-    def using(self):
-        return self._using or 'default'
 
     @property
     def name(self):
         return self.mapping.properties.name
 
-    def resolve_field(self, field_path):
-        return self.mapping.resolve_field(field_path)
 
-    def init(self, index=None, using=None):
-        self.mapping.save(index or self.index, using=using or self.using)
-
-    def refresh(self, index=None, using=None):
-        self.mapping.update_from_es(index or self.index, using=using or self.using)
-
-    def matches(self, hit):
-        if self._matches is not None:
-            return self._matches(hit)
-
-        return (
-                self.index is None or fnmatch(hit.get('_index', ''), self.index)
-            ) and self.name == hit.get('_type')
-
-@add_metaclass(DocTypeMeta)
+@add_metaclass(DocumentMeta)
 class InnerDoc(ObjectBase):
     """
     Common class for inner documents like Object or Nested
@@ -104,9 +99,8 @@ class InnerDoc(ObjectBase):
             setattr(doc, k, v)
         return doc
 
-
-@add_metaclass(DocTypeMeta)
-class DocType(ObjectBase):
+@add_metaclass(IndexMeta)
+class Document(ObjectBase):
     """
     Model-like class for persisting documents in elasticsearch.
     """
@@ -116,11 +110,47 @@ class DocType(ObjectBase):
             if k.startswith('_') and k[1:] in META_FIELDS:
                 meta[k] = kwargs.pop(k)
 
-        if self._doc_type.index:
-            meta.setdefault('_index', self._doc_type.index)
         super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
-        super(DocType, self).__init__(**kwargs)
+        super(Document, self).__init__(**kwargs)
+
+    @classmethod
+    def _matches(cls, hit):
+        return fnmatch(hit.get('_index', ''), cls._index._name) \
+            and cls._doc_type.name == hit.get('_type')
+
+    @classmethod
+    def _get_using(cls, using=None):
+        return using or cls._index._using
+
+    @classmethod
+    def _get_connection(cls, using=None):
+        return connections.get_connection(cls._get_using(using))
+
+    @classmethod
+    def _default_index(cls, index=None):
+        return index or cls._index._name
+
+    @classmethod
+    def init(cls, index=None, using=None):
+        """
+        Create the index and populate the mappings in elasticsearch.
+        """
+        i = cls._index
+        if index:
+            i = i.clone(name=index)
+        i.save(using=using)
+
+    def _get_index(self, index=None, required=True):
+        if index is None:
+            index = getattr(self.meta, 'index', None)
+        if index is None:
+            index = getattr(self._index, '_name', None)
+        if index is None and required:
+            raise ValidationException('No index')
+        if index and '*' in index:
+            raise ValidationException('You cannot write to a wildcard index.')
+        return index
 
     def __getstate__(self):
         return (self.to_dict(), self.meta._d_)
@@ -133,7 +163,7 @@ class DocType(ObjectBase):
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return getattr(self.meta, name[1:])
-        return super(DocType, self).__getattr__(name)
+        return super(Document, self).__getattr__(name)
 
     def __repr__(self):
         return '%s(%s)' % (
@@ -145,24 +175,17 @@ class DocType(ObjectBase):
     def __setattr__(self, name, value):
         if name.startswith('_') and name[1:] in META_FIELDS:
             return setattr(self.meta, name[1:], value)
-        return super(DocType, self).__setattr__(name, value)
-
-    @classmethod
-    def init(cls, index=None, using=None):
-        """
-        Create the index and populate the mappings in elasticsearch.
-        """
-        cls._doc_type.init(index, using)
+        return super(Document, self).__setattr__(name, value)
 
     @classmethod
     def search(cls, using=None, index=None):
         """
         Create an :class:`~elasticsearch_dsl.Search` instance that will search
-        over this ``DocType``.
+        over this ``Document``.
         """
         return Search(
-            using=using or cls._doc_type.using,
-            index=index or cls._doc_type.index,
+            using=cls._get_using(using),
+            index=cls._default_index(index),
             doc_type=[cls]
         )
 
@@ -172,16 +195,16 @@ class DocType(ObjectBase):
         Retrieve a single document from elasticsearch using it's ``id``.
 
         :arg id: ``id`` of the document to be retireved
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.get`` unchanged.
         """
-        es = connections.get_connection(using or cls._doc_type.using)
+        es = cls._get_connection(using)
         doc = es.get(
-            index=index or cls._doc_type.index,
+            index=cls._default_index(index),
             doc_type=cls._doc_type.name,
             id=id,
             **kwargs
@@ -200,7 +223,7 @@ class DocType(ObjectBase):
         :arg docs: list of ``id``\s of the documents to be retireved or a list
             of document specifications as per
             https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
         :arg missing: what to do when one of the documents requested is not
@@ -212,7 +235,7 @@ class DocType(ObjectBase):
         """
         if missing not in ('raise', 'skip', 'none'):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
-        es = connections.get_connection(using or cls._doc_type.using)
+        es = cls._get_connection(using)
         body = {
             'docs': [
                 doc if isinstance(doc, collections.Mapping) else {'_id': doc}
@@ -221,7 +244,7 @@ class DocType(ObjectBase):
         }
         results = es.mget(
             body,
-            index=index or cls._doc_type.index,
+            index=cls._default_index(index),
             doc_type=cls._doc_type.name,
             **kwargs
         )
@@ -259,22 +282,11 @@ class DocType(ObjectBase):
             raise NotFoundError(404, message, {'docs': missing_docs})
         return objs
 
-    def _get_connection(self, using=None):
-        return connections.get_connection(using or self._doc_type.using)
-    connection = property(_get_connection)
-
-    def _get_index(self, index=None):
-        if index is None:
-            index = getattr(self.meta, 'index', self._doc_type.index)
-        if index is None:
-            raise ValidationException('No index')
-        return index
-
     def delete(self, using=None, index=None, **kwargs):
         """
         Delete the instance in elasticsearch.
 
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
 
@@ -307,7 +319,7 @@ class DocType(ObjectBase):
             ``[]``, ``{}``) to be left on the document. Those values will be
             stripped out otherwise as they make no difference in elasticsearch.
         """
-        d = super(DocType, self).to_dict(skip_empty=skip_empty)
+        d = super(Document, self).to_dict(skip_empty=skip_empty)
         if not include_meta:
             return d
 
@@ -318,10 +330,9 @@ class DocType(ObjectBase):
         )
 
         # in case of to_dict include the index unlike save/update/delete
-        if 'index' in self.meta:
-            meta['_index'] = self.meta.index
-        elif self._doc_type.index:
-            meta['_index'] = self._doc_type.index
+        index = self._get_index(required=False)
+        if index is not None:
+            meta['_index'] = index
 
         meta['_type'] = self._doc_type.name
         meta['_source'] = d
@@ -337,7 +348,7 @@ class DocType(ObjectBase):
             doc.save()
             doc.update(title='New Document Title!')
 
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
 
@@ -392,7 +403,7 @@ class DocType(ObjectBase):
         is created, it is overwritten otherwise. Returns ``True`` if this
         operations resulted in new document being created.
 
-        :arg index: elasticsearch index to use, if the ``DocType`` is
+        :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
         :arg validate: set to ``False`` to skip validating the document
@@ -424,3 +435,4 @@ class DocType(ObjectBase):
 
         # return True/False if the document has been created/updated
         return meta['result'] == 'created'
+

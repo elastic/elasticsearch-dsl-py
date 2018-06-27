@@ -4,7 +4,7 @@ from ipaddress import ip_address
 
 from elasticsearch import ConflictError, NotFoundError
 
-from elasticsearch_dsl import DocType, Date, Text, Keyword, Mapping, InnerDoc, \
+from elasticsearch_dsl import Document, Date, Text, Keyword, Mapping, InnerDoc, \
     Object, Nested, MetaField, Q, Long, Boolean, Double, Binary, Ip
 from elasticsearch_dsl.utils import AttrList
 
@@ -13,13 +13,13 @@ from pytest import raises, fixture
 class User(InnerDoc):
     name = Text(fields={'raw': Keyword()})
 
-class Wiki(DocType):
+class Wiki(Document):
     owner = Object(User)
 
-    class Meta:
-        index = 'test-wiki'
+    class Index:
+        name = 'test-wiki'
 
-class Repository(DocType):
+class Repository(Document):
     owner = Object(User)
     created_at = Date()
     description = Text(analyzer='snowball')
@@ -29,18 +29,18 @@ class Repository(DocType):
     def search(cls):
         return super(Repository, cls).search().filter('term', commit_repo='repo')
 
-    class Meta:
-        index = 'git'
-        doc_type = 'doc'
+    class Index:
+        name = 'git'
 
-class Commit(DocType):
+class Commit(Document):
     committed_date = Date()
     authored_date = Date()
     description = Text(analyzer='snowball')
 
+    class Index:
+        name = 'flat-git'
+
     class Meta:
-        index = 'flat-git'
-        doc_type = 'doc'
         mapping = Mapping('doc')
 
 class Comment(InnerDoc):
@@ -50,21 +50,21 @@ class Comment(InnerDoc):
     class Meta:
         dynamic = MetaField(False)
 
-class PullRequest(DocType):
+class PullRequest(Document):
     comments = Nested(Comment)
     created_at = Date()
-    class Meta:
-        index = 'test-prs'
+    class Index:
+        name = 'test-prs'
 
-class SerializationDoc(DocType):
+class SerializationDoc(Document):
     i = Long()
     b = Boolean()
     d = Double()
     bin = Binary()
     ip = Ip()
 
-    class Meta:
-        index = 'test-serialization'
+    class Index:
+        name = 'test-serialization'
 
 def test_serialization(write_client):
     SerializationDoc.init()
@@ -301,18 +301,17 @@ def test_search_returns_proper_doc_classes(data_client):
     assert elasticsearch_repo.owner.name == 'elasticsearch'
 
 def test_refresh_mapping(data_client):
-    class Commit(DocType):
-        class Meta:
-            doc_type = 'doc'
-            index = 'git'
+    class Commit(Document):
+        class Index:
+            name = 'git'
 
-    Commit._doc_type.refresh()
+    Commit._index.load_mappings()
 
-    assert 'stats' in Commit._doc_type.mapping
-    assert 'committer' in Commit._doc_type.mapping
-    assert 'description' in Commit._doc_type.mapping
-    assert 'committed_date' in Commit._doc_type.mapping
-    assert isinstance(Commit._doc_type.mapping['committed_date'], Date)
+    assert 'stats' in Commit._index._mapping
+    assert 'committer' in Commit._index._mapping
+    assert 'description' in Commit._index._mapping
+    assert 'committed_date' in Commit._index._mapping
+    assert isinstance(Commit._index._mapping['committed_date'], Date)
 
 def test_highlight_in_meta(data_client):
     commit = Commit.search().query('match', description='inverting').highlight('description').execute()[0]

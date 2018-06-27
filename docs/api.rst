@@ -19,7 +19,7 @@ Search
 Document
 --------
 
-.. autoclass:: DocType
+.. autoclass:: Document
    :members:
 
 Index

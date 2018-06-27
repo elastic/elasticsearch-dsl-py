@@ -167,14 +167,14 @@ class Request(object):
     def _resolve_nested(self, field, parent_class=None):
         doc_class = Hit
         nested_field = None
-        if hasattr(parent_class, '_doc_type'):
-            nested_field = parent_class._doc_type.resolve_field(field)
+        if hasattr(parent_class, '_index'):
+            nested_field = parent_class._index.resolve_field(field)
 
         else:
             for dt in self._doc_type:
-                if not hasattr(dt, '_doc_type'):
+                if not hasattr(dt, '_index'):
                     continue
-                nested_field = dt._doc_type.resolve_field(field)
+                nested_field = dt._index.resolve_field(field)
                 if nested_field is not None:
                     break
 
@@ -195,7 +195,7 @@ class Request(object):
 
         else:
             for doc_type in self._doc_type:
-                if hasattr(doc_type, '_doc_type') and doc_type._doc_type.matches(hit):
+                if hasattr(doc_type, '_matches') and doc_type._matches(hit):
                     doc_class = doc_type
                     break
 
@@ -209,7 +209,7 @@ class Request(object):
     def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or
-        multiple. Values can be strings or subclasses of ``DocType``.
+        multiple. Values can be strings or subclasses of ``Document``.
 
         You can also pass in any keyword arguments, mapping a doc_type to a
         callback that should be used instead of the Hit class.
