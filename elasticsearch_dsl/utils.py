@@ -9,7 +9,7 @@ from six.moves import map
 from .exceptions import UnknownDslObject, ValidationException
 
 SKIP_VALUES = ('', None)
-EXPAND__TO_DOT=True
+EXPAND__TO_DOT = True
 
 DOC_META_FIELDS = frozenset((
     'id', 'routing', 'version', 'version_type', 'parent'
@@ -336,8 +336,23 @@ class DslBase(object):
             c._params[attr] = copy(self._params[attr])
         return c
 
+class HitMeta(AttrDict):
+    def __init__(self, document, exclude=('_source', '_fields')):
+        d = dict((k[1:] if k.startswith('_') else k, v) for (k, v) in iteritems(document) if k not in exclude)
+        if 'type' in d:
+            # make sure we are consistent everywhere in python
+            d['doc_type'] = d.pop('type')
+        super(HitMeta, self).__init__(d)
+
 class ObjectBase(AttrDict):
-    def __init__(self, **kwargs):
+    def __init__(self, meta=None, **kwargs):
+        meta = meta or {}
+        for k in list(kwargs):
+            if k.startswith('_') and k[1:] in META_FIELDS:
+                meta[k] = kwargs.pop(k)
+
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
+
         super(ObjectBase, self).__init__(kwargs)
 
     @classmethod
@@ -358,6 +373,14 @@ class ObjectBase(AttrDict):
                 v = m[k].deserialize(v)
             setattr(doc, k, v)
         return doc
+
+    def __getstate__(self):
+        return (self.to_dict(), self.meta._d_)
+
+    def __setstate__(self, state):
+        data, meta = state
+        super(AttrDict, self).__setattr__('_d_', data)
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
     def __getattr__(self, name):
         try:

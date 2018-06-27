@@ -6,8 +6,7 @@ from six import iteritems, add_metaclass
 
 from .field import Field
 from .mapping import Mapping
-from .utils import ObjectBase, AttrDict, merge, DOC_META_FIELDS, META_FIELDS
-from .response import HitMeta
+from .utils import ObjectBase, merge, DOC_META_FIELDS, META_FIELDS
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
@@ -90,30 +89,16 @@ class InnerDoc(ObjectBase):
     Common class for inner documents like Object or Nested
     """
     @classmethod
-    def from_es(cls, data):
-        doc = cls()
-        m = cls._doc_type.mapping
-        for k, v in iteritems(data):
-            if k in m and m[k]._coerce:
-                v = m[k].deserialize(v)
-            setattr(doc, k, v)
-        return doc
+    def from_es(cls, data, data_only=False):
+        if data_only:
+            data = {'_source': data}
+        return super(InnerDoc, cls).from_es(data)
 
 @add_metaclass(IndexMeta)
 class Document(ObjectBase):
     """
     Model-like class for persisting documents in elasticsearch.
     """
-    def __init__(self, meta=None, **kwargs):
-        meta = meta or {}
-        for k in list(kwargs):
-            if k.startswith('_') and k[1:] in META_FIELDS:
-                meta[k] = kwargs.pop(k)
-
-        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
-
-        super(Document, self).__init__(**kwargs)
-
     @classmethod
     def _matches(cls, hit):
         return fnmatch(hit.get('_index', ''), cls._index._name) \
@@ -151,14 +136,6 @@ class Document(ObjectBase):
         if index and '*' in index:
             raise ValidationException('You cannot write to a wildcard index.')
         return index
-
-    def __getstate__(self):
-        return (self.to_dict(), self.meta._d_)
-
-    def __setstate__(self, state):
-        data, meta = state
-        super(AttrDict, self).__setattr__('_d_', data)
-        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
     def __getattr__(self, name):
         if name.startswith('_') and name[1:] in META_FIELDS:

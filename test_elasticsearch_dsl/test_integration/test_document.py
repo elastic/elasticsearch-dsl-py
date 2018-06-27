@@ -43,10 +43,15 @@ class Commit(Document):
     class Meta:
         mapping = Mapping('doc')
 
+class History(InnerDoc):
+    timestamp = Date()
+    diff = Text()
+
 class Comment(InnerDoc):
     content = Text()
     created_at = Date()
     author = Object(User)
+    history = Nested(History)
     class Meta:
         dynamic = MetaField(False)
 
@@ -94,16 +99,26 @@ def test_serialization(write_client):
 
 
 def test_nested_inner_hits_are_wrapped_properly(pull_request):
+    history_query = Q('nested', path='comments.history', inner_hits={},
+                      query=Q('match', comments__history__diff='ahoj'))
     s = PullRequest.search().query('nested', inner_hits={}, path='comments',
-                                   query=Q('match', comments__content='hello'))
+                                   query=history_query)
 
     response = s.execute()
     pr = response.hits[0]
     assert isinstance(pr, PullRequest)
     assert isinstance(pr.comments[0], Comment)
+    assert isinstance(pr.comments[0].history[0], History)
 
     comment = pr.meta.inner_hits.comments.hits[0]
     assert isinstance(comment, Comment)
+    assert comment.author.name == 'honzakral'
+    assert isinstance(comment.history[0], History)
+
+    history = comment.meta.inner_hits['comments.history'].hits[0]
+    assert isinstance(history, History)
+    assert history.timestamp == datetime(2012, 1, 1)
+    assert 'score' in history.meta
 
 
 def test_nested_inner_hits_are_deserialized_properly(pull_request):

@@ -159,7 +159,7 @@ class Object(Field):
         return self._wrap({})
 
     def _wrap(self, data):
-        return self._doc_class.from_es(data)
+        return self._doc_class.from_es(data, data_only=True)
 
     def empty(self):
         if self._multi:

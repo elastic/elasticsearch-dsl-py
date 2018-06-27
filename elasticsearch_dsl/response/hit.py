@@ -1,14 +1,4 @@
-from six import iteritems
-
-from ..utils import AttrDict
-
-class HitMeta(AttrDict):
-    def __init__(self, document, exclude=('_source', '_fields')):
-        d = dict((k[1:] if k.startswith('_') else k, v) for (k, v) in iteritems(document) if k not in exclude)
-        if 'type' in d:
-            # make sure we are consistent everywhere in python
-            d['doc_type'] = d.pop('type')
-        super(HitMeta, self).__init__(d)
+from ..utils import AttrDict, HitMeta
 
 class Hit(AttrDict):
     def __init__(self, document):
