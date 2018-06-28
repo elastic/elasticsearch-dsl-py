@@ -206,9 +206,9 @@ COMMIT_DOCS_WITH_MISSING = [
 def test_mget(data_client):
     commits = Commit.mget(COMMIT_DOCS_WITH_MISSING)
     assert commits[0] is None
-    assert commits[1]._id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
+    assert commits[1].meta.id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
     assert commits[2] is None
-    assert commits[3]._id == 'eb3e543323f189fd7b698e66295427204fff5755'
+    assert commits[3].meta.id == 'eb3e543323f189fd7b698e66295427204fff5755'
 
 def test_mget_raises_exception_when_missing_param_is_invalid(data_client):
     with raises(ValueError):
@@ -220,8 +220,8 @@ def test_mget_raises_404_when_missing_param_is_raise(data_client):
 
 def test_mget_ignores_missing_docs_when_missing_param_is_skip(data_client):
     commits = Commit.mget(COMMIT_DOCS_WITH_MISSING, missing='skip')
-    assert commits[0]._id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
-    assert commits[1]._id == 'eb3e543323f189fd7b698e66295427204fff5755'
+    assert commits[0].meta.id == '3ca6e1e73a071a705b4babd2f581c91a2a3e5037'
+    assert commits[1].meta.id == 'eb3e543323f189fd7b698e66295427204fff5755'
 
 def test_update_works_from_search_response(data_client):
     elasticsearch_repo = Repository.search().execute()[0]

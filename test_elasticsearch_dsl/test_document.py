@@ -470,14 +470,11 @@ def test_index_inheritance():
         }
     } == MyMultiSubDoc._doc_type.mapping.to_dict()
 
-def test_meta_fields_can_be_accessed_directly_with_underscore():
+def test_meta_fields_can_be_set_directly_in_init():
     p = object()
-    md = MyDoc(_id=42, title='Hello World!')
-    md._routing = p
+    md = MyDoc(_id=p, title='Hello World!')
 
-    assert md.meta.id == 42
-    assert md._id == 42
-    assert md.meta.routing is md._routing is p
+    assert md.meta.id is p
 
 def test_save_no_index(mock_client):
     md = MyDoc()

@@ -116,10 +116,10 @@ variant:
 
     post = Post(meta={'id': 42})
 
-    # prints 42, same as post._id
+    # prints 42
     print(post.meta.id)
 
-    # override default index, same as post._index
+    # override default index
     post.meta.index = 'my-blog'
 
 .. note::
