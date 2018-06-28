@@ -6,7 +6,7 @@ from six import iteritems, string_types
 from elasticsearch.helpers import scan
 from elasticsearch.exceptions import TransportError
 
-from .query import Q, EMPTY_QUERY, Bool
+from .query import Q, Bool
 from .aggs import A, AggBase
 from .utils import DslBase, AttrDict
 from .response import Response, Hit
@@ -21,16 +21,23 @@ class QueryProxy(object):
     """
     def __init__(self, search, attr_name):
         self._search = search
-        self._proxied = EMPTY_QUERY
+        self._proxied = None
         self._attr_name = attr_name
 
     def __nonzero__(self):
-        return self._proxied != EMPTY_QUERY
+        return self._proxied is not None
     __bool__ = __nonzero__
 
     def __call__(self, *args, **kwargs):
         s = self._search._clone()
-        getattr(s, self._attr_name)._proxied &= Q(*args, **kwargs)
+
+        # we cannot use self._proxied since we just cloned self._search and
+        # need to access the new self on the clone
+        proxied = getattr(s, self._attr_name)
+        if proxied._proxied is None:
+            proxied._proxied = Q(*args, **kwargs)
+        else:
+            proxied._proxied &= Q(*args, **kwargs)
 
         # always return search to be chainable
         return s
@@ -619,7 +626,10 @@ class Search(Request):
 
         All additional keyword arguments will be included into the dictionary.
         """
-        d = {"query": self.query.to_dict()}
+        d = {}
+
+        if self.query:
+            d["query"] = self.query.to_dict()
 
         # count request doesn't care for sorting and other things
         if not count:
