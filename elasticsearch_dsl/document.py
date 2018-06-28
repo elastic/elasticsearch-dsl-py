@@ -403,3 +403,5 @@ class Document(ObjectBase):
         # return True/False if the document has been created/updated
         return meta['result'] == 'created'
 
+# limited backwards compatibility, to be removed in 7.0.0
+DocType = Document

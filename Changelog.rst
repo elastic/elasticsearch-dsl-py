@@ -6,12 +6,31 @@ Changelog
 6.2.0 (dev)
 -----------
 
+**Backwards incompatible change** - ``DocType`` refactoring.
+
+In ``6.2.0`` we refactored the ``DocType`` class and renamed it to
+``Document``. The primary motivation for this was the support for types being
+dropped from elasticsearch itself in ``7.x`` - we needed to somehow link the
+``Index`` and ``Document`` classes. To do this we split the options that were
+previously defined in the ``class Meta`` between it and newly introduced
+``class Index``. The split is that all options that were tied to mappings (like
+setting ``dynamic = MetaField('strict')``) remain in ``class Meta`` and all
+options for index definition (like ``settings``, ``name``, or ``aliases``) got
+moved to the new ``class Index``.
+
+You can see some examples of the new functionality in the ``examples``
+directory. Documentation has been updated to reflect the new API.
+
+``DocType`` is now just an alias for ``Document`` which will be removed in
+``7.x``. It does, however, work in the new way which is not fully backwards
+compatible.
+
 * Implemented ``NestedFacet`` for ``FacetedSearch``. This brought a need to
   slightly change the semantics of ``Facet.get_values`` which now expects the
   whole data dict for the aggregation, not just the ``buckets``. This is
   a backwards incompatible change for custom aggregations that redefine that
   method.
-* ``DocType.update`` now supports ``refresh`` kwarg
+* ``Document.update`` now supports ``refresh`` kwarg
 * ``DslBase._clone`` now produces a shallow copy, this means that modifying an
   existing query can have effects on existing ``Search`` objects.
 

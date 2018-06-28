@@ -1,6 +1,22 @@
 """
-Simple example with a single DocType demonstrating how schema can be managed,
+Simple example with a single Document demonstrating how schema can be managed,
 including upgrading with reindexing.
+
+Key concepts:
+
+    * setup() function to first initialize the schema (as index template) in
+      elasticsearch. Can be called any time (recommended with every deploy of
+      your app).
+
+    * migrate() function to be called any time when the schema changes - it
+      will create a new index (by incrementing the version) and update the alias.
+      By default it will also (before flipping the alias) move the data from the
+      previous index to the new one.
+
+    * BlogPost._matches() class method is required for this code to work since
+      otherwise BlogPost will not be used to deserialize the documents as those
+      will have index set to the concrete index whereas the class refers to the
+      alias.
 """
 from datetime import datetime
 from fnmatch import fnmatch
@@ -10,6 +26,7 @@ from elasticsearch_dsl import Document, Date, Text, Keyword, connections
 ALIAS = 'test-blog'
 PATTERN = ALIAS + '-*'
 
+# initiate the default connection to elasticsearch
 connections.create_connection()
 
 class BlogPost(Document):

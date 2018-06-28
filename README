@@ -24,6 +24,12 @@ Installation
 
   pip install elasticsearch-dsl
 
+Examples
+--------
+
+Please see the `examples
+<https://github.com/elastic/elasticsearch-dsl-py/tree/master/examples>`_
+directory to see some complex examples using ``elasticsearch-dsl``.
 
 Compatibility
 -------------

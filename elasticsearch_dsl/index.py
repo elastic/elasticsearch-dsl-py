@@ -129,6 +129,7 @@ class Index(object):
         if document._index is DEFAULT_INDEX:
             document._index = self
         return document
+    doc_type = document
 
     def settings(self, **kwargs):
         """

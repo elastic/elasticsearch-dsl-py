@@ -17,6 +17,13 @@ document data in user-defined classes.
 To use the other Elasticsearch APIs (eg. cluster health) just use the
 underlying client.
 
+Examples
+--------
+
+Please see the `examples
+<https://github.com/elastic/elasticsearch-dsl-py/tree/master/examples>`_
+directory to see some complex examples using ``elasticsearch-dsl``.
+
 Compatibility
 -------------
 
