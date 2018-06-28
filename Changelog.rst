@@ -33,6 +33,9 @@ compatible.
 * ``Document.update`` now supports ``refresh`` kwarg
 * ``DslBase._clone`` now produces a shallow copy, this means that modifying an
   existing query can have effects on existing ``Search`` objects.
+* Empty ``Search`` no longer defaults to ``match_all`` query and instead leaves
+  the ``query`` key empty. This is backwards incompatible when using
+  ``suggest``.
 
 6.1.0 (2018-01-09)
 ------------------
