@@ -9,7 +9,7 @@ layer for your application.
 .. _doc_type:
 
 Document
--------
+--------
 
 If you want to create a model-like wrapper around your documents, use the
 ``Document`` class. It can also be used to create all the necessary mappings and
