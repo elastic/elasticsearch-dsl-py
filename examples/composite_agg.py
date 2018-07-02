@@ -19,7 +19,11 @@ def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
     while response.aggregations.comp.buckets:
         for b in response.aggregations.comp.buckets:
             yield b
-        response = run_search(after=response.aggregations.comp.after_key)
+        if 'after_key' in response.aggregations.comp:
+            after = response.aggregations.comp.after_key
+        else:
+            after= response.aggregations.comp.buckets[-1].key
+        response = run_search(after=after)
 
 
 if __name__ == '__main__':
