@@ -25,6 +25,9 @@ directory. Documentation has been updated to reflect the new API.
 ``7.x``. It does, however, work in the new way which is not fully backwards
 compatible.
 
+* you can no longer access meta fields on a ``Document`` instance by specifying
+  ``._id`` or similar. Instead all access needs to happen via the ``.meta``
+  attribute.
 * Implemented ``NestedFacet`` for ``FacetedSearch``. This brought a need to
   slightly change the semantics of ``Facet.get_values`` which now expects the
   whole data dict for the aggregation, not just the ``buckets``. This is
