@@ -20,3 +20,11 @@ For simplicity we use a timestamp as version in the index name.
 
 More complex example highlighting the possible relationships available in
 elasticsearch - parent/child and nested.
+
+``composite_agg.py``
+--------------------
+
+A helper function using the `composite aggregation
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html>`_
+to paginate over aggregation results.
+

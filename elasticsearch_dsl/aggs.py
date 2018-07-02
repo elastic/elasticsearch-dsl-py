@@ -209,6 +209,13 @@ class Sampler(Bucket):
 class DiversifiedSampler(Bucket):
     name = 'diversified_sampler'
 
+class Composite(Bucket):
+    name = 'composite'
+    _param_defs = {
+        'sources': {'type': 'agg', 'hash': True},
+        'aggs': {'type': 'agg', 'hash': True},
+    }
+
 # metric aggregations
 class TopHits(Agg):
     name = 'top_hits'
