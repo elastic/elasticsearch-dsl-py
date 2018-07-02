@@ -28,3 +28,9 @@ A helper function using the `composite aggregation
 <https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html>`_
 to paginate over aggregation results.
 
+``percolate.py``
+----------------
+
+A ``BlogPost`` document with automatic classification using the `percolator
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-percolate-query.html>`_
+functionality.

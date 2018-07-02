@@ -25,6 +25,7 @@ directory. Documentation has been updated to reflect the new API.
 ``7.x``. It does, however, work in the new way which is not fully backwards
 compatible.
 
+* ``Percolator`` field now expects ``Query`` objects as values
 * you can no longer access meta fields on a ``Document`` instance by specifying
   ``._id`` or similar. Instead all access needs to happen via the ``.meta``
   attribute.
