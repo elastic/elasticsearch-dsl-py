@@ -2,7 +2,7 @@ import pickle
 from datetime import date
 from pytest import raises, fixture
 
-from elasticsearch_dsl import response, Search, DocType, Date, Object
+from elasticsearch_dsl import response, Search, Document, Date, Object
 from elasticsearch_dsl.aggs import Terms
 from elasticsearch_dsl.response.aggs import AggResponse, BucketData, Bucket
 
@@ -148,7 +148,7 @@ def test_bucket_response_can_be_iterated_over(agg_response):
     assert buckets == popular_files.buckets
 
 def test_bucket_keys_get_deserialized(aggs_data, aggs_search):
-    class Commit(DocType):
+    class Commit(Document):
         info = Object(properties={'committed_date': Date()})
     aggs_search._doc_type_map = {'commit': Commit}
     agg_response = response.Response(aggs_search, aggs_data)

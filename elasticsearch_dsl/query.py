@@ -148,6 +148,11 @@ class Bool(Query):
             q.must_not += other.must_not
             q.filter += other.filter
             q.should = []
+
+            # reset minimum_should_match as it will get calculated below
+            if 'minimum_should_match' in q._params:
+                del q._params['minimum_should_match']
+
             for qx in (self, other):
                 # TODO: percentages will fail here
                 min_should_match = qx._min_should_match

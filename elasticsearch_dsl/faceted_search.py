@@ -326,6 +326,9 @@ class FacetedSearch(object):
         Add a ``post_filter`` to the search request narrowing the results based
         on the facet filters.
         """
+        if not self._filters:
+            return search
+
         post_filter = Q('match_all')
         for f in itervalues(self._filters):
             post_filter &= f

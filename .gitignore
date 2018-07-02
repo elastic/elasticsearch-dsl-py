@@ -13,3 +13,4 @@ docs/_build
 .cache
 venv
 .idea
+.pytest_cache

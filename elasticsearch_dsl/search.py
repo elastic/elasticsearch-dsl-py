@@ -6,7 +6,7 @@ from six import iteritems, string_types
 from elasticsearch.helpers import scan
 from elasticsearch.exceptions import TransportError
 
-from .query import Q, EMPTY_QUERY, Bool
+from .query import Q, Bool
 from .aggs import A, AggBase
 from .utils import DslBase, AttrDict
 from .response import Response, Hit
@@ -21,16 +21,23 @@ class QueryProxy(object):
     """
     def __init__(self, search, attr_name):
         self._search = search
-        self._proxied = EMPTY_QUERY
+        self._proxied = None
         self._attr_name = attr_name
 
     def __nonzero__(self):
-        return self._proxied != EMPTY_QUERY
+        return self._proxied is not None
     __bool__ = __nonzero__
 
     def __call__(self, *args, **kwargs):
         s = self._search._clone()
-        getattr(s, self._attr_name)._proxied &= Q(*args, **kwargs)
+
+        # we cannot use self._proxied since we just cloned self._search and
+        # need to access the new self on the clone
+        proxied = getattr(s, self._attr_name)
+        if proxied._proxied is None:
+            proxied._proxied = Q(*args, **kwargs)
+        else:
+            proxied._proxied &= Q(*args, **kwargs)
 
         # always return search to be chainable
         return s
@@ -164,17 +171,25 @@ class Request(object):
         """
         return list(set(dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type))
 
-    def _resolve_nested(self, field, parent_class=None):
+    def _resolve_nested(self, hit, parent_class=None):
         doc_class = Hit
         nested_field = None
-        if hasattr(parent_class, '_doc_type'):
-            nested_field = parent_class._doc_type.resolve_field(field)
 
+        nested_path = []
+        nesting = hit['_nested']
+        while nesting and 'field' in nesting:
+            nested_path.append(nesting['field'])
+            nesting = nesting.get('_nested')
+        nested_path = '.'.join(nested_path)
+
+        if hasattr(parent_class, '_index'):
+            nested_field = parent_class._index.resolve_field(nested_path)
         else:
             for dt in self._doc_type:
-                if not hasattr(dt, '_doc_type'):
+                if not hasattr(dt, '_index'):
                     continue
-                nested_field = dt._doc_type.resolve_field(field)
+                # TODO: verify that nested_field's parent is parent_class
+                nested_field = dt._index.resolve_field(nested_path)
                 if nested_field is not None:
                     break
 
@@ -188,14 +203,14 @@ class Request(object):
         dt = hit.get('_type')
 
         if '_nested' in hit:
-            doc_class = self._resolve_nested(hit['_nested']['field'], parent_class)
+            doc_class = self._resolve_nested(hit, parent_class)
 
         elif dt in self._doc_type_map:
             doc_class = self._doc_type_map[dt]
 
         else:
             for doc_type in self._doc_type:
-                if hasattr(doc_type, '_doc_type') and doc_type._doc_type.matches(hit):
+                if hasattr(doc_type, '_matches') and doc_type._matches(hit):
                     doc_class = doc_type
                     break
 
@@ -209,7 +224,7 @@ class Request(object):
     def doc_type(self, *doc_type, **kwargs):
         """
         Set the type to search through. You can supply a single value or
-        multiple. Values can be strings or subclasses of ``DocType``.
+        multiple. Values can be strings or subclasses of ``Document``.
 
         You can also pass in any keyword arguments, mapping a doc_type to a
         callback that should be used instead of the Hit class.
@@ -611,7 +626,10 @@ class Search(Request):
 
         All additional keyword arguments will be included into the dictionary.
         """
-        d = {"query": self.query.to_dict()}
+        d = {}
+
+        if self.query:
+            d["query"] = self.query.to_dict()
 
         # count request doesn't care for sorting and other things
         if not count:

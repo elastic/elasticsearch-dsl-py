@@ -8,17 +8,17 @@ layer for your application.
 
 .. _doc_type:
 
-DocType
+Document
 -------
 
 If you want to create a model-like wrapper around your documents, use the
-``DocType`` class. It can also be used to create all the necessary mappings and
+``Document`` class. It can also be used to create all the necessary mappings and
 settings in elasticsearch (see :ref:`life-cycle` for details).
 
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch_dsl import DocType, Date, Nested, Boolean, \
+    from elasticsearch_dsl import Document, Date, Nested, Boolean, \
         analyzer, InnerDoc, Completion, Keyword, Text
 
     html_strip = analyzer('html_strip',
@@ -35,7 +35,7 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
         def age(self):
             return datetime.now() - self.created_at
 
-    class Post(DocType):
+    class Post(Document):
         title = Text()
         title_suggest = Completion()
         created_at = Date()
@@ -47,8 +47,8 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
 
         comments = Nested(Comment)
 
-        class Meta:
-            index = 'blog'
+        class Index:
+            name = 'blog'
 
         def add_comment(self, author, content):
             self.comments.append(
@@ -69,7 +69,7 @@ Elasticsearch itself interprets all datetimes with no timezone information as
 
 .. code:: python
 
-    class Post(DocType):
+    class Post(Document):
         created_at = Date(default_timezone='UTC')
 
 In that case any ``datetime`` object passed in (or parsed from elasticsearch)
@@ -116,10 +116,10 @@ variant:
 
     post = Post(meta={'id': 42})
 
-    # prints 42, same as post._id
+    # prints 42
     print(post.meta.id)
 
-    # override default index, same as post._index
+    # override default index
     post.meta.index = 'my-blog'
 
 .. note::
@@ -175,25 +175,17 @@ You can control this behavior by setting parameters:
   the output list entirely.
 
 
-All the information about the ``DocType``, including its ``Mapping`` can be
-accessed through the ``_doc_type`` attribute of the class:
+The index associated with the ``Document`` is accessible via the ``_index``
+class property which gives you access to the :ref:`index` class.
 
-.. code:: python
-
-    # name of the index in elasticsearch
-    Post._doc_type.index
-
-    # the raw Mapping object
-    Post._doc_type.mapping
-
-The ``_doc_type`` attribute is also home to the ``refresh`` method which will
-update the mapping on the ``DocType`` from elasticsearch. This is very useful
+The ``_index`` attribute is also home to the ``load_mappings`` method which will
+update the mapping on the ``Index`` from elasticsearch. This is very useful
 if you use dynamic mappings and want the class to be aware of those fields (for
 example if you wish the ``Date`` fields to be properly (de)serialized):
 
 .. code:: python
 
-    Post._doc_type.refresh()
+    Post._index.load_mappings()
 
 To delete a document just call its ``delete`` method:
 
@@ -201,6 +193,8 @@ To delete a document just call its ``delete`` method:
 
     first = Post.get(id=42)
     first.delete()
+
+.. _analysis:
 
 Analysis
 ~~~~~~~~
@@ -228,7 +222,7 @@ specify type (``nGram`` in our example).
 .. note::
 
     When creating a mapping which relies on a custom analyzer the index must
-    either not exist or be closed. To create multiple ``DocType``-defined
+    either not exist or be closed. To create multiple ``Document``-defined
     mappings you can use the :ref:`index` object.
 
 Search
@@ -259,7 +253,7 @@ our document type, wrapped in correct class:
     s = s.doc_type(Post)
 
 You can also combine document classes with standard doc types (just strings),
-which will be treated as before. You can also pass in multiple ``DocType``
+which will be treated as before. You can also pass in multiple ``Document``
 subclasses and each document in the response will be wrapped in it's class.
 
 If you want to run suggestions, just use the ``suggest`` method on the
@@ -285,28 +279,9 @@ If you want to run suggestions, just use the ``suggest`` method on the
 In the ``Meta`` class inside your document definition you can define various
 metadata for your document:
 
-``doc_type``
-  name of the doc_type in elasticsearch. By default it will be set to ``doc``,
-  it is not recommended to change.
-
-``index``
-  default index for the document, by default it is empty and every operation
-  such as ``get`` or ``save`` requires an explicit ``index`` parameter, same as
-  when you use a string containing a wildcard (such as ``logstash-*``).
-
-``using``
-  default connection alias to use, defaults to ``'default'``
-
 ``mapping``
   optional instance of ``Mapping`` class to use as base for the mappings
   created from the fields on the document class itself.
-
-``matches(self, hit)``
-  method that returns ``True`` if a given raw hit (``dict`` returned from
-  elasticsearch) should be deserialized using this ``DocType`` subclass. Can be
-  overriden, by default will just check that values for ``_index`` (including
-  any wildcard expansions) and ``_type`` in the document matches those in
-  ``_doc_type``.
 
 Any attributes on the ``Meta`` class that are instance of ``MetaField`` will be
 used to control the mapping of the meta fields (``_all``, ``dynamic`` etc).
@@ -315,17 +290,46 @@ to map and pass any parameters to the ``MetaField`` class:
 
 .. code:: python
 
-    class Post(DocType):
+    class Post(Document):
         title = Text()
 
         class Meta:
             all = MetaField(enabled=False)
             dynamic = MetaField('strict')
 
+``class Index`` options
+~~~~~~~~~~~~~~~~~~~~~~~
+
+This section of the ``Document`` definition can contain any information about
+the index, its name, settings and other attributes:
+
+``name``
+  name of the index to use, if it contains a wildcard (``*``) then it cannot be
+  used for any write operations and an ``index`` kwarg will have to be passed
+  explicitly when calling methods like ``.save()``.
+
+``using``
+  default connection alias to use, defaults to ``'default'``
+
+``settings``
+  dictionary containing any settings for the ``Index`` object like
+  ``number_of_shards``.
+
+``analyzers``
+  additional list of analyzers that should be defined on an index (see
+  :ref:`analysis` for details).
+
+``aliases``
+  dictionary with any aliases definitions
+
 .. _index:
 
 Index
 -----
+
+In typical scenario using ``class Index`` on a ``Document`` class is sufficient
+to perform any action. In a few cases though it can be useful to manipulate an
+``Index`` object directly.
 
 ``Index`` is a class responsible for holding all the metadata related to an
 index in elasticsearch - mappings and settings. It is most useful when defining
@@ -335,7 +339,7 @@ in a migration:
 
 .. code:: python
 
-    from elasticsearch_dsl import Index, DocType, Text, analyzer
+    from elasticsearch_dsl import Index, Document, Text, analyzer
 
     blogs = Index('blogs')
 
@@ -350,12 +354,12 @@ in a migration:
         old_blogs={}
     )
 
-    # register a doc_type with the index
-    blogs.doc_type(Post)
+    # register a document with the index
+    blogs.document(Post)
 
-    # can also be used as class decorator when defining the DocType
-    @blogs.doc_type
-    class Post(DocType):
+    # can also be used as class decorator when defining the Document
+    @blogs.document
+    class Post(Document):
         title = Text()
 
     # You can attach custom analyzers to the index
@@ -381,7 +385,7 @@ create specific copies:
 
     blogs = Index('blogs', using='production')
     blogs.settings(number_of_shards=2)
-    blogs.doc_type(Post)
+    blogs.document(Post)
 
     # create a copy of the index with different name
     company_blogs = blogs.clone('company-blogs')
@@ -413,15 +417,18 @@ Potential workflow for a set of time based indices governed by a single template
 
     from datetime import datetime
 
-    from elasticsearch_dsl import DocType, Date, Text IndexTemplate
+    from elasticsearch_dsl import Document, Date, Text IndexTemplate
 
 
-    class Log(DocType):
+    class Log(Document):
         content = Text()
         timestamp = Date()
 
-        class Meta:
-            index = "logs-*"
+        class Index:
+            name = "logs-*"
+            settings = {
+              "number_of_shards": 2
+            }
 
         def save(self, **kwargs):
             # assign now if no timestamp given
@@ -433,9 +440,7 @@ Potential workflow for a set of time based indices governed by a single template
             return super().save(**kwargs)
 
     # once, as part of application setup, during deploy/migrations:
-    logs = IndexTemplate('logs', 'logs-*')
-    logs.setting(number_of_shards=2)
-    logs.doc_type(Log)
+    logs = Log._index.as_template()
     logs.save()
 
     # to perform search across all logs:

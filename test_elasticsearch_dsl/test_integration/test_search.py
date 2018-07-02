@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from elasticsearch import TransportError
 
-from elasticsearch_dsl import Search, DocType, Date, Text, Keyword, MultiSearch, \
+from elasticsearch_dsl import Search, Document, Date, Text, Keyword, MultiSearch, \
     Index, Q
 from elasticsearch_dsl.response import aggs
 
@@ -10,7 +10,7 @@ from .test_data import FLAT_DATA
 
 from pytest import raises
 
-class Repository(DocType):
+class Repository(Document):
     created_at = Date()
     description = Text(analyzer='snowball')
     tags = Keyword()
@@ -19,12 +19,12 @@ class Repository(DocType):
     def search(cls):
         return super(Repository, cls).search().filter('term', commit_repo='repo')
 
-    class Meta:
-        index = 'git'
+    class Index:
+        name = 'git'
 
-class Commit(DocType):
-    class Meta:
-        index = 'flat-git'
+class Commit(Document):
+    class Index:
+        name = 'flat-git'
 
 def test_filters_aggregation_buckets_are_accessible(data_client):
     has_tests_query = Q('term', files='test_elasticsearch_dsl')

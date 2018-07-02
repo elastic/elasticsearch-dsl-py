@@ -52,7 +52,6 @@ def test_query_clone():
 
     assert bool == bool_clone
     assert bool is not bool_clone
-    assert bool.must[0] is not bool_clone.must[0]
 
 def test_bool_converts_its_init_args_to_queries():
     q = query.Bool(must=[{"match": {"f": "value"}}])
@@ -163,6 +162,13 @@ def test_bool_and_bool():
     q1 = query.Bool(must=[qt1], should=[qt1, qt2])
     q2 = query.Bool(should=[qt3])
     assert q1 & q2 == query.Bool(must=[qt1, qt3], should=[qt1, qt2], minimum_should_match=0)
+
+def test_bool_and_bool_with_min_should_match():
+    qt1, qt2 = query.Match(f=1), query.Match(f=2)
+    q1 = query.Q('bool', minimum_should_match=1, should=[qt1])
+    q2 = query.Q('bool', minimum_should_match=1, should=[qt2])
+
+    assert query.Q('bool', must=[qt1, qt2]) == q1 & q2
 
 def test_inverted_query_becomes_bool_with_must_not():
     q = query.Match(f=42)

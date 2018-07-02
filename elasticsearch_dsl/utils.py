@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import collections
+from copy import copy
 
 from six import iteritems, add_metaclass
 from six.moves import map
@@ -8,10 +9,10 @@ from six.moves import map
 from .exceptions import UnknownDslObject, ValidationException
 
 SKIP_VALUES = ('', None)
-EXPAND__TO_DOT=True
+EXPAND__TO_DOT = True
 
 DOC_META_FIELDS = frozenset((
-    'id', 'routing', 'version', 'version_type'
+    'id', 'routing', 'version', 'version_type', 'parent'
 ))
 
 META_FIELDS = frozenset((
@@ -198,7 +199,7 @@ class DslBase(object):
 
     Provides several feature:
         - attribute access to the wrapped dictionary (.field instead of ['field'])
-        - _clone method returning a deep copy of self
+        - _clone method returning a copy of self
         - to_dict method to serialize into dict (to be sent via elasticsearch-py)
         - basic logical operators (&, | and ~) using a Bool(Filter|Query) TODO:
           move into a class specific for Query/Filter
@@ -330,11 +331,28 @@ class DslBase(object):
         return {self.name: d}
 
     def _clone(self):
-        return self._type_shortcut(self.to_dict())
+        c = self.__class__()
+        for attr in self._params:
+            c._params[attr] = copy(self._params[attr])
+        return c
 
+class HitMeta(AttrDict):
+    def __init__(self, document, exclude=('_source', '_fields')):
+        d = dict((k[1:] if k.startswith('_') else k, v) for (k, v) in iteritems(document) if k not in exclude)
+        if 'type' in d:
+            # make sure we are consistent everywhere in python
+            d['doc_type'] = d.pop('type')
+        super(HitMeta, self).__init__(d)
 
 class ObjectBase(AttrDict):
-    def __init__(self, **kwargs):
+    def __init__(self, meta=None, **kwargs):
+        meta = meta or {}
+        for k in list(kwargs):
+            if k.startswith('_') and k[1:] in META_FIELDS:
+                meta[k] = kwargs.pop(k)
+
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
+
         super(ObjectBase, self).__init__(kwargs)
 
     @classmethod
@@ -355,6 +373,14 @@ class ObjectBase(AttrDict):
                 v = m[k].deserialize(v)
             setattr(doc, k, v)
         return doc
+
+    def __getstate__(self):
+        return (self.to_dict(), self.meta._d_)
+
+    def __setstate__(self, state):
+        data, meta = state
+        super(AttrDict, self).__setattr__('_d_', data)
+        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
 
     def __getattr__(self, name):
         try:

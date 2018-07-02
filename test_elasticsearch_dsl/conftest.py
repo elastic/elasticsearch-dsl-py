@@ -11,7 +11,7 @@ from pytest import fixture, skip
 from elasticsearch_dsl.connections import connections
 from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
     create_flat_git_index
-from .test_integration.test_document import PullRequest, Comment, User
+from .test_integration.test_document import PullRequest, Comment, User, History
 
 
 @fixture(scope='session')
@@ -227,7 +227,14 @@ def pull_request(write_client):
                      comments=[
                          Comment(content='Hello World!',
                                  author=User(name='honzakral'),
-                                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184)),
+                                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184),
+                                 history=[
+                                     History(
+                                         timestamp=datetime(2012, 1, 1),
+                                         diff='-Ahoj Svete!\n+Hello World!'
+                                     )
+                                 ]
+                        ),
                      ],
                      created_at=datetime(2018, 1, 9, 9, 17, 3, 21184))
     pr.save(refresh=True)

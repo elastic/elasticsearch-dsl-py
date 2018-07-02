@@ -291,3 +291,6 @@ class StatsBucket(Pipeline):
 
 class SumBucket(Pipeline):
     name = 'sum_bucket'
+
+class BucketSort(Pipeline):
+    name = 'bucket_sort'

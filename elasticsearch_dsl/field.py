@@ -159,7 +159,7 @@ class Object(Field):
         return self._wrap({})
 
     def _wrap(self, data):
-        return self._doc_class.from_es(data)
+        return self._doc_class.from_es(data, data_only=True)
 
     def empty(self):
         if self._multi:
@@ -169,7 +169,7 @@ class Object(Field):
     def to_dict(self):
         d = self._mapping.to_dict()
         _, d = d.popitem()
-        d["type"] = self.name
+        d.update(super(Object, self).to_dict())
         return d
 
     def _collect_fields(self):

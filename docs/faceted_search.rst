@@ -21,7 +21,7 @@ declaring a ``FacetedSearch`` subclass:
   the name of the index (as string) to search through, defaults to ``'_all'``.
 
 ``doc_types``
-  list of ``DocType`` subclasses or strings to be used, defaults to
+  list of ``Document`` subclasses or strings to be used, defaults to
   ``['_all']``.
 
 ``fields``
@@ -36,7 +36,7 @@ declaring a ``FacetedSearch`` subclass:
 
 ``sort``
   tuple or list of fields on which the results should be sorted. The format of
-  the individual fieldsa re to be the same as those passed to
+  the individual fields are to be the same as those passed to
   :meth:`~elasticsearch_dsl.Search.sort`.
 
 

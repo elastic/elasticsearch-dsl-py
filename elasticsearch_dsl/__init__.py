@@ -3,7 +3,7 @@ from .aggs import A
 from .function import SF
 from .search import Search, MultiSearch
 from .field import *
-from .document import DocType, MetaField, InnerDoc
+from .document import Document, MetaField, InnerDoc
 from .mapping import Mapping
 from .index import Index, IndexTemplate
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer

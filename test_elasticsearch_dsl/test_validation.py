@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Nested, Text, Date, Object, Boolean, Integer, InnerDoc
+from elasticsearch_dsl import Document, Nested, Text, Date, Object, Boolean, Integer, InnerDoc
 from elasticsearch_dsl.exceptions import ValidationException
 
 from pytest import raises
@@ -14,13 +14,13 @@ class Author(InnerDoc):
         if self.name.lower() not in self.email:
             raise ValidationException('Invalid email!')
 
-class BlogPost(DocType):
+class BlogPost(Document):
     authors = Nested(Author, required=True)
     created = Date()
     inner = Object()
 
 
-class BlogPostWithStatus(DocType):
+class BlogPostWithStatus(Document):
     published = Boolean(required=True)
 
 
@@ -30,19 +30,19 @@ class AutoNowDate(Date):
             data = datetime.now()
         return super(AutoNowDate, self).clean(data)
 
-class Log(DocType):
+class Log(Document):
     timestamp = AutoNowDate(required=True)
     data = Text()
 
 def test_required_int_can_be_0():
-    class DT(DocType):
+    class DT(Document):
         i = Integer(required=True)
 
     dt = DT(i=0)
     assert dt.full_clean() is None
 
 def test_required_field_cannot_be_empty_list():
-    class DT(DocType):
+    class DT(Document):
         i = Integer(required=True)
 
     dt = DT(i=[])
@@ -50,7 +50,7 @@ def test_required_field_cannot_be_empty_list():
         dt.full_clean()
 
 def test_validation_works_for_lists_of_values():
-    class DT(DocType):
+    class DT(Document):
         i = Date(required=True)
 
     dt = DT(i=[datetime.now(), 'not date'])

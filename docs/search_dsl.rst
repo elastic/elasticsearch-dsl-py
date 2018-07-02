@@ -23,9 +23,10 @@ The ``Search`` object represents the entire search request:
 
 The API is designed to be chainable. With the exception of the
 aggregations functionality this means that the ``Search`` object is immutable -
-all changes to the object will result in a copy being created which contains
-the changes. This means you can safely pass the ``Search`` object to foreign
-code without fear of it modifying your objects.
+all changes to the object will result in a shallow copy being created which
+contains the changes. This means you can safely pass the ``Search`` object to
+foreign code without fear of it modifying your objects as long as it sticks to
+the ``Search`` object APIs.
 
 You can pass an instance of the low-level `elasticsearch client <https://elasticsearch-py.readthedocs.io/>`_ when
 instantiating the ``Search`` object:
@@ -131,6 +132,8 @@ parameters or the raw ``dict``:
 
 .. code:: python
 
+    from elasticsearch_dsl import Q
+
     Q("multi_match", query='python django', fields=['title', 'body'])
     Q({"multi_match": {"query": "python django", "fields": ["title", "body"]}})
 
@@ -233,6 +236,8 @@ Aggregations
 To define an aggregation, you can use the ``A`` shortcut:
 
 .. code:: python
+
+    from elasticsearch_dsl import A
 
     A('terms', field='tags')
     # {"terms": {"field": "tags"}}
