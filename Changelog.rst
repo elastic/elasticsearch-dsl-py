@@ -3,8 +3,8 @@
 Changelog
 =========
 
-6.2.0 (dev)
------------
+6.2.0 (2018-07-03)
+------------------
 
 **Backwards incompatible change** - ``DocType`` refactoring.
 
