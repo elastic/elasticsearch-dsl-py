@@ -42,6 +42,7 @@ class IndexMeta(DocumentMeta):
 
         i = Index(
             getattr(opts, 'name', '*'),
+            doc_type=getattr(opts, 'doc_type', 'doc'),
             using=getattr(opts, 'using', 'default')
         )
         i.settings(**getattr(opts, 'settings', {}))

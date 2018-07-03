@@ -308,6 +308,10 @@ the index, its name, settings and other attributes:
   used for any write operations and an ``index`` kwarg will have to be passed
   explicitly when calling methods like ``.save()``.
 
+``doc_type``
+  name of the ``_type`` in elasticsearch. Note that you have to define this as
+  well as ``doc_type`` in ``class Meta`` in order for it to take effect.
+
 ``using``
   default connection alias to use, defaults to ``'default'``
 
