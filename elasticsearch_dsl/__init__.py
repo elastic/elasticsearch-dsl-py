@@ -9,6 +9,6 @@ from .index import Index, IndexTemplate
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
 from .faceted_search import *
 
-VERSION = (6, 2, 0)
+VERSION = (6, 2, 1)
 __version__ = VERSION
 __versionstr__ = '.'.join(map(str, VERSION))

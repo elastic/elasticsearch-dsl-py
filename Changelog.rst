@@ -3,6 +3,12 @@
 Changelog
 =========
 
+6.2.1 (2018-07-03)
+------------------
+
+* allow users to redefine ``doc_type`` in ``Index`` (``#929``)
+* include ``DocType`` in ``elasticsearch_dsl`` module directly (``#930``)
+
 6.2.0 (2018-07-03)
 ------------------
 
