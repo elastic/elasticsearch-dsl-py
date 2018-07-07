@@ -24,14 +24,16 @@ python:
 env:
   global:
     - WAIT_FOR_ES=1
+    - ES_PY_VERSION=6.3.0
   matrix:
-    - ES_VERSION=6.2.2
+    - ES_VERSION=6.2.4
+    - ES_VERSION=6.3.1
 
 install:
   - mkdir /tmp/elasticsearch
   - wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
   - /tmp/elasticsearch/bin/elasticsearch -d
-  - pip install git+https://github.com/elastic/elasticsearch-py.git@5.x#egg=elasticsearch
+  - pip install git+https://github.com/elastic/elasticsearch-py.git@${ES_PY_VERSION}#egg=elasticsearch
   - pip install .
 
 script:
