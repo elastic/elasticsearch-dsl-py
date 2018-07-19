@@ -355,6 +355,9 @@ class Term(Query):
 class Terms(Query):
     name = 'terms'
 
+class TermsSet(Query):
+    name = 'terms_set'
+
 class Wildcard(Query):
     name = 'wildcard'
 
