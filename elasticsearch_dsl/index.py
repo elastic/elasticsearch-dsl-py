@@ -75,7 +75,7 @@ class Index(object):
         i._aliases = self._aliases.copy()
         i._analysis = self._analysis.copy()
         i._doc_types = self._doc_types[:]
-        i._mapping._update_from_dict(self._mapping.to_dict())
+        i._mapping = self._mapping._clone()
         return i
 
     def _get_connection(self, using=None):

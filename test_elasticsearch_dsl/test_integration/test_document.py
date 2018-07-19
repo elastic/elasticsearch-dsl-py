@@ -5,10 +5,14 @@ from ipaddress import ip_address
 from elasticsearch import ConflictError, NotFoundError
 
 from elasticsearch_dsl import Document, Date, Text, Keyword, Mapping, InnerDoc, \
-    Object, Nested, MetaField, Q, Long, Boolean, Double, Binary, Ip
+    Object, Nested, MetaField, Q, Long, Boolean, Double, Binary, Ip, analyzer
 from elasticsearch_dsl.utils import AttrList
 
 from pytest import raises, fixture
+
+snowball = analyzer('my_snow',
+    tokenizer='standard',
+    filter=['standard', 'lowercase', 'snowball'])
 
 class User(InnerDoc):
     name = Text(fields={'raw': Keyword()})
@@ -22,7 +26,7 @@ class Wiki(Document):
 class Repository(Document):
     owner = Object(User)
     created_at = Date()
-    description = Text(analyzer='snowball')
+    description = Text(analyzer=snowball)
     tags = Keyword()
 
     @classmethod
@@ -35,7 +39,7 @@ class Repository(Document):
 class Commit(Document):
     committed_date = Date()
     authored_date = Date()
-    description = Text(analyzer='snowball')
+    description = Text(analyzer=snowball)
 
     class Index:
         name = 'flat-git'
