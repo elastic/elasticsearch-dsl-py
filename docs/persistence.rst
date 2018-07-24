@@ -421,7 +421,7 @@ Potential workflow for a set of time based indices governed by a single template
 
     from datetime import datetime
 
-    from elasticsearch_dsl import Document, Date, Text IndexTemplate
+    from elasticsearch_dsl import Document, Date, Text
 
 
     class Log(Document):
