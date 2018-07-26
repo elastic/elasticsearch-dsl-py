@@ -6,6 +6,11 @@ Persistence
 You can use the dsl library to define your mappings and a basic persistent
 layer for your application.
 
+For more comprehensive examples have a look at the examples_ directory in the
+repository.
+
+.. _examples: https://github.com/elastic/elasticsearch-dsl-py/tree/master/examples
+
 .. _doc_type:
 
 Document
