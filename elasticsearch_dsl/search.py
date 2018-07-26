@@ -171,6 +171,14 @@ class Request(object):
         """
         return list(set(dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type))
 
+    def _resolve_field(self, path):
+        for dt in self._doc_type:
+            if not hasattr(dt, '_index'):
+                continue
+            field = dt._index.resolve_field(path)
+            if field is not None:
+                return field
+
     def _resolve_nested(self, hit, parent_class=None):
         doc_class = Hit
         nested_field = None
@@ -185,13 +193,7 @@ class Request(object):
         if hasattr(parent_class, '_index'):
             nested_field = parent_class._index.resolve_field(nested_path)
         else:
-            for dt in self._doc_type:
-                if not hasattr(dt, '_index'):
-                    continue
-                # TODO: verify that nested_field's parent is parent_class
-                nested_field = dt._index.resolve_field(nested_path)
-                if nested_field is not None:
-                    break
+            nested_field = self._resolve_field(nested_path)
 
         if nested_field is not None:
             return nested_field._doc_class
