@@ -449,7 +449,7 @@ Potential workflow for a set of time based indices governed by a single template
             return super().save(**kwargs)
 
     # once, as part of application setup, during deploy/migrations:
-    logs = Log._index.as_template()
+    logs = Log._index.as_template('logs')
     logs.save()
 
     # to perform search across all logs:
