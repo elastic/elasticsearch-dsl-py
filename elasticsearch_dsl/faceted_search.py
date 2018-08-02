@@ -7,7 +7,10 @@ from .utils import AttrDict
 from .response import Response
 from .query import Terms, Nested, Range, MatchAll
 
-__all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet']
+__all__ = [
+    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet', 
+    'NestedFacet',
+]
 
 class Facet(object):
     """
