@@ -1,3 +1,5 @@
+.. _configuration:
+
 Configuration
 =============
 
@@ -6,40 +8,11 @@ option, and most useful, is to just define one default connection that will be
 used every time an API call is made without explicitly passing in other
 connection.
 
-When using ``elasticsearch_dsl`` it is highly recommended to use the attached
-serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
-your objects are correctly serialized into json every time. The
-``create_connection`` method that is described here (and that ``configure``
-method uses under the hood) will do that automatically for you, unless you
-explicitly specify your own serializer. The serializer we use will also allow
-you to serialize your own objects - just define a ``to_dict()`` method on your
-objects and it will automatically be called when serializing to json.
-
 .. note::
 
     Unless you want to access multiple clusters from your application it is
     highly recommended that you use the ``create_connection`` method and all
     operations will use that connection automatically.
-
-
-Manual
-------
-
-If you don't wish to supply global configuration you can always pass in your
-own connection (instance of ``elasticsearch.Elasticsearch``) as parameter
-``using`` wherever it is accepted:
-
-.. code:: python
-
-    s = Search(using=Elasticsearch('localhost'))
-
-You can even use this approach to override any connection the object might be
-already associated with:
-
-.. code:: python
-
-    s = s.using(Elasticsearch('otherhost:9200'))
-
 
 .. _default connection:
 
@@ -103,3 +76,31 @@ alias you registered them under:
 ``KeyError`` will be raised if there is no connection registered under that
 alias.
 
+Manual
+------
+
+If you don't wish to supply global configuration you can always pass in your
+own connection (instance of ``elasticsearch.Elasticsearch``) as parameter
+``using`` wherever it is accepted:
+
+.. code:: python
+
+    s = Search(using=Elasticsearch('localhost'))
+
+You can even use this approach to override any connection the object might be
+already associated with:
+
+.. code:: python
+
+    s = s.using(Elasticsearch('otherhost:9200'))
+
+.. note::
+
+    When using ``elasticsearch_dsl`` it is highly recommended to use the attached
+    serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
+    your objects are correctly serialized into ``json`` every time. The
+    ``create_connection`` method that is described here (and that ``configure``
+    method uses under the hood) will do that automatically for you, unless you
+    explicitly specify your own serializer. The serializer we use will also allow
+    you to serialize your own objects - just define a ``to_dict()`` method on your
+    objects and it will automatically be called when serializing to json.

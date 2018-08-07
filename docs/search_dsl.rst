@@ -41,7 +41,7 @@ instantiating the ``Search`` object:
     s = Search(using=client)
 
 You can also define the client at a later time (for more options see the
-~:ref:`connections` chapter):
+:ref:`configuration` chapter):
 
 .. code:: python
 
