@@ -6,6 +6,8 @@ Changelog
 6.3.0 (dev)
 -----------
 
+* Added ``retry_on_conflict`` parameter to ``Document.update``.
+
 6.2.1 (2018-07-03)
 ------------------
 

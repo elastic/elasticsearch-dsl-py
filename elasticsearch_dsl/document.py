@@ -307,7 +307,8 @@ class Document(ObjectBase):
         return meta
 
     def update(self, using=None, index=None,  detect_noop=True,
-               doc_as_upsert=False, refresh=False, **fields):
+               doc_as_upsert=False, refresh=False, retry_on_conflict=None,
+               **fields):
         """
         Partial update of the document, specify fields you wish to update and
         both the instance and the document in elasticsearch will be updated::
@@ -319,9 +320,18 @@ class Document(ObjectBase):
         :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
-
-        Any additional keyword arguments will be passed to
-        ``Elasticsearch.update`` unchanged.
+        :arg detect_noop: Set to ``False`` to disable noop detection.
+        :arg refresh: Control when the changes made by this request are visible
+            to search. Set to ``True`` for immediate effect.
+        :arg retry_on_conflict: In between the get and indexing phases of the
+            update, it is possible that another process might have already
+            updated the same document. By default, the update will fail with a
+            version conflict exception. The retry_on_conflict parameter
+            controls how many times to retry the update before finally throwing
+            an exception.
+        :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
+            doc, setting doc_as_upsert to true will use the contents of doc as
+            the upsert value
         """
         if not fields:
             raise IllegalOperation('You cannot call update() without updating individual fields. '
@@ -352,6 +362,9 @@ class Document(ObjectBase):
             'doc_as_upsert': doc_as_upsert,
             'detect_noop': detect_noop,
         }
+
+        if retry_on_conflict is not None:
+            doc_meta['retry_on_conflict'] = retry_on_conflict
 
         meta = es.update(
             index=self._get_index(index),
