@@ -396,7 +396,7 @@ class Document(ObjectBase):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
 
-        operation result created/updated
+        :return operation result created/updated
         """
         if validate:
             self.full_clean()
