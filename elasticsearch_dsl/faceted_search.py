@@ -1,13 +1,16 @@
 from datetime import timedelta, datetime
-from six import iteritems, itervalues, string_types
+from six import iteritems, itervalues
 
 from .search import Search
 from .aggs import A
 from .utils import AttrDict
 from .response import Response
-from .query import Q
+from .query import Terms, Nested, Range, MatchAll
 
-__all__ = ['FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet']
+__all__ = [
+    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet', 
+    'NestedFacet',
+]
 
 class Facet(object):
     """
@@ -80,7 +83,7 @@ class TermsFacet(Facet):
     def add_filter(self, filter_values):
         """ Create a terms filter instead of bool containing term filters.  """
         if filter_values:
-            return Q('terms', **{self._params['field']: filter_values})
+            return Terms(**{self._params['field']: filter_values})
 
 
 class RangeFacet(Facet):
@@ -109,7 +112,7 @@ class RangeFacet(Facet):
         if t is not None:
             limits['lt'] = t
 
-        return Q('range', **{
+        return Range(**{
             self._params['field']: limits
         })
 
@@ -117,7 +120,7 @@ class HistogramFacet(Facet):
     agg_type = 'histogram'
 
     def get_value_filter(self, filter_value):
-        return Q('range', **{
+        return Range(**{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': filter_value + self._params['interval']
@@ -151,7 +154,7 @@ class DateHistogramFacet(Facet):
             return bucket['key']
 
     def get_value_filter(self, filter_value):
-        return Q('range', **{
+        return Range(**{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': self.DATE_INTERVALS[self._params['interval']](filter_value)
@@ -172,7 +175,7 @@ class NestedFacet(Facet):
     def add_filter(self, filter_values):
         inner_q = self._inner.add_filter(filter_values)
         if inner_q:
-            return Q('nested', path=self._path, query=inner_q)
+            return Nested(path=self._path, query=inner_q)
 
 class FacetedResponse(Response):
     @property
@@ -310,7 +313,7 @@ class FacetedSearch(object):
         """
         for f, facet in iteritems(self.facets):
             agg = facet.get_aggregation()
-            agg_filter = Q('match_all')
+            agg_filter = MatchAll()
             for field, filter in iteritems(self._filters):
                 if f == field:
                     continue
@@ -329,7 +332,7 @@ class FacetedSearch(object):
         if not self._filters:
             return search
 
-        post_filter = Q('match_all')
+        post_filter = MatchAll()
         for f in itervalues(self._filters):
             post_filter &= f
         return search.post_filter(post_filter)

@@ -150,7 +150,7 @@ def test_bucket_response_can_be_iterated_over(agg_response):
 def test_bucket_keys_get_deserialized(aggs_data, aggs_search):
     class Commit(Document):
         info = Object(properties={'committed_date': Date()})
-    aggs_search._doc_type_map = {'commit': Commit}
+    aggs_search = aggs_search.doc_type(Commit)
     agg_response = response.Response(aggs_search, aggs_data)
 
     per_month = agg_response.aggregations.per_month

@@ -70,6 +70,11 @@ class Mapping(object):
     def __repr__(self):
         return 'Mapping(%r)' % self.doc_type
 
+    def _clone(self):
+        m = Mapping(self.properties.name)
+        m.properties._params = self.properties._params.copy()
+        return m
+
     @classmethod
     def from_es(cls, index, doc_type, using='default'):
         m = cls(doc_type)

@@ -68,6 +68,13 @@ class OptionalObjectWithRequiredField(document.Document):
 class Host(document.Document):
     ip = field.Ip()
 
+def test_document_can_redefine_doc_type():
+    class D(document.Document):
+        class Meta:
+            doc_type = 'not-doc'
+        class Index:
+            doc_type = 'not-doc'
+
 def test_ip_address_serializes_properly():
     host = Host(ip=ipaddress.IPv4Address(u'10.0.0.1'))
 

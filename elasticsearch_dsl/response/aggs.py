@@ -1,12 +1,6 @@
 from ..utils import AttrDict, AttrList
 from . import Response, AggResponse
 
-def _resolve_field(search, field):
-    for dt in search._doc_type_map.values():
-        f = dt._index.resolve_field(field)
-        if f:
-            return f
-
 class Bucket(AggResponse):
     def __init__(self, aggs, search, data, field=None):
         super(Bucket, self).__init__(aggs, search, data)
@@ -39,7 +33,7 @@ class BucketData(AggResponse):
         if not hasattr(self, '_buckets'):
             field = getattr(self._meta['aggs'], 'field', None)
             if field:
-                self._meta['field'] = _resolve_field(self._meta['search'], field)
+                self._meta['field'] = self._meta['search']._resolve_field(field)
             bs = self._d_['buckets']
             if isinstance(bs, list):
                 bs = AttrList(bs, obj_wrapper=self._wrap_bucket)

@@ -2,3 +2,4 @@ include AUTHORS
 include LICENSE
 include README
 include CONTRIBUTING.rst
+include Changelog.rst

@@ -23,6 +23,7 @@ class Repos(Document):
 
 class RepoSearch(FacetedSearch):
     index = 'git'
+    doc_types = [Repos]
     facets = {
       'public': TermsFacet(field='is_public'),
       'created': DateHistogramFacet(field='created_at', interval='month')
@@ -76,6 +77,8 @@ def test_boolean_facet(data_client):
 
     assert r.hits.total == 1
     assert [(True, 1, False)] == r.facets.public
+    value, count, selected = r.facets.public[0]
+    assert value is True
 
 
 def test_empty_search_finds_everything(data_client):

@@ -19,4 +19,21 @@ For simplicity we use a timestamp as version in the index name.
 -------------------
 
 More complex example highlighting the possible relationships available in
-elasticsearch - parent/child and nested.
+elasticsearch - `parent/child
+<https://www.elastic.co/guide/en/elasticsearch/reference/6.3/nested.html>`_ and
+`nested
+<https://www.elastic.co/guide/en/elasticsearch/reference/6.3/nested.html>`_.
+
+``composite_agg.py``
+--------------------
+
+A helper function using the `composite aggregation
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html>`_
+to paginate over aggregation results.
+
+``percolate.py``
+----------------
+
+A ``BlogPost`` document with automatic classification using the `percolator
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-percolate-query.html>`_
+functionality.

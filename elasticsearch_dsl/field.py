@@ -6,10 +6,11 @@ import collections
 from datetime import date, datetime
 
 from dateutil import parser, tz
-from six import itervalues, string_types, iteritems
+from six import string_types, iteritems
 from six.moves import map
 
-from .utils import DslBase, ObjectBase, AttrDict, AttrList
+from .query import Q
+from .utils import DslBase, AttrDict, AttrList
 from .exceptions import ValidationException
 
 unicode = type(u'')
@@ -357,6 +358,15 @@ class Completion(Field):
 
 class Percolator(Field):
     name = 'percolator'
+    _coerce = True
+
+    def _deserialize(self, data):
+        return Q(data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return data.to_dict()
 
 class IntegerRange(Field):
     name = 'integer_range'

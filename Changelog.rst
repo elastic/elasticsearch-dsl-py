@@ -3,8 +3,19 @@
 Changelog
 =========
 
-6.2.0 (dev)
+6.3.0 (dev)
 -----------
+
+* Added ``retry_on_conflict`` parameter to ``Document.update``.
+
+6.2.1 (2018-07-03)
+------------------
+
+* allow users to redefine ``doc_type`` in ``Index`` (``#929``)
+* include ``DocType`` in ``elasticsearch_dsl`` module directly (``#930``)
+
+6.2.0 (2018-07-03)
+------------------
 
 **Backwards incompatible change** - ``DocType`` refactoring.
 
@@ -25,6 +36,10 @@ directory. Documentation has been updated to reflect the new API.
 ``7.x``. It does, however, work in the new way which is not fully backwards
 compatible.
 
+* ``Percolator`` field now expects ``Query`` objects as values
+* you can no longer access meta fields on a ``Document`` instance by specifying
+  ``._id`` or similar. Instead all access needs to happen via the ``.meta``
+  attribute.
 * Implemented ``NestedFacet`` for ``FacetedSearch``. This brought a need to
   slightly change the semantics of ``Facet.get_values`` which now expects the
   whole data dict for the aggregation, not just the ``buckets``. This is

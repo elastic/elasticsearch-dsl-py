@@ -6,10 +6,15 @@ Persistence
 You can use the dsl library to define your mappings and a basic persistent
 layer for your application.
 
+For more comprehensive examples have a look at the examples_ directory in the
+repository.
+
+.. _examples: https://github.com/elastic/elasticsearch-dsl-py/tree/master/examples
+
 .. _doc_type:
 
 Document
--------
+--------
 
 If you want to create a model-like wrapper around your documents, use the
 ``Document`` class. It can also be used to create all the necessary mappings and
@@ -308,6 +313,10 @@ the index, its name, settings and other attributes:
   used for any write operations and an ``index`` kwarg will have to be passed
   explicitly when calling methods like ``.save()``.
 
+``doc_type``
+  name of the ``_type`` in elasticsearch. Note that you have to define this as
+  well as ``doc_type`` in ``class Meta`` in order for it to take effect.
+
 ``using``
   default connection alias to use, defaults to ``'default'``
 
@@ -417,7 +426,7 @@ Potential workflow for a set of time based indices governed by a single template
 
     from datetime import datetime
 
-    from elasticsearch_dsl import Document, Date, Text IndexTemplate
+    from elasticsearch_dsl import Document, Date, Text
 
 
     class Log(Document):
