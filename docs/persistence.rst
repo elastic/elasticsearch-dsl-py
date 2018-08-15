@@ -94,6 +94,9 @@ or create the mappings directly by calling the ``init`` class method:
     # create the mappings in Elasticsearch
     Post.init()
 
+This code will typically be run in the setup for your application during a code
+deploy, similar to running database migrations.
+
 To create a new ``Post`` document just instantiate the class and pass in any
 fields you wish to set, you can then use standard attribute setting to
 change/add more fields. Note that you are not limited to the fields defined
