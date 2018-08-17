@@ -334,6 +334,39 @@ the index, its name, settings and other attributes:
 ``aliases``
   dictionary with any aliases definitions
 
+Document Inheritance
+~~~~~~~~~~~~~~~~~~~~
+
+You can use standard Python inheritance to extend models, this can be useful in
+a few scenarios. For example if you want to have a ``BaseDocument`` defining some common fields that several different ``Document`` classes should share:
+
+.. code:: python
+
+    class User(InnerDoc):
+        username = Text(fields={'keyword': Keyword()})
+        email = Text()
+
+    class BaseDocument(Document):
+        created_by = Object(User)
+        created_date = Date()
+        last_updated = Date()
+
+        def save(**kwargs):
+            if not self.created_date:
+                self.created_date = datetime.now()
+            self.last_updated = datetime.now()
+            return super(BaseDocument, self).save(**kwargs)
+
+    class BlogPost(BaseDocument):
+        class Index:
+            name = 'blog'
+
+Another use case would be using the `join type
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/parent-join.html>`_
+to have multiple different entities in a single index. You can see an `example
+<https://github.com/elastic/elasticsearch-dsl-py/blob/master/examples/parent_child.py>`_
+of this approach.
+
 .. _index:
 
 Index

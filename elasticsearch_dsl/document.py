@@ -10,7 +10,7 @@ from .utils import ObjectBase, merge, DOC_META_FIELDS, META_FIELDS
 from .search import Search
 from .connections import connections
 from .exceptions import ValidationException, IllegalOperation
-from .index import Index, DEFAULT_INDEX
+from .index import Index
 
 
 class MetaField(object):
@@ -25,24 +25,30 @@ class DocumentMeta(type):
         return super(DocumentMeta, cls).__new__(cls, name, bases, attrs)
 
 class IndexMeta(DocumentMeta):
+    # global flag to guard us from associating an Index with the base Document
+    # class, only user defined subclasses should have an _index attr
+    _document_initialized = False
+
     def __new__(cls, name, bases, attrs):
-        index_opts = attrs.pop('Index', None)
         new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
-        new_cls._index = cls.construct_index(index_opts, bases)
-        new_cls._index.document(new_cls)
+        if cls._document_initialized:
+            index_opts = attrs.pop('Index', None)
+            new_cls._index = cls.construct_index(index_opts, bases)
+            new_cls._index.document(new_cls)
+        cls._document_initialized = True
         return new_cls
 
     @classmethod
     def construct_index(cls, opts, bases):
         if opts is None:
             for b in bases:
-                if getattr(b, '_index', DEFAULT_INDEX) is not DEFAULT_INDEX:
+                if hasattr(b, '_index'):
                     return b._index
-            return DEFAULT_INDEX
+            # create an all-matching index pattern
+            return Index('*')
 
         i = Index(
             getattr(opts, 'name', '*'),
-            doc_type=getattr(opts, 'doc_type', 'doc'),
             using=getattr(opts, 'using', 'default')
         )
         i.settings(**getattr(opts, 'settings', {}))

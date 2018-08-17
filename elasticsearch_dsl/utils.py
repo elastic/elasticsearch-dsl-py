@@ -396,16 +396,24 @@ class ObjectBase(AttrDict):
                     return value
             raise
 
+    def __get_field(self, name):
+        try:
+            return self._doc_type.mapping[name]
+        except KeyError:
+            # fallback to fields on the Index
+            if hasattr(self, '_index') and self._index._mapping:
+                try:
+                    return self._index._mapping[name]
+                except KeyError:
+                    pass
+
     def to_dict(self, skip_empty=True):
         out = {}
         for k, v in iteritems(self._d_):
-            try:
-                f = self._doc_type.mapping[k]
-            except KeyError:
-                pass
-            else:
-                if f._coerce:
-                    v = f.serialize(v)
+            # if this is a mapped field,
+            f = self.__get_field(k)
+            if f and f._coerce:
+                v = f.serialize(v)
 
             # if someone assigned AttrList, unwrap it
             if isinstance(v, AttrList):
@@ -420,11 +428,32 @@ class ObjectBase(AttrDict):
             out[k] = v
         return out
 
-    def clean_fields(self):
-        errors = {}
+    def __list_fields(self):
+        """
+        Get all the fields defined for our class, if we have an Index, try
+        looking at the index mappings as well, mark the fields from Index as
+        optional.
+        """
         for name in self._doc_type.mapping:
             field = self._doc_type.mapping[name]
+            yield name, field, False
+
+        if hasattr(self, '_index'):
+            if not self._index._mapping:
+                return
+            for name in self._index._mapping:
+                # don't return fields that are in _doc_type
+                if name in self._doc_type.mapping:
+                    continue
+                field = self._index._mapping[name]
+                yield name, field, True
+
+    def clean_fields(self):
+        errors = {}
+        for name, field, optional in self.__list_fields():
             data = self._d_.get(name, None)
+            if data is None and optional:
+                continue
             try:
                 # save the cleaned value
                 data = field.clean(data)

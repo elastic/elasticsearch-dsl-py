@@ -3,6 +3,8 @@ from .search import Search
 from .exceptions import IllegalOperation
 from .mapping import Mapping
 
+DEFAULT_DOC_TYPE = 'doc'
+
 class IndexTemplate(object):
     def __init__(self, name, template, index=None, **kwargs):
         if index is None:
@@ -28,7 +30,7 @@ class IndexTemplate(object):
         es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 class Index(object):
-    def __init__(self, name, doc_type='doc', using='default'):
+    def __init__(self, name, doc_type=DEFAULT_DOC_TYPE, using='default'):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
@@ -39,7 +41,14 @@ class Index(object):
         self._settings = {}
         self._aliases = {}
         self._analysis = {}
-        self._mapping = Mapping(doc_type)
+        self._mapping = None
+        if doc_type is not DEFAULT_DOC_TYPE:
+            self._mapping = Mapping(doc_type)
+
+    def get_or_create_mapping(self, doc_type=DEFAULT_DOC_TYPE):
+        if self._mapping is None:
+            self._mapping = Mapping(doc_type)
+        return self._mapping
 
     def as_template(self, template_name, pattern=None):
         # TODO: should we allow pattern to be a top-level arg?
@@ -48,10 +57,10 @@ class Index(object):
         return IndexTemplate(template_name, pattern or self._name, index=self)
 
     def resolve_field(self, field_path):
-        return self._mapping.resolve_field(field_path)
+        return self.get_or_create_mapping().resolve_field(field_path)
 
     def load_mappings(self, using=None):
-        self._mapping.update_from_es(self._name, using=using or self._using)
+        self.get_or_create_mapping().update_from_es(self._name, using=using or self._using)
 
     def clone(self, name=None, doc_type=None, using=None):
         """
@@ -68,14 +77,18 @@ class Index(object):
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
+        doc_type = doc_type or (
+            DEFAULT_DOC_TYPE if self._mapping is None else self._mapping.doc_type
+        )
         i = Index(name or self._name,
-                  doc_type=doc_type or self._mapping.doc_type,
+                  doc_type=doc_type,
                   using=using or self._using)
         i._settings = self._settings.copy()
         i._aliases = self._aliases.copy()
         i._analysis = self._analysis.copy()
         i._doc_types = self._doc_types[:]
-        i._mapping = self._mapping._clone()
+        if self._mapping is not None:
+            i._mapping = self._mapping._clone()
         return i
 
     def _get_connection(self, using=None):
@@ -89,11 +102,11 @@ class Index(object):
         This means that, when this index is created, it will contain the
         mappings for the document type defined by those mappings.
         """
-        if mapping.doc_type != self._mapping.doc_type:
+        if self._mapping is not None and mapping.doc_type != self._mapping.doc_type:
             raise IllegalOperation(
                 'Index object cannot have multiple types, %s already set, '
                 'trying to assign %s.' % (self._mapping.doc_type, mapping.doc_type))
-        self._mapping.update(mapping)
+        self.get_or_create_mapping(mapping.doc_type).update(mapping)
 
     def document(self, document):
         """
@@ -117,17 +130,14 @@ class Index(object):
             s = i.search()
         """
         name = document._doc_type.name
-        if name != self._mapping.doc_type:
+        if self._mapping is not None and name != self._mapping.doc_type:
             raise IllegalOperation(
                 'Index object cannot have multiple types, %s already set, '
                 'trying to assign %s.' % (self._mapping.doc_type, name))
         self._doc_types.append(document)
         # TODO: do this at save time to allow Document to be modified after
         # creation?
-        self._mapping.update(document._doc_type.mapping)
-
-        if document._index is DEFAULT_INDEX:
-            document._index = self
+        self.get_or_create_mapping(document._doc_type.name).update(document._doc_type.mapping)
         return document
     doc_type = document
 
@@ -188,9 +198,9 @@ class Index(object):
             out['settings'] = self._settings
         if self._aliases:
             out['aliases'] = self._aliases
-        mappings = self._mapping.to_dict()
-        analysis = self._mapping._collect_analysis()
-        if mappings[self._mapping.doc_type]:
+        mappings = self._mapping.to_dict() if self._mapping else None
+        analysis = self._mapping._collect_analysis() if self._mapping else {}
+        if mappings and mappings[self._mapping.doc_type]:
             out['mappings'] = mappings
         if analysis or self._analysis:
             for key in self._analysis:
@@ -548,5 +558,3 @@ class Index(object):
         ``Elasticsearch.indices.shrink`` unchanged.
         """
         return self._get_connection(using).indices.shrink(index=self._name, **kwargs)
-
-DEFAULT_INDEX = Index('*')

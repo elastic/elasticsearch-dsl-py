@@ -72,8 +72,18 @@ def test_document_can_redefine_doc_type():
     class D(document.Document):
         class Meta:
             doc_type = 'not-doc'
-        class Index:
-            doc_type = 'not-doc'
+    assert D._index._mapping.doc_type == 'not-doc'
+
+def test_document_cannot_specify_different_doc_type_if_index_defined():
+    # this will initiate ._index with doc_type = 'doc'
+    class C(document.Document):
+        pass
+
+    with raises(IllegalOperation):
+        class D(C):
+            class Meta:
+                doc_type = 'not-doc'
+
 
 def test_ip_address_serializes_properly():
     host = Host(ip=ipaddress.IPv4Address(u'10.0.0.1'))
@@ -459,9 +469,6 @@ def test_index_inheritance():
     assert issubclass(MyMultiSubDoc, document.Document)
     assert hasattr(MyMultiSubDoc, '_doc_type')
     assert hasattr(MyMultiSubDoc, '_index')
-    # index and using should be
-    assert MyMultiSubDoc._index._name == MySubDoc._index._name
-    assert MyMultiSubDoc._index._using == MySubDoc._index._using
     assert {
         'doc': {
             'properties': {
