@@ -356,6 +356,39 @@ class ObjectBase(AttrDict):
         super(ObjectBase, self).__init__(kwargs)
 
     @classmethod
+    def __list_fields(cls):
+        """
+        Get all the fields defined for our class, if we have an Index, try
+        looking at the index mappings as well, mark the fields from Index as
+        optional.
+        """
+        for name in cls._doc_type.mapping:
+            field = cls._doc_type.mapping[name]
+            yield name, field, False
+
+        if hasattr(cls.__class__, '_index'):
+            if not cls._index._mapping:
+                return
+            for name in cls._index._mapping:
+                # don't return fields that are in _doc_type
+                if name in cls._doc_type.mapping:
+                    continue
+                field = cls._index._mapping[name]
+                yield name, field, True
+
+    @classmethod
+    def __get_field(cls, name):
+        try:
+            return cls._doc_type.mapping[name]
+        except KeyError:
+            # fallback to fields on the Index
+            if hasattr(cls, '_index') and cls._index._mapping:
+                try:
+                    return cls._index._mapping[name]
+                except KeyError:
+                    pass
+
+    @classmethod
     def from_es(cls, hit):
         meta = hit.copy()
         data = meta.pop('_source', {})
@@ -367,10 +400,10 @@ class ObjectBase(AttrDict):
                     data[k] = v
 
         doc = cls(meta=meta)
-        m = cls._doc_type.mapping
         for k, v in iteritems(data):
-            if k in m and m[k]._coerce:
-                v = m[k].deserialize(v)
+            f = cls.__get_field(k)
+            if f and f._coerce:
+                v = f.deserialize(v)
             setattr(doc, k, v)
         return doc
 
@@ -386,26 +419,14 @@ class ObjectBase(AttrDict):
         try:
             return super(ObjectBase, self).__getattr__(name)
         except AttributeError:
-            if name in self._doc_type.mapping:
-                f = self._doc_type.mapping[name]
-                if hasattr(f, 'empty'):
-                    value = f.empty()
-                    if value not in SKIP_VALUES:
-                        setattr(self, name, value)
-                        value = getattr(self, name)
-                    return value
+            f = self.__get_field(name)
+            if hasattr(f, 'empty'):
+                value = f.empty()
+                if value not in SKIP_VALUES:
+                    setattr(self, name, value)
+                    value = getattr(self, name)
+                return value
             raise
-
-    def __get_field(self, name):
-        try:
-            return self._doc_type.mapping[name]
-        except KeyError:
-            # fallback to fields on the Index
-            if hasattr(self, '_index') and self._index._mapping:
-                try:
-                    return self._index._mapping[name]
-                except KeyError:
-                    pass
 
     def to_dict(self, skip_empty=True):
         out = {}
@@ -427,26 +448,6 @@ class ObjectBase(AttrDict):
 
             out[k] = v
         return out
-
-    def __list_fields(self):
-        """
-        Get all the fields defined for our class, if we have an Index, try
-        looking at the index mappings as well, mark the fields from Index as
-        optional.
-        """
-        for name in self._doc_type.mapping:
-            field = self._doc_type.mapping[name]
-            yield name, field, False
-
-        if hasattr(self, '_index'):
-            if not self._index._mapping:
-                return
-            for name in self._index._mapping:
-                # don't return fields that are in _doc_type
-                if name in self._doc_type.mapping:
-                    continue
-                field = self._index._mapping[name]
-                yield name, field, True
 
     def clean_fields(self):
         errors = {}
