@@ -338,7 +338,8 @@ Document Inheritance
 ~~~~~~~~~~~~~~~~~~~~
 
 You can use standard Python inheritance to extend models, this can be useful in
-a few scenarios. For example if you want to have a ``BaseDocument`` defining some common fields that several different ``Document`` classes should share:
+a few scenarios. For example if you want to have a ``BaseDocument`` defining
+some common fields that several different ``Document`` classes should share:
 
 .. code:: python
 
@@ -365,7 +366,9 @@ Another use case would be using the `join type
 <https://www.elastic.co/guide/en/elasticsearch/reference/current/parent-join.html>`_
 to have multiple different entities in a single index. You can see an `example
 <https://github.com/elastic/elasticsearch-dsl-py/blob/master/examples/parent_child.py>`_
-of this approach.
+of this approach. Note that in this case, if the subclasses don't define their
+own `Index` classes, the mappings are merged and shared between all the
+subclasses.
 
 .. _index:
 
