@@ -385,7 +385,7 @@ class Document(ObjectBase):
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
 
-    def save(self, using=None, index=None, validate=True, **kwargs):
+    def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
         """
         Save the document into elasticsearch. If the document doesn't exist it
         is created, it is overwritten otherwise. Returns ``True`` if this
@@ -395,6 +395,9 @@ class Document(ObjectBase):
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
         :arg validate: set to ``False`` to skip validating the document
+        :arg skip_empty: if set to ``False`` will cause empty values (``None``,
+            ``[]``, ``{}``) to be left on the document. Those values will be
+            stripped out otherwise as they make no difference in elasticsearch.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
@@ -413,7 +416,7 @@ class Document(ObjectBase):
         meta = es.index(
             index=self._get_index(index),
             doc_type=self._doc_type.name,
-            body=self.to_dict(),
+            body=self.to_dict(skip_empty=skip_empty),
             **doc_meta
         )
         # update meta information from ES
