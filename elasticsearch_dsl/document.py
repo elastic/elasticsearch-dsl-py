@@ -24,6 +24,7 @@ class DocumentMeta(type):
         attrs['_doc_type'] = DocumentOptions(name, bases, attrs)
         return super(DocumentMeta, cls).__new__(cls, name, bases, attrs)
 
+
 class IndexMeta(DocumentMeta):
     # global flag to guard us from associating an Index with the base Document
     # class, only user defined subclasses should have an _index attr
@@ -73,6 +74,14 @@ class DocumentOptions(object):
             if isinstance(value, Field):
                 self.mapping.field(name, value)
                 del attrs[name]
+
+        # Get additional fields as defined by the extended class
+        # This hook if important to dynamically add fields to mapping
+        extra_fields_function = attrs.get('get_extra_fields')
+        if extra_fields_function:
+            extra_fields = extra_fields_function()
+            for name, value in extra_fields:
+                self.mapping.field(name, value)
 
         # add all the mappings for meta fields
         for name in dir(meta):
@@ -256,6 +265,18 @@ class Document(ObjectBase):
             message = 'Documents %s not found.' % ', '.join(missing_ids)
             raise NotFoundError(404, message, {'docs': missing_docs})
         return objs
+
+    @classmethod
+    def get_extra_fields(cls):
+        """
+        A hook to add fields dynamically to the mapping.
+
+        Its possible to use this classmethod to add any field to dynamically to
+        mapping.
+        :return: A list with name, Field tuple
+        """
+
+        return []
 
     def delete(self, using=None, index=None, **kwargs):
         """
