@@ -131,6 +131,7 @@ class Document(ObjectBase):
         i = cls._index
         if index:
             i = i.clone(name=index)
+        i.document(cls)
         i.save(using=using)
 
     def _get_index(self, index=None, required=True):
