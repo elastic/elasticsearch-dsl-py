@@ -47,6 +47,13 @@ class Index(object):
         if doc_type is not DEFAULT_DOC_TYPE:
             self._mapping = Mapping(doc_type)
 
+    def _get_doc_type(self):
+        if self._mapping is not None:
+            return self._mapping.doc_type
+        for d in self._doc_types:
+            return d._doc_type.name
+        return None
+
     def get_or_create_mapping(self, doc_type=DEFAULT_DOC_TYPE):
         if self._mapping is None:
             self._mapping = Mapping(doc_type)
@@ -59,6 +66,10 @@ class Index(object):
         return IndexTemplate(template_name, pattern or self._name, index=self)
 
     def resolve_field(self, field_path):
+        for doc in self._doc_types:
+            field = doc._doc_type.mapping.resolve_field(field_path)
+            if field is not None:
+                return field
         return self.get_or_create_mapping().resolve_field(field_path)
 
     def load_mappings(self, using=None):
@@ -79,9 +90,7 @@ class Index(object):
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
-        doc_type = doc_type or (
-            DEFAULT_DOC_TYPE if self._mapping is None else self._mapping.doc_type
-        )
+        doc_type = doc_type or self._get_doc_type() or DEFAULT_DOC_TYPE
         i = Index(name or self._name,
                   doc_type=doc_type,
                   using=using or self._using)
@@ -132,14 +141,12 @@ class Index(object):
             s = i.search()
         """
         name = document._doc_type.name
-        if self._mapping is not None and name != self._mapping.doc_type:
+        doc_type = self._get_doc_type()
+        if doc_type and name != doc_type:
             raise IllegalOperation(
                 'Index object cannot have multiple types, %s already set, '
-                'trying to assign %s.' % (self._mapping.doc_type, name))
+                'trying to assign %s.' % (doc_type, name))
         self._doc_types.append(document)
-        # TODO: do this at save time to allow Document to be modified after
-        # creation?
-        self.get_or_create_mapping(document._doc_type.name).update(document._doc_type.mapping)
         return document
     doc_type = document
 
@@ -199,13 +206,16 @@ class Index(object):
             out['settings'] = self._settings
         if self._aliases:
             out['aliases'] = self._aliases
-        mappings = self._mapping.to_dict() if self._mapping else None
+        mappings = self._mapping.to_dict() if self._mapping else {}
         analysis = self._mapping._collect_analysis() if self._mapping else {}
-        if mappings and mappings[self._mapping.doc_type]:
+        for d in self._doc_types:
+            mapping = d._doc_type.mapping
+            merge(mappings, mapping.to_dict(), True)
+            merge(analysis, mapping._collect_analysis(), True)
+        if mappings and mappings[self._get_doc_type()]:
             out['mappings'] = mappings
         if analysis or self._analysis:
-            for key in self._analysis:
-                analysis.setdefault(key, {}).update(self._analysis[key])
+            merge(analysis, self._analysis)
             out.setdefault('settings', {})['analysis'] = analysis
         return out
 

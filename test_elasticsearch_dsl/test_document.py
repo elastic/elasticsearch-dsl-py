@@ -70,9 +70,13 @@ class Host(document.Document):
 
 def test_document_can_redefine_doc_type():
     class D(document.Document):
+        kw = field.Keyword()
         class Meta:
             doc_type = 'not-doc'
-    assert D._index._mapping.doc_type == 'not-doc'
+    assert D._index._get_doc_type() == 'not-doc'
+    assert D._index.to_dict() == {
+        'mappings': {'not-doc': {'properties': {'kw': {'type': 'keyword'}}}}
+    }
 
 def test_document_cannot_specify_different_doc_type_if_index_defined():
     # this will initiate ._index with doc_type = 'doc'
