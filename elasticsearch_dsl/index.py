@@ -70,7 +70,9 @@ class Index(object):
             field = doc._doc_type.mapping.resolve_field(field_path)
             if field is not None:
                 return field
-        return self.get_or_create_mapping().resolve_field(field_path)
+        if self._mapping:
+            return self._mapping.resolve_field(field_path)
+        return None
 
     def load_mappings(self, using=None):
         self.get_or_create_mapping().update_from_es(self._name, using=using or self._using)
