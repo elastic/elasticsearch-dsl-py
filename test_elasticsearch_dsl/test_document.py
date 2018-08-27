@@ -4,7 +4,7 @@ from hashlib import md5
 from datetime import datetime
 import ipaddress
 
-from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc, analyzer
+from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc, analyzer, Index
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
@@ -88,6 +88,19 @@ def test_document_cannot_specify_different_doc_type_if_index_defined():
             class Meta:
                 doc_type = 'not-doc'
 
+def test_conflicting_mapping_raises_error_in_index_to_dict():
+    class A(document.Document):
+        name = field.Text()
+
+    class B(document.Document):
+        name = field.Keyword()
+
+    i = Index('i')
+    i.document(A)
+    i.document(B)
+
+    with raises(ValueError):
+        i.to_dict()
 
 def test_ip_address_serializes_properly():
     host = Host(ip=ipaddress.IPv4Address(u'10.0.0.1'))
