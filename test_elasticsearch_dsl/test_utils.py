@@ -2,6 +2,8 @@ import pickle
 
 from elasticsearch_dsl import utils, serializer
 
+from pytest import raises
+
 def test_attrdict_pickle():
     ad = utils.AttrDict({})
 
@@ -29,6 +31,12 @@ def test_merge():
     utils.merge(a, b)
 
     assert a == {'a': {'b': 123, 'c': 47, 'd': -12}, 'e': [1, 2, 3]}
+
+def test_merge_conflict():
+    for d in ({'a': 42}, {'a': {'b': 47}},):
+        utils.merge({'a': {'b': 42}}, d)
+        with raises(ValueError):
+            utils.merge({'a': {'b': 42}}, d, True)
 
 def test_attrdict_bool():
     d = utils.AttrDict({})

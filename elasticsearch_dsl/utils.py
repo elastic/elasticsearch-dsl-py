@@ -474,14 +474,16 @@ class ObjectBase(AttrDict):
         self.clean_fields()
         self.clean()
 
-def merge(data, new_data):
+def merge(data, new_data, raise_on_conflict=False):
     if not (isinstance(data, (AttrDict, collections.Mapping))
             and isinstance(new_data, (AttrDict, collections.Mapping))):
         raise ValueError('You can only merge two dicts! Got %r and %r instead.' % (data, new_data))
 
     for key, value in iteritems(new_data):
-        if key in data and isinstance(getattr(data, key), (AttrDict, collections.Mapping)) and \
+        if key in data and isinstance(data[key], (AttrDict, collections.Mapping)) and \
                 isinstance(value, (AttrDict, collections.Mapping)):
-            merge(getattr(data, key), value)
+            merge(data[key], value, raise_on_conflict)
+        elif key in data and data[key] != value and raise_on_conflict:
+            raise ValueError('Incompatible data for key %r, cannot be merged.' % key)
         else:
-            setattr(data, key, value)
+            data[key] = value
