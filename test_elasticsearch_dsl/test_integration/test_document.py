@@ -290,6 +290,25 @@ def test_can_save_to_different_index(write_client):
         '_source': {'description': 'testing'},
     } == write_client.get(index='test-document', doc_type='doc', id=42)
 
+def test_save_without_skip_empty_will_include_empty_fields(write_client):
+    test_repo = Repository(field_1=[], field_2=None, field_3={}, meta={'id': 42})
+    test_repo.meta.version_type = 'external'
+    test_repo.meta.version = 3
+    assert test_repo.save(index='test-document', skip_empty=False)
+
+    assert {
+        'found': True,
+        '_index': 'test-document',
+        '_type': 'doc',
+        '_id': '42',
+        '_version': 3,
+        '_source': {
+            "field_1": [],
+            "field_2": None,
+            "field_3": {}
+        },
+    } == write_client.get(index='test-document', doc_type='doc', id=42)
+
 def test_delete(write_client):
     write_client.create(
         index='test-document',
