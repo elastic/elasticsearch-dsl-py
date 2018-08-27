@@ -160,3 +160,10 @@ def test_analyzers_returned_from_to_dict():
     index.analyzer(random_analyzer)
 
     assert index.to_dict()["settings"]["analysis"]["analyzer"][random_analyzer_name] == {"filter": ["standard"], "type": "custom", "tokenizer": "standard"}
+
+def test_conflicting_analyzer_raises_error():
+    i = Index('i')
+    i.analyzer('my_analyzer', tokenizer='whitespace', filter=['lowercase', 'stop'])
+
+    with raises(ValueError):
+        i.analyzer('my_analyzer', tokenizer='keyword', filter=['lowercase', 'stop'])

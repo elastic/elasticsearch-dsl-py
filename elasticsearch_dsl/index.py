@@ -2,6 +2,8 @@ from .connections import connections
 from .search import Search
 from .exceptions import IllegalOperation
 from .mapping import Mapping
+from .utils import merge
+from . import analysis
 
 DEFAULT_DOC_TYPE = 'doc'
 
@@ -164,7 +166,7 @@ class Index(object):
         self._aliases.update(kwargs)
         return self
 
-    def analyzer(self, analyzer):
+    def analyzer(self, *args, **kwargs):
         """
         Explicitly add an analyzer to an index. Note that all custom analyzers
         defined in mappings will also be created. This is useful for search analyzers.
@@ -182,15 +184,14 @@ class Index(object):
             i.analyzer(my_analyzer)
 
         """
+        analyzer = analysis.analyzer(*args, **kwargs)
         d = analyzer.get_analysis_definition()
         # empty custom analyzer, probably already defined out of our control
         if not d:
             return
 
         # merge the definition
-        # TODO: conflict detection/resolution
-        for key in d:
-            self._analysis.setdefault(key, {}).update(d[key])
+        merge(self._analysis, d, True)
 
     def to_dict(self):
         out = {}
