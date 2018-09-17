@@ -425,7 +425,7 @@ To set query parameters, use the ``.params()`` method:
 
 .. code:: python
 
-  s = s.params(search_type="count")
+  s = s.params(routing="42")
 
 
 If you need to limit the fields being returned by elasticsearch, use the
