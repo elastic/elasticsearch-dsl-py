@@ -157,6 +157,28 @@ just override the query used in the ``Search`` object:
 
     s.query = Q('bool', must=[Q('match', title='python'), Q('match', body='best')])
 
+Dotted fields
+^^^^^^^^^^^^^
+
+Sometimes you want to refer to a field within another field, either as
+a multi-field (``title.keyword``) or in a structured ``json`` document like
+``address.city``. To make it easier, the ``Q`` shortcut (as well as the
+``query``, ``filter``, and ``exclude`` methods on ``Search`` class) allows you
+to use ``__`` (double underscore) in place of a dot in a keyword argument:
+
+.. code:: python
+
+    s = Search()
+    s = s.filter('term', category__keyword='Python')
+    s = s.query('match', address__city='prague')
+
+Alternatively you can always fall back to python's kwarg unpacking if you prefer:
+
+.. code:: python
+
+    s = Search()
+    s = s.filter('term', **{'category.keyword': 'Python'})
+    s = s.query('match', **{'address.city': 'prague'})
 
 Query combination
 ^^^^^^^^^^^^^^^^^
