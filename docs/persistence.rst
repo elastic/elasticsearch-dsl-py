@@ -272,10 +272,9 @@ If you want to run suggestions, just use the ``suggest`` method on the
     s = Post.search()
     s = s.suggest('title_suggestions', 'pyth', completion={'field': 'title_suggest'})
 
-    # you can even execute just the suggestions via the _suggest API
-    suggestions = s.execute_suggest()
+    response = s.execute()
 
-    for result in suggestions.title_suggestions:
+    for result in response.suggest.title_suggestions:
         print('Suggestions for %s:' % result.text)
         for option in result.options:
             print('  %s (%r)' % (option.text, option.payload))
