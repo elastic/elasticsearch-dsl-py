@@ -46,6 +46,10 @@ class PercolatorDoc(Document):
 
     class Index:
         name = 'test-percolator'
+        settings = {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+        }
 
 def setup():
     # create the percolator index if it doesn't exist
