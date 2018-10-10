@@ -26,9 +26,6 @@ from elasticsearch_dsl import Document, Date, Text, Keyword, connections
 ALIAS = 'test-blog'
 PATTERN = ALIAS + '-*'
 
-# initiate the default connection to elasticsearch
-connections.create_connection()
-
 class BlogPost(Document):
     title = Text()
     published = Date()
@@ -107,3 +104,22 @@ def migrate(move_data=True, update_alias=True):
                 {"add": {"alias": ALIAS, "index": next_index}},
             ]
         })
+
+if __name__ == '__main__':
+    # initiate the default connection to elasticsearch
+    connections.create_connection()
+
+    # create the empty index
+    setup()
+
+    # create a new document
+    bp = BlogPost(
+        _id=0,
+        title='Hello World!',
+        tags = ['testing', 'dummy'],
+        content=open(__file__).read()
+    )
+    bp.save(refresh=True)
+
+    # create new index
+    migrate()

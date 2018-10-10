@@ -25,7 +25,7 @@ It is used to showcase several key features of elasticsearch-dsl:
 from datetime import datetime
 
 from elasticsearch_dsl import Document, Date, Text, Keyword, Boolean, InnerDoc, \
-    Nested, Object, Join, Long
+    Nested, Object, Join, Long, connections
 
 class User(InnerDoc):
     """
@@ -173,3 +173,30 @@ def setup():
     " Create an IndexTemplate and save it into elasticsearch. "
     index_template = Post._index.as_template('base')
     index_template.save()
+
+if __name__ == '__main__':
+    # initiate the default connection to elasticsearch
+    connections.create_connection()
+
+    # create index
+    setup()
+
+    # user objects to use
+    nick = User(id=47, signed_up=datetime(2017, 4, 3), username='fxdgear',
+                email='nick.lang@elastic.co', localtion='Colorado')
+    honza = User(id=42, signed_up=datetime(2013, 4, 3), username='honzakral',
+                 email='honza@elastic.co', localtion='Prague')
+
+    # create a question object
+    question = Question(
+        _id=1,
+        author=nick,
+        tags=['elasticsearch', 'python'],
+        title='How do I use elasticsearch from Python?',
+        body='''
+        I want to use elasticsearch, how do I do it from Python?
+        ''',
+    )
+    question.save()
+    answer = question.add_answer(honza, "Just use `elasticsearch-py`!")
+

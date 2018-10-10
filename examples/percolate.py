@@ -1,8 +1,6 @@
 from elasticsearch_dsl import Document, Percolator, Text, Keyword, \
     connections, Q, Search
 
-connections.create_connection()
-
 class BlogPost(Document):
     """
     Blog posts that will be automatically tagged based on percolation queries.
@@ -60,3 +58,10 @@ def setup():
         tags=['programming', 'development', 'python'],
         query=Q('match', content='python')
     ).save(refresh=True)
+
+
+if __name__ == '__main__':
+    # initiate the default connection to elasticsearch
+    connections.create_connection()
+
+    setup()

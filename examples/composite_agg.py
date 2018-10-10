@@ -27,10 +27,10 @@ def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
 
 
 if __name__ == '__main__':
+    # initiate the default connection to elasticsearch
     connections.create_connection()
-    s = Search(index='git')
 
-    for b in scan_aggs(s,
+    for b in scan_aggs(Search(index='git'),
                        {'files': A('terms', field='files')},
                        {'first_seen': A('min', field='committed_date')}):
         print('File %s has been modified %d times, first seen at %s.' % (
