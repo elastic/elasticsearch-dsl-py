@@ -476,10 +476,10 @@ class Search(Request):
         """
         Selectively control how the _source field is returned.
 
-        :arg source: wildcard string, array of wildcards, or dictionary of includes and excludes
+        :arg fields: wildcard string, array of wildcards, or dictionary of includes and excludes
 
-        If ``source`` is None, the entire document will be returned for
-        each hit.  If source is a dictionary with keys of 'include' and/or
+        If ``fields`` is None, the entire document will be returned for
+        each hit.  If fields is a dictionary with keys of 'include' and/or
         'exclude' the fields will be either included or excluded appropriately.
 
         Calling this multiple times with the same named parameter will override the
