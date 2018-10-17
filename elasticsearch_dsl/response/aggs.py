@@ -34,7 +34,7 @@ class BucketData(AggResponse):
             field = getattr(self._meta['aggs'], 'field', None)
             if field:
                 self._meta['field'] = self._meta['search']._resolve_field(field)
-            bs = self._d_['buckets']
+            bs = self._d_.get('buckets', self._d_.get('nested').get('buckets'))
             if isinstance(bs, list):
                 bs = AttrList(bs, obj_wrapper=self._wrap_bucket)
             else:

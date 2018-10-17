@@ -6,6 +6,7 @@
 dist
 build
 *.egg
+*.eggs
 coverage.xml
 junit.xml
 test_elasticsearch_dsl/htmlcov
