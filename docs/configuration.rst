@@ -3,14 +3,14 @@
 Configuration
 =============
 
-There are several ways how to configure connections for the library. Easiest
-option, and most useful, is to just define one default connection that will be
+There are several ways to configure connections for the library. The easiest
+and most useful approach is to define one default connection that can be
 used every time an API call is made without explicitly passing in other
-connection.
+connections.
 
 .. note::
 
-    Unless you want to access multiple clusters from your application it is
+    Unless you want to access multiple clusters from your application, it is
     highly recommended that you use the ``create_connection`` method and all
     operations will use that connection automatically.
 
@@ -19,8 +19,8 @@ connection.
 Default connection
 ------------------
 
-To define a default connection that will be used globally, use the
-``connections`` module and the ``create_connection`` method:
+To define a default connection that can be used globally, use the
+``connections`` module and the ``create_connection`` method like this:
 
 .. code:: python
 
@@ -28,15 +28,29 @@ To define a default connection that will be used globally, use the
 
     connections.create_connection(hosts=['localhost'], timeout=20)
 
-Any keyword arguments (``hosts`` and ``timeout`` in our example) will be passed
-to the ``Elasticsearch`` class from ``elasticsearch-py``. To see all the
-possible configuration options see the `documentation
+Single connection with an alias
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can define the ``alias`` or name of a connection so you can easily
+refer to it later. The default value for ``alias`` is ``default``.
+
+.. code:: python
+
+    from elasticsearch_dsl import connections
+
+    connections.create_connection(alias='my_new_connection', hosts=['localhost'], timeout=60)
+
+Additional keyword arguments (``hosts`` and ``timeout`` in our example) will be passed
+to the ``Elasticsearch`` class from ``elasticsearch-py``.
+
+To see all
+possible configuration options refer to the `documentation
 <http://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch>`_.
 
 Multiple clusters
 -----------------
 
-You can define multiple connections to multiple clusters, either at the same
+You can define multiple connections to multiple clusters at the same
 time using the ``configure`` method:
 
 .. code:: python
@@ -53,35 +67,39 @@ time using the ``configure`` method:
 
 Such connections will be constructed lazily when requested for the first time.
 
-Or just add them one by one:
+You can alternatively define multiple connections by adding them one by one
+as shown in the following example:
 
 .. code:: python
 
-    # if you have configuration to be passed to Elasticsearch.__init__
+    # if you have configuration options to be passed to Elasticsearch.__init__
+    # this also shows creating a connection with the alias 'qa'
     connections.create_connection('qa', hosts=['esqa1.example.com'], sniff_on_start=True)
 
     # if you already have an Elasticsearch instance ready
-    connections.add_connection('qa', my_client)
+    connections.add_connection('another_qa', my_client)
 
 Using aliases
 ~~~~~~~~~~~~~
 
-When using multiple connections you can just refer to them using the string
-alias you registered them under:
+When using multiple connections, you can refer to them using the string
+alias specified when you created the connection.
+
+This example shows how to use an alias to a connection:
 
 .. code:: python
 
     s = Search(using='qa')
 
-``KeyError`` will be raised if there is no connection registered under that
+A ``KeyError`` will be raised if there is no connection registered with that
 alias.
 
 Manual
 ------
 
-If you don't wish to supply global configuration you can always pass in your
-own connection (instance of ``elasticsearch.Elasticsearch``) as parameter
-``using`` wherever it is accepted:
+If you don't want to supply a global configuration, you can always pass in your
+own connection as an instance of ``elasticsearch.Elasticsearch`` with the parameter
+``using`` wherever it is accepted like this:
 
 .. code:: python
 
@@ -96,11 +114,12 @@ already associated with:
 
 .. note::
 
-    When using ``elasticsearch_dsl`` it is highly recommended to use the attached
-    serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
-    your objects are correctly serialized into ``json`` every time. The
-    ``create_connection`` method that is described here (and that ``configure``
+    When using ``elasticsearch_dsl``, it is highly recommended that you use the built-in
+    serializer (``elasticsearch_dsl.serializer.serializer``) to ensure
+    your objects are correctly serialized into ``JSON`` every time. The
+    ``create_connection`` method that is described here (and that the ``configure``
     method uses under the hood) will do that automatically for you, unless you
-    explicitly specify your own serializer. The serializer we use will also allow
+    explicitly specify your own serializer. The built-in serializer also allows
     you to serialize your own objects - just define a ``to_dict()`` method on your
-    objects and it will automatically be called when serializing to json.
+    objects and that method will be automatically called when serializing your custom
+    objects to ``JSON``.
