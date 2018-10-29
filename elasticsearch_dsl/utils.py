@@ -1,6 +1,10 @@
 from __future__ import unicode_literals
 
-import collections
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
+
 from copy import copy
 
 from six import iteritems, add_metaclass
@@ -21,7 +25,7 @@ META_FIELDS = frozenset((
 )).union(DOC_META_FIELDS)
 
 def _wrap(val, obj_wrapper=None):
-    if isinstance(val, collections.Mapping):
+    if isinstance(val, collections_abc.Mapping):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
         return AttrList(val)
@@ -293,7 +297,7 @@ class DslBase(object):
                 '%r object has no attribute %r' % (self.__class__.__name__, name))
 
         # wrap nested dicts in AttrDict for convenient access
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections_abc.Mapping):
             return AttrDict(value)
         return value
 
@@ -475,13 +479,13 @@ class ObjectBase(AttrDict):
         self.clean()
 
 def merge(data, new_data, raise_on_conflict=False):
-    if not (isinstance(data, (AttrDict, collections.Mapping))
-            and isinstance(new_data, (AttrDict, collections.Mapping))):
+    if not (isinstance(data, (AttrDict, collections_abc.Mapping))
+            and isinstance(new_data, (AttrDict, collections_abc.Mapping))):
         raise ValueError('You can only merge two dicts! Got %r and %r instead.' % (data, new_data))
 
     for key, value in iteritems(new_data):
-        if key in data and isinstance(data[key], (AttrDict, collections.Mapping)) and \
-                isinstance(value, (AttrDict, collections.Mapping)):
+        if key in data and isinstance(data[key], (AttrDict, collections_abc.Mapping)) and \
+                isinstance(value, (AttrDict, collections_abc.Mapping)):
             merge(data[key], value, raise_on_conflict)
         elif key in data and data[key] != value and raise_on_conflict:
             raise ValueError('Incompatible data for key %r, cannot be merged.' % key)

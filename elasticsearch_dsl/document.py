@@ -1,4 +1,8 @@
-import collections
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
+
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
@@ -212,7 +216,7 @@ class Document(ObjectBase):
         es = cls._get_connection(using)
         body = {
             'docs': [
-                doc if isinstance(doc, collections.Mapping) else {'_id': doc}
+                doc if isinstance(doc, collections_abc.Mapping) else {'_id': doc}
                 for doc in docs
             ]
         }

@@ -1,4 +1,7 @@
-import collections
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
 
 from six import iteritems, itervalues
 from itertools import chain
@@ -133,7 +136,7 @@ class Mapping(object):
         # metadata like _all etc
         for name, value in iteritems(raw):
             if name != 'properties':
-                if isinstance(value, collections.Mapping):
+                if isinstance(value, collections_abc.Mapping):
                     self.meta(name, **value)
                 else:
                     self.meta(name, value)

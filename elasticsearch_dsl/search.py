@@ -1,5 +1,9 @@
 import copy
-import collections
+
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
 
 from six import iteritems, string_types
 
@@ -100,7 +104,7 @@ class Request(object):
         self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
             self._doc_type.extend(doc_type)
-        elif isinstance(doc_type, collections.Mapping):
+        elif isinstance(doc_type, collections_abc.Mapping):
             self._doc_type.extend(doc_type.keys())
             self._doc_type_map.update(doc_type)
         elif doc_type:
