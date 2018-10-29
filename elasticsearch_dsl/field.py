@@ -1,7 +1,10 @@
 import base64
 import ipaddress
 
-import collections
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
 
 from datetime import date, datetime
 
@@ -17,7 +20,7 @@ unicode = type(u'')
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
-    if isinstance(name_or_field, collections.Mapping):
+    if isinstance(name_or_field, collections_abc.Mapping):
         if params:
             raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
         params = name_or_field.copy()
@@ -191,7 +194,7 @@ class Object(Field):
             return None
 
         # somebody assigned raw dict to the field, we should tolerate that
-        if isinstance(data, collections.Mapping):
+        if isinstance(data, collections_abc.Mapping):
             return data
 
         return data.to_dict()
