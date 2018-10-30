@@ -133,8 +133,6 @@ class UpdateByQuery(Request):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
-
-        :arg response_class: optional subclass of ``Response`` to use instead.
         """
         if ignore_cache or not hasattr(self, '_response'):
             es = connections.get_connection(self._using)
