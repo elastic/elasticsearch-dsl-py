@@ -99,8 +99,8 @@ class UpdateByQuery(Request):
         Example::
 
             ubq = Search()
-            ubq = ubq.script(source="ctx.__source.likes++"")
-            ubq = ubq.script(source="ctx.__source.likes += params.f"",
+            ubq = ubq.script(source="ctx._source.likes++"")
+            ubq = ubq.script(source="ctx._source.likes += params.f"",
                          lang="expression",
                          params={'f': 3})
         """
