@@ -1,8 +1,6 @@
 from copy import deepcopy
 
-from elasticsearch_dsl import UpdateByQuery, query, Q, Document, utils
-
-from pytest import raises
+from elasticsearch_dsl import UpdateByQuery, query, Q, Document
 
 
 # All of the basic query testing for Search can be copied over here and re-used
@@ -11,19 +9,16 @@ def test_expand__to_dot_is_respected():
 
     assert {"query": {"match": {"a__b": 42}}} == ubq.to_dict()
 
-
 def test_cache_isnt_cloned():
     ubq = UpdateByQuery()
     ubq._response = object()
 
     assert not hasattr(ubq._clone(), '_response')
 
-
 def test_ubq_starts_with_no_query():
     ubq = UpdateByQuery()
 
     assert ubq.query._proxied is None
-
 
 def test_ubq_combines_query():
     ubq = UpdateByQuery()
@@ -36,7 +31,6 @@ def test_ubq_combines_query():
     assert ubq2.query._proxied == query.Match(f=42)
     assert ubq3.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
-
 def test_query_can_be_assigned_to():
     ubq = UpdateByQuery()
 
@@ -44,7 +38,6 @@ def test_query_can_be_assigned_to():
     ubq.query = q
 
     assert ubq.query._proxied is q
-
 
 def test_query_can_be_wrapped():
     ubq = UpdateByQuery().query('match', title='python')
@@ -58,8 +51,7 @@ def test_query_can_be_wrapped():
                 'query': {'match': {'title': 'python'}}
             }
         }
-    }== ubq.to_dict()
-
+    } == ubq.to_dict()
 
 def test_using():
     o = object()
@@ -70,12 +62,10 @@ def test_using():
     assert ubq._using is o
     assert ubq2._using is o2
 
-
 def test_methods_are_proxied_to_the_query():
     ubq = UpdateByQuery().query('match_all')
 
     assert ubq.query.to_dict() == {'match_all': {}}
-
 
 def test_query_always_returns_ubq():
     ubq = UpdateByQuery()
@@ -151,7 +141,6 @@ def test_ubq_doc_type():
     assert ubq._doc_type == ['i', 'i2']
     assert ubq2._doc_type == ['i', 'i2', 'i3']
 
-
 def test_doc_type_can_be_document_class():
     class MyDocument(Document):
         pass
@@ -166,7 +155,6 @@ def test_doc_type_can_be_document_class():
     assert ubq._doc_type_map == {}
     assert ubq._get_doc_type() == ['doc']
 
-
 def test_search_to_dict():
     ubq = UpdateByQuery()
     assert {} == ubq.to_dict()
@@ -178,7 +166,6 @@ def test_search_to_dict():
 
     ubq = UpdateByQuery(extra={"size": 5})
     assert {"size": 5} == ubq.to_dict()
-
 
 def test_complex_example():
     ubq = UpdateByQuery()
@@ -214,7 +201,6 @@ def test_complex_example():
             }
         }
     } == ubq.to_dict()
-
 
 def test_reverse():
     d =  {
@@ -254,14 +240,12 @@ def test_reverse():
     assert d == d2
     assert d == ubq.to_dict()
 
-
 def test_from_dict_doesnt_need_query():
     ubq = UpdateByQuery.from_dict({'script': {'source': 'test'}})
 
     assert {
         'script': {'source': 'test'}
     } == ubq.to_dict()
-
 
 def test_params_being_passed_to_search(mock_client):
     ubq = UpdateByQuery(using='mock')
@@ -274,7 +258,6 @@ def test_params_being_passed_to_search(mock_client):
         body={},
         routing='42'
     )
-
 
 def test_source():
     assert {} == UpdateByQuery().source().to_dict()
@@ -293,7 +276,6 @@ def test_source():
     assert {
         '_source': ['f1', 'f2']
     } == UpdateByQuery().source(include=['foo.bar.*'], exclude=['foo.one']).source(['f1', 'f2']).to_dict()
-
 
 def test_source_on_clone():
     assert {
@@ -318,12 +300,10 @@ def test_source_on_clone():
             }} == UpdateByQuery().source(
         False).filter('term', title='python').to_dict()
 
-
 def test_source_on_clear():
     assert {
     } == UpdateByQuery().source(include=['foo.bar.*']).\
         source(include=None, exclude=None).to_dict()
-
 
 def test_exclude():
     ubq = UpdateByQuery()
@@ -360,6 +340,6 @@ def test_overwrite_script():
     ubq = ubq.script(source='ctx._source.likes++')
     assert {
         'script': {
-            'source': 'ctx._source,likes++'
+            'source': 'ctx._source.likes++'
+        }
     } == ubq.to_dict()
-    }
