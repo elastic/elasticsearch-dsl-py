@@ -23,7 +23,6 @@ class UpdateByQuery(Request):
         """
         super(UpdateByQuery, self).__init__(**kwargs)
         self._response_class = UpdateByQueryResponse
-        self._source = None
         self._script = {}
         self._query_proxy = QueryProxy(self, 'query')
 
@@ -64,8 +63,6 @@ class UpdateByQuery(Request):
         ubq = super(UpdateByQuery, self)._clone()
 
         ubq._response_class = self._response_class
-        ubq._source = copy.copy(self._source) \
-            if self._source is not None else None
         ubq._script = self._script.copy()
         getattr(ubq, 'query')._proxied = getattr(self, 'query')._proxied
         return ubq
@@ -86,8 +83,6 @@ class UpdateByQuery(Request):
         d = d.copy()
         if 'query' in d:
             self.query._proxied = Q(d.pop('query'))
-        if '_source' in d:
-            self._source = d.pop('_source')
         if 'script' in d:
             self._script = d.pop('script')
         self._extra = d
@@ -115,51 +110,6 @@ class UpdateByQuery(Request):
         ubq._script.update(kwargs)
         return ubq
 
-    def source(self, fields=None, **kwargs):
-        """
-        Selectively control how the _source field is returned.
-
-        :arg source: wildcard string, array of wildcards, or dictionary of includes and excludes
-
-        If ``source`` is None, the entire document will be returned for
-        each hit.  If source is a dictionary with keys of 'include' and/or
-        'exclude' the fields will be either included or excluded appropriately.
-
-        Calling this multiple times with the same named parameter will override the
-        previous values with the new ones.
-
-        Example::
-
-            ubq = Search()
-            ubq = ubq.source(include=['obj1.*'], exclude=["*.description"])
-
-            ubq = Search()
-            ubq = ubq.source(include=['obj1.*']).source(exclude=["*.description"])
-
-        """
-        ubq = self._clone()
-
-        if fields and kwargs:
-            raise ValueError("You cannot specify fields and kwargs at the same time.")
-
-        if fields is not None:
-            ubq._source = fields
-            return ubq
-
-        if kwargs and not isinstance(ubq._source, dict):
-            ubq._source = {}
-
-        for key, value in kwargs.items():
-            if value is None:
-                try:
-                    del ubq._source[key]
-                except KeyError:
-                    pass
-            else:
-                ubq._source[key] = value
-
-        return ubq
-
     def to_dict(self, **kwargs):
         """
         Serialize the search into the dictionary that will be sent over as the
@@ -170,9 +120,6 @@ class UpdateByQuery(Request):
         d = {}
         if self.query:
             d["query"] = self.query.to_dict()
-
-        if self._source not in (None, {}):
-            d['_source'] = self._source
 
         if self._script:
             d['script'] = self._script

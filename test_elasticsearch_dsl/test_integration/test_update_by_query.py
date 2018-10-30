@@ -5,11 +5,12 @@ def test_update_by_query_no_script(data_client):
     ubq = UpdateByQuery(using=data_client).index('git').filter(~Q('exists', field='is_public'))
     response = ubq.execute()
 
-    assert response['total'] == 52
+    assert response.total == 52
     assert response['took'] > 0
-    assert not response['timed_out']
-    assert response['updated'] == 52
-    assert response['deleted'] == 0
+    assert not response.timed_out
+    assert response.updated == 52
+    assert response.deleted == 0
+    assert response.took > 0
 
 def test_update_by_query_with_script(data_client):
     ubq = UpdateByQuery(using=data_client).index('git')\
@@ -18,9 +19,9 @@ def test_update_by_query_with_script(data_client):
     ubq = ubq.params(conflicts='proceed')
 
     response = ubq.execute()
-    assert response['total'] == 2
-    assert response['updated'] == 1
-    assert response['version_conflicts'] == 1
+    assert response.total == 2
+    assert response.updated == 1
+    assert response.version_conflicts == 1
 
 def test_delete_by_query_with_script(data_client):
     ubq = UpdateByQuery(using=data_client).index('flat-git')\
@@ -30,5 +31,5 @@ def test_delete_by_query_with_script(data_client):
 
     response = ubq.execute()
 
-    assert response['total'] == 1
-    assert response['deleted'] == 1
+    assert response.total == 1
+    assert response.deleted == 1

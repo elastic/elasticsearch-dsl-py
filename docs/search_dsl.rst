@@ -1,3 +1,5 @@
+.. _search_dsl:
+
 Search DSL
 ==========
 
