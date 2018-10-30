@@ -84,3 +84,16 @@ class AggResponse(AttrDict):
         for name in self._meta['aggs']:
             yield self[name]
 
+
+class UpdateByQueryResponse(AttrDict):
+
+    def __init__(self, search, response, doc_class=None):
+        super(AttrDict, self).__setattr__('_search', search)
+        super(AttrDict, self).__setattr__('_doc_class', doc_class)
+        super(UpdateByQueryResponse, self).__init__(response)
+
+    def __getitem__(self, attr_name):
+        return super(UpdateByQueryResponse, self).__getitem__(attr_name)
+
+
+

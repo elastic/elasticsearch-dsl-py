@@ -2,6 +2,7 @@ from .query import Q
 from .aggs import A
 from .function import SF
 from .search import Search, MultiSearch
+from .update_by_query import UpdateByQuery
 from .field import *
 from .document import Document, DocType, MetaField, InnerDoc
 from .mapping import Mapping
