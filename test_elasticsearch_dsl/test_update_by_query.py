@@ -3,7 +3,7 @@ from copy import deepcopy
 from elasticsearch_dsl import UpdateByQuery, query, Q, Document
 
 
-# All of the basic query testing for Search can be copied over here and re-used
+# A lot of the basic query testing for Search can be copied over here and re-used
 def test_expand__to_dot_is_respected():
     ubq = UpdateByQuery().query('match', a__b=42, _expand__to_dot=False)
 
@@ -72,22 +72,9 @@ def test_query_always_returns_ubq():
 
     assert isinstance(ubq.query('match', f=42), UpdateByQuery)
 
-def test_source_copied_on_clone():
-    ubq = UpdateByQuery().source(False)
-    assert ubq._clone()._source == ubq._source
-    assert ubq._clone()._source is False
-
-    ubq2 = UpdateByQuery().source([])
-    assert ubq2._clone()._source == ubq2._source
-    assert ubq2._source == []
-
-    ubq3 = UpdateByQuery().source(["some", "fields"])
-    assert ubq3._clone()._source == ubq3._source
-    assert ubq3._clone()._source == ["some", "fields"]
-
 def test_copy_clones():
     from copy import copy
-    ubq1 = UpdateByQuery().source(["some", "fields"])
+    ubq1 = UpdateByQuery().query('match', f=42)
     ubq2 = copy(ubq1)
 
     assert ubq1 == ubq2
@@ -258,52 +245,6 @@ def test_params_being_passed_to_search(mock_client):
         body={},
         routing='42'
     )
-
-def test_source():
-    assert {} == UpdateByQuery().source().to_dict()
-
-    assert {
-        '_source': {
-            'include': ['foo.bar.*'],
-            'exclude': ['foo.one']
-        }
-    } == UpdateByQuery().source(include=['foo.bar.*'], exclude=['foo.one']).to_dict()
-
-    assert {
-        '_source': False
-    } == UpdateByQuery().source(False).to_dict()
-
-    assert {
-        '_source': ['f1', 'f2']
-    } == UpdateByQuery().source(include=['foo.bar.*'], exclude=['foo.one']).source(['f1', 'f2']).to_dict()
-
-def test_source_on_clone():
-    assert {
-        '_source': {
-            'include': ['foo.bar.*'],
-            'exclude': ['foo.one']
-        },
-        'query': {
-            'bool': {
-                'filter': [{'term': {'title': 'python'}}],
-            }
-        }
-    } == UpdateByQuery().source(include=['foo.bar.*']).\
-        source(exclude=['foo.one']).\
-        filter('term', title='python').to_dict()\
-
-    assert {'_source': False,
-            'query': {
-                'bool': {
-                    'filter': [{'term': {'title': 'python'}}],
-                }
-            }} == UpdateByQuery().source(
-        False).filter('term', title='python').to_dict()
-
-def test_source_on_clear():
-    assert {
-    } == UpdateByQuery().source(include=['foo.bar.*']).\
-        source(include=None, exclude=None).to_dict()
 
 def test_exclude():
     ubq = UpdateByQuery()

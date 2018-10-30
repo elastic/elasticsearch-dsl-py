@@ -34,6 +34,11 @@ Faceted Search
 .. autoclass:: FacetedSearch
    :members:
 
+Update By Query 
+----------------
+.. autoclass:: UpdateByQuery
+  :members:
+
 Mappings
 --------
 
