@@ -1,5 +1,4 @@
 import copy
-from six import iteritems
 
 from .search import Request, QueryProxy, ProxyDescriptor
 from .query import Q, Bool
@@ -87,13 +86,6 @@ class UpdateByQuery(Request):
         d = d.copy()
         if 'query' in d:
             self.query._proxied = Q(d.pop('query'))
-
-        aggs = d.pop('aggs', d.pop('aggregations', {}))
-        if aggs:
-            self.aggs._params = {
-                'aggs': dict(
-                    (name, A(value)) for (name, value) in iteritems(aggs))
-            }
         if '_source' in d:
             self._source = d.pop('_source')
         if 'script' in d:
