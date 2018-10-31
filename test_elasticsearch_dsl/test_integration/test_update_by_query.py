@@ -15,7 +15,7 @@ def test_update_by_query_no_script(data_client):
 def test_update_by_query_with_script(data_client):
     ubq = UpdateByQuery(using=data_client).index('git')\
         .filter(~Q('exists', field='parent_shas'))\
-        .script(source=f'ctx._source.is_public = false')
+        .script(source='ctx._source.is_public = false')
     ubq = ubq.params(conflicts='proceed')
 
     response = ubq.execute()
@@ -26,7 +26,7 @@ def test_update_by_query_with_script(data_client):
 def test_delete_by_query_with_script(data_client):
     ubq = UpdateByQuery(using=data_client).index('flat-git')\
         .filter(Q('match', parent_shas='1dd19210b5be92b960f7db6f66ae526288edccc3'))\
-        .script(source=f'ctx.op = "delete"')
+        .script(source='ctx.op = "delete"')
     ubq = ubq.params(conflicts='proceed')
 
     response = ubq.execute()
