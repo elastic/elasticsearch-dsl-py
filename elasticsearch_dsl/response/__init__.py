@@ -91,9 +91,3 @@ class UpdateByQueryResponse(AttrDict):
         super(AttrDict, self).__setattr__('_search', search)
         super(AttrDict, self).__setattr__('_doc_class', doc_class)
         super(UpdateByQueryResponse, self).__init__(response)
-
-    def __getitem__(self, attr_name):
-        return super(UpdateByQueryResponse, self).__getitem__(attr_name)
-
-
-

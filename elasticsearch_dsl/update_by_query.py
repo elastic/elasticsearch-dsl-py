@@ -64,7 +64,7 @@ class UpdateByQuery(Request):
 
         ubq._response_class = self._response_class
         ubq._script = self._script.copy()
-        getattr(ubq, 'query')._proxied = getattr(self, 'query')._proxied
+        ubq.query._proxied = self.query._proxied
         return ubq
 
     def response_class(self, cls):
@@ -129,21 +129,20 @@ class UpdateByQuery(Request):
         d.update(kwargs)
         return d
 
-    def execute(self, ignore_cache=False):
+    def execute(self):
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
         """
-        if ignore_cache or not hasattr(self, '_response'):
-            es = connections.get_connection(self._using)
+        es = connections.get_connection(self._using)
 
-            self._response = self._response_class(
-                self,
-                es.update_by_query(
-                    index=self._index,
-                    doc_type=self._get_doc_type(),
-                    body=self.to_dict(),
-                    **self._params
-                )
+        self._response = self._response_class(
+            self,
+            es.update_by_query(
+                index=self._index,
+                doc_type=self._get_doc_type(),
+                body=self.to_dict(),
+                **self._params
             )
+        )
         return self._response

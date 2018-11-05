@@ -9,8 +9,8 @@ from mock import Mock
 from pytest import fixture, skip
 
 from elasticsearch_dsl.connections import connections
-from .test_integration.test_data import DATA, FLAT_DATA, create_git_index, \
-    create_flat_git_index
+from .test_integration.test_data import DATA, FLAT_DATA, TEST_GIT_DATA, \
+    create_git_index, create_flat_git_index
 from .test_integration.test_document import PullRequest, Comment, User, History
 
 
@@ -239,3 +239,10 @@ def pull_request(write_client):
                      created_at=datetime(2018, 1, 9, 9, 17, 3, 21184))
     pr.save(refresh=True)
     return pr
+
+@fixture
+def setup_ubq_tests(client):
+    index = 'test-git'
+    create_git_index(client, index)
+    bulk(client, TEST_GIT_DATA, raise_on_error=True, refresh=True)
+    return index
