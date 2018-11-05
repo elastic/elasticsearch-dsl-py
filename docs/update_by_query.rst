@@ -6,15 +6,15 @@ Update By Query
 The ``Update By Query`` object
 -------------------------------
 
-The ``Update By Query`` object enables the use of the 
+The ``Update By Query`` object enables the use of the
 `_update_by_query <https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html>`_
 endpoint to perform an update on documents that match a search query.
 
-The object is implemented as a modification of the ``Search`` object, containing a 
+The object is implemented as a modification of the ``Search`` object, containing a
 subset of its query methods, as well as a script method, which is used to make updates.
 
 The ``Update By Query`` object implements the following ``Search`` query types:
-  
+
   * queries
 
   * filters
@@ -29,24 +29,18 @@ contains the changes. This means you can safely pass the ``Update By Query`` obj
 foreign code without fear of it modifying your objects as long as it sticks to
 the ``Update By Query`` object APIs.
 
-You can pass an instance of the low-level `elasticsearch client <https://elasticsearch-py.readthedocs.io/>`_ when
-instantiating the ``Update By Query`` object:
+You can define your client in a number of ways, but the preferred method is to use a global configuration.
+For more information on defining a client, see the :ref:`configuration` chapter.
+
+Once your client is defined, you can instantiate a copy of the ``Update By Query`` object as seen below:
 
 .. code:: python
 
-    from elasticsearch import Elasticsearch
     from elasticsearch_dsl import UpdateByQuery
 
-    client = Elasticsearch()
-
+    ubq = UpdateByQuery().using(client)
+    # or
     ubq = UpdateByQuery(using=client)
-
-You can also define the client at a later time (for more options see the
-:ref:`configuration` chapter):
-
-.. code:: python
-
-    ubq = ubq.using(client)
 
 .. note::
 
@@ -66,14 +60,14 @@ To send the request to Elasticsearch:
 
     response = ubq.execute()
 
-It should be noted, that there are limits to the chaining using the script method: calling script multiple times will 
-overwrite the previous value. That is, only a single script can be sent with a call. An attempt to use two scripts will 
+It should be noted, that there are limits to the chaining using the script method: calling script multiple times will
+overwrite the previous value. That is, only a single script can be sent with a call. An attempt to use two scripts will
 result in only the second script being stored.
 
 Given the below example:
 
 .. code:: python
-	
+
 	ubq = UpdateByQuery().using(client).script(source="ctx._source.likes++").script(source="ctx._source.likes+=2")
 
 This means that the stored script by this client will be ``'source': 'ctx._source.likes+=2'`` and the previous call

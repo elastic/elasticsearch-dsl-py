@@ -184,3 +184,17 @@ def flatten_doc(d):
 FLAT_DATA = [
     flatten_doc(d) for d in DATA if '_routing' in d
 ]
+
+def create_test_git_data(d):
+    src = d['_source'].copy()
+    return {
+        '_index': 'test-git',
+        '_type': 'doc',
+        '_routing': 'elasticsearch-dsl-py',
+        '_id': d['_id'],
+        '_source': src
+    }
+
+TEST_GIT_DATA = [
+    create_test_git_data(d) for d in DATA
+]
