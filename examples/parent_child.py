@@ -183,9 +183,9 @@ if __name__ == '__main__':
 
     # user objects to use
     nick = User(id=47, signed_up=datetime(2017, 4, 3), username='fxdgear',
-                email='nick.lang@elastic.co', localtion='Colorado')
+                email='nick.lang@elastic.co', location='Colorado')
     honza = User(id=42, signed_up=datetime(2013, 4, 3), username='honzakral',
-                 email='honza@elastic.co', localtion='Prague')
+                 email='honza@elastic.co', location='Prague')
 
     # create a question object
     question = Question(
