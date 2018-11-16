@@ -66,6 +66,15 @@ class Index(object):
         # Document._index be that?
         return IndexTemplate(template_name, pattern or self._name, index=self)
 
+    def resolve_nested(self, field_path):
+        for doc in self._doc_types:
+            nested, field = doc._doc_type.mapping.resolve_nested(field_path)
+            if field is not None:
+                return nested, field
+        if self._mapping:
+            return self._mapping.resolve_nested(field_path)
+        return (), None
+
     def resolve_field(self, field_path):
         for doc in self._doc_types:
             field = doc._doc_type.mapping.resolve_field(field_path)

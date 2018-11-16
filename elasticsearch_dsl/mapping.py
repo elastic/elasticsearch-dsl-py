@@ -7,7 +7,7 @@ from six import iteritems, itervalues
 from itertools import chain
 
 from .utils import DslBase
-from .field import Text, construct_field
+from .field import Text, construct_field, Nested
 from .connections import connections
 
 META_FIELDS = frozenset((
@@ -83,6 +83,19 @@ class Mapping(object):
         m = cls(doc_type)
         m.update_from_es(index, using)
         return m
+
+    def resolve_nested(self, field_path):
+        field = self
+        nested = []
+        parts = field_path.split('.')
+        for i, step in enumerate(parts):
+            try:
+                field = field[step]
+            except KeyError:
+                return (), None
+            if isinstance(field, Nested):
+                nested.append('.'.join(parts[:i+1]))
+        return nested, field
 
     def resolve_field(self, field_path):
         field = self

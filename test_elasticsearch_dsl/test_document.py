@@ -68,6 +68,11 @@ class OptionalObjectWithRequiredField(document.Document):
 class Host(document.Document):
     ip = field.Ip()
 
+def test_resolve_nested():
+    nested, field = NestedSecret._index.resolve_nested('secrets.title')
+    assert nested == ['secrets']
+    assert field is NestedSecret._doc_type.mapping['secrets']['title']
+
 def test_document_can_redefine_doc_type():
     class D(document.Document):
         kw = field.Keyword()

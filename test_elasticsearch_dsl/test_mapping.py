@@ -172,3 +172,17 @@ def test_resolve_field_can_resolve_multifields():
     m.field('title', 'text', fields={'keyword': Keyword()})
 
     assert isinstance(m.resolve_field('title.keyword'), Keyword)
+
+def test_resolve_nested():
+    m = mapping.Mapping('m')
+    m.field('n1', 'nested', properties={'n2': Nested(properties={'k1': Keyword()})})
+    m.field('k2', 'keyword')
+
+    nested, field = m.resolve_nested('n1.n2.k1')
+    assert nested == ['n1', 'n1.n2']
+    assert isinstance(field, Keyword)
+
+    nested, field = m.resolve_nested('k2')
+    assert nested == []
+    assert isinstance(field, Keyword)
+
