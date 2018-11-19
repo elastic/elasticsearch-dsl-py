@@ -27,8 +27,11 @@ directory to see some complex examples using ``elasticsearch-dsl``.
 Compatibility
 -------------
 
-The library is compatible with all Elasticsearch versions since ``1.x`` but you
+The library is compatible with all Elasticsearch versions since ``2.x`` but you
 **have to use a matching major version**:
+
+For **Elasticsearch 6.0** and later, use the major version 5 (``6.x.y``) of the
+library.
 
 For **Elasticsearch 5.0** and later, use the major version 5 (``5.x.y``) of the
 library.
@@ -36,12 +39,12 @@ library.
 For **Elasticsearch 2.0** and later, use the major version 2 (``2.x.y``) of the
 library.
 
-For **Elasticsearch 1.0** and later, use the major version 0 (``0.x.y``) of the
-library.
-
 
 The recommended way to set your requirements in your `setup.py` or
 `requirements.txt` is::
+
+    # Elasticsearch 6.x
+    elasticsearch-dsl>=6.0.0,<7.0.0
 
     # Elasticsearch 5.x
     elasticsearch-dsl>=5.0.0,<6.0.0
@@ -49,11 +52,8 @@ The recommended way to set your requirements in your `setup.py` or
     # Elasticsearch 2.x
     elasticsearch-dsl>=2.0.0,<3.0.0
 
-    # Elasticsearch 1.x
-    elasticsearch-dsl<2.0.0
 
-
-The development is happening on ``master`` and ``1.x`` branches, respectively.
+The development is happening on ``master``, older branches only get bugfix releases
 
 Search Example
 --------------

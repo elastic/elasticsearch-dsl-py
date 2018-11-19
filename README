@@ -60,7 +60,7 @@ The recommended way to set your requirements in your `setup.py` or
     elasticsearch-dsl>=2.0.0,<3.0.0
 
 
-The development is happening on ``master``, ``5.x``, and ``2.x`` branches, respectively.
+The development is happening on ``master``, older branches only get bugfix releases
 
 Search Example
 --------------
