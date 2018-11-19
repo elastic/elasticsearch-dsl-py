@@ -261,7 +261,13 @@ class DslBase(object):
             if 'type' in pinfo:
                 # get the shortcut used to construct this type (query.Q, aggs.A, etc)
                 shortcut = self.__class__.get_dsl_type(pinfo['type'])
-                if pinfo.get('multi'):
+
+                # list of dict(name -> DslBase)
+                if pinfo.get('multi') and pinfo.get('hash'):
+                    if not isinstance(value, (tuple, list)):
+                        value = (value, )
+                    value = list(dict((k, shortcut(v)) for (k, v) in iteritems(obj)) for obj in value)
+                elif pinfo.get('multi'):
                     if not isinstance(value, (tuple, list)):
                         value = (value, )
                     value = list(map(shortcut, value))
@@ -315,8 +321,15 @@ class DslBase(object):
                 if value in ({}, []):
                     continue
 
+                # list of dict(name -> DslBase)
+                if pinfo.get('multi') and pinfo.get('hash'):
+                    value = list(
+                        dict((k, v.to_dict()) for k, v in iteritems(obj))
+                        for obj in value
+                    )
+
                 # multi-values are serialized as list of dicts
-                if pinfo.get('multi'):
+                elif pinfo.get('multi'):
                     value = list(map(lambda x: x.to_dict(), value))
 
                 # squash all the hash values into one dict
