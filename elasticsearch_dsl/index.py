@@ -286,6 +286,7 @@ class Index(object):
         body = self.to_dict()
         settings = body.pop('settings', {})
         analysis = settings.pop('analysis', None)
+        current_settings = self.get_settings(using=using)[self._name]['settings']['index']
         if analysis:
             if self.is_closed(using=using):
                 # closed index, update away
@@ -294,7 +295,7 @@ class Index(object):
                 # compare analysis definition, if all analysis objects are
                 # already defined as requested, skip analysis update and
                 # proceed, otherwise raise IllegalOperation
-                existing_analysis = self.get_settings(using=using)[self._name]['settings']['index'].get('analysis', {})
+                existing_analysis = current_settings.get('analysis', {})
                 if any(
                     existing_analysis.get(section, {}).get(k, None) != analysis[section][k]
                     for section in analysis
@@ -305,7 +306,13 @@ class Index(object):
 
         # try and update the settings
         if settings:
-            self.put_settings(using=using, body=settings)
+            settings = settings.copy()
+            for k, v in list(settings.items()):
+                if k in current_settings and current_settings[k] == str(v):
+                    del settings[k]
+
+            if settings:
+                self.put_settings(using=using, body=settings)
 
         # update the mappings, any conflict in the mappings will result in an
         # exception
