@@ -294,6 +294,18 @@ Each analysis object needs to have a name (``my_analyzer`` and ``trigram`` in
 our example) and tokenizers, token filters and char filters also need to
 specify type (``nGram`` in our example).
 
+Once you have an instance of a custom ``analyzer`` you can also call the
+`analyze API
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-analyze.html>`_
+on it by using the ``simulate`` method:
+
+.. code:: python
+
+    response = my_analyzer.simulate('Hello World!')
+
+    # ['hel', 'ell', 'llo', 'lo ', 'o w', ' wo', 'wor', 'orl', 'rld', 'ld!']
+    tokens = [t.token for t in response.tokens]
+
 .. note::
 
     When creating a mapping which relies on a custom analyzer the index must

@@ -1,4 +1,7 @@
-from .utils import DslBase
+import six
+
+from .connections import connections
+from .utils import DslBase, AttrDict
 
 __all__ = [
     'tokenizer', 'analyzer', 'char_filter', 'token_filter', 'normalizer'
@@ -78,6 +81,38 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         'char_filter': {'type': 'char_filter', 'multi': True},
         'tokenizer': {'type': 'tokenizer'},
     }
+
+    def simulate(self, text, using='default', explain=False, attributes=None):
+        """
+        Use the Analyze API of elasticsearch to test the outcome of this analyzer.
+
+        :arg text: Text to be analyzed
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg explain: will output all token attributes for each token. You can
+            filter token attributes you want to output by setting ``attributes``
+            option.
+        :arg attributes: if ``explain`` is specified, filter the token
+            attributes to return.
+        """
+        es = connections.get_connection(using)
+
+        body = {'text': text, 'explain': explain}
+        if attributes:
+            body['attributes'] = attributes
+
+        definition = self.get_analysis_definition()
+        analyzer_def = self.get_definition()
+
+        for k in self._param_defs:
+            if k in analyzer_def:
+                k_def = definition.get(k, {})
+                k_names = analyzer_def[k]
+                if isinstance(k_names, six.string_types):
+                    body[k] = k_def.get(k_names, k_names)
+                else:
+                    body[k] = [k_def.get(k_name, k_name) for k_name in k_names]
+
+        return AttrDict(es.indices.analyze(body=body))
 
 class Normalizer(AnalysisBase, DslBase):
     _type_name = 'normalizer'
