@@ -19,6 +19,7 @@ class User(InnerDoc):
 
 class Wiki(Document):
     owner = Object(User)
+    views = Long()
 
     class Index:
         name = 'test-wiki'
@@ -158,6 +159,15 @@ def test_update_object_field(write_client):
     w = Wiki.get(id='elasticsearch-py')
     assert w.owner[0].name == 'Honza'
     assert w.owner[1].name == 'Nick'
+
+def test_update_script(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name='Honza Kral'), _id='elasticsearch-py', views=42)
+    w.save()
+
+    w.update(script="ctx._source.views += params.inc", inc=5)
+    w = Wiki.get(id='elasticsearch-py')
+    assert w.views == 47
 
 def test_init(write_client):
     Repository.init(index='test-git')

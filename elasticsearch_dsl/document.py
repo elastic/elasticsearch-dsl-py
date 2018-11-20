@@ -6,7 +6,7 @@ except ImportError:
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
-from six import iteritems, add_metaclass
+from six import iteritems, add_metaclass, string_types
 
 from .field import Field
 from .mapping import Mapping
@@ -318,6 +318,7 @@ class Document(ObjectBase):
 
     def update(self, using=None, index=None,  detect_noop=True,
                doc_as_upsert=False, refresh=False, retry_on_conflict=None,
+               script=None, script_id=None, scripted_upsert=False, upsert=None,
                **fields):
         """
         Partial update of the document, specify fields you wish to update and
@@ -343,23 +344,43 @@ class Document(ObjectBase):
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
         """
-        if not fields:
-            raise IllegalOperation('You cannot call update() without updating individual fields. '
-                                   'If you wish to update the entire object use save().')
+        body = {
+            'doc_as_upsert': doc_as_upsert,
+            'detect_noop': detect_noop,
+        }
 
-        es = self._get_connection(using)
+        # scripted update
+        if script or script_id:
+            if upsert is not None:
+                body['upsert'] = upsert
 
-        # update given fields locally
-        merge(self, fields)
+            if script:
+                script = {'source': script}
+            else:
+                script = {'id': script_id}
 
-        # prepare data for ES
-        values = self.to_dict()
+            script['params'] = fields
 
-        # if fields were given: partial update
-        doc = dict(
-            (k, values.get(k))
-            for k in fields.keys()
-        )
+            body['script'] = script
+            body['scripted_upsert'] = scripted_upsert
+
+        # partial document update
+        else:
+            if not fields:
+                raise IllegalOperation('You cannot call update() without updating individual fields or a script. '
+                                       'If you wish to update the entire object use save().')
+
+            # update given fields locally
+            merge(self, fields)
+
+            # prepare data for ES
+            values = self.to_dict()
+
+            # if fields were given: partial update
+            body['doc'] = dict(
+                (k, values.get(k))
+                for k in fields.keys()
+            )
 
         # extract routing etc from meta
         doc_meta = dict(
@@ -367,16 +388,11 @@ class Document(ObjectBase):
             for k in DOC_META_FIELDS
             if k in self.meta
         )
-        body = {
-            'doc': doc,
-            'doc_as_upsert': doc_as_upsert,
-            'detect_noop': detect_noop,
-        }
 
         if retry_on_conflict is not None:
             doc_meta['retry_on_conflict'] = retry_on_conflict
 
-        meta = es.update(
+        meta = self._get_connection(using).update(
             index=self._get_index(index),
             doc_type=self._doc_type.name,
             body=body,

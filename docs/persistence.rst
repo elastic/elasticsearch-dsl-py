@@ -188,9 +188,36 @@ To retrieve an existing document use the ``get`` class method:
     # and save the changes into the cluster again
     first.save()
 
-    # you can also update just individual fields which will call the update API
+The `Update API
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html>`_
+can also be used via the ``update`` method. By default any keyword arguments,
+beyond the parameters of the API, will be considered fields with new values.
+Those fields will be updated on the local copy of the document and then sent
+over as partial document to be updated:
+
+.. code:: python
+
+    # retrieve the document
+    first = Post.get(id=42)
+    # you can update just individual fields which will call the update API
     # and also update the document in place
     first.update(published=True, published_by='me')
+
+In case you wish to use a ``painless`` script to perform the update you can
+pass in the script string as ``script`` or the ``id`` of a `stored script
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-using.html#modules-scripting-stored-scripts>`_
+via ``script_id``. All additional keyword arguments to the ``update`` method
+will then be passed in as parameters of the script. The document will not be
+updated in place.
+
+.. code:: python
+
+    # retrieve the document
+    first = Post.get(id=42)
+    # we execute a script in elasticsearch with additional kwargs being passed
+    # as params into the script
+    first.update(script='ctx._source.category.add(params.new_category)',
+                 new_category='testing')
 
 If the document is not found in elasticsearch an exception
 (``elasticsearch.NotFoundError``) will be raised. If you wish to return
