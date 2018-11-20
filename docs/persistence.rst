@@ -94,7 +94,14 @@ in any of the `range fields
     )
 
     # Range supports the in operator correctly:
-    assert datetime(2018, 11, 17, 9, 30, 0) in rb.dates
+    datetime(2018, 11, 17, 9, 30, 0) in rb.dates # True
+
+    # you can also get the limits and whether they are inclusive or exclusive:
+    rb.lower # datetime(2018, 11, 17, 9, 0, 0), True
+    rb.upper # datetime(2018, 11, 17, 10, 0, 0), False
+
+    # empty range is unbounded
+    Range().lower # None, False
 
 Note on dates
 ~~~~~~~~~~~~~
