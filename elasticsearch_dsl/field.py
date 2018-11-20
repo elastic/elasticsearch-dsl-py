@@ -363,6 +363,9 @@ class GeoShape(Field):
     name = 'geo_shape'
 
 class Completion(Field):
+    _param_defs = {
+        'analyzer': {'type': 'analyzer'},
+    }
     name = 'completion'
 
 class Percolator(Field):
