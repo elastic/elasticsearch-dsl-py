@@ -13,7 +13,16 @@ class Range(AttrDict):
     }
 
     def __init__(self, *args, **kwargs):
-        # FIXME: arg checking
+        if args and (
+            len(args) > 1 or
+            kwargs or
+            not isinstance(args[0], dict)
+        ):
+            raise ValueError('Range accepts a single dictionary or a set of keyword arguments.')
+        data = args[0] if args else kwargs
+        for k in data:
+            if k not in self.OPS:
+                raise ValueError('Range received an unknown operator %r' % k)
         super(Range, self).__init__(args[0] if args else kwargs)
 
     def __repr__(self):

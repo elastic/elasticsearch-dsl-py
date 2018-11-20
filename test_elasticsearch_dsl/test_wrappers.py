@@ -14,7 +14,7 @@ import pytest
     ({'gt': datetime.now() - timedelta(seconds=10)}, datetime.now())
 
 ])
-def test_contains(kwargs, item):
+def test_range_contains(kwargs, item):
     assert item in Range(**kwargs)
 
 @pytest.mark.parametrize('kwargs, item', [
@@ -24,5 +24,14 @@ def test_contains(kwargs, item):
     ({'lte': 4, 'gte': 2}, 1),
     ({'lte': datetime.now() - timedelta(seconds=10)}, datetime.now())
 ])
-def test_not_contains(kwargs, item):
+def test_range_not_contains(kwargs, item):
     assert item not in Range(**kwargs)
+
+@pytest.mark.parametrize('args,kwargs', [
+    (({}, ), {'lt': 42}),
+    ((), {'not_lt': 42}),
+    ((object(),), {}),
+])
+def test_range_raises_value_error_on_wrong_params(args, kwargs):
+    with pytest.raises(ValueError):
+        Range(*args, **kwargs)
