@@ -62,6 +62,15 @@ There are several different facets available:
   is just a simple facet that wraps another to provide access to nested documents:
   ``NestedFacet('variants', TermsFacet(field='variants.color'))``
 
+
+By default facet results will only calculate document count, if you wish for
+a different metric you can pass in any single value metric aggregation as the
+``metric`` kwarg (``TermsFacet(field='tags', metric=A('max',
+field=timestamp))``). When specifying ``metric`` the results will be, by
+default, sorted in descending order by that metric. To change it to ascending
+specify ``metric_sort="asc"`` and to just sort by document count use
+``metric_sort=False``.
+
 Advanced
 ~~~~~~~~
 

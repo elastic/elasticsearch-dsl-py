@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import Document, Boolean, Date
+from elasticsearch_dsl import Document, Boolean, Date, A, Keyword
 from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, \
     DateHistogramFacet, RangeFacet, NestedFacet
 
@@ -21,6 +21,10 @@ class Repos(Document):
     is_public = Boolean()
     created_at = Date()
 
+class Commit(Document):
+    files = Keyword()
+    committed_date = Date()
+
 class RepoSearch(FacetedSearch):
     index = 'git'
     doc_types = [Repos]
@@ -32,6 +36,14 @@ class RepoSearch(FacetedSearch):
     def search(self):
         s = super(RepoSearch, self).search()
         return s.filter('term', commit_repo='repo')
+
+class MetricSearch(FacetedSearch):
+    index = 'git'
+    doc_types = [Commit]
+
+    facets = {
+        'files': TermsFacet(field='files', metric=A('max', field='committed_date')),
+    }
 
 class PRSearch(FacetedSearch):
     index = 'test-prs'
@@ -45,6 +57,15 @@ class PRSearch(FacetedSearch):
             )
         )
     }
+
+def test_facet_with_custom_metric(data_client):
+    ms = MetricSearch()
+    r = ms.execute()
+
+    dates = [f[1] for f in r.facets.files]
+    assert dates == list(sorted(dates, reverse=True))
+    assert dates[0] == 1399038439000
+
 
 def test_nested_facet(pull_request):
     prs = PRSearch()

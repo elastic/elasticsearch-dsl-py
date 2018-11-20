@@ -8,7 +8,7 @@ from .response import Response
 from .query import Terms, Nested, Range, MatchAll
 
 __all__ = [
-    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet', 
+    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet',
     'NestedFacet',
 ]
 
@@ -20,15 +20,21 @@ class Facet(object):
     """
     agg_type = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, metric=None, metric_sort='desc', **kwargs):
         self.filter_values = ()
         self._params = kwargs
+        self._metric = metric
+        if metric and metric_sort:
+            self._params['order'] = {'metric': metric_sort}
 
     def get_aggregation(self):
         """
         Return the aggregation object.
         """
-        return A(self.agg_type, **self._params)
+        agg = A(self.agg_type, **self._params)
+        if self._metric:
+            agg.metric('metric', self._metric)
+        return agg
 
     def add_filter(self, filter_values):
         """
@@ -60,6 +66,14 @@ class Facet(object):
         """
         return bucket['key']
 
+    def get_metric(self, bucket):
+        """
+        Return a metric, by default doc_count for a bucket.
+        """
+        if self._metric:
+            return bucket['metric']['value']
+        return bucket['doc_count']
+
     def get_values(self, data, filter_values):
         """
         Turn the raw bucket data into a list of tuples containing the key,
@@ -71,7 +85,7 @@ class Facet(object):
             key = self.get_value(bucket)
             out.append((
                 key,
-                bucket['doc_count'],
+                self.get_metric(bucket),
                 self.is_filtered(key, filter_values)
             ))
         return out
