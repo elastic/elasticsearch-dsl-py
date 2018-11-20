@@ -63,6 +63,39 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
             self.created_at = datetime.now()
             return super().save(** kwargs)
 
+Data types
+~~~~~~~~~~
+
+The ``Document`` instances should be using native python types like
+``datetime``. In case of ``Object`` or ``Nested`` fields an instance of the
+``InnerDoc`` subclass should be used just like in the ``add_comment`` method in
+the above example where we are creating an instance of the ``Comment`` class.
+
+There are some specific types that were created as part of this library to make
+working with specific field types easier, for example the ``Range`` object used
+in any of the `range fields
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/range.html>`_:
+
+.. code:: python
+
+    from elasticsearch_dsl import Document, DateRange, Keyword, Range
+
+    class RoomBooking(Document):
+        room = Keyword()
+        dates = DateRange()
+
+
+    rb = RoomBooking(
+      room='Conference Room II',
+      dates=Range(
+        gte=datetime(2018, 11, 17, 9, 0, 0),
+        lt=datetime(2018, 11, 17, 10, 0, 0)
+      )
+    )
+
+    # Range supports the in operator correctly:
+    assert datetime(2018, 11, 17, 9, 30, 0) in rb.dates
+
 Note on dates
 ~~~~~~~~~~~~~
 

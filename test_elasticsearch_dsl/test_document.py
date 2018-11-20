@@ -4,7 +4,7 @@ from hashlib import md5
 from datetime import datetime
 import ipaddress
 
-from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc, analyzer, Index
+from elasticsearch_dsl import document, field, Mapping, utils, InnerDoc, analyzer, Index, Range
 from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
 
 from pytest import raises
@@ -67,6 +67,31 @@ class OptionalObjectWithRequiredField(document.Document):
 
 class Host(document.Document):
     ip = field.Ip()
+
+def test_range_serializes_properly():
+    class D(document.Document):
+        lr = field.LongRange()
+
+    d = D(lr=Range(lt=42))
+    assert 40 in d.lr
+    assert 47 not in d.lr
+    assert {
+        'lr': {'lt': 42}
+    } == d.to_dict()
+
+    d = D(lr={'lt': 42})
+    assert {
+        'lr': {'lt': 42}
+    } == d.to_dict()
+
+def test_range_deserializes_properly():
+    class D(document.InnerDoc):
+        lr = field.LongRange()
+
+    d = D.from_es({'lr': {'lt': 42}}, True)
+    assert isinstance(d.lr, Range)
+    assert 40 in d.lr
+    assert 47 not in d.lr
 
 def test_resolve_nested():
     nested, field = NestedSecret._index.resolve_nested('secrets.title')

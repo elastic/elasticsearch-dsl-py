@@ -15,6 +15,7 @@ from six.moves import map
 from .query import Q
 from .utils import DslBase, AttrDict, AttrList
 from .exceptions import ValidationException
+from .wrappers import Range
 
 unicode = type(u'')
 
@@ -376,19 +377,33 @@ class Percolator(Field):
             return None
         return data.to_dict()
 
-class IntegerRange(Field):
+class RangeField(Field):
+    _coerce = True
+
+    def _deserialize(self, data):
+        return Range(data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        if isinstance(data, collections_abc.Mapping):
+            return data
+        return data.to_dict()
+
+
+class IntegerRange(RangeField):
     name = 'integer_range'
 
-class FloatRange(Field):
+class FloatRange(RangeField):
     name = 'float_range'
 
-class LongRange(Field):
+class LongRange(RangeField):
     name = 'long_range'
 
-class DoubleRange(Field):
+class DoubleRange(RangeField):
     name = 'double_ranged'
 
-class DateRange(Field):
+class DateRange(RangeField):
     name = 'date_range'
 
 class Join(Field):

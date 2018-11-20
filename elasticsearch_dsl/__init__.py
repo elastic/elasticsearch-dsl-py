@@ -9,6 +9,7 @@ from .mapping import Mapping
 from .index import Index, IndexTemplate
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
 from .faceted_search import *
+from .wrappers import *
 
 VERSION = (6, 3, 0, 'dev')
 __version__ = VERSION
