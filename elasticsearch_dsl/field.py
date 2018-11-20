@@ -406,6 +406,10 @@ class DoubleRange(RangeField):
 class DateRange(RangeField):
     name = 'date_range'
 
+class IpRange(Field):
+    # not a RangeField since ip_range supports CIDR ranges
+    name = 'ip_range'
+
 class Join(Field):
     name = 'join'
 
