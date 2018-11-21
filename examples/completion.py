@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example ``Document`` with completion suggester.
 
@@ -8,7 +9,7 @@ value from the ``popularity`` field which is a long.
 To make the suggestions work in different languages we added a custom analyzer
 that does ascii folding.
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 from itertools import permutations
 
