@@ -3,8 +3,8 @@
 Changelog
 =========
 
-6.3.0 (dev)
------------
+6.3.0 (2018-11-21)
+------------------
 
 * Fixed logic around defining a different ``doc_type`` name.
 * Added ``retry_on_conflict`` parameter to ``Document.update``.
@@ -13,6 +13,15 @@ Changelog
 * Allow ``Index.analyzer`` to construct the analyzer
 * Detect conflict in analyzer definitions when calling ``Index.analyzer``
 * Detect conflicting mappings when creating an index
+* Add ``simulate`` method to ``analyzer`` object to test the analyzer using the
+  ``_analyze`` API.
+* Add ``script`` and ``script_id`` options to ``Document.update``
+* ``Facet`` can now use other metric than ``doc_count``
+* ``Range`` objects to help with storing and working with ``_range`` fields
+* Improved behavior of ``Index.save`` where it does a better job when index
+  already exists
+* Composite aggregations now correctly support multiple ``sources`` aggs
+* ``UpdateByQuery`` implementated by @emarcey
 
 6.2.1 (2018-07-03)
 ------------------
