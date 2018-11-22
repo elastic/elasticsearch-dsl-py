@@ -95,7 +95,7 @@ You can delete the documents matching a search by calling ``delete`` on the ``Se
 
 .. code:: python
 
-    s = Search().query("match", title="python")
+    s = Search(index='i').query("match", title="python")
     response = s.delete()
 
 
