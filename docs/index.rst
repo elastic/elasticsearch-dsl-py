@@ -284,7 +284,7 @@ Using the DSL, we can now express this query as such:
 .. code:: python
 
     from elasticsearch import Elasticsearch
-    from elasticsearch_dsl import Search
+    from elasticsearch_dsl import Search, UpdateByQuery
 
     client = Elasticsearch()
     ubq = UpdateByQuery(using=client, index="my-index") \
