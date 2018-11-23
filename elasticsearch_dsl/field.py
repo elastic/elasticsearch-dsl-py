@@ -365,6 +365,7 @@ class GeoShape(Field):
 class Completion(Field):
     _param_defs = {
         'analyzer': {'type': 'analyzer'},
+        'search_analyzer': {'type': 'analyzer'},
     }
     name = 'completion'
 
