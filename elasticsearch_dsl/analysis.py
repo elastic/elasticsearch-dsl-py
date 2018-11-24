@@ -103,14 +103,16 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         definition = self.get_analysis_definition()
         analyzer_def = self.get_definition()
 
-        for k in self._param_defs:
-            if k in analyzer_def:
-                k_def = definition.get(k, {})
-                k_names = analyzer_def[k]
-                if isinstance(k_names, six.string_types):
-                    body[k] = k_def.get(k_names, k_names)
-                else:
-                    body[k] = [k_def.get(k_name, k_name) for k_name in k_names]
+        for section in ('tokenizer', 'char_filter', 'filter'):
+            if section not in analyzer_def:
+                continue
+            sec_def = definition.get(section, {})
+            sec_names = analyzer_def[section]
+
+            if isinstance(sec_names, six.string_types):
+                body[section] = sec_def.get(sec_names, sec_names)
+            else:
+                body[section] = [sec_def.get(sec_name, sec_name) for sec_name in sec_names]
 
         return AttrDict(es.indices.analyze(body=body))
 
