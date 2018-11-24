@@ -114,6 +114,9 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
             else:
                 body[section] = [sec_def.get(sec_name, sec_name) for sec_name in sec_names]
 
+        if self._builtin_type != 'custom':
+            body['analyzer'] = self._builtin_type
+
         return AttrDict(es.indices.analyze(body=body))
 
 class Normalizer(AnalysisBase, DslBase):
