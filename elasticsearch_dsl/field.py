@@ -331,7 +331,7 @@ class Ip(Field):
     _coerce = True
 
     def _deserialize(self, data):
-        # the ipaddress library for pypy, python2.5 and 2.6 only accepts unicode.
+        # the ipaddress library for pypy only accepts unicode.
         return ipaddress.ip_address(unicode(data))
 
     def _serialize(self, data):
