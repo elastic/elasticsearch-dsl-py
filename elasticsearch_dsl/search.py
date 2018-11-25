@@ -56,7 +56,7 @@ class QueryProxy(object):
         super(QueryProxy, self).__setattr__(attr_name, value)
 
     def __getstate__(self):
-        return (self._search, self._proxied, self._attr_name)
+        return self._search, self._proxied, self._attr_name
 
     def __setstate__(self, state):
         self._search, self._proxied, self._attr_name = state
