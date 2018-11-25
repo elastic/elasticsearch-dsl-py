@@ -25,7 +25,7 @@ class Hit(AttrDict):
         return super(Hit, self).__dir__() + ['meta']
 
     def __repr__(self):
-        return '<Hit(%s): %s>' % (
+        return '<Hit({}): {}>'.format(
             '/'.join(
                 getattr(self.meta, key)
                 for key in ('index', 'doc_type', 'id')

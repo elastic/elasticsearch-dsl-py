@@ -127,14 +127,14 @@ class AttrDict(object):
             return self.__getitem__(attr_name)
         except KeyError:
             raise AttributeError(
-                '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
+                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, attr_name))
 
     def __delattr__(self, attr_name):
         try:
             del self._d_[attr_name]
         except KeyError:
             raise AttributeError(
-                '%r object has no attribute %r' % (self.__class__.__name__, attr_name))
+                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, attr_name))
 
     def __getitem__(self, key):
         return _wrap(self._d_[key])
@@ -218,7 +218,7 @@ class DslBase(object):
         try:
             return cls._classes[name]
         except KeyError:
-            raise UnknownDslObject('DSL class `%s` does not exist in %s.' % (name, cls._type_name))
+            raise UnknownDslObject('DSL class `{}` does not exist in {}.'.format(name, cls._type_name))
 
     def __init__(self, _expand__to_dot=EXPAND__TO_DOT, **params):
         self._params = {}
@@ -230,14 +230,14 @@ class DslBase(object):
     def _repr_params(self):
         """ Produce a repr of all our parameters to be used in __repr__. """
         return ', '.join(
-            '%s=%r' % (n.replace('.', '__'), v)
+            '{}={!r}'.format(n.replace('.', '__'), v)
             for (n, v) in sorted(iteritems(self._params))
             # make sure we don't include empty typed params
             if 'type' not in self._param_defs.get(n, {}) or v
         )
 
     def __repr__(self):
-        return '%s(%s)' % (
+        return '{}({})'.format(
             self.__class__.__name__,
             self._repr_params()
         )
@@ -266,7 +266,7 @@ class DslBase(object):
                 if pinfo.get('multi') and pinfo.get('hash'):
                     if not isinstance(value, (tuple, list)):
                         value = (value, )
-                    value = list(dict((k, shortcut(v)) for (k, v) in iteritems(obj)) for obj in value)
+                    value = list({k: shortcut(v) for (k, v) in iteritems(obj)} for obj in value)
                 elif pinfo.get('multi'):
                     if not isinstance(value, (tuple, list)):
                         value = (value, )
@@ -274,7 +274,7 @@ class DslBase(object):
 
                 # dict(name -> DslBase), make sure we pickup all the objs
                 elif pinfo.get('hash'):
-                    value = dict((k, shortcut(v)) for (k, v) in iteritems(value))
+                    value = {k: shortcut(v) for (k, v) in iteritems(value)}
 
                 # single value object, just convert
                 else:
@@ -284,7 +284,7 @@ class DslBase(object):
     def __getattr__(self, name):
         if name.startswith('_'):
             raise AttributeError(
-                '%r object has no attribute %r' % (self.__class__.__name__, name))
+                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, name))
 
         value = None
         try:
@@ -300,7 +300,7 @@ class DslBase(object):
                     value = self._params.setdefault(name, {})
         if value is None:
             raise AttributeError(
-                '%r object has no attribute %r' % (self.__class__.__name__, name))
+                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, name))
 
         # wrap nested dicts in AttrDict for convenient access
         if isinstance(value, collections_abc.Mapping):
@@ -324,7 +324,7 @@ class DslBase(object):
                 # list of dict(name -> DslBase)
                 if pinfo.get('multi') and pinfo.get('hash'):
                     value = list(
-                        dict((k, v.to_dict()) for k, v in iteritems(obj))
+                        {k: v.to_dict() for k, v in iteritems(obj)}
                         for obj in value
                     )
 
@@ -334,7 +334,7 @@ class DslBase(object):
 
                 # squash all the hash values into one dict
                 elif pinfo.get('hash'):
-                    value = dict((k, v.to_dict()) for k, v in iteritems(value))
+                    value = {k: v.to_dict() for k, v in iteritems(value)}
 
                 # serialize single values
                 else:
@@ -355,7 +355,7 @@ class DslBase(object):
 
 class HitMeta(AttrDict):
     def __init__(self, document, exclude=('_source', '_fields')):
-        d = dict((k[1:] if k.startswith('_') else k, v) for (k, v) in iteritems(document) if k not in exclude)
+        d = {k[1:] if k.startswith('_') else k: v for (k, v) in iteritems(document) if k not in exclude}
         if 'type' in d:
             # make sure we are consistent everywhere in python
             d['doc_type'] = d.pop('type')
@@ -498,7 +498,7 @@ class ObjectBase(AttrDict):
 def merge(data, new_data, raise_on_conflict=False):
     if not (isinstance(data, (AttrDict, collections_abc.Mapping))
             and isinstance(new_data, (AttrDict, collections_abc.Mapping))):
-        raise ValueError('You can only merge two dicts! Got %r and %r instead.' % (data, new_data))
+        raise ValueError('You can only merge two dicts! Got {!r} and {!r} instead.'.format(data, new_data))
 
     for key, value in iteritems(new_data):
         if key in data and isinstance(data[key], (AttrDict, collections_abc.Mapping)) and \

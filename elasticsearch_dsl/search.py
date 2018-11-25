@@ -176,7 +176,7 @@ class Request(object):
         """
         Return a list of doc_type names to be used
         """
-        return list(set(dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type))
+        return list({dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type})
 
     def _resolve_field(self, path):
         for dt in self._doc_type:
@@ -428,8 +428,8 @@ class Search(Request):
         aggs = d.pop('aggs', d.pop('aggregations', {}))
         if aggs:
             self.aggs._params = {
-                'aggs': dict(
-                    (name, A(value)) for (name, value) in iteritems(aggs))
+                'aggs': {
+                    name: A(value) for (name, value) in iteritems(aggs)}
             }
         if 'sort' in d:
             self._sort = d.pop('sort')

@@ -54,16 +54,16 @@ def test_interactive_helpers(dummy_response):
     hits = res.hits
     h = hits[0]
 
-    rhits = "[<Hit(test-index/company/elasticsearch): %s>, <Hit(test-index/employee/42): %s...}>, <Hit(test-index/employee/47): %s...}>, <Hit(test-index/employee/53): {}>]" % (
-            repr(dummy_response['hits']['hits'][0]['_source']),
-            repr(dummy_response['hits']['hits'][1]['_source'])[:60],
-            repr(dummy_response['hits']['hits'][2]['_source'])[:60],
-            )
+    rhits = "[<Hit(test-index/company/elasticsearch): {}>, <Hit(test-index/employee/42): {}...}}>, <Hit(test-index/employee/47): {}...}}>, <Hit(test-index/employee/53): {{}}>]".format(
+        repr(dummy_response['hits']['hits'][0]['_source']),
+        repr(dummy_response['hits']['hits'][1]['_source'])[:60],
+        repr(dummy_response['hits']['hits'][2]['_source'])[:60],
+    )
 
     assert res
     assert '<Response: %s>' % rhits == repr(res)
     assert rhits == repr(hits)
-    assert set(['meta', 'city', 'name']) == set(dir(h))
+    assert {'meta', 'city', 'name'} == set(dir(h))
     assert "<Hit(test-index/company/elasticsearch): %r>" % dummy_response['hits']['hits'][0]['_source'] == repr(h)
 
 def test_empty_response_is_false(dummy_response):
