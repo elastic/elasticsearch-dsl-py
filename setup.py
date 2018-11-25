@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 from os.path import join, dirname
 from setuptools import setup, find_packages
 
@@ -26,10 +25,6 @@ tests_require = [
     "pytz"
 ]
 
-# use external unittest for 2.6
-if sys.version_info[:2] == (2, 6):
-    tests_require.append('unittest2')
-
 setup(
     name = "elasticsearch-dsl",
     description = "Python client for Elasticsearch",
@@ -50,11 +45,8 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
