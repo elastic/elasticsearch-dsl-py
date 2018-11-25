@@ -74,7 +74,7 @@ class AttrList(object):
         return getattr(self._l_, name)
 
     def __getstate__(self):
-        return (self._l_, self._obj_wrapper)
+        return self._l_, self._obj_wrapper
 
     def __setstate__(self, state):
         self._l_, self._obj_wrapper = state
@@ -117,7 +117,7 @@ class AttrDict(object):
         return r
 
     def __getstate__(self):
-        return (self._d_, )
+        return self._d_,
 
     def __setstate__(self, state):
         super(AttrDict, self).__setattr__('_d_', state[0])
@@ -428,7 +428,7 @@ class ObjectBase(AttrDict):
             setattr(self, k, v)
 
     def __getstate__(self):
-        return (self.to_dict(), self.meta._d_)
+        return self.to_dict(), self.meta._d_
 
     def __setstate__(self, state):
         data, meta = state

@@ -28,7 +28,7 @@ class Response(AttrDict):
         return len(self.hits)
 
     def __getstate__(self):
-        return (self._d_, self._search, self._doc_class)
+        return self._d_, self._search, self._doc_class
 
     def __setstate__(self, state):
         super(AttrDict, self).__setattr__('_d_', state[0])
