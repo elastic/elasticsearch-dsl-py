@@ -38,7 +38,7 @@ class BucketData(AggResponse):
             if isinstance(bs, list):
                 bs = AttrList(bs, obj_wrapper=self._wrap_bucket)
             else:
-                bs = AttrDict(dict((k, self._wrap_bucket(bs[k])) for k in bs))
+                bs = AttrDict({k: self._wrap_bucket(bs[k]) for k in bs})
             super(AttrDict, self).__setattr__('_buckets', bs)
         return self._buckets
 

@@ -74,7 +74,7 @@ def test_scan_iterates_through_all_docs(data_client):
     commits = list(s.scan())
 
     assert 52 == len(commits)
-    assert set(d['_id'] for d in FLAT_DATA) == set(c.meta.id for c in commits)
+    assert {d['_id'] for d in FLAT_DATA} == {c.meta.id for c in commits}
 
 def test_response_is_cached(data_client):
     s = Repository.search()

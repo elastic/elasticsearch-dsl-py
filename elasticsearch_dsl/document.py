@@ -149,9 +149,9 @@ class Document(ObjectBase):
         return index
 
     def __repr__(self):
-        return '%s(%s)' % (
+        return '{}({})'.format(
             self.__class__.__name__,
-            ', '.join('%s=%r' % (key, getattr(self.meta, key)) for key in
+            ', '.join('{}={!r}'.format(key, getattr(self.meta, key)) for key in
                       ('index', 'doc_type', 'id') if key in self.meta)
         )
 
@@ -194,7 +194,7 @@ class Document(ObjectBase):
     @classmethod
     def mget(cls, docs, using=None, index=None, raise_on_error=True,
              missing='none', **kwargs):
-        """
+        r"""
         Retrieve multiple document by their ``id``\s. Returns a list of instances
         in the same order as requested.
 
@@ -273,11 +273,11 @@ class Document(ObjectBase):
         """
         es = self._get_connection(using)
         # extract routing etc from meta
-        doc_meta = dict(
-            (k, self.meta[k])
+        doc_meta = {
+            k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
         doc_meta.update(kwargs)
         es.delete(
             index=self._get_index(index),
@@ -301,11 +301,11 @@ class Document(ObjectBase):
         if not include_meta:
             return d
 
-        meta = dict(
-            ('_' + k, self.meta[k])
+        meta = {
+            '_' + k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
 
         # in case of to_dict include the index unlike save/update/delete
         index = self._get_index(required=False)
@@ -377,17 +377,17 @@ class Document(ObjectBase):
             values = self.to_dict()
 
             # if fields were given: partial update
-            body['doc'] = dict(
-                (k, values.get(k))
+            body['doc'] = {
+                k: values.get(k)
                 for k in fields.keys()
-            )
+            }
 
         # extract routing etc from meta
-        doc_meta = dict(
-            (k, self.meta[k])
+        doc_meta = {
+            k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
 
         if retry_on_conflict is not None:
             doc_meta['retry_on_conflict'] = retry_on_conflict
@@ -426,11 +426,11 @@ class Document(ObjectBase):
 
         es = self._get_connection(using)
         # extract routing etc from meta
-        doc_meta = dict(
-            (k, self.meta[k])
+        doc_meta = {
+            k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
         doc_meta.update(kwargs)
         meta = es.index(
             index=self._get_index(index),

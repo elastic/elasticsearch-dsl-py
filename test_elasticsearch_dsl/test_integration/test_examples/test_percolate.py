@@ -10,4 +10,4 @@ def test_post_gets_tagged_automatically(write_client):
     bp_py.save()
 
     assert [] == bp.tags
-    assert set(('programming', 'development', 'python')) == set(bp_py.tags)
+    assert {'programming', 'development', 'python'} == set(bp_py.tags)

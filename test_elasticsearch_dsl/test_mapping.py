@@ -59,7 +59,7 @@ def test_properties_can_iterate_over_all_the_fields():
     m.field('f3', Nested(test_attr='f3', properties={
             'f4': Text(test_attr='f4')}))
 
-    assert set(('f1', 'f2', 'f3', 'f4')) == set(f.test_attr for f in m.properties._collect_fields())
+    assert {'f1', 'f2', 'f3', 'f4'} == {f.test_attr for f in m.properties._collect_fields()}
 
 def test_mapping_can_collect_all_analyzers_and_normalizers():
     a1 = analysis.analyzer('my_analyzer1',
