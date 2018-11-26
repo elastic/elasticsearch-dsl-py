@@ -23,7 +23,8 @@ tests_require = [
     "mock",
     "pytest>=3.0.0",
     "pytest-cov",
-    "pytz"
+    "pytz",
+    "coverage<5.0.0"
 ]
 
 # use external unittest for 2.6
