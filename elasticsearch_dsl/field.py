@@ -79,7 +79,7 @@ class Field(DslBase):
         return self._empty()
 
     def serialize(self, data):
-        if isinstance(data, (list, AttrList, tuple)):
+        if isinstance(data, (list, AttrList)):
             return list(map(self._serialize, data))
         return self._serialize(data)
 
@@ -255,6 +255,20 @@ class Date(Field):
         if isinstance(data, int):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
+         if isinstance(data, tuple):
+            for i  in range(len(data)):
+                if isinstance(data[i], datetime):
+                    if self._default_timezone and dt.tzinfo is None:
+                        data[i] = dt.replace(tzinfo=self._default_timezone)
+                elif isinstance(data[1], date):
+                    pass
+                elif isinstance(data, int):
+                    # Divide by a float to preserve milliseconds.
+                    data[i] = datetime.utcfromtimestamp(data / 1000.0)
+                else:
+                    raise ValidationException(
+                        'Could not parse date from the value (%r)' % data, e)
+            return data
 
         raise ValidationException('Could not parse date from the value (%r)' % data)
 
