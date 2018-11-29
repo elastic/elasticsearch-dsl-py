@@ -79,7 +79,7 @@ class Field(DslBase):
         return self._empty()
 
     def serialize(self, data):
-        if isinstance(data, (list, AttrList)):
+        if isinstance(data, (list, AttrList, tuple)):
             return list(map(self._serialize, data))
         return self._serialize(data)
 
