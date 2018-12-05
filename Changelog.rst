@@ -3,6 +3,13 @@
 Changelog
 =========
 
+6.3.1 (2018-12-05)
+------------------
+
+* ``Analyzer.simulate`` now supports built-in analyzers
+* proper (de)serialization of the ``Range`` wrapper
+* Added ``search_analyzer`` to ``Completion`` field
+
 6.3.0 (2018-11-21)
 ------------------
 
