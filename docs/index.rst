@@ -30,7 +30,7 @@ Compatibility
 The library is compatible with all Elasticsearch versions since ``2.x`` but you
 **have to use a matching major version**:
 
-For **Elasticsearch 6.0** and later, use the major version 5 (``6.x.y``) of the
+For **Elasticsearch 6.0** and later, use the major version 6 (``6.x.y``) of the
 library.
 
 For **Elasticsearch 5.0** and later, use the major version 5 (``5.x.y``) of the
