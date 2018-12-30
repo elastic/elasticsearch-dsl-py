@@ -51,8 +51,8 @@ class IndexMeta(DocumentMeta):
                 if hasattr(b, '_index'):
                     return b._index
 
-            # return None as there are no index_opts
-            return None
+            # Set None as Index name so it will set _all while making the query
+            return Index(name=None)
 
         i = Index(
             getattr(opts, 'name', '*'),

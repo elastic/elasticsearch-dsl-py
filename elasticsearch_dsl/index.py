@@ -160,8 +160,10 @@ class Index(object):
                 'trying to assign %s.' % (doc_type, name))
         self._doc_types.append(document)
 
-        # If the document does not have any index, set this index as document index
-        if document._index is None:
+        # If the document index does not have any name, that means the user
+        # did not set any index already to the document.
+        # So set this index as document index
+        if document._index._name is None:
             document._index = self
 
         return document
