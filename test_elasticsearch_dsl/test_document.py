@@ -37,6 +37,9 @@ class Comment(document.InnerDoc):
 class DocWithNested(document.Document):
     comments = field.Nested(Comment)
 
+    class Index:
+        name = 'test-doc-with-nested'
+
 class SimpleCommit(document.Document):
     files = field.Text(multi=True)
 
@@ -59,14 +62,26 @@ class SecretField(field.CustomField):
 class SecretDoc(document.Document):
     title = SecretField(index='no')
 
+    class Index:
+        name = 'test-secret-doc'
+
 class NestedSecret(document.Document):
     secrets = field.Nested(SecretDoc)
+
+    class Index:
+        name = 'test-nested-secret'
 
 class OptionalObjectWithRequiredField(document.Document):
     comments = field.Nested(properties={'title': field.Keyword(required=True)})
 
+    class Index:
+        name = 'test-required'
+
 class Host(document.Document):
     ip = field.Ip()
+
+    class Index:
+        name = 'test-host'
 
 def test_range_serializes_properly():
     class D(document.Document):
