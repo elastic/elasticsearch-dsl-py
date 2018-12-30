@@ -21,9 +21,16 @@ class Repos(Document):
     is_public = Boolean()
     created_at = Date()
 
+    class Index:
+        name = 'git'
+
+
 class Commit(Document):
     files = Keyword()
     committed_date = Date()
+
+    class Index:
+        name = 'git'
 
 class RepoSearch(FacetedSearch):
     index = 'git'

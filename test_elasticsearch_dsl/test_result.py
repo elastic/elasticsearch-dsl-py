@@ -150,6 +150,10 @@ def test_bucket_response_can_be_iterated_over(agg_response):
 def test_bucket_keys_get_deserialized(aggs_data, aggs_search):
     class Commit(Document):
         info = Object(properties={'committed_date': Date()})
+
+        class Index:
+            name = 'test-commit'
+
     aggs_search = aggs_search.doc_type(Commit)
     agg_response = response.Response(aggs_search, aggs_data)
 

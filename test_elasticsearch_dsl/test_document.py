@@ -18,6 +18,9 @@ class MyDoc(document.Document):
     created_at = field.Date()
     inner = field.Object(MyInner)
 
+    class Index:
+        name = 'my-doc'
+
 class MySubDoc(MyDoc):
     name = field.Keyword()
 
@@ -118,6 +121,10 @@ def test_document_can_redefine_doc_type():
         kw = field.Keyword()
         class Meta:
             doc_type = 'not-doc'
+
+        class Index:
+            name = 'test-not-doc-index'
+
     assert D._index._get_doc_type() == 'not-doc'
     assert D._index.to_dict() == {
         'mappings': {'not-doc': {'properties': {'kw': {'type': 'keyword'}}}}
@@ -126,7 +133,8 @@ def test_document_can_redefine_doc_type():
 def test_document_cannot_specify_different_doc_type_if_index_defined():
     # this will initiate ._index with doc_type = 'doc'
     class C(document.Document):
-        pass
+        class Index:
+            name = 'test-doc-type-c'
 
     with raises(IllegalOperation):
         class D(C):
@@ -597,7 +605,8 @@ def test_from_es_respects_underscored_non_meta_fields():
     }
 
     class Company(document.Document):
-        pass
+        class Index:
+            name = 'test-company'
 
     c = Company.from_es(doc)
 
