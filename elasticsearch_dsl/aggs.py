@@ -228,7 +228,10 @@ class TopHits(Agg):
 
 class Avg(Agg):
     name = 'avg'
-
+    
+class WeightedAvg(Agg):
+    name = 'weighted_avg'
+    
 class Cardinality(Agg):
     name = 'cardinality'
 

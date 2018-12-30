@@ -5,8 +5,17 @@ from dateutil import tz
 
 import pytest
 
-from elasticsearch_dsl import field, InnerDoc, ValidationException
+from elasticsearch_dsl import field, InnerDoc, ValidationException, Range
 
+def test_date_range_deserialization():
+    data = {
+        'lt': '2018-01-01T00:30:10'
+    }
+
+    r = field.DateRange().deserialize(data)
+
+    assert isinstance(r, Range)
+    assert r.lt == datetime(2018, 1, 1, 0, 30, 10)
 
 def test_boolean_deserialization():
     bf = field.Boolean()

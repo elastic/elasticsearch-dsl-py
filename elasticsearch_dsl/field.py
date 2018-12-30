@@ -79,11 +79,14 @@ class Field(DslBase):
         return self._empty()
 
     def serialize(self, data):
-        if isinstance(data, (list, AttrList)):
+        if isinstance(data, (list, AttrList, tuple)):
             return list(map(self._serialize, data))
         return self._serialize(data)
 
     def deserialize(self, data):
+        if isinstance(data, tuple):
+            data = list(data)
+
         if isinstance(data, (list, AttrList)):
             data[:] = [
                 None if d is None else self._deserialize(d)
@@ -383,32 +386,41 @@ class Percolator(Field):
 
 class RangeField(Field):
     _coerce = True
+    _core_field = None
 
     def _deserialize(self, data):
+        if isinstance(data, Range):
+            return data
+        data = dict((k, self._core_field.deserialize(v)) for k, v in iteritems(data))
         return Range(data)
 
     def _serialize(self, data):
         if data is None:
             return None
-        if isinstance(data, collections_abc.Mapping):
-            return data
-        return data.to_dict()
+        if not isinstance(data, collections_abc.Mapping):
+            data = data.to_dict()
+        return dict((k, self._core_field.serialize(v)) for k, v in iteritems(data))
 
 
 class IntegerRange(RangeField):
     name = 'integer_range'
+    _core_field = Integer()
 
 class FloatRange(RangeField):
     name = 'float_range'
+    _core_field = Float()
 
 class LongRange(RangeField):
     name = 'long_range'
+    _core_field = Long()
 
 class DoubleRange(RangeField):
     name = 'double_ranged'
+    _core_field = Double()
 
 class DateRange(RangeField):
     name = 'date_range'
+    _core_field = Date()
 
 class IpRange(Field):
     # not a RangeField since ip_range supports CIDR ranges
