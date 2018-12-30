@@ -159,6 +159,11 @@ class Index(object):
                 'Index object cannot have multiple types, %s already set, '
                 'trying to assign %s.' % (doc_type, name))
         self._doc_types.append(document)
+
+        # If the document does not have any index, set this index as document index
+        if document._index is None:
+            document._index = self
+
         return document
     doc_type = document
 

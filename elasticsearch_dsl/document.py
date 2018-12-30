@@ -37,8 +37,10 @@ class IndexMeta(DocumentMeta):
         new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
         if cls._document_initialized:
             index_opts = attrs.pop('Index', None)
-            new_cls._index = cls.construct_index(index_opts, bases)
-            new_cls._index.document(new_cls)
+            index = cls.construct_index(index_opts, bases)
+            if index:
+                new_cls._index = index
+                index.document(new_cls)
         cls._document_initialized = True
         return new_cls
 
@@ -48,8 +50,9 @@ class IndexMeta(DocumentMeta):
             for b in bases:
                 if hasattr(b, '_index'):
                     return b._index
-            # create an all-matching index pattern
-            return Index('*')
+
+            # return None as there are no index_opts
+            return None
 
         i = Index(
             getattr(opts, 'name', '*'),
