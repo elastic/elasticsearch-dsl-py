@@ -18,9 +18,6 @@ class MyDoc(document.Document):
     created_at = field.Date()
     inner = field.Object(MyInner)
 
-    class Index:
-        name = 'my-doc'
-
 class MySubDoc(MyDoc):
     name = field.Keyword()
 
@@ -440,7 +437,7 @@ def test_to_dict_is_recursive_and_can_cope_with_multi_values():
     } == md.to_dict()
 
 def test_to_dict_ignores_empty_collections():
-    md = MyDoc(name='', address={}, count=0, valid=False, tags=[])
+    md = MySubDoc(name='', address={}, count=0, valid=False, tags=[])
 
     assert {'name': '', 'count': 0, 'valid': False} == md.to_dict()
 
