@@ -605,7 +605,7 @@ class Search(Request):
             s._highlight[f] = kwargs
         return s
 
-    def suggest(self, name, text, **kwargs):
+    def suggest(self, name, text=None, regex=None, **kwargs):
         """
         Add a suggestions request to the search.
 
@@ -616,9 +616,23 @@ class Search(Request):
 
             s = Search()
             s = s.suggest('suggestion-1', 'Elasticsearch', term={'field': 'body'})
+
         """
+        if text is None and regex is None:
+            raise ValueError('You have to pass "text" or "regex" argument.')
+
         s = self._clone()
-        s._suggest[name] = {'text': text}
+
+        query_name = 'text'
+        query_text = text
+        if 'completion' in kwargs:
+            if text:
+                query_name= 'prefix'
+            elif regex:
+                query_name= 'regex'
+                query_text = regex
+
+        s._suggest[name] = {query_name: query_text}
         s._suggest[name].update(kwargs)
         return s
 

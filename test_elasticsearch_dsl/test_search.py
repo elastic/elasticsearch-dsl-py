@@ -505,6 +505,54 @@ def test_suggest():
         }
     } == s.to_dict()
 
+
+def test_suggest_completion():
+    s = search.Search()
+    s = s.suggest('my_suggestion', 'pyhton', completion={'field': 'title'})
+
+    assert {
+        'suggest': {
+            'my_suggestion': {
+                'completion': {'field': 'title'},
+                'prefix': 'pyhton'
+            }
+        }
+    } == s.to_dict()
+
+
+def test_suggest_regex_query():
+    s = search.Search()
+    s = s.suggest('my_suggestion', regex='py[hton|py]', completion={'field': 'title'})
+
+    assert {
+        'suggest': {
+            'my_suggestion': {
+                'completion': {'field': 'title'},
+                'regex': 'py[hton|py]'
+            }
+        }
+    } == s.to_dict()
+
+
+def test_suggest_ignroe_regex_query():
+    s = search.Search()
+    s = s.suggest('my_suggestion', text='python', regex='py[hton|py]', completion={'field': 'title'})
+
+    assert {
+        'suggest': {
+            'my_suggestion': {
+                'completion': {'field': 'title'},
+                'prefix': 'python'
+            }
+        }
+    } == s.to_dict()
+
+def test_suggest_value_error():
+    s = search.Search()
+    with raises(ValueError):
+        s.suggest('my_suggestion', completion={'field': 'title'})
+
+
 def test_exclude():
     s = search.Search()
     s = s.exclude('match', title='python')
