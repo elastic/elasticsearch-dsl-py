@@ -39,7 +39,7 @@ class IndexMeta(DocumentMeta):
             index_opts = attrs.pop('Index', None)
             index = cls.construct_index(index_opts, bases)
             new_cls._index = index
-            if index:
+            if index._name:
                 index.document(new_cls)
         cls._document_initialized = True
         return new_cls
