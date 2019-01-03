@@ -127,6 +127,25 @@ def test_copy_clones():
     assert s1 == s2
     assert s1 is not s2
 
+def test_aggs_allow_two_metric():
+    s = search.Search()
+
+    s.aggs.metric('a', 'max', field='a').metric('b', 'max', field='b')
+
+    assert s.to_dict() ==  {
+        'aggs': {
+            'a': {
+                'max': {
+                    'field': 'a'
+                }
+            },
+            'b': {
+                'max': {
+                    'field': 'b'
+                }
+            }
+        }
+    }
 
 def test_aggs_get_copied_on_change():
     s = search.Search().query('match_all')

@@ -84,7 +84,8 @@ class ProxyDescriptor(object):
 class AggsProxy(AggBase, DslBase):
     name = 'aggs'
     def __init__(self, search):
-        self._base = self._search = search
+        self._base = self
+        self._search = search
         self._params = {'aggs': {}}
 
     def to_dict(self):
