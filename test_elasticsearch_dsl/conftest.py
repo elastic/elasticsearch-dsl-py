@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from copy import deepcopy
 from datetime import datetime
 
 from elasticsearch.helpers import bulk
@@ -12,6 +13,73 @@ from elasticsearch_dsl.connections import connections
 from .test_integration.test_data import DATA, FLAT_DATA, TEST_GIT_DATA, \
     create_git_index, create_flat_git_index
 from .test_integration.test_document import PullRequest, Comment, User, History
+
+
+DUMMY_RESPONSE_DATA = {
+    "_shards": {
+        "failed": 0,
+        "successful": 10,
+        "total": 10
+    },
+    "hits": {
+        "hits": [
+            {
+                "_index": "test-index",
+                "_type": "company",
+                "_id": "elasticsearch",
+                "_score": 12.0,
+
+                "_source": {
+                    "city": "Amsterdam",
+                    "name": "Elasticsearch",
+                },
+            },
+            {
+                "_index": "test-index",
+                "_type": "employee",
+                "_id": "42",
+                "_score": 11.123,
+                "_routing": "elasticsearch",
+
+                "_source": {
+                    "name": {
+                        "first": "Shay",
+                        "last": "Bannon"
+                    },
+                    "lang": "java",
+                    "twitter": "kimchy",
+                },
+            },
+            {
+                "_index": "test-index",
+                "_type": "employee",
+                "_id": "47",
+                "_score": 1,
+                "_routing": "elasticsearch",
+
+                "_source": {
+                    "name": {
+                        "first": "Honza",
+                        "last": "Král"
+                    },
+                    "lang": "python",
+                    "twitter": "honzakral",
+                },
+            },
+            {
+                "_index": "test-index",
+                "_type": "employee",
+                "_id": "53",
+                "_score": 16.0,
+                "_routing": "elasticsearch",
+            },
+        ],
+        "max_score": 12.0,
+        "total": 123
+    },
+    "timed_out": False,
+    "took": 123
+}
 
 
 @fixture(scope='session')
@@ -32,7 +100,7 @@ def write_client(client):
 @fixture
 def mock_client():
     client = Mock()
-    client.search.return_value = dummy_response()
+    client.search.return_value = deepcopy(DUMMY_RESPONSE_DATA)
     connections.add_connection('mock', client)
     yield client
     connections._conn = {}
@@ -52,71 +120,7 @@ def data_client(client):
 
 @fixture
 def dummy_response():
-    return {
-      "_shards": {
-        "failed": 0,
-        "successful": 10,
-        "total": 10
-      },
-      "hits": {
-        "hits": [
-          {
-            "_index": "test-index",
-            "_type": "company",
-            "_id": "elasticsearch",
-            "_score": 12.0,
-
-            "_source": {
-              "city": "Amsterdam",
-              "name": "Elasticsearch",
-            },
-          },
-          {
-            "_index": "test-index",
-            "_type": "employee",
-            "_id": "42",
-            "_score": 11.123,
-            "_routing": "elasticsearch",
-
-            "_source": {
-              "name": {
-                "first": "Shay",
-                "last": "Bannon"
-              },
-              "lang": "java",
-              "twitter": "kimchy",
-            },
-          },
-          {
-            "_index": "test-index",
-            "_type": "employee",
-            "_id": "47",
-            "_score": 1,
-            "_routing": "elasticsearch",
-
-            "_source": {
-              "name": {
-                "first": "Honza",
-                "last": "Král"
-              },
-              "lang": "python",
-              "twitter": "honzakral",
-            },
-          },
-          {
-            "_index": "test-index",
-            "_type": "employee",
-            "_id": "53",
-            "_score": 16.0,
-            "_routing": "elasticsearch",
-          },
-        ],
-        "max_score": 12.0,
-        "total": 123
-      },
-      "timed_out": False,
-      "took": 123
-    }
+    return deepcopy(DUMMY_RESPONSE_DATA)
 
 @fixture
 def aggs_search():
