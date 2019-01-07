@@ -6,6 +6,7 @@ try:
 except ImportError:
     import collections as collections_abc
 
+import decimal
 from datetime import date, datetime
 
 from dateutil import parser, tz
@@ -18,6 +19,7 @@ from .exceptions import ValidationException
 from .wrappers import Range
 
 unicode = type(u'')
+
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
@@ -43,6 +45,7 @@ def construct_field(name_or_field, **params):
 
     # "text", analyzer="snowball"
     return Field.get_dsl_class(name_or_field)(**params)
+
 
 class Field(DslBase):
     _type_name = 'field'
@@ -312,6 +315,18 @@ class ScaledFloat(Float):
 
 class Double(Float):
     name = 'double'
+
+class Decimal(Field):
+    name = 'decimal'
+    _coerce = False
+
+    def _deserialize(self, data):
+        return decimal.Decimal(data)
+
+    def _serialize(self, data):
+        if data is None:
+            return None
+        return str(data)
 
 class Integer(Field):
     name = 'integer'

@@ -1,5 +1,6 @@
 import base64
 import ipaddress
+import decimal
 from datetime import datetime
 from dateutil import tz
 
@@ -131,6 +132,15 @@ def test_float():
         assert f.deserialize('not_a_float')
 
 
+def test_decimal():
+    f = field.Decimal()
+    some_decimal = decimal.Decimal('10.333333333333333333333333333')
+    assert f.deserialize('10.333333333333333333333333333') == some_decimal
+    assert f.serialize(some_decimal) == '10.333333333333333333333333333'
+    with pytest.raises(decimal.InvalidOperation):
+        assert f.deserialize("not_a_decimal")
+
+
 def test_integer():
     f = field.Integer()
     assert f.deserialize('42') == 42
@@ -150,6 +160,7 @@ def test_object_dynamic_values():
     for dynamic in True, False, 'strict':
         f = field.Object(dynamic=dynamic)
         assert f.to_dict()['dynamic'] == dynamic
+
 
 def test_object_disabled():
     f = field.Object(enabled=False)
