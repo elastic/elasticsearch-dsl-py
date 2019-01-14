@@ -522,35 +522,34 @@ def test_suggest_completion():
 
 def test_suggest_regex_query():
     s = search.Search()
-    s = s.suggest('my_suggestion', regex='py[hton|py]', completion={'field': 'title'})
+    s = s.suggest('my_suggestion', regex='py[thon|py]', completion={'field': 'title'})
 
     assert {
         'suggest': {
             'my_suggestion': {
                 'completion': {'field': 'title'},
-                'regex': 'py[hton|py]'
+                'regex': 'py[thon|py]'
             }
         }
     } == s.to_dict()
 
 
-def test_suggest_ignroe_regex_query():
-    s = search.Search()
-    s = s.suggest('my_suggestion', text='python', regex='py[hton|py]', completion={'field': 'title'})
-
-    assert {
-        'suggest': {
-            'my_suggestion': {
-                'completion': {'field': 'title'},
-                'prefix': 'python'
-            }
-        }
-    } == s.to_dict()
-
-def test_suggest_value_error():
+def test_suggest_must_pass_text_or_regex():
     s = search.Search()
     with raises(ValueError):
-        s.suggest('my_suggestion', completion={'field': 'title'})
+        s.suggest('my_suggestion')
+
+
+def test_suggest_can_only_pass_text_or_regex():
+    s = search.Search()
+    with raises(ValueError):
+        s.suggest('my_suggestion', text='python', regex='py[hton|py]')
+
+
+def test_suggest_regex_must_be_wtih_completion():
+    s = search.Search()
+    with raises(ValueError):
+        s.suggest('my_suggestion', regex='py[thon|py]')
 
 
 def test_exclude():

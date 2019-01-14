@@ -611,29 +611,33 @@ class Search(Request):
 
         :arg name: name of the suggestion
         :arg text: text to suggest on
+        :arg regex: regex query for Completion Suggester
 
         All keyword arguments will be added to the suggestions body. For example::
 
             s = Search()
             s = s.suggest('suggestion-1', 'Elasticsearch', term={'field': 'body'})
 
+            # regex query for Completion Suggester
+            s = Search()
+            s = s.suggest('suggestion-1', regex='py[thon|py]', completion={'field': 'body'})
+
         """
         if text is None and regex is None:
             raise ValueError('You have to pass "text" or "regex" argument.')
+        if text and regex:
+            raise ValueError('You can only pass either "text" or "regex" argument.')
+        if regex and 'completion' not in kwargs:
+            raise ValueError('"regex" argument must be passed with "completion" keyword argument.')
 
         s = self._clone()
-
-        query_name = 'text'
-        query_text = text
-        if 'completion' in kwargs:
-            if text:
-                query_name= 'prefix'
-            elif regex:
-                query_name= 'regex'
-                query_text = regex
-
-        s._suggest[name] = {query_name: query_text}
-        s._suggest[name].update(kwargs)
+        d = s._suggest[name] = kwargs
+        if regex:
+            d['regex'] = regex
+        elif 'completion' in kwargs:
+            d['prefix'] = text
+        else:
+            d['text'] = text
         return s
 
     def to_dict(self, count=False, **kwargs):
