@@ -172,7 +172,7 @@ class Document(ObjectBase):
         """
         Retrieve a single document from elasticsearch using it's ``id``.
 
-        :arg id: ``id`` of the document to be retireved
+        :arg id: ``id`` of the document to be retrieved
         :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
@@ -198,7 +198,7 @@ class Document(ObjectBase):
         Retrieve multiple document by their ``id``\s. Returns a list of instances
         in the same order as requested.
 
-        :arg docs: list of ``id``\s of the documents to be retireved or a list
+        :arg docs: list of ``id``\s of the documents to be retrieved or a list
             of document specifications as per
             https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
         :arg index: elasticsearch index to use, if the ``Document`` is
