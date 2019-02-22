@@ -245,9 +245,13 @@ class Date(Field):
     def _deserialize(self, data):
         if isinstance(data, string_types):
             try:
-                data = parser.parse(data)
+                # Validate we can parse this string into a proper date, then
+                # send along untouched (allow user to pass specific formats)
+                parser.parse(data)
+                return data
             except Exception as e:
-                raise ValidationException('Could not parse date from the value (%r)' % data, e)
+                raise ValidationException(
+                    'Could not parse date from the value (%r)' % data, e)
 
         if isinstance(data, datetime):
             if self._default_timezone and data.tzinfo is None:
@@ -259,7 +263,8 @@ class Date(Field):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
 
-        raise ValidationException('Could not parse date from the value (%r)' % data)
+        raise ValidationException(
+            'Could not parse date from the value (%r)' % data)
 
 class Text(Field):
     _param_defs = {
