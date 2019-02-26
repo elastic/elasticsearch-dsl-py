@@ -30,9 +30,9 @@ def write_client(client):
     client.indices.delete_template('test-template', ignore=404)
 
 @fixture
-def mock_client():
+def mock_client(dummy_response):
     client = Mock()
-    client.search.return_value = dummy_response()
+    client.search.return_value = dummy_response
     connections.add_connection('mock', client)
     yield client
     connections._conn = {}
