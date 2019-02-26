@@ -83,7 +83,6 @@ def test_mapping_gets_updated_from_es(write_client):
             'mappings': {
                 'my_doc': {
                     'date_detection': False,
-                    '_all': {'enabled': False},
                     'properties': {
                         'title': {
                             'type': 'text',
@@ -118,7 +117,6 @@ def test_mapping_gets_updated_from_es(write_client):
     assert {
         'my_doc': {
             'date_detection': False,
-            '_all': {'enabled': False},
             'properties': {
                 'comments': {
                     'type': 'nested',
