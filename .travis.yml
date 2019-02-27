@@ -23,9 +23,9 @@ env:
     - WAIT_FOR_ES=1
     - ES_PY_VERSION=6.3.0
   matrix:
-    - ES_VERSION=6.3.2
     - ES_VERSION=6.4.3
     - ES_VERSION=6.5.0
+    - ES_VERSION=6.6.1
 
 install:
   - mkdir /tmp/elasticsearch
