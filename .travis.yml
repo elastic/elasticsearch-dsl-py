@@ -11,11 +11,11 @@ before_install:
   - java -version
 
 python:
-  - "2.6"
   - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
   - "nightly"
   - "pypy"
 
