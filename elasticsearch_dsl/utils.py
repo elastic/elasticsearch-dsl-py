@@ -417,20 +417,24 @@ class ObjectBase(AttrDict):
                     data[k] = v
 
         doc = cls(meta=meta)
+        doc._from_dict(data)
+        return doc
+
+    def _from_dict(self, data):
         for k, v in iteritems(data):
-            f = cls.__get_field(k)
+            f = self.__get_field(k)
             if f and f._coerce:
                 v = f.deserialize(v)
-            setattr(doc, k, v)
-        return doc
+            setattr(self, k, v)
 
     def __getstate__(self):
         return (self.to_dict(), self.meta._d_)
 
     def __setstate__(self, state):
         data, meta = state
-        super(AttrDict, self).__setattr__('_d_', data)
+        super(AttrDict, self).__setattr__('_d_', {})
         super(AttrDict, self).__setattr__('meta', HitMeta(meta))
+        self._from_dict(data)
 
     def __getattr__(self, name):
         try:

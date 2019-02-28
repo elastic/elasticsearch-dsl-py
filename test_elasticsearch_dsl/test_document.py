@@ -315,6 +315,7 @@ def test_doc_type_can_be_correctly_pickled():
     assert 42 == d2.meta.id
     assert 'Hello World!' == d2.title
     assert [{'title': 'hellp'}] == d2.comments
+    assert isinstance(d2.comments[0], Comment)
 
 def test_meta_is_accessible_even_on_empty_doc():
     d = MyDoc()
