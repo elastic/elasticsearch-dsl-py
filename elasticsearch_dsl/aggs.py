@@ -159,6 +159,9 @@ class DateHistogram(Bucket):
     def result(self, search, data):
         return FieldBucketData(self, search, data)
 
+class AutoDateHistogram(DateHistogram):
+    name = 'auto_date_histogram'
+
 class DateRange(Bucket):
     name = 'date_range'
 
@@ -228,10 +231,10 @@ class TopHits(Agg):
 
 class Avg(Agg):
     name = 'avg'
-    
+
 class WeightedAvg(Agg):
     name = 'weighted_avg'
-    
+
 class Cardinality(Agg):
     name = 'cardinality'
 
