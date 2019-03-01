@@ -32,6 +32,7 @@ def test_hit_is_pickleable(dummy_response):
     hits = pickle.loads(pickle.dumps(res.hits))
 
     assert hits == res.hits
+    assert hits[0].meta == res.hits[0].meta
 
 def test_response_stores_search(dummy_response):
     s = Search()
