@@ -359,6 +359,9 @@ class Binary(Field):
             return None
         return base64.b64encode(data).decode()
 
+class Attachment(Field):
+    name = 'attachment'
+
 class GeoPoint(Field):
     name = 'geo_point'
 
