@@ -251,7 +251,7 @@ class FacetedSearch(object):
     """
     index = None
     doc_types = None
-    fields = ('*', )
+    fields = None
     facets = {}
     using = 'default'
 
@@ -317,7 +317,10 @@ class FacetedSearch(object):
         Override this if you wish to customize the query used.
         """
         if query:
-            return search.query('multi_match', fields=self.fields, query=query)
+            if self.fields:
+                return search.query('multi_match', fields=self.fields, query=query)
+            else:
+                return search.query('multi_match', query=query)
         return search
 
     def aggregate(self, search):
@@ -373,7 +376,8 @@ class FacetedSearch(object):
         s = self.search()
         s = self.query(s, self._query)
         s = self.filter(s)
-        s = self.highlight(s)
+        if self.fields:
+            s = self.highlight(s)
         s = self.sort(s)
         self.aggregate(s)
         return s
