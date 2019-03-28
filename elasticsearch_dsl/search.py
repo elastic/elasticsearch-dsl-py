@@ -17,6 +17,7 @@ from .response import Response, Hit
 from .connections import connections
 from .exceptions import IllegalOperation
 
+
 class QueryProxy(object):
     """
     Simple proxy around DSL objects (queries) that can be called
@@ -90,6 +91,7 @@ class AggsProxy(AggBase, DslBase):
 
     def to_dict(self):
         return super(AggsProxy, self).to_dict().get('aggs', {})
+
 
 class Request(object):
     def __init__(self, using='default', index=None, doc_type=None, extra=None):
@@ -186,7 +188,6 @@ class Request(object):
 
     def _resolve_nested(self, hit, parent_class=None):
         doc_class = Hit
-        nested_field = None
 
         nested_path = []
         nesting = hit['_nested']
@@ -226,7 +227,6 @@ class Request(object):
 
         callback = getattr(doc_class, 'from_es', doc_class)
         return callback(hit)
-
 
     def doc_type(self, *doc_type, **kwargs):
         """
@@ -300,7 +300,7 @@ class Search(Request):
         :arg doc_type: only query this type.
 
         All the parameters supplied (or omitted) at creation type can be later
-        overriden by methods (`using`, `index` and `doc_type` respectively).
+        overridden by methods (`using`, `index` and `doc_type` respectively).
         """
         super(Search, self).__init__(**kwargs)
 
@@ -628,7 +628,7 @@ class Search(Request):
         Serialize the search into the dictionary that will be sent over as the
         request's body.
 
-        :arg count: a flag to specify we are interested in a body for count -
+        :arg count: a flag to specify if we are interested in a body for count -
             no aggregations, no pagination bounds etc.
 
         All additional keyword arguments will be included into the dictionary.
@@ -691,7 +691,8 @@ class Search(Request):
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
 
-        :arg response_class: optional subclass of ``Response`` to use instead.
+        :arg ignore_cache: if set to ``True``, consecutive calls will hit
+            ES, while cached result will be ignored. Defaults to `False`
         """
         if ignore_cache or not hasattr(self, '_response'):
             es = connections.get_connection(self._using)
