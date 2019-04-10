@@ -84,11 +84,8 @@ class Field(DslBase):
         return self._serialize(data)
 
     def deserialize(self, data):
-        if isinstance(data, tuple):
-            data = list(data)
-
-        if isinstance(data, (list, AttrList)):
-            data[:] = [
+        if isinstance(data, (list, AttrList, tuple)):
+            data = [
                 None if d is None else self._deserialize(d)
                 for d in data
             ]
