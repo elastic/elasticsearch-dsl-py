@@ -172,12 +172,6 @@ class Request(object):
 
         return s
 
-    def _get_doc_type(self):
-        """
-        Return a list of doc_type names to be used
-        """
-        return list({dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type})
-
     def _resolve_field(self, path):
         for dt in self._doc_type:
             if not hasattr(dt, '_index'):
@@ -681,7 +675,6 @@ class Search(Request):
         # TODO: failed shards detection
         return es.count(
             index=self._index,
-            doc_type=self._get_doc_type(),
             body=d,
             **self._params
         )['count']
@@ -701,7 +694,6 @@ class Search(Request):
                 self,
                 es.search(
                     index=self._index,
-                    doc_type=self._get_doc_type(),
                     body=self.to_dict(),
                     **self._params
                 )
@@ -724,7 +716,6 @@ class Search(Request):
                 es,
                 query=self.to_dict(),
                 index=self._index,
-                doc_type=self._get_doc_type(),
                 **self._params
         ):
             yield self._get_result(hit)
@@ -740,7 +731,6 @@ class Search(Request):
             es.delete_by_query(
                 index=self._index,
                 body=self.to_dict(),
-                doc_type=self._get_doc_type(),
                 **self._params
             )
         )
@@ -784,8 +774,6 @@ class MultiSearch(Request):
             meta = {}
             if s._index:
                 meta['index'] = s._index
-            if s._doc_type:
-                meta['type'] = s._get_doc_type()
             meta.update(s._params)
 
             out.append(meta)
@@ -802,7 +790,6 @@ class MultiSearch(Request):
 
             responses = es.msearch(
                 index=self._index,
-                doc_type=self._get_doc_type(),
                 body=self.to_dict(),
                 **self._params
             )

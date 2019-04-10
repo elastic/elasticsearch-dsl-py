@@ -46,7 +46,7 @@ class Commit(Document):
         name = 'flat-git'
 
     class Meta:
-        mapping = Mapping('doc')
+        mapping = Mapping()
 
 class History(InnerDoc):
     timestamp = Date()
@@ -78,7 +78,7 @@ class SerializationDoc(Document):
 
 def test_serialization(write_client):
     SerializationDoc.init()
-    write_client.index(index='test-serialization', doc_type='doc', id=42,
+    write_client.index(index='test-serialization', id=42,
                        body={
                            'i': [1, 2, "3", None],
                            'b': [True, False, "true", "false", None],
@@ -172,7 +172,7 @@ def test_update_script(write_client):
 def test_init(write_client):
     Repository.init(index='test-git')
 
-    assert write_client.indices.exists_type(index='test-git', doc_type='doc')
+    assert write_client.indices.exists(index='test-git')
 
 def test_get_raises_404_on_index_missing(data_client):
     with raises(NotFoundError):
@@ -196,18 +196,18 @@ def test_get(data_client):
     assert datetime(2014, 3, 3) == elasticsearch_repo.created_at
 
 def test_get_with_tz_date(data_client):
-    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
+    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', routing='elasticsearch-dsl-py')
 
     tzinfo = timezone('Europe/Prague')
     assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123000)) == first_commit.authored_date
 
 def test_save_with_tz_date(data_client):
     tzinfo = timezone('Europe/Prague')
-    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
+    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', routing='elasticsearch-dsl-py')
     first_commit.committed_date = tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123456))
     first_commit.save()
 
-    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', parent='elasticsearch-dsl-py')
+    first_commit = Commit.get(id='3ca6e1e73a071a705b4babd2f581c91a2a3e5037', routing='elasticsearch-dsl-py')
     assert tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123456)) == first_commit.committed_date
 
 COMMIT_DOCS_WITH_MISSING = [
@@ -275,7 +275,7 @@ def test_save_updates_existing_doc(data_client):
     # assert version has been updated
     assert elasticsearch_repo.meta.version == v + 1
 
-    new_repo = data_client.get(index='git', doc_type='doc', id='elasticsearch-dsl-py')
+    new_repo = data_client.get(index='git', id='elasticsearch-dsl-py')
     assert 'testing-save' == new_repo['_source']['new_field']
 
 def test_save_automatically_uses_versions(data_client):
@@ -299,12 +299,11 @@ def test_can_save_to_different_index(write_client):
     assert_doc_equals({
             'found': True,
             '_index': 'test-document',
-            '_type': 'doc',
             '_id': '42',
             '_version': 3,
             '_source': {'description': 'testing'},
         },
-        write_client.get(index='test-document', doc_type='doc', id=42)
+        write_client.get(index='test-document', id=42)
     )
 
 def test_save_without_skip_empty_will_include_empty_fields(write_client):
@@ -316,7 +315,6 @@ def test_save_without_skip_empty_will_include_empty_fields(write_client):
     assert_doc_equals({
             'found': True,
             '_index': 'test-document',
-            '_type': 'doc',
             '_id': '42',
             '_version': 3,
             '_source': {
@@ -325,13 +323,12 @@ def test_save_without_skip_empty_will_include_empty_fields(write_client):
                 "field_3": {}
             },
         },
-        write_client.get(index='test-document', doc_type='doc', id=42)
+        write_client.get(index='test-document', id=42)
     )
 
 def test_delete(write_client):
     write_client.create(
         index='test-document',
-        doc_type='doc',
         id='elasticsearch-dsl-py',
         body={'organization': 'elasticsearch', 'created_at': '2014-03-03', 'owner': {'name': 'elasticsearch'}}
     )
@@ -342,7 +339,6 @@ def test_delete(write_client):
 
     assert not write_client.exists(
         index='test-document',
-        doc_type='doc',
         id='elasticsearch-dsl-py',
     )
 

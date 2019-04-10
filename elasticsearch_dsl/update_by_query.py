@@ -140,7 +140,6 @@ class UpdateByQuery(Request):
             self,
             es.update_by_query(
                 index=self._index,
-                doc_type=self._get_doc_type(),
                 body=self.to_dict(),
                 **self._params
             )

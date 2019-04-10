@@ -28,7 +28,7 @@ class Hit(AttrDict):
         return '<Hit({}): {}>'.format(
             '/'.join(
                 getattr(self.meta, key)
-                for key in ('index', 'doc_type', 'id')
+                for key in ('index', 'id')
                 if key in self.meta),
             super(Hit, self).__repr__()
         )

@@ -3,27 +3,24 @@ from elasticsearch_dsl import mapping, analysis, exceptions
 from pytest import raises
 
 def test_mapping_saved_into_es(write_client):
-    m = mapping.Mapping('test-type')
+    m = mapping.Mapping()
     m.field('name', 'text', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
     m.field('tags', 'keyword')
     m.save('test-mapping', using=write_client)
 
-    assert write_client.indices.exists_type(index='test-mapping', doc_type='test-type')
     assert {
         'test-mapping': {
             'mappings': {
-                'test-type': {
-                    'properties': {
-                        'name': {'type': 'text', 'analyzer': 'my_analyzer'},
-                        'tags': {'type': 'keyword'}
-                    }
+                'properties': {
+                    'name': {'type': 'text', 'analyzer': 'my_analyzer'},
+                    'tags': {'type': 'keyword'}
                 }
             }
         }
     } == write_client.indices.get_mapping(index='test-mapping')
 
 def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
-    m = mapping.Mapping('test-type')
+    m = mapping.Mapping()
     m.field('name', 'text', analyzer=analysis.analyzer('my_analyzer', tokenizer='keyword'))
     write_client.indices.create(index='test-mapping')
 
@@ -38,17 +35,15 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
     assert {
         'test-mapping': {
             'mappings': {
-                'test-type': {
-                    'properties': {
-                        'name': {'type': 'text', 'analyzer': 'my_analyzer'},
-                    }
+                'properties': {
+                    'name': {'type': 'text', 'analyzer': 'my_analyzer'},
                 }
             }
         }
     } == write_client.indices.get_mapping(index='test-mapping')
 
 def test_mapping_saved_into_es_when_index_already_exists_with_analysis(write_client):
-    m = mapping.Mapping('test-type')
+    m = mapping.Mapping()
     analyzer = analysis.analyzer('my_analyzer', tokenizer='keyword')
     m.field('name', 'text', analyzer=analyzer)
 
@@ -65,11 +60,9 @@ def test_mapping_saved_into_es_when_index_already_exists_with_analysis(write_cli
     assert {
         'test-mapping': {
             'mappings': {
-                'test-type': {
-                    'properties': {
-                        'name': {'type': 'text', 'analyzer': 'my_analyzer'},
-                        'title': {'type': 'text', 'analyzer': 'my_analyzer'},
-                    }
+                'properties': {
+                    'name': {'type': 'text', 'analyzer': 'my_analyzer'},
+                    'title': {'type': 'text', 'analyzer': 'my_analyzer'},
                 }
             }
         }
@@ -81,27 +74,25 @@ def test_mapping_gets_updated_from_es(write_client):
         body={
             'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
             'mappings': {
-                'my_doc': {
-                    'date_detection': False,
-                    'properties': {
-                        'title': {
-                            'type': 'text',
-                            'analyzer': 'snowball',
-                            'fields': {
-                                'raw': {'type': 'keyword'}
-                            }
-                        },
-                        'created_at': {'type': 'date'},
-                        'comments': {
-                            'type': 'nested',
-                            'properties': {
-                                'created': {'type': 'date'},
-                                'author': {
-                                    'type': 'text',
-                                    'analyzer': 'snowball',
-                                    'fields': {
-                                        'raw': {'type': 'keyword'}
-                                    }
+                'date_detection': False,
+                'properties': {
+                    'title': {
+                        'type': 'text',
+                        'analyzer': 'snowball',
+                        'fields': {
+                            'raw': {'type': 'keyword'}
+                        }
+                    },
+                    'created_at': {'type': 'date'},
+                    'comments': {
+                        'type': 'nested',
+                        'properties': {
+                            'created': {'type': 'date'},
+                            'author': {
+                                'type': 'text',
+                                'analyzer': 'snowball',
+                                'fields': {
+                                    'raw': {'type': 'keyword'}
                                 }
                             }
                         }
@@ -111,28 +102,26 @@ def test_mapping_gets_updated_from_es(write_client):
         }
     )
 
-    m = mapping.Mapping.from_es('test-mapping', 'my_doc', using=write_client)
+    m = mapping.Mapping.from_es('test-mapping', using=write_client)
 
     assert ['comments', 'created_at', 'title'] == list(sorted(m.properties.properties._d_.keys()))
     assert {
-        'my_doc': {
-            'date_detection': False,
-            'properties': {
-                'comments': {
-                    'type': 'nested',
-                    'properties': {
-                        'created': {'type': 'date'},
-                        'author': {'analyzer': 'snowball', 'fields': {'raw': {'type': 'keyword'}}, 'type': 'text'}
-                    },
+        'date_detection': False,
+        'properties': {
+            'comments': {
+                'type': 'nested',
+                'properties': {
+                    'created': {'type': 'date'},
+                    'author': {'analyzer': 'snowball', 'fields': {'raw': {'type': 'keyword'}}, 'type': 'text'}
                 },
-                'created_at': {'type': 'date'},
-                'title': {'analyzer': 'snowball', 'fields': {'raw': {'type': 'keyword'}}, 'type': 'text'}
-            }
+            },
+            'created_at': {'type': 'date'},
+            'title': {'analyzer': 'snowball', 'fields': {'raw': {'type': 'keyword'}}, 'type': 'text'}
         }
     } == m.to_dict()
 
     # test same with alias
     write_client.indices.put_alias(index='test-mapping', name='test-alias')
 
-    m2 = mapping.Mapping.from_es('test-alias', 'my_doc', using=write_client)
+    m2 = mapping.Mapping.from_es('test-alias', using=write_client)
     assert m2.to_dict() == m.to_dict()

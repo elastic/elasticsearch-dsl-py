@@ -33,7 +33,7 @@ class IndexTemplate(object):
         es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 class Index(object):
-    def __init__(self, name, doc_type=DEFAULT_DOC_TYPE, using='default'):
+    def __init__(self, name, using='default'):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
@@ -45,19 +45,10 @@ class Index(object):
         self._aliases = {}
         self._analysis = {}
         self._mapping = None
-        if doc_type is not DEFAULT_DOC_TYPE:
-            self._mapping = Mapping(doc_type)
 
-    def _get_doc_type(self):
-        if self._mapping is not None:
-            return self._mapping.doc_type
-        for d in self._doc_types:
-            return d._doc_type.name
-        return None
-
-    def get_or_create_mapping(self, doc_type=DEFAULT_DOC_TYPE):
+    def get_or_create_mapping(self):
         if self._mapping is None:
-            self._mapping = Mapping(doc_type)
+            self._mapping = Mapping()
         return self._mapping
 
     def as_template(self, template_name, pattern=None):
@@ -87,7 +78,7 @@ class Index(object):
     def load_mappings(self, using=None):
         self.get_or_create_mapping().update_from_es(self._name, using=using or self._using)
 
-    def clone(self, name=None, doc_type=None, using=None):
+    def clone(self, name=None, using=None):
         """
         Create a copy of the instance with another name or connection alias.
         Useful for creating multiple indices with shared configuration::
@@ -102,10 +93,7 @@ class Index(object):
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
-        doc_type = doc_type or self._get_doc_type() or DEFAULT_DOC_TYPE
-        i = Index(name or self._name,
-                  doc_type=doc_type,
-                  using=using or self._using)
+        i = Index(name or self._name, using=using or self._using)
         i._settings = self._settings.copy()
         i._aliases = self._aliases.copy()
         i._analysis = self._analysis.copy()
@@ -128,11 +116,7 @@ class Index(object):
         This means that, when this index is created, it will contain the
         mappings for the document type defined by those mappings.
         """
-        if self._mapping is not None and mapping.doc_type != self._mapping.doc_type:
-            raise IllegalOperation(
-                'Index object cannot have multiple types, %s already set, '
-                'trying to assign %s.' % (self._mapping.doc_type, mapping.doc_type))
-        self.get_or_create_mapping(mapping.doc_type).update(mapping)
+        self.get_or_create_mapping().update(mapping)
 
     def document(self, document):
         """
@@ -155,12 +139,6 @@ class Index(object):
             # properly deserialized Post instances
             s = i.search()
         """
-        name = document._doc_type.name
-        doc_type = self._get_doc_type()
-        if doc_type and name != doc_type:
-            raise IllegalOperation(
-                'Index object cannot have multiple types, %s already set, '
-                'trying to assign %s.' % (doc_type, name))
         self._doc_types.append(document)
 
         # If the document index does not have any name, that means the user
@@ -170,7 +148,6 @@ class Index(object):
             document._index = self
 
         return document
-    doc_type = document
 
     def settings(self, **kwargs):
         """
@@ -234,7 +211,7 @@ class Index(object):
             mapping = d._doc_type.mapping
             merge(mappings, mapping.to_dict(), True)
             merge(analysis, mapping._collect_analysis(), True)
-        if mappings and mappings[self._get_doc_type()]:
+        if mappings:
             out['mappings'] = mappings
         if analysis or self._analysis:
             merge(analysis, self._analysis)
@@ -265,7 +242,6 @@ class Index(object):
         return UpdateByQuery(
             using=using or self._using,
             index=self._name,
-            doc_type=self._doc_types
         )
 
     def create(self, using=None, **kwargs):
@@ -328,8 +304,7 @@ class Index(object):
         # exception
         mappings = body.pop('mappings', {})
         if mappings:
-            for doc_type in mappings:
-                self.put_mapping(using=using, doc_type=doc_type, body=mappings[doc_type])
+            self.put_mapping(using=using, body=mappings)
 
     def analyze(self, using=None, **kwargs):
         """

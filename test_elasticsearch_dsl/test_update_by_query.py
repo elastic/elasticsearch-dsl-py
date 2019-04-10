@@ -124,7 +124,6 @@ def test_params_being_passed_to_search(mock_client):
     ubq.execute()
 
     mock_client.update_by_query.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={},
         routing='42'

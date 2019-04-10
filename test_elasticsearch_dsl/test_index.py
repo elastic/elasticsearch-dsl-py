@@ -10,28 +10,6 @@ class Post(Document):
     title = Text()
     published_from = Date()
 
-def test_doc_type_can_be_set():
-    i = Index('i', doc_type='t')
-    m = Mapping('t')
-    m.field('title', Text())
-    i.mapping(m)
-
-    assert {
-        'mappings': {
-            't': {
-                'properties': {
-                    'title': {'type': 'text'}
-                }
-            }
-        }
-    } == i.to_dict()
-
-def test_conflicting_doc_types_cause_exception():
-    i = Index('i', doc_type='t')
-
-    with raises(exceptions.IllegalOperation):
-        i.document(Post)
-
 def test_multiple_doc_types_will_combine_mappings():
     class User(Document):
         username = Text()
@@ -41,12 +19,10 @@ def test_multiple_doc_types_will_combine_mappings():
     i.document(User)
     assert {
         'mappings': {
-            'doc': {
-                'properties': {
-                    'title': {'type': 'text'},
-                    'username': {'type': 'text'},
-                    'published_from': {'type': 'date'}
-                }
+            'properties': {
+                'title': {'type': 'text'},
+                'username': {'type': 'text'},
+                'published_from': {'type': 'date'}
             }
         }
     } == i.to_dict()
@@ -105,11 +81,9 @@ def test_registered_doc_type_included_in_to_dict():
 
     assert {
         'mappings': {
-            'doc': {
-                'properties': {
-                    'title': {'type': 'text'},
-                    'published_from': {'type': 'date'},
-                }
+            'properties': {
+                'title': {'type': 'text'},
+                'published_from': {'type': 'date'},
             }
         }
     } == i.to_dict()

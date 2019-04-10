@@ -6,7 +6,7 @@ except ImportError:
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
-from six import iteritems, add_metaclass, string_types
+from six import iteritems, add_metaclass
 
 from .field import Field
 from .mapping import Mapping
@@ -68,11 +68,8 @@ class DocumentOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
 
-        # get doc_type name, if not defined use 'doc'
-        doc_type = getattr(meta, 'doc_type', 'doc')
-
         # create the mapping instance
-        self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
+        self.mapping = getattr(meta, 'mapping', Mapping())
 
         # register all declared fields into the mapping
         for name, value in list(iteritems(attrs)):
@@ -114,8 +111,7 @@ class Document(ObjectBase):
     """
     @classmethod
     def _matches(cls, hit):
-        return fnmatch(hit.get('_index', ''), cls._index._name) \
-            and cls._doc_type.name == hit.get('_type')
+        return fnmatch(hit.get('_index', ''), cls._index._name)
 
     @classmethod
     def _get_using(cls, using=None):
@@ -154,7 +150,7 @@ class Document(ObjectBase):
         return '{}({})'.format(
             self.__class__.__name__,
             ', '.join('{}={!r}'.format(key, getattr(self.meta, key)) for key in
-                      ('index', 'doc_type', 'id') if key in self.meta)
+                      ('index', 'id') if key in self.meta)
         )
 
     @classmethod
@@ -185,7 +181,6 @@ class Document(ObjectBase):
         es = cls._get_connection(using)
         doc = es.get(
             index=cls._default_index(index),
-            doc_type=cls._doc_type.name,
             id=id,
             **kwargs
         )
@@ -225,7 +220,6 @@ class Document(ObjectBase):
         results = es.mget(
             body,
             index=cls._default_index(index),
-            doc_type=cls._doc_type.name,
             **kwargs
         )
 
@@ -283,7 +277,6 @@ class Document(ObjectBase):
         doc_meta.update(kwargs)
         es.delete(
             index=self._get_index(index),
-            doc_type=self._doc_type.name,
             **doc_meta
         )
 
@@ -292,7 +285,7 @@ class Document(ObjectBase):
         Serialize the instance into a dictionary so that it can be saved in elasticsearch.
 
         :arg include_meta: if set to ``True`` will include all the metadata
-            (``_index``, ``_type``, ``_id`` etc). Otherwise just the document's
+            (``_index``, ``_id`` etc). Otherwise just the document's
             data is serialized. This is useful when passing multiple instances into
             ``elasticsearch.helpers.bulk``.
         :arg skip_empty: if set to ``False`` will cause empty values (``None``,
@@ -314,7 +307,6 @@ class Document(ObjectBase):
         if index is not None:
             meta['_index'] = index
 
-        meta['_type'] = self._doc_type.name
         meta['_source'] = d
         return meta
 
@@ -398,7 +390,6 @@ class Document(ObjectBase):
 
         meta = self._get_connection(using).update(
             index=self._get_index(index),
-            doc_type=self._doc_type.name,
             body=body,
             refresh=refresh,
             **doc_meta
@@ -442,7 +433,6 @@ class Document(ObjectBase):
         doc_meta.update(kwargs)
         meta = es.index(
             index=self._get_index(index),
-            doc_type=self._doc_type.name,
             body=self.to_dict(skip_empty=skip_empty),
             **doc_meta
         )

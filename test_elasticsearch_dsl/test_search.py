@@ -25,7 +25,6 @@ def test_cache_can_be_ignored(mock_client):
     s.execute(ignore_cache=True)
 
     mock_client.search.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={}
     )
@@ -206,38 +205,17 @@ def test_search_index():
     s2 = s.index(('i4', 'i5'))
     assert s2._index == ['i', 'i2', 'i3', 'i4', 'i5']
 
-def test_search_doc_type():
-    s = search.Search(doc_type='i')
-    assert s._doc_type == ['i']
-    s = s.doc_type('i2')
-    assert s._doc_type == ['i', 'i2']
-    s = s.doc_type()
-    assert s._doc_type == []
-    s = search.Search(doc_type=('i', 'i2'))
-    assert s._doc_type == ['i', 'i2']
-    s = search.Search(doc_type=['i', 'i2'])
-    assert s._doc_type == ['i', 'i2']
-    s = search.Search()
-    s = s.doc_type('i', 'i2')
-    assert s._doc_type == ['i', 'i2']
-    s2 = s.doc_type('i3')
-    assert s._doc_type == ['i', 'i2']
-    assert s2._doc_type == ['i', 'i2', 'i3']
-
-
-def test_doc_type_can_be_document_class():
+def test_doc_type_document_class():
     class MyDocument(Document):
         pass
 
     s = search.Search(doc_type=MyDocument)
     assert s._doc_type == [MyDocument]
     assert s._doc_type_map == {}
-    assert s._get_doc_type() == ['doc']
 
     s = search.Search().doc_type(MyDocument)
     assert s._doc_type == [MyDocument]
     assert s._doc_type_map == {}
-    assert s._get_doc_type() == ['doc']
 
 def test_sort():
     s = search.Search()
@@ -433,7 +411,6 @@ def test_params_being_passed_to_search(mock_client):
     s.execute()
 
     mock_client.search.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={},
         routing='42'
@@ -550,7 +527,6 @@ def test_delete_by_query(mock_client):
     s.delete()
 
     mock_client.delete_by_query.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={"query": {"match": {"lang": "java"}}}
     )
