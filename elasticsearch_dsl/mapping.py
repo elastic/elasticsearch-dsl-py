@@ -16,7 +16,6 @@ META_FIELDS = frozenset((
 ))
 
 class Properties(DslBase):
-    # FIXME: to_dict pop
     name = 'properties'
     _param_defs = {'properties': {'type': 'field', 'hash': True}}
     def __init__(self):
@@ -32,7 +31,7 @@ class Properties(DslBase):
         return name in self.properties
 
     def to_dict(self):
-        return super().to_dict()['properties']
+        return super(Properties, self).to_dict()['properties']
 
     def field(self, name, *args, **kwargs):
         self.properties[name] = construct_field(*args, **kwargs)
