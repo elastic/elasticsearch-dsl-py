@@ -16,12 +16,12 @@ SKIP_VALUES = ('', None)
 EXPAND__TO_DOT = True
 
 DOC_META_FIELDS = frozenset((
-    'id', 'routing', 'version', 'version_type', 'parent'
+    'id', 'routing',
 ))
 
 META_FIELDS = frozenset((
     # Elasticsearch metadata fields, except 'type'
-    'index', 'using', 'score',
+    'index', 'using', 'score', 'version', 'seq_no', 'primary_term'
 )).union(DOC_META_FIELDS)
 
 def _wrap(val, obj_wrapper=None):

@@ -251,6 +251,7 @@ def test_update(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
     v = elasticsearch_repo.meta.version
 
+    old_seq_no = elasticsearch_repo.meta.seq_no
     elasticsearch_repo.update(owner={'new_name': 'elastic'}, new_field='testing-update')
 
     assert 'elastic' == elasticsearch_repo.owner.new_name
@@ -263,24 +264,26 @@ def test_update(data_client):
     assert 'testing-update' == new_version.new_field
     assert 'elastic' == new_version.owner.new_name
     assert 'elasticsearch' == new_version.owner.name
+    assert 'seq_no' in new_version.meta
+    assert new_version.meta.seq_no != old_seq_no
+    assert 'primary_term' in new_version.meta
 
 
 def test_save_updates_existing_doc(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
 
     elasticsearch_repo.new_field = 'testing-save'
-    v = elasticsearch_repo.meta.version
+    old_seq_no = elasticsearch_repo.meta.seq_no
     assert 'updated' == elasticsearch_repo.save()
-
-    # assert version has been updated
-    assert elasticsearch_repo.meta.version == v + 1
 
     new_repo = data_client.get(index='git', id='elasticsearch-dsl-py')
     assert 'testing-save' == new_repo['_source']['new_field']
+    assert new_repo['_seq_no'] != old_seq_no
+    assert new_repo['_seq_no'] == elasticsearch_repo.meta.seq_no
 
-def test_save_automatically_uses_versions(data_client):
+def test_save_automatically_uses_seq_no_and_primary_term(data_client):
     elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
-    elasticsearch_repo.meta.version += 1
+    elasticsearch_repo.meta.seq_no += 1
 
     with raises(ConflictError):
         elasticsearch_repo.save()
@@ -292,15 +295,12 @@ def assert_doc_equals(expected, actual):
 
 def test_can_save_to_different_index(write_client):
     test_repo = Repository(description='testing', meta={'id': 42})
-    test_repo.meta.version_type = 'external'
-    test_repo.meta.version = 3
     assert test_repo.save(index='test-document')
 
     assert_doc_equals({
             'found': True,
             '_index': 'test-document',
             '_id': '42',
-            '_version': 3,
             '_source': {'description': 'testing'},
         },
         write_client.get(index='test-document', id=42)
@@ -308,15 +308,12 @@ def test_can_save_to_different_index(write_client):
 
 def test_save_without_skip_empty_will_include_empty_fields(write_client):
     test_repo = Repository(field_1=[], field_2=None, field_3={}, meta={'id': 42})
-    test_repo.meta.version_type = 'external'
-    test_repo.meta.version = 3
     assert test_repo.save(index='test-document', skip_empty=False)
 
     assert_doc_equals({
             'found': True,
             '_index': 'test-document',
             '_id': '42',
-            '_version': 3,
             '_source': {
                 "field_1": [],
                 "field_2": None,
