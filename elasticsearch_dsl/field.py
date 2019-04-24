@@ -211,12 +211,12 @@ class Object(Field):
             data.full_clean()
         return data
 
-    def update(self, other):
+    def update(self, other, update_only=False):
         if not isinstance(other, Object):
             # not an inner/nested object, no merge possible
             return
 
-        self._mapping.update(other._mapping)
+        self._mapping.update(other._mapping, update_only)
 
 class Nested(Object):
     name = 'nested'

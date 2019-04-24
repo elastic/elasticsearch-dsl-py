@@ -502,6 +502,27 @@ def test_document_inheritance():
         }
     } == MySubDoc._doc_type.mapping.to_dict()
 
+def test_child_class_can_override_parent():
+    class A(document.Document):
+        o = field.Object(dynamic=False, properties={'a': field.Text()})
+    class B(A):
+        o = field.Object(dynamic='strict', properties={'b': field.Text()})
+
+    assert {
+        'doc': {
+            'properties': {
+                'o': {
+                    'dynamic': 'strict',
+                    'properties': {
+                        'a': {'type': 'text'},
+                        'b': {'type': 'text'}
+                    },
+                    'type': 'object'
+                }
+            }
+        }
+    } == B._doc_type.mapping.to_dict()
+
 def test_meta_fields_are_stored_in_meta_and_ignored_by_to_dict():
     md = MySubDoc(meta={'id': 42}, name='My First doc!')
 

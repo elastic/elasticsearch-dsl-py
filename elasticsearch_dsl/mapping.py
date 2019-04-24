@@ -159,7 +159,8 @@ class Mapping(object):
             if update_only and name in self:
                 # nested and inner objects, merge recursively
                 if hasattr(self[name], 'update'):
-                    self[name].update(mapping[name])
+                    # FIXME only merge subfields, not the settings
+                    self[name].update(mapping[name], update_only)
                 continue
             self.field(name, mapping[name])
 
