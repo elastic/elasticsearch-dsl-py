@@ -3,6 +3,9 @@
 Changelog
 =========
 
+7.0.0 (dev)
+-----------
+
 6.4.0 (2019-04-26)
 ------------------
 
@@ -11,8 +14,6 @@ Changelog
 * ``Document`` inheritance allows overriding ``Object`` and ``Nested`` field metadata like ``dynamic``
 * adding ``auto_date_histogram`` aggregation
 * Do not change data in place when (de)serializing
-
-
 
 6.3.1 (2018-12-05)
 ------------------
