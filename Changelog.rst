@@ -3,8 +3,14 @@
 Changelog
 =========
 
-7.0.0 (dev)
------------
+7.0.0 (2019-04-26)
+------------------
+
+* Compatibility with Elasticsearch 7.x
+* ``Document.save()`` now returns ``"created"`` or ``"updated"``
+* Dropped support for Python 2.6, 3.2, and 3.3
+* When using ``fields`` the values are no longer merged into the body of the
+  document and have to be accessed via ``.meta.fields`` only
 
 6.4.0 (2019-04-26)
 ------------------
