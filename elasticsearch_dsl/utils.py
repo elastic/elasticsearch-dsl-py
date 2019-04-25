@@ -409,13 +409,6 @@ class ObjectBase(AttrDict):
     def from_es(cls, hit):
         meta = hit.copy()
         data = meta.pop('_source', {})
-        if 'fields' in meta:
-            for k, v in iteritems(meta.pop('fields')):
-                if k.startswith('_') and k[1:] in META_FIELDS:
-                    meta[k] = v
-                else:
-                    data[k] = v
-
         doc = cls(meta=meta)
         doc._from_dict(data)
         return doc

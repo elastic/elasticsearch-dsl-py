@@ -572,4 +572,6 @@ def test_from_es_respects_underscored_non_meta_fields():
 
     c = Company.from_es(doc)
 
-    assert c.to_dict() == {'city': 'Amsterdam', 'hello': 'world', 'name': 'Elasticsearch', "_tags": ["search"], "_tagline": "You know, for search"}
+    assert c.meta.fields._tags == ['search']
+    assert c.meta.fields._routing == 'es'
+    assert c._tagline == 'You know, for search'
