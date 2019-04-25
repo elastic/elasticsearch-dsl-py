@@ -39,7 +39,6 @@ library.
 For **Elasticsearch 2.0** and later, use the major version 2 (``2.x.y``) of the
 library.
 
-
 The recommended way to set your requirements in your `setup.py` or
 `requirements.txt` is::
 
