@@ -115,6 +115,9 @@ class Index(object):
         return i
 
     def _get_connection(self, using=None):
+        if self._name is None:
+            raise ValueError(
+                "You cannot perform API calls on the default index.")
         return connections.get_connection(using or self._using)
     connection = property(_get_connection)
 
