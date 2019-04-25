@@ -345,6 +345,8 @@ class Document(ObjectBase):
         :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
+
+        :return operation result noop/updated
         """
         body = {
             'doc_as_upsert': doc_as_upsert,
@@ -406,6 +408,8 @@ class Document(ObjectBase):
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
 
+        return meta['result']
+
     def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
         """
         Save the document into elasticsearch. If the document doesn't exist it
@@ -422,6 +426,8 @@ class Document(ObjectBase):
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
+
+        :return operation result created/updated
         """
         if validate:
             self.full_clean()
@@ -445,8 +451,8 @@ class Document(ObjectBase):
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
 
-        # return True/False if the document has been created/updated
-        return meta['result'] == 'created'
+        return meta['result']
 
 # limited backwards compatibility, to be removed in 7.0.0
 DocType = Document
+
