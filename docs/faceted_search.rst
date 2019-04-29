@@ -145,7 +145,8 @@ Example
     response = bs.execute()
 
     # access hits and other attributes as usual
-    print(response.hits.total, 'hits total')
+    total = response.hits.total
+    print('total hits', total.relation, total.value)
     for hit in response:
         print(hit.meta.score, hit.title)
 

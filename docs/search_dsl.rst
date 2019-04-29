@@ -507,7 +507,10 @@ convenient helpers:
   print(response.took)
   # 12
 
-  print(response.hits.total)
+  print(response.hits.total.relation)
+  # eq
+  print(response.hits.total.value)
+  # 142
 
   print(response.suggest.my_suggestions)
 
