@@ -80,6 +80,17 @@ explicitly:
 
     print(ubq.to_dict())
 
+Also, to use variables in script see below example:
+
+.. code:: python
+
+    ubq.script(
+      source="ctx._source.messages.removeIf(x -> x.somefield == params.some_var)",
+      params={
+        'some_var': 'some_string_val'
+      }
+    )
+
 Serialization and Deserialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
