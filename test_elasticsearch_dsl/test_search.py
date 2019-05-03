@@ -421,10 +421,10 @@ def test_source():
 
     assert {
         '_source': {
-            'include': ['foo.bar.*'],
-            'exclude': ['foo.one']
+            'includes': ['foo.bar.*'],
+            'excludes': ['foo.one']
         }
-    } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).to_dict()
+    } == search.Search().source(includes=['foo.bar.*'], excludes=['foo.one']).to_dict()
 
     assert {
         '_source': False
@@ -432,21 +432,21 @@ def test_source():
 
     assert {
         '_source': ['f1', 'f2']
-    } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).source(['f1', 'f2']).to_dict()
+    } == search.Search().source(includes=['foo.bar.*'], excludes=['foo.one']).source(['f1', 'f2']).to_dict()
 
 def test_source_on_clone():
     assert {
         '_source': {
-            'include': ['foo.bar.*'],
-            'exclude': ['foo.one']
+            'includes': ['foo.bar.*'],
+            'excludes': ['foo.one']
         },
         'query': {
             'bool': {
                 'filter': [{'term': {'title': 'python'}}],
             }
         }
-    } == search.Search().source(include=['foo.bar.*']).\
-        source(exclude=['foo.one']).\
+    } == search.Search().source(includes=['foo.bar.*']).\
+        source(excludes=['foo.one']).\
         filter('term', title='python').to_dict()\
 
     assert {'_source': False,
@@ -459,8 +459,8 @@ def test_source_on_clone():
 
 def test_source_on_clear():
     assert {
-    } == search.Search().source(include=['foo.bar.*']).\
-        source(include=None, exclude=None).to_dict()
+    } == search.Search().source(includes=['foo.bar.*']).\
+        source(includes=None, excludes=None).to_dict()
 
 def test_suggest_accepts_global_text():
     s = search.Search.from_dict({
