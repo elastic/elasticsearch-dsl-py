@@ -85,7 +85,7 @@ class UpdateByQuery(Request):
             self.query._proxied = Q(d.pop('query'))
         if 'script' in d:
             self._script = d.pop('script')
-        self._extra = d
+        self._extra.update(d)
         return self
 
     def script(self, **kwargs):
