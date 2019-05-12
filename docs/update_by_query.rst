@@ -105,7 +105,7 @@ the data from the dict:
 
   ubq = UpdateByQuery.from_dict({"query": {"match": {"title": "python"}}})
 
-If you wish to modify an existing ``Update By Query`` object, overriding it'ubq
+If you wish to modify an existing ``Update By Query`` object, overriding it's
 properties, instead use the ``update_from_dict`` method that alters an instance
 **in-place**:
 

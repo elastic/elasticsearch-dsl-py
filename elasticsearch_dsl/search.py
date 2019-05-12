@@ -441,7 +441,7 @@ class Search(Request):
                     s.setdefault('text', text)
         if 'script_fields' in d:
             self._script_fields = d.pop('script_fields')
-        self._extra = d
+        self._extra.update(d)
         return self
 
     def script_fields(self, **kwargs):

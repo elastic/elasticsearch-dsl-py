@@ -530,3 +530,18 @@ def test_delete_by_query(mock_client):
         index=None,
         body={"query": {"match": {"lang": "java"}}}
     )
+
+def test_update_from_dict():
+    s = search.Search()
+    s.update_from_dict({"indices_boost": [{"important-documents": 2}]})
+    s.update_from_dict({"_source": ["id", "name"]})
+
+    assert {
+        'indices_boost': [{
+            'important-documents': 2
+        }],
+        '_source': [
+            'id',
+            'name'
+        ]
+    } == s.to_dict()
