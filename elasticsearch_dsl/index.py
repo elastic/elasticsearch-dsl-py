@@ -318,7 +318,7 @@ class Index(object):
 
     def refresh(self, using=None, **kwargs):
         """
-        Preforms a refresh operation on the index.
+        Performs a refresh operation on the index.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.refresh`` unchanged.
@@ -327,7 +327,7 @@ class Index(object):
 
     def flush(self, using=None, **kwargs):
         """
-        Preforms a flush operation on the index.
+        Performs a flush operation on the index.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.flush`` unchanged.
