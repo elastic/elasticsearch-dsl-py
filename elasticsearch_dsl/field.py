@@ -79,12 +79,12 @@ class Field(DslBase):
         return self._empty()
 
     def serialize(self, data):
-        if isinstance(data, (list, AttrList, tuple)):
+        if isinstance(data, collections_abc.Iterable):
             return list(map(self._serialize, data))
         return self._serialize(data)
 
     def deserialize(self, data):
-        if isinstance(data, (list, AttrList, tuple)):
+        if isinstance(data, collections_abc.Iterable):
             data = [
                 None if d is None else self._deserialize(d)
                 for d in data
