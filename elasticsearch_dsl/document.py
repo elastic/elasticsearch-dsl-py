@@ -454,6 +454,3 @@ class Document(ObjectBase):
 
         return meta['result']
 
-# limited backwards compatibility, to be removed in 7.0.0
-DocType = Document
-
