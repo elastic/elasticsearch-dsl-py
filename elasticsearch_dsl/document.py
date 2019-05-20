@@ -274,6 +274,12 @@ class Document(ObjectBase):
             for k in DOC_META_FIELDS
             if k in self.meta
         }
+
+        # Optimistic concurrency control
+        if 'seq_no' in self.meta and 'primary_term' in self.meta:
+            doc_meta['if_seq_no'] = self.meta['seq_no']
+            doc_meta['if_primary_term'] = self.meta['primary_term']
+
         doc_meta.update(kwargs)
         es.delete(
             index=self._get_index(index),

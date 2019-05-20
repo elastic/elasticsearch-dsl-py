@@ -288,6 +288,13 @@ def test_save_automatically_uses_seq_no_and_primary_term(data_client):
     with raises(ConflictError):
         elasticsearch_repo.save()
 
+def test_delete_automatically_uses_seq_no_and_primary_term(data_client):
+    elasticsearch_repo = Repository.get('elasticsearch-dsl-py')
+    elasticsearch_repo.meta.seq_no += 1
+
+    with raises(ConflictError):
+        elasticsearch_repo.delete()
+
 def assert_doc_equals(expected, actual):
     for f in expected:
         assert f in actual
