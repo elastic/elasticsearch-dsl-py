@@ -80,6 +80,17 @@ explicitly:
 
     print(ubq.to_dict())
 
+Also, to use variables in script see below example:
+
+.. code:: python
+
+    ubq.script(
+      source="ctx._source.messages.removeIf(x -> x.somefield == params.some_var)",
+      params={
+        'some_var': 'some_string_val'
+      }
+    )
+
 Serialization and Deserialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -94,7 +105,7 @@ the data from the dict:
 
   ubq = UpdateByQuery.from_dict({"query": {"match": {"title": "python"}}})
 
-If you wish to modify an existing ``Update By Query`` object, overriding it'ubq
+If you wish to modify an existing ``Update By Query`` object, overriding it's
 properties, instead use the ``update_from_dict`` method that alters an instance
 **in-place**:
 

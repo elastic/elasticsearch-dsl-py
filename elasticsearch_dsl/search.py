@@ -441,7 +441,7 @@ class Search(Request):
                     s.setdefault('text', text)
         if 'script_fields' in d:
             self._script_fields = d.pop('script_fields')
-        self._extra = d
+        self._extra.update(d)
         return self
 
     def script_fields(self, **kwargs):
@@ -478,8 +478,8 @@ class Search(Request):
         :arg fields: wildcard string, array of wildcards, or dictionary of includes and excludes
 
         If ``fields`` is None, the entire document will be returned for
-        each hit.  If fields is a dictionary with keys of 'include' and/or
-        'exclude' the fields will be either included or excluded appropriately.
+        each hit.  If fields is a dictionary with keys of 'includes' and/or
+        'excludes' the fields will be either included or excluded appropriately.
 
         Calling this multiple times with the same named parameter will override the
         previous values with the new ones.
@@ -487,10 +487,10 @@ class Search(Request):
         Example::
 
             s = Search()
-            s = s.source(include=['obj1.*'], exclude=["*.description"])
+            s = s.source(includes=['obj1.*'], excludes=["*.description"])
 
             s = Search()
-            s = s.source(include=['obj1.*']).source(exclude=["*.description"])
+            s = s.source(includes=['obj1.*']).source(excludes=["*.description"])
 
         """
         s = self._clone()

@@ -462,7 +462,7 @@ If you need to limit the fields being returned by elasticsearch, use the
   # don't return any fields, just the metadata
   s = s.source(False)
   # explicitly include/exclude fields
-  s = s.source(include=["title"], exclude=["user.*"])
+  s = s.source(includes=["title"], excludes=["user.*"])
   # reset the field selection
   s = s.source(None)
 
