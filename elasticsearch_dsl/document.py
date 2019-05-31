@@ -111,6 +111,8 @@ class Document(ObjectBase):
     """
     @classmethod
     def _matches(cls, hit):
+        if cls._index._name is None:
+            return True
         return fnmatch(hit.get('_index', ''), cls._index._name)
 
     @classmethod

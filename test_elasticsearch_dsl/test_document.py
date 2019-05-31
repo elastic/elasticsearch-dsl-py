@@ -140,6 +140,13 @@ def test_matches_uses_index():
         '_index': 'not-test-git'
     })
 
+def test_matches_with_no_name_always_matches():
+    class D(document.Document):
+        pass
+
+    assert D._matches({})
+    assert D._matches({'_index': 'whatever'})
+
 def test_matches_accepts_wildcards():
     class MyDoc(document.Document):
         class Index:
