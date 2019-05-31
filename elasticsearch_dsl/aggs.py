@@ -293,6 +293,9 @@ class MaxBucket(Pipeline):
 class MinBucket(Pipeline):
     name = 'min_bucket'
 
+class MovingFn(Pipeline):
+    name = 'moving_fn'
+
 class MovingAvg(Pipeline):
     name = 'moving_avg'
 
