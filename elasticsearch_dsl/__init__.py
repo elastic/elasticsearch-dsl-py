@@ -4,7 +4,7 @@ from .function import SF
 from .search import Search, MultiSearch
 from .update_by_query import UpdateByQuery
 from .field import *
-from .document import Document, DocType, MetaField, InnerDoc
+from .document import Document, MetaField, InnerDoc
 from .mapping import Mapping
 from .index import Index, IndexTemplate
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
