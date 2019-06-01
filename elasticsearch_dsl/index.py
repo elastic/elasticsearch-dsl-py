@@ -9,7 +9,7 @@ from . import analysis
 DEFAULT_DOC_TYPE = 'doc'
 
 class IndexTemplate(object):
-    def __init__(self, name, template, index=None, **kwargs):
+    def __init__(self, name, template, index=None, order=None, **kwargs):
         if index is None:
             self._index = Index(template, **kwargs)
         else:
@@ -19,6 +19,7 @@ class IndexTemplate(object):
             self._index = index.clone()
             self._index._name = template
         self._template_name = name
+        self.order = order
 
     def __getattr__(self, attr_name):
         return getattr(self._index, attr_name)
@@ -26,6 +27,8 @@ class IndexTemplate(object):
     def to_dict(self):
         d = self._index.to_dict()
         d['index_patterns'] = [self._index._name]
+        if self.order is not None:
+            d['order'] = self.order
         return d
 
     def save(self, using=None):
@@ -51,11 +54,12 @@ class Index(object):
             self._mapping = Mapping()
         return self._mapping
 
-    def as_template(self, template_name, pattern=None):
+    def as_template(self, template_name, pattern=None, order=None):
         # TODO: should we allow pattern to be a top-level arg?
         # or maybe have an IndexPattern that allows for it and have
         # Document._index be that?
-        return IndexTemplate(template_name, pattern or self._name, index=self)
+        return IndexTemplate(template_name, pattern or self._name, index=self,
+                             order=order)
 
     def resolve_nested(self, field_path):
         for doc in self._doc_types:

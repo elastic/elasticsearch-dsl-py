@@ -141,3 +141,12 @@ def test_conflicting_analyzer_raises_error():
 
     with raises(ValueError):
         i.analyzer('my_analyzer', tokenizer='keyword', filter=['lowercase', 'stop'])
+
+def test_index_template_can_have_order():
+    i = Index('i-*')
+    it = i.as_template('i', order=2)
+
+    assert {
+        "index_patterns": ["i-*"],
+        "order": 2
+    } == it.to_dict()
