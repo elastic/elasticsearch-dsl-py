@@ -59,9 +59,9 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
             self.comments.append(
               Comment(author=author, content=content, created_at=datetime.now()))
 
-        def save(self, ** kwargs):
+        def save(self, **kwargs):
             self.created_at = datetime.now()
-            return super().save(** kwargs)
+            return super().save(**kwargs)
 
 Data types
 ~~~~~~~~~~
@@ -426,7 +426,7 @@ some common fields that several different ``Document`` classes should share:
         created_date = Date()
         last_updated = Date()
 
-        def save(**kwargs):
+        def save(self, **kwargs):
             if not self.created_date:
                 self.created_date = datetime.now()
             self.last_updated = datetime.now()
