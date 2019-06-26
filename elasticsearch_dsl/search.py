@@ -14,7 +14,7 @@ from .query import Q, Bool
 from .aggs import A, AggBase
 from .utils import DslBase, AttrDict
 from .response import Response, Hit
-from .connections import connections
+from .connections import get_connection
 from .exceptions import IllegalOperation
 
 
@@ -669,7 +669,7 @@ class Search(Request):
         if hasattr(self, '_response'):
             return self._response.hits.total
 
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
@@ -688,7 +688,7 @@ class Search(Request):
             ES, while cached result will be ignored. Defaults to `False`
         """
         if ignore_cache or not hasattr(self, '_response'):
-            es = connections.get_connection(self._using)
+            es = get_connection(self._using)
 
             self._response = self._response_class(
                 self,
@@ -710,7 +710,7 @@ class Search(Request):
         https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
 
         """
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         for hit in scan(
                 es,
@@ -725,7 +725,7 @@ class Search(Request):
         delete() executes the query by delegating to delete_by_query()
         """
 
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         return AttrDict(
             es.delete_by_query(
@@ -786,7 +786,7 @@ class MultiSearch(Request):
         Execute the multi search request and return a list of search results.
         """
         if ignore_cache or not hasattr(self, '_response'):
-            es = connections.get_connection(self._using)
+            es = get_connection(self._using)
 
             responses = es.msearch(
                 index=self._index,

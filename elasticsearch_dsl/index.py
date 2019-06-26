@@ -1,10 +1,10 @@
-from .connections import connections
-from .search import Search
-from .update_by_query import UpdateByQuery
+from . import analysis
+from .connections import get_connection
 from .exceptions import IllegalOperation
 from .mapping import Mapping
+from .search import Search
+from .update_by_query import UpdateByQuery
 from .utils import merge
-from . import analysis
 
 DEFAULT_DOC_TYPE = 'doc'
 
@@ -32,7 +32,7 @@ class IndexTemplate(object):
         return d
 
     def save(self, using=None):
-        es = connections.get_connection(using or self._index._using)
+        es = get_connection(using or self._index._using)
         es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 class Index(object):
@@ -110,7 +110,7 @@ class Index(object):
         if self._name is None:
             raise ValueError(
                 "You cannot perform API calls on the default index.")
-        return connections.get_connection(using or self._using)
+        return get_connection(using or self._using)
     connection = property(_get_connection)
 
     def mapping(self, mapping):

@@ -6,15 +6,15 @@ except ImportError:
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
-from six import iteritems, add_metaclass
+from six import add_metaclass, iteritems
 
+from .connections import get_connection
+from .exceptions import IllegalOperation, ValidationException
 from .field import Field
-from .mapping import Mapping
-from .utils import ObjectBase, merge, DOC_META_FIELDS, META_FIELDS
-from .search import Search
-from .connections import connections
-from .exceptions import ValidationException, IllegalOperation
 from .index import Index
+from .mapping import Mapping
+from .search import Search
+from .utils import DOC_META_FIELDS, META_FIELDS, ObjectBase, merge
 
 
 class MetaField(object):
@@ -121,7 +121,7 @@ class Document(ObjectBase):
 
     @classmethod
     def _get_connection(cls, using=None):
-        return connections.get_connection(cls._get_using(using))
+        return get_connection(cls._get_using(using))
 
     @classmethod
     def _default_index(cls, index=None):

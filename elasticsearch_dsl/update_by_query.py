@@ -1,9 +1,8 @@
-import copy
-
-from .search import Request, QueryProxy, ProxyDescriptor
-from .query import Q, Bool
+from .connections import get_connection
+from .query import Bool, Q
 from .response import UpdateByQueryResponse
-from .connections import connections
+from .search import ProxyDescriptor, QueryProxy, Request
+
 
 class UpdateByQuery(Request):
 
@@ -134,7 +133,7 @@ class UpdateByQuery(Request):
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
         """
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         self._response = self._response_class(
             self,

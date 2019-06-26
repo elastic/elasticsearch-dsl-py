@@ -8,7 +8,7 @@ from elasticsearch.helpers.test import SkipTest, get_test_client
 from mock import Mock
 from pytest import fixture, skip
 
-from elasticsearch_dsl.connections import connections
+from elasticsearch_dsl.connections import connections, add_connection
 from .test_integration.test_data import DATA, FLAT_DATA, TEST_GIT_DATA, \
     create_git_index, create_flat_git_index
 from .test_integration.test_document import PullRequest, Comment, User, History
@@ -18,7 +18,7 @@ from .test_integration.test_document import PullRequest, Comment, User, History
 def client():
     try:
         connection = get_test_client(nowait='WAIT_FOR_ES' not in os.environ)
-        connections.add_connection('default', connection)
+        add_connection('default', connection)
         return connection
     except SkipTest:
         skip()
@@ -33,7 +33,7 @@ def write_client(client):
 def mock_client(dummy_response):
     client = Mock()
     client.search.return_value = dummy_response
-    connections.add_connection('mock', client)
+    add_connection('mock', client)
     yield client
     connections._conn = {}
     connections._kwargs = {}

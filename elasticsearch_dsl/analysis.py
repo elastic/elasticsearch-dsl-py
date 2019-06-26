@@ -1,7 +1,7 @@
 import six
 
-from .connections import connections
-from .utils import DslBase, AttrDict
+from .connections import get_connection
+from .utils import AttrDict, DslBase
 
 __all__ = [
     'tokenizer', 'analyzer', 'char_filter', 'token_filter', 'normalizer'
@@ -94,7 +94,7 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         :arg attributes: if ``explain`` is specified, filter the token
             attributes to return.
         """
-        es = connections.get_connection(using)
+        es = get_connection(using)
 
         body = {'text': text, 'explain': explain}
         if attributes:

@@ -3,12 +3,13 @@ try:
 except ImportError:
     import collections as collections_abc
 
-from six import iteritems, itervalues
 from itertools import chain
 
+from six import iteritems, itervalues
+
+from .connections import get_connection
+from .field import Nested, Text, construct_field
 from .utils import DslBase
-from .field import Text, construct_field, Nested
-from .connections import connections
 
 META_FIELDS = frozenset((
     'dynamic', 'transform', 'dynamic_date_formats', 'date_detection',
@@ -135,7 +136,7 @@ class Mapping(object):
         return index.save()
 
     def update_from_es(self, index, using='default'):
-        es = connections.get_connection(using)
+        es = get_connection(using)
         raw = es.indices.get_mapping(index=index)
         _, raw = raw.popitem()
         self._update_from_dict(raw['mappings'])
