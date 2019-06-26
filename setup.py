@@ -22,6 +22,7 @@ tests_require = [
     "mock",
     "pytest>=3.0.0",
     "pytest-cov",
+    "pytest-mock",
     "pytz",
     "coverage<5.0.0"
 ]
