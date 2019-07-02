@@ -1,12 +1,11 @@
+from . import analysis
 from .connections import connections
-from .search import Search
-from .update_by_query import UpdateByQuery
 from .exceptions import IllegalOperation
 from .mapping import Mapping
+from .search import Search
+from .update_by_query import UpdateByQuery
 from .utils import merge
-from . import analysis
 
-DEFAULT_DOC_TYPE = 'doc'
 
 class IndexTemplate(object):
     def __init__(self, name, template, index=None, order=None, **kwargs):
@@ -33,7 +32,8 @@ class IndexTemplate(object):
 
     def save(self, using=None):
         es = connections.get_connection(using or self._index._using)
-        es.indices.put_template(name=self._template_name, body=self.to_dict())
+        return es.indices.put_template(name=self._template_name, body=self.to_dict())
+
 
 class Index(object):
     def __init__(self, name, using='default'):
@@ -255,7 +255,7 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
-        self._get_connection(using).indices.create(index=self._name, body=self.to_dict(), **kwargs)
+        return self._get_connection(using).indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
     def is_closed(self, using=None):
         state = self._get_connection(using).cluster.state(index=self._name, metric='metadata')
