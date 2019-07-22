@@ -9,7 +9,7 @@ except ImportError:
 from datetime import date, datetime
 
 from dateutil import parser, tz
-from six import string_types, iteritems
+from six import string_types, iteritems, integer_types
 from six.moves import map
 
 from .query import Q
@@ -251,7 +251,7 @@ class Date(Field):
             return data
         if isinstance(data, date):
             return data
-        if isinstance(data, int):
+        if isinstance(data, integer_types):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
 
