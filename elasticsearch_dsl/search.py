@@ -666,8 +666,8 @@ class Search(Request):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if hasattr(self, '_response'):
-            return self._response.hits.total
+        if hasattr(self, '_response') and self._response.hits.total.relation == 'eq':
+            return self._response.hits.total.value
 
         es = get_connection(self._using)
 

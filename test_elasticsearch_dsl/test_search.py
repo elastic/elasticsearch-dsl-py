@@ -35,12 +35,6 @@ def test_iter_iterates_over_hits():
 
     assert [1, 2, 3] == list(s)
 
-def test_count_uses_cache():
-    s = search.Search()
-    s._response = utils.AttrDict({'hits': {'total': 42}})
-
-    assert 42 == s.count()
-
 def test_cache_isnt_cloned():
     s = search.Search()
     s._response = object()
