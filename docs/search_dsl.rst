@@ -425,6 +425,7 @@ To specify a suggest request on your ``Search`` object use the ``suggest`` metho
 
 .. code:: python
 
+    # check for correct spelling
     s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
 
 The first argument is the name of the suggestions (name under which it will be
