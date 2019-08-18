@@ -1,6 +1,8 @@
 # coding: utf-8
 from elasticsearch_dsl import analysis
 
+from pytest import raises
+
 def test_analyzer_serializes_as_name():
     a = analysis.analyzer('my_analyzer')
 
@@ -18,6 +20,166 @@ def test_analyzer_has_definition():
         'tokenizer': 'keyword',
         'filter': ["lowercase"],
     } == a.get_definition()
+
+def test_simple_multiplexer_filter():
+    a = analysis.analyzer(
+        'my_analyzer',
+        tokenizer='keyword',
+        filter=[
+            analysis.token_filter(
+                'my_multi',
+                'multiplexer',
+                filters=['lowercase', 'lowercase, stop']
+            )
+        ]
+    )
+
+    assert {
+      "analyzer": {
+        "my_analyzer": {
+          "filter": [
+            "my_multi"
+          ],
+          "tokenizer": "keyword",
+          "type": "custom"
+        }
+      },
+      "filter": {
+        "my_multi": {
+          "filters": [
+            "lowercase",
+            "lowercase, stop"
+          ],
+          "type": "multiplexer"
+        }
+      }
+    } == a.get_analysis_definition()
+
+def test_multiplexer_with_custom_filter():
+    a = analysis.analyzer(
+        'my_analyzer',
+        tokenizer='keyword',
+        filter=[
+            analysis.token_filter(
+                'my_multi',
+                'multiplexer',
+                filters=[
+                    [
+                        analysis.token_filter(
+                            'en',
+                            'snowball',
+                            language='English'
+                        )
+                    ],
+                    'lowercase, stop'
+                ]
+            )
+        ]
+    )
+
+    assert {
+      "analyzer": {
+        "my_analyzer": {
+          "filter": [
+            "my_multi"
+          ],
+          "tokenizer": "keyword",
+          "type": "custom"
+        }
+      },
+      "filter": {
+        "en": {
+            "type": "snowball",
+            "language": "English"
+        },
+        "my_multi": {
+          "filters": [
+            "en",
+            "lowercase, stop"
+          ],
+          "type": "multiplexer"
+        }
+      }
+    } == a.get_analysis_definition()
+
+def test_conditional_token_filter():
+    a = analysis.analyzer(
+        'my_cond',
+        tokenizer=analysis.tokenizer('keyword'),
+        filter=[
+            analysis.token_filter(
+                'testing',
+                'condition',
+                script={'source': 'return true'},
+                filter=[
+                    'lowercase',
+                    analysis.token_filter(
+                        'en',
+                        'snowball',
+                        language='English'
+                    )
+                ]
+            ),
+            'stop'
+        ]
+    )
+
+    assert {
+      "analyzer": {
+        "my_cond": {
+          "filter": [
+            "testing",
+            "stop"
+          ],
+          "tokenizer": "keyword",
+          "type": "custom"
+        }
+      },
+      "filter": {
+        "en": {
+          "language": "English",
+          "type": "snowball"
+        },
+        "testing": {
+          "script": {"source": "return true"},
+          "filter": [
+            "lowercase",
+            "en"
+          ],
+          "type": "condition"
+        }
+      }
+    } == a.get_analysis_definition()
+
+def test_conflicting_nested_filters_cause_error():
+    a = analysis.analyzer(
+        'my_cond',
+        tokenizer=analysis.tokenizer('keyword'),
+        filter=[
+            analysis.token_filter(
+                'en',
+                'stemmer',
+                language='english'
+            ),
+            analysis.token_filter(
+                'testing',
+                'condition',
+                script={'source': 'return true'},
+                filter=[
+                    'lowercase',
+                    analysis.token_filter(
+                        'en',
+                        'snowball',
+                        language='English'
+                    )
+                ]
+            )
+        ]
+    )
+
+    with raises(ValueError):
+        a.get_analysis_definition()
+
 
 def test_normalizer_serializes_as_name():
     n = analysis.normalizer('my_normalizer')

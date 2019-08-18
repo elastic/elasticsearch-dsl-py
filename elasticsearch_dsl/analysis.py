@@ -1,7 +1,7 @@
 import six
 
 from .connections import get_connection
-from .utils import AttrDict, DslBase
+from .utils import AttrDict, DslBase, merge
 
 __all__ = [
     'tokenizer', 'analyzer', 'char_filter', 'token_filter', 'normalizer'
@@ -18,7 +18,7 @@ class AnalysisBase(object):
         if not (type or kwargs):
             return cls.get_dsl_class('builtin')(name_or_instance)
 
-        return cls.get_dsl_class('custom')(name_or_instance, type or 'custom', **kwargs)
+        return cls.get_dsl_class(type, 'custom')(name_or_instance, type or 'custom', **kwargs)
 
 class CustomAnalysis(object):
     name = 'custom'
@@ -49,6 +49,13 @@ class CustomAnalysisDefinition(CustomAnalysis):
                    for f in self.filter if hasattr(f, 'get_definition')}
         if filters:
             out['filter'] = filters
+
+        # any sub filter definitions like multiplexers etc?
+        for f in self.filter:
+            if hasattr(f, 'get_analysis_definition'):
+                d = f.get_analysis_definition()
+                if d:
+                    merge(out, d, True)
 
         char_filters = {f._name: f.get_definition()
                         for f in self.char_filter if hasattr(f, 'get_definition')}
@@ -153,6 +160,59 @@ class BuiltinTokenFilter(BuiltinAnalysis, TokenFilter):
 
 class CustomTokenFilter(CustomAnalysis, TokenFilter):
     pass
+
+class MultiplexerTokenFilter(CustomTokenFilter):
+    name = 'multiplexer'
+
+    def get_definition(self):
+        d = super(CustomTokenFilter, self).get_definition()
+
+        if 'filters' in d:
+            d['filters'] = [
+                # comma delimited string given by user
+                fs if isinstance(fs, six.string_types) else
+                # list of strings or TokenFilter objects
+                ', '.join(f.to_dict() if hasattr(f, 'to_dict') else f for f in fs)
+
+                for fs in self.filters
+            ]
+        return d
+
+    def get_analysis_definition(self):
+        if not hasattr(self, 'filters'):
+            return {}
+
+        fs = {}
+        d = {'filter': fs}
+        for filters in self.filters:
+            if isinstance(filters, six.string_types):
+                continue
+            fs.update({f._name: f.get_definition()
+                       for f in filters if hasattr(f, 'get_definition')})
+        return d
+
+class ConditionalTokenFilter(CustomTokenFilter):
+    name = 'condition'
+
+    def get_definition(self):
+        d = super(CustomTokenFilter, self).get_definition()
+        if 'filter' in d:
+            d['filter'] = [
+                f.to_dict() if hasattr(f, 'to_dict') else f
+                for f in self.filter
+            ]
+        return d
+
+    def get_analysis_definition(self):
+        if not hasattr(self, 'filter'):
+            return {}
+
+        return {
+            'filter': {
+                f._name: f.get_definition()
+                for f in self.filter if hasattr(f, 'get_definition')
+            }
+        }
 
 
 class CharFilter(AnalysisBase, DslBase):
