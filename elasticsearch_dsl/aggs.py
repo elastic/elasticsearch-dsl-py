@@ -153,6 +153,9 @@ class Filters(Bucket):
 class Children(Bucket):
     name = 'children'
 
+class Parent(Bucket):
+    name = 'parent'
+
 class DateHistogram(Bucket):
     name = 'date_histogram'
 
