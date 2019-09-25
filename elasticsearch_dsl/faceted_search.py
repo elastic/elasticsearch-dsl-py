@@ -97,7 +97,7 @@ class TermsFacet(Facet):
     def add_filter(self, filter_values):
         """ Create a terms filter instead of bool containing term filters.  """
         if filter_values:
-            return Terms(**{self._params['field']: filter_values})
+            return Terms(_expand__to_dot=False, **{self._params['field']: filter_values})
 
 
 class RangeFacet(Facet):
@@ -126,7 +126,7 @@ class RangeFacet(Facet):
         if t is not None:
             limits['lt'] = t
 
-        return Range(**{
+        return Range(_expand__to_dot=False, **{
             self._params['field']: limits
         })
 
@@ -134,7 +134,7 @@ class HistogramFacet(Facet):
     agg_type = 'histogram'
 
     def get_value_filter(self, filter_value):
-        return Range(**{
+        return Range(_expand__to_dot=False, **{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': filter_value + self._params['interval']
@@ -168,7 +168,7 @@ class DateHistogramFacet(Facet):
             return bucket['key']
 
     def get_value_filter(self, filter_value):
-        return Range(**{
+        return Range(_expand__to_dot=False, **{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': self.DATE_INTERVALS[self._params['interval']](filter_value)
