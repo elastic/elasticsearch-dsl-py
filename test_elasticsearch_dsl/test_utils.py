@@ -10,6 +10,17 @@ def test_attrdict_pickle():
     pickled_ad = pickle.dumps(ad)
     assert ad == pickle.loads(pickled_ad)
 
+def test_attrdict_keys():
+    d = {'a': 1, 'b': 42}
+    ad = utils.AttrDict(d)
+
+    assert ad.keys() == d.keys()
+
+def test_attrdict_items():
+    d = {'a': 1, 'b': 42}
+    ad = utils.AttrDict(d)
+
+    assert ad.items() == d.items()
 
 def test_attrlist_pickle():
     al = utils.AttrList([])
