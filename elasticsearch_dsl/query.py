@@ -286,6 +286,9 @@ class FuzzyLikeThis(Query):
 class FuzzyLikeThisField(Query):
     name = 'fuzzy_like_this_field'
 
+class DistanceFeature(Query):
+    name = 'distance_feature'
+
 class GeoBoundingBox(Query):
     name = 'geo_bounding_box'
 
