@@ -286,6 +286,9 @@ class FuzzyLikeThis(Query):
 class FuzzyLikeThisField(Query):
     name = 'fuzzy_like_this_field'
 
+class RankFeature(Query):
+    name = 'rank_feature'
+
 class DistanceFeature(Query):
     name = 'distance_feature'
 

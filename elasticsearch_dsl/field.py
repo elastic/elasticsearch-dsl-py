@@ -309,6 +309,9 @@ class ScaledFloat(Float):
 class Double(Float):
     name = 'double'
 
+class RankFeature(Float):
+    name = 'rank_feature'
+
 class Integer(Field):
     name = 'integer'
     _coerce = True
