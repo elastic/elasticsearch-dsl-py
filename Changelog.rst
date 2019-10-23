@@ -3,6 +3,15 @@
 Changelog
 =========
 
+7.1.0 (2019-10-23)
+------------------
+
+* Optimistic concurrent control for Document.delete
+* Removing deprecated ``DocType``
+* Proper count caching for ES 7.x
+* Support for ``multiplexer`` token filter
+* Don't substitute for ``__`` in ``FacetedSearch``
+
 7.0.0 (2019-04-26)
 ------------------
 
