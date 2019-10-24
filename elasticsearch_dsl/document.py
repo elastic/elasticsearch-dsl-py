@@ -170,7 +170,7 @@ class Document(ObjectBase):
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
         """
-        Retrieve a single document from elasticsearch using it's ``id``.
+        Retrieve a single document from elasticsearch using its ``id``.
 
         :arg id: ``id`` of the document to be retrieved
         :arg index: elasticsearch index to use, if the ``Document`` is
