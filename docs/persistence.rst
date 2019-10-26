@@ -527,7 +527,7 @@ IndexTemplate
 in elasticsearch using the ``IndexTemplate`` class which has very similar API to ``Index``.
 
 
-Once an index template is saved in elasticsearch it's contents will be
+Once an index template is saved in elasticsearch, its contents will be
 automatically applied to new indices (existing indices are completely
 unaffected by templates) that match the template pattern (any index starting
 with ``blogs-`` in our example), even if the index is created automatically
