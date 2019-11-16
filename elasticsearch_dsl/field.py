@@ -414,7 +414,7 @@ class LongRange(RangeField):
     _core_field = Long()
 
 class DoubleRange(RangeField):
-    name = 'double_ranged'
+    name = 'double_range'
     _core_field = Double()
 
 class DateRange(RangeField):
