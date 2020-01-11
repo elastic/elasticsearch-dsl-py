@@ -266,6 +266,14 @@ class Text(Field):
     }
     name = 'text'
 
+class SearchAsYouType(Field):
+    _param_defs = {
+        'analyzer': {'type': 'analyzer'},
+        'search_analyzer': {'type': 'analyzer'},
+        'search_quote_analyzer': {'type': 'analyzer'},
+    }
+    name = 'search_as_you_type'
+
 class Keyword(Field):
     _param_defs = {
         'fields': {'type': 'field', 'hash': True},
