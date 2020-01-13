@@ -297,6 +297,16 @@ class Float(Field):
     def _deserialize(self, data):
         return float(data)
 
+class DenseVector(Float):
+    name = 'dense_vector'
+
+    def __init__(self, dims, **kwargs):
+        kwargs["multi"] = True
+        super(DenseVector, self).__init__(dims=dims, **kwargs)
+
+class SparseVector(Field):
+    name = 'sparse_vector'
+
 class HalfFloat(Float):
     name = 'half_float'
 
