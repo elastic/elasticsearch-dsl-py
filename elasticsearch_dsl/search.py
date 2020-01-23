@@ -1,4 +1,5 @@
 import copy
+import weakref
 
 try:
     import collections.abc as collections_abc  # only works on python 3.3+
@@ -666,8 +667,10 @@ class Search(Request):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if hasattr(self, '_response') and self._response.hits.total.relation == 'eq':
-            return self._response.hits.total.value
+        if hasattr(self, '_response'):
+            r = self._response()
+            if r is not None and self._response.hits.total.relation == 'eq':
+                return self._response.hits.total.value
 
         es = get_connection(self._using)
 
@@ -687,18 +690,23 @@ class Search(Request):
         :arg ignore_cache: if set to ``True``, consecutive calls will hit
             ES, while cached result will be ignored. Defaults to `False`
         """
-        if ignore_cache or not hasattr(self, '_response'):
-            es = get_connection(self._using)
+        if not ignore_cache and hasattr(self, '_response'):
+            r = self._response()
+            if r is not None:
+                return r
 
-            self._response = self._response_class(
-                self,
-                es.search(
-                    index=self._index,
-                    body=self.to_dict(),
-                    **self._params
-                )
+        es = get_connection(self._using)
+
+        response = self._response_class(
+            self,
+            es.search(
+                index=self._index,
+                body=self.to_dict(),
+                **self._params
             )
-        return self._response
+        )
+        self._response = weakref.ref(response)
+        return response
 
     def scan(self):
         """
