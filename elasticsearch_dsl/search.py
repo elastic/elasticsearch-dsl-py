@@ -690,7 +690,7 @@ class Search(Request):
         if ignore_cache or not hasattr(self, '_response'):
             es = get_connection(self._using)
 
-            self._response = self._response_class(
+            r = self._response_class(
                 self,
                 es.search(
                     index=self._index,
@@ -698,6 +698,9 @@ class Search(Request):
                     **self._params
                 )
             )
+            if ignore_cache:
+                return r
+            self._response = r
         return self._response
 
     def scan(self):
@@ -803,6 +806,9 @@ class MultiSearch(Request):
                 else:
                     r = Response(s, r)
                 out.append(r)
+
+            if ignore_cache:
+                return out
 
             self._response = out
 
