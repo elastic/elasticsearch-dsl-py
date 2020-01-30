@@ -255,16 +255,18 @@ class FacetedSearch(object):
     facets = {}
     using = 'default'
 
-    def __init__(self, query=None, filters={}, sort=()):
+    def __init__(self, query=None, filters={}, sort=(), using='default'):
         """
         :arg query: the text to search for
         :arg filters: facet values to filter
         :arg sort: sort information to be passed to :class:`~elasticsearch_dsl.Search`
+        :arg using: an ElasticSearch client object, or 'default'
         """
         self._query = query
         self._filters = {}
         self._sort = sort
         self.filter_values = {}
+        self.using = using
         for name, value in iteritems(filters):
             self.add_filter(name, value)
 
