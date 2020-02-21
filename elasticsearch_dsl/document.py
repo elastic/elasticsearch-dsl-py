@@ -260,7 +260,8 @@ class Document(ObjectBase):
 
     def delete(self, using=None, index=None, **kwargs):
         """
-        Delete the instance in elasticsearch.
+        Delete the instance in elasticsearch. Returns ``deleted`` if 
+        this operation resulted in a document being deleted.
 
         :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
@@ -283,10 +284,11 @@ class Document(ObjectBase):
             doc_meta['if_primary_term'] = self.meta['primary_term']
 
         doc_meta.update(kwargs)
-        es.delete(
+        meta = es.delete(
             index=self._get_index(index),
             **doc_meta
         )
+        return meta['result']
 
     def to_dict(self, include_meta=False, skip_empty=True):
         """
@@ -417,8 +419,9 @@ class Document(ObjectBase):
     def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
         """
         Save the document into elasticsearch. If the document doesn't exist it
-        is created, it is overwritten otherwise. Returns ``True`` if this
-        operations resulted in new document being created.
+        is created, it is overwritten otherwise. Returns ``created`` if this
+        operation resulted in new document being created, and ``updated`` if 
+        this operation results in an existing document being updated.
 
         :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
