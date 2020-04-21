@@ -14,7 +14,7 @@ before writing too much code.
 The process for contributing to any of the Elasticsearch repositories is similar.
 
 1. Please make sure you have signed the `Contributor License
-   Agreement <http://www.elasticsearch.org/contributor-agreement/>`_. We are not
+   Agreement <https://www.elastic.co/contributor-agreement/>`_. We are not
    asking you to assign copyright to us, but to give us the right to distribute
    your code without restriction. We ask this of all contributors in order to
    assure our users of the origin and continuing existence of the code. You only

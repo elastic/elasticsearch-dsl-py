@@ -1,5 +1,9 @@
 import copy
-import collections
+
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
 
 from six import iteritems, string_types
 
@@ -10,8 +14,9 @@ from .query import Q, Bool
 from .aggs import A, AggBase
 from .utils import DslBase, AttrDict
 from .response import Response, Hit
-from .connections import connections
+from .connections import get_connection
 from .exceptions import IllegalOperation
+
 
 class QueryProxy(object):
     """
@@ -52,7 +57,7 @@ class QueryProxy(object):
         super(QueryProxy, self).__setattr__(attr_name, value)
 
     def __getstate__(self):
-        return (self._search, self._proxied, self._attr_name)
+        return self._search, self._proxied, self._attr_name
 
     def __setstate__(self, state):
         self._search, self._proxied, self._attr_name = state
@@ -80,11 +85,13 @@ class ProxyDescriptor(object):
 class AggsProxy(AggBase, DslBase):
     name = 'aggs'
     def __init__(self, search):
-        self._base = self._search = search
+        self._base = self
+        self._search = search
         self._params = {'aggs': {}}
 
     def to_dict(self):
         return super(AggsProxy, self).to_dict().get('aggs', {})
+
 
 class Request(object):
     def __init__(self, using='default', index=None, doc_type=None, extra=None):
@@ -100,7 +107,7 @@ class Request(object):
         self._doc_type_map = {}
         if isinstance(doc_type, (tuple, list)):
             self._doc_type.extend(doc_type)
-        elif isinstance(doc_type, collections.Mapping):
+        elif isinstance(doc_type, collections_abc.Mapping):
             self._doc_type.extend(doc_type.keys())
             self._doc_type_map.update(doc_type)
         elif doc_type:
@@ -165,12 +172,6 @@ class Request(object):
 
         return s
 
-    def _get_doc_type(self):
-        """
-        Return a list of doc_type names to be used
-        """
-        return list(set(dt._doc_type.name if hasattr(dt, '_doc_type') else dt for dt in self._doc_type))
-
     def _resolve_field(self, path):
         for dt in self._doc_type:
             if not hasattr(dt, '_index'):
@@ -181,7 +182,6 @@ class Request(object):
 
     def _resolve_nested(self, hit, parent_class=None):
         doc_class = Hit
-        nested_field = None
 
         nested_path = []
         nesting = hit['_nested']
@@ -221,7 +221,6 @@ class Request(object):
 
         callback = getattr(doc_class, 'from_es', doc_class)
         return callback(hit)
-
 
     def doc_type(self, *doc_type, **kwargs):
         """
@@ -295,7 +294,7 @@ class Search(Request):
         :arg doc_type: only query this type.
 
         All the parameters supplied (or omitted) at creation type can be later
-        overriden by methods (`using`, `index` and `doc_type` respectively).
+        overridden by methods (`using`, `index` and `doc_type` respectively).
         """
         super(Search, self).__init__(**kwargs)
 
@@ -423,8 +422,8 @@ class Search(Request):
         aggs = d.pop('aggs', d.pop('aggregations', {}))
         if aggs:
             self.aggs._params = {
-                'aggs': dict(
-                    (name, A(value)) for (name, value) in iteritems(aggs))
+                'aggs': {
+                    name: A(value) for (name, value) in iteritems(aggs)}
             }
         if 'sort' in d:
             self._sort = d.pop('sort')
@@ -442,7 +441,7 @@ class Search(Request):
                     s.setdefault('text', text)
         if 'script_fields' in d:
             self._script_fields = d.pop('script_fields')
-        self._extra = d
+        self._extra.update(d)
         return self
 
     def script_fields(self, **kwargs):
@@ -476,11 +475,11 @@ class Search(Request):
         """
         Selectively control how the _source field is returned.
 
-        :arg source: wildcard string, array of wildcards, or dictionary of includes and excludes
+        :arg fields: wildcard string, array of wildcards, or dictionary of includes and excludes
 
-        If ``source`` is None, the entire document will be returned for
-        each hit.  If source is a dictionary with keys of 'include' and/or
-        'exclude' the fields will be either included or excluded appropriately.
+        If ``fields`` is None, the entire document will be returned for
+        each hit.  If fields is a dictionary with keys of 'includes' and/or
+        'excludes' the fields will be either included or excluded appropriately.
 
         Calling this multiple times with the same named parameter will override the
         previous values with the new ones.
@@ -488,10 +487,10 @@ class Search(Request):
         Example::
 
             s = Search()
-            s = s.source(include=['obj1.*'], exclude=["*.description"])
+            s = s.source(includes=['obj1.*'], excludes=["*.description"])
 
             s = Search()
-            s = s.source(include=['obj1.*']).source(exclude=["*.description"])
+            s = s.source(includes=['obj1.*']).source(excludes=["*.description"])
 
         """
         s = self._clone()
@@ -623,7 +622,7 @@ class Search(Request):
         Serialize the search into the dictionary that will be sent over as the
         request's body.
 
-        :arg count: a flag to specify we are interested in a body for count -
+        :arg count: a flag to specify if we are interested in a body for count -
             no aggregations, no pagination bounds etc.
 
         All additional keyword arguments will be included into the dictionary.
@@ -667,16 +666,15 @@ class Search(Request):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if hasattr(self, '_response'):
-            return self._response.hits.total
+        if hasattr(self, '_response') and self._response.hits.total.relation == 'eq':
+            return self._response.hits.total.value
 
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
         return es.count(
             index=self._index,
-            doc_type=self._get_doc_type(),
             body=d,
             **self._params
         )['count']
@@ -686,16 +684,16 @@ class Search(Request):
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
 
-        :arg response_class: optional subclass of ``Response`` to use instead.
+        :arg ignore_cache: if set to ``True``, consecutive calls will hit
+            ES, while cached result will be ignored. Defaults to `False`
         """
         if ignore_cache or not hasattr(self, '_response'):
-            es = connections.get_connection(self._using)
+            es = get_connection(self._using)
 
             self._response = self._response_class(
                 self,
                 es.search(
                     index=self._index,
-                    doc_type=self._get_doc_type(),
                     body=self.to_dict(),
                     **self._params
                 )
@@ -712,13 +710,12 @@ class Search(Request):
         https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
 
         """
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         for hit in scan(
                 es,
                 query=self.to_dict(),
                 index=self._index,
-                doc_type=self._get_doc_type(),
                 **self._params
         ):
             yield self._get_result(hit)
@@ -728,13 +725,12 @@ class Search(Request):
         delete() executes the query by delegating to delete_by_query()
         """
 
-        es = connections.get_connection(self._using)
+        es = get_connection(self._using)
 
         return AttrDict(
             es.delete_by_query(
                 index=self._index,
                 body=self.to_dict(),
-                doc_type=self._get_doc_type(),
                 **self._params
             )
         )
@@ -778,8 +774,6 @@ class MultiSearch(Request):
             meta = {}
             if s._index:
                 meta['index'] = s._index
-            if s._doc_type:
-                meta['type'] = s._get_doc_type()
             meta.update(s._params)
 
             out.append(meta)
@@ -792,11 +786,10 @@ class MultiSearch(Request):
         Execute the multi search request and return a list of search results.
         """
         if ignore_cache or not hasattr(self, '_response'):
-            es = connections.get_connection(self._using)
+            es = get_connection(self._using)
 
             responses = es.msearch(
                 index=self._index,
-                doc_type=self._get_doc_type(),
                 body=self.to_dict(),
                 **self._params
             )

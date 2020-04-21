@@ -1,16 +1,20 @@
-import collections
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
+
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
-from six import iteritems, add_metaclass
+from six import add_metaclass, iteritems
 
+from .connections import get_connection
+from .exceptions import IllegalOperation, ValidationException
 from .field import Field
-from .mapping import Mapping
-from .utils import ObjectBase, merge, DOC_META_FIELDS, META_FIELDS
-from .search import Search
-from .connections import connections
-from .exceptions import ValidationException, IllegalOperation
 from .index import Index
+from .mapping import Mapping
+from .search import Search
+from .utils import DOC_META_FIELDS, META_FIELDS, ObjectBase, merge
 
 
 class MetaField(object):
@@ -33,8 +37,9 @@ class IndexMeta(DocumentMeta):
         new_cls = super(IndexMeta, cls).__new__(cls, name, bases, attrs)
         if cls._document_initialized:
             index_opts = attrs.pop('Index', None)
-            new_cls._index = cls.construct_index(index_opts, bases)
-            new_cls._index.document(new_cls)
+            index = cls.construct_index(index_opts, bases)
+            new_cls._index = index
+            index.document(new_cls)
         cls._document_initialized = True
         return new_cls
 
@@ -44,8 +49,9 @@ class IndexMeta(DocumentMeta):
             for b in bases:
                 if hasattr(b, '_index'):
                     return b._index
-            # create an all-matching index pattern
-            return Index('*')
+
+            # Set None as Index name so it will set _all while making the query
+            return Index(name=None)
 
         i = Index(
             getattr(opts, 'name', '*'),
@@ -62,11 +68,8 @@ class DocumentOptions(object):
     def __init__(self, name, bases, attrs):
         meta = attrs.pop('Meta', None)
 
-        # get doc_type name, if not defined use 'doc'
-        doc_type = getattr(meta, 'doc_type', 'doc')
-
         # create the mapping instance
-        self.mapping = getattr(meta, 'mapping', Mapping(doc_type))
+        self.mapping = getattr(meta, 'mapping', Mapping())
 
         # register all declared fields into the mapping
         for name, value in list(iteritems(attrs)):
@@ -108,8 +111,9 @@ class Document(ObjectBase):
     """
     @classmethod
     def _matches(cls, hit):
-        return fnmatch(hit.get('_index', ''), cls._index._name) \
-            and cls._doc_type.name == hit.get('_type')
+        if cls._index._name is None:
+            return True
+        return fnmatch(hit.get('_index', ''), cls._index._name)
 
     @classmethod
     def _get_using(cls, using=None):
@@ -117,7 +121,7 @@ class Document(ObjectBase):
 
     @classmethod
     def _get_connection(cls, using=None):
-        return connections.get_connection(cls._get_using(using))
+        return get_connection(cls._get_using(using))
 
     @classmethod
     def _default_index(cls, index=None):
@@ -145,10 +149,10 @@ class Document(ObjectBase):
         return index
 
     def __repr__(self):
-        return '%s(%s)' % (
+        return '{}({})'.format(
             self.__class__.__name__,
-            ', '.join('%s=%r' % (key, getattr(self.meta, key)) for key in
-                      ('index', 'doc_type', 'id') if key in self.meta)
+            ', '.join('{}={!r}'.format(key, getattr(self.meta, key)) for key in
+                      ('index', 'id') if key in self.meta)
         )
 
     @classmethod
@@ -166,9 +170,9 @@ class Document(ObjectBase):
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
         """
-        Retrieve a single document from elasticsearch using it's ``id``.
+        Retrieve a single document from elasticsearch using its ``id``.
 
-        :arg id: ``id`` of the document to be retireved
+        :arg id: ``id`` of the document to be retrieved
         :arg index: elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg using: connection alias to use, defaults to ``'default'``
@@ -179,7 +183,6 @@ class Document(ObjectBase):
         es = cls._get_connection(using)
         doc = es.get(
             index=cls._default_index(index),
-            doc_type=cls._doc_type.name,
             id=id,
             **kwargs
         )
@@ -190,11 +193,11 @@ class Document(ObjectBase):
     @classmethod
     def mget(cls, docs, using=None, index=None, raise_on_error=True,
              missing='none', **kwargs):
-        """
+        r"""
         Retrieve multiple document by their ``id``\s. Returns a list of instances
         in the same order as requested.
 
-        :arg docs: list of ``id``\s of the documents to be retireved or a list
+        :arg docs: list of ``id``\s of the documents to be retrieved or a list
             of document specifications as per
             https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
         :arg index: elasticsearch index to use, if the ``Document`` is
@@ -212,14 +215,13 @@ class Document(ObjectBase):
         es = cls._get_connection(using)
         body = {
             'docs': [
-                doc if isinstance(doc, collections.Mapping) else {'_id': doc}
+                doc if isinstance(doc, collections_abc.Mapping) else {'_id': doc}
                 for doc in docs
             ]
         }
         results = es.mget(
             body,
             index=cls._default_index(index),
-            doc_type=cls._doc_type.name,
             **kwargs
         )
 
@@ -269,15 +271,20 @@ class Document(ObjectBase):
         """
         es = self._get_connection(using)
         # extract routing etc from meta
-        doc_meta = dict(
-            (k, self.meta[k])
+        doc_meta = {
+            k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
+
+        # Optimistic concurrency control
+        if 'seq_no' in self.meta and 'primary_term' in self.meta:
+            doc_meta['if_seq_no'] = self.meta['seq_no']
+            doc_meta['if_primary_term'] = self.meta['primary_term']
+
         doc_meta.update(kwargs)
         es.delete(
             index=self._get_index(index),
-            doc_type=self._doc_type.name,
             **doc_meta
         )
 
@@ -286,7 +293,7 @@ class Document(ObjectBase):
         Serialize the instance into a dictionary so that it can be saved in elasticsearch.
 
         :arg include_meta: if set to ``True`` will include all the metadata
-            (``_index``, ``_type``, ``_id`` etc). Otherwise just the document's
+            (``_index``, ``_id`` etc). Otherwise just the document's
             data is serialized. This is useful when passing multiple instances into
             ``elasticsearch.helpers.bulk``.
         :arg skip_empty: if set to ``False`` will cause empty values (``None``,
@@ -297,23 +304,23 @@ class Document(ObjectBase):
         if not include_meta:
             return d
 
-        meta = dict(
-            ('_' + k, self.meta[k])
+        meta = {
+            '_' + k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
 
         # in case of to_dict include the index unlike save/update/delete
         index = self._get_index(required=False)
         if index is not None:
             meta['_index'] = index
 
-        meta['_type'] = self._doc_type.name
         meta['_source'] = d
         return meta
 
     def update(self, using=None, index=None,  detect_noop=True,
                doc_as_upsert=False, refresh=False, retry_on_conflict=None,
+               script=None, script_id=None, scripted_upsert=False, upsert=None,
                **fields):
         """
         Partial update of the document, specify fields you wish to update and
@@ -338,43 +345,64 @@ class Document(ObjectBase):
         :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
+
+        :return operation result noop/updated
         """
-        if not fields:
-            raise IllegalOperation('You cannot call update() without updating individual fields. '
-                                   'If you wish to update the entire object use save().')
-
-        es = self._get_connection(using)
-
-        # update given fields locally
-        merge(self, fields)
-
-        # prepare data for ES
-        values = self.to_dict()
-
-        # if fields were given: partial update
-        doc = dict(
-            (k, values.get(k))
-            for k in fields.keys()
-        )
-
-        # extract routing etc from meta
-        doc_meta = dict(
-            (k, self.meta[k])
-            for k in DOC_META_FIELDS
-            if k in self.meta
-        )
         body = {
-            'doc': doc,
             'doc_as_upsert': doc_as_upsert,
             'detect_noop': detect_noop,
+        }
+
+        # scripted update
+        if script or script_id:
+            if upsert is not None:
+                body['upsert'] = upsert
+
+            if script:
+                script = {'source': script}
+            else:
+                script = {'id': script_id}
+
+            script['params'] = fields
+
+            body['script'] = script
+            body['scripted_upsert'] = scripted_upsert
+
+        # partial document update
+        else:
+            if not fields:
+                raise IllegalOperation('You cannot call update() without updating individual fields or a script. '
+                                       'If you wish to update the entire object use save().')
+
+            # update given fields locally
+            merge(self, fields)
+
+            # prepare data for ES
+            values = self.to_dict()
+
+            # if fields were given: partial update
+            body['doc'] = {
+                k: values.get(k)
+                for k in fields.keys()
+            }
+
+        # extract routing etc from meta
+        doc_meta = {
+            k: self.meta[k]
+            for k in DOC_META_FIELDS
+            if k in self.meta
         }
 
         if retry_on_conflict is not None:
             doc_meta['retry_on_conflict'] = retry_on_conflict
 
-        meta = es.update(
+        # Optimistic concurrency control
+        if 'seq_no' in self.meta and 'primary_term' in self.meta:
+            doc_meta['if_seq_no'] = self.meta['seq_no']
+            doc_meta['if_primary_term'] = self.meta['primary_term']
+
+        meta = self._get_connection(using).update(
             index=self._get_index(index),
-            doc_type=self._doc_type.name,
             body=body,
             refresh=refresh,
             **doc_meta
@@ -383,6 +411,8 @@ class Document(ObjectBase):
         for k in META_FIELDS:
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
+
+        return meta['result']
 
     def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
         """
@@ -400,21 +430,28 @@ class Document(ObjectBase):
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
+
+        :return operation result created/updated
         """
         if validate:
             self.full_clean()
 
         es = self._get_connection(using)
         # extract routing etc from meta
-        doc_meta = dict(
-            (k, self.meta[k])
+        doc_meta = {
+            k: self.meta[k]
             for k in DOC_META_FIELDS
             if k in self.meta
-        )
+        }
+
+        # Optimistic concurrency control
+        if 'seq_no' in self.meta and 'primary_term' in self.meta:
+            doc_meta['if_seq_no'] = self.meta['seq_no']
+            doc_meta['if_primary_term'] = self.meta['primary_term']
+
         doc_meta.update(kwargs)
         meta = es.index(
             index=self._get_index(index),
-            doc_type=self._doc_type.name,
             body=self.to_dict(skip_empty=skip_empty),
             **doc_meta
         )
@@ -423,8 +460,5 @@ class Document(ObjectBase):
             if '_' + k in meta:
                 setattr(self.meta, k, meta['_' + k])
 
-        # return True/False if the document has been created/updated
-        return meta['result'] == 'created'
+        return meta['result']
 
-# limited backwards compatibility, to be removed in 7.0.0
-DocType = Document

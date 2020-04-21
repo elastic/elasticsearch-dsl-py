@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 from os.path import join, dirname
 from setuptools import setup, find_packages
 
-VERSION = (6, 3, 0, 'dev')
+VERSION = (7, 1, 0)
 __version__ = VERSION
 __versionstr__ = '.'.join(map(str, VERSION))
 
@@ -14,7 +13,7 @@ f.close()
 install_requires = [
     'six',
     'python-dateutil',
-    'elasticsearch>=6.0.0,<7.0.0',
+    'elasticsearch>=7.0.0,<8.0.0',
     # ipaddress is included in stdlib sincxe py 3.3
     'ipaddress; python_version<"3.3"'
 ]
@@ -23,12 +22,10 @@ tests_require = [
     "mock",
     "pytest>=3.0.0",
     "pytest-cov",
-    "pytz"
+    "pytest-mock",
+    "pytz",
+    "coverage<5.0.0"
 ]
-
-# use external unittest for 2.6
-if sys.version_info[:2] == (2, 6):
-    tests_require.append('unittest2')
 
 setup(
     name = "elasticsearch-dsl",
@@ -43,6 +40,7 @@ setup(
         where='.',
         exclude=('test_elasticsearch_dsl*', )
     ),
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     classifiers = [
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
@@ -50,11 +48,8 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",

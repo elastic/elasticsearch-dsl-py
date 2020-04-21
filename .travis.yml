@@ -1,41 +1,26 @@
 language: python
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-
-before_install:
-  - sudo update-java-alternatives -s java-8-oracle
-  - export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre
-  - java -version
-
 python:
-  - "2.6"
   - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.6-dev"
-  - "3.7-dev"
   - "nightly"
   - "pypy"
 
 env:
   global:
     - WAIT_FOR_ES=1
-    - ES_PY_VERSION=6.3.0
+    - ES_PY_VERSION=master
   matrix:
-    - ES_VERSION=6.2.4
-    - ES_VERSION=6.3.2
-    - ES_VERSION=6.4.0
+    - ES_VERSION=7.0.0
 
 install:
   - mkdir /tmp/elasticsearch
-  - wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  - wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
   - /tmp/elasticsearch/bin/elasticsearch -d
-  - pip install git+https://github.com/elastic/elasticsearch-py.git@${ES_PY_VERSION}#egg=elasticsearch
-  - pip install .
+  - travis_retry pip install --upgrade pytest
+  - travis_retry pip install git+https://github.com/elastic/elasticsearch-py.git@${ES_PY_VERSION}#egg=elasticsearch
 
 script:
   - python setup.py test

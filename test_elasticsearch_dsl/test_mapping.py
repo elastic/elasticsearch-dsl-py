@@ -4,27 +4,25 @@ from elasticsearch_dsl import mapping, Text, Keyword, Nested, analysis
 
 
 def test_mapping_can_has_fields():
-    m = mapping.Mapping('article')
+    m = mapping.Mapping()
     m.field('name', 'text').field('tags', 'keyword')
 
     assert {
-        'article': {
-            'properties': {
-                'name': {'type': 'text'},
-                'tags': {'type': 'keyword'}
-            }
+        'properties': {
+            'name': {'type': 'text'},
+            'tags': {'type': 'keyword'}
         }
     } == m.to_dict()
 
 def test_mapping_update_is_recursive():
-    m1 = mapping.Mapping('article')
+    m1 = mapping.Mapping()
     m1.field('title', 'text')
     m1.field('author', 'object')
     m1.field('author', 'object', properties={'name': {'type': 'text'}})
     m1.meta('_all', enabled=False)
     m1.meta('dynamic', False)
 
-    m2 = mapping.Mapping('article')
+    m2 = mapping.Mapping()
     m2.field('published_from', 'date')
     m2.field('author', 'object', properties={'email': {'type': 'text'}})
     m2.field('title', 'text')
@@ -34,32 +32,30 @@ def test_mapping_update_is_recursive():
     m1.update(m2, update_only=True)
 
     assert {
-        'article': {
-            '_all': {'enabled': False},
-            '_analyzer': {'path': 'lang'},
-            'dynamic': False,
-            'properties': {
-                'published_from': {'type': 'date'},
-                'title': {'type': 'text'},
-                'lang': {'type': 'keyword'},
-                'author': {
-                    'type': 'object',
-                    'properties': {
-                        'name': {'type': 'text'},
-                        'email': {'type': 'text'},
-                    }
+        '_all': {'enabled': False},
+        '_analyzer': {'path': 'lang'},
+        'dynamic': False,
+        'properties': {
+            'published_from': {'type': 'date'},
+            'title': {'type': 'text'},
+            'lang': {'type': 'keyword'},
+            'author': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'text'},
+                    'email': {'type': 'text'},
                 }
             }
         }
     } == m1.to_dict()
 
 def test_properties_can_iterate_over_all_the_fields():
-    m = mapping.Mapping('testing')
+    m = mapping.Mapping()
     m.field('f1', 'text', test_attr='f1', fields={'f2': Keyword(test_attr='f2')})
     m.field('f3', Nested(test_attr='f3', properties={
             'f4': Text(test_attr='f4')}))
 
-    assert set(('f1', 'f2', 'f3', 'f4')) == set(f.test_attr for f in m.properties._collect_fields())
+    assert {'f1', 'f2', 'f3', 'f4'} == {f.test_attr for f in m.properties._collect_fields()}
 
 def test_mapping_can_collect_all_analyzers_and_normalizers():
     a1 = analysis.analyzer('my_analyzer1',
@@ -81,7 +77,7 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
     )
     n3 = analysis.normalizer('unknown_custom')
 
-    m = mapping.Mapping('article')
+    m = mapping.Mapping()
     m.field('title', 'text', analyzer=a1,
         fields={
             'english': Text(analyzer=a2),
@@ -130,7 +126,7 @@ def test_mapping_can_collect_multiple_analyzers():
         tokenizer=analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
         filter=[analysis.token_filter('my_filter2', 'stop', stopwords=['c', 'd'])],
     )
-    m = mapping.Mapping('article')
+    m = mapping.Mapping()
     m.field('title', 'text', analyzer=a1, search_analyzer=a2)
     m.field(
         'text', 'text', analyzer=a1,
@@ -155,7 +151,7 @@ def test_mapping_can_collect_multiple_analyzers():
 
 def test_even_non_custom_analyzers_can_have_params():
     a1 = analysis.analyzer('whitespace', type='pattern', pattern=r'\\s+')
-    m = mapping.Mapping('some_type')
+    m = mapping.Mapping()
     m.field('title', 'text', analyzer=a1)
 
     assert {
@@ -164,11 +160,25 @@ def test_even_non_custom_analyzers_can_have_params():
                 "type": "pattern",
                 "pattern": r"\\s+"
             }
-            }
+        }
     } == m._collect_analysis()
 
 def test_resolve_field_can_resolve_multifields():
-    m = mapping.Mapping('m')
+    m = mapping.Mapping()
     m.field('title', 'text', fields={'keyword': Keyword()})
 
     assert isinstance(m.resolve_field('title.keyword'), Keyword)
+
+def test_resolve_nested():
+    m = mapping.Mapping()
+    m.field('n1', 'nested', properties={'n2': Nested(properties={'k1': Keyword()})})
+    m.field('k2', 'keyword')
+
+    nested, field = m.resolve_nested('n1.n2.k1')
+    assert nested == ['n1', 'n1.n2']
+    assert isinstance(field, Keyword)
+
+    nested, field = m.resolve_nested('k2')
+    assert nested == []
+    assert isinstance(field, Keyword)
+

@@ -16,16 +16,22 @@ def test_index_template_works(write_client):
     assert {
         'test-blog': {
             'mappings': {
-                'doc': {
-                    'properties': {
-                        'title': {'type': 'text', 'analyzer': 'my_analyzer'},
-                        'published_from': {'type': 'date'},
-                    }
-                },
+                'properties': {
+                    'title': {'type': 'text', 'analyzer': 'my_analyzer'},
+                    'published_from': {'type': 'date'},
+                }
             }
         }
     } == write_client.indices.get_mapping(index='test-blog')
 
+def test_index_can_be_saved_even_with_settings(write_client):
+    i = Index('test-blog', using=write_client)
+    i.settings(number_of_shards=3, number_of_replicas=0)
+    i.save()
+    i.settings(number_of_replicas=1)
+    i.save()
+
+    assert '1' == i.get_settings()['test-blog']['settings']['index']['number_of_replicas']
 
 def test_index_exists(data_client):
     assert Index('git').exists()
@@ -40,12 +46,10 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
     assert {
         'test-blog': {
             'mappings': {
-                'doc': {
-                    'properties': {
-                        'title': {'type': 'text', 'analyzer': 'my_analyzer'},
-                        'published_from': {'type': 'date'}
-                    }
-                },
+                'properties': {
+                    'title': {'type': 'text', 'analyzer': 'my_analyzer'},
+                    'published_from': {'type': 'date'}
+                }
             }
         }
     } == write_client.indices.get_mapping(index='test-blog')

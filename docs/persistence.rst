@@ -63,6 +63,46 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
             self.created_at = datetime.now()
             return super().save(** kwargs)
 
+Data types
+~~~~~~~~~~
+
+The ``Document`` instances should be using native python types like
+``datetime``. In case of ``Object`` or ``Nested`` fields an instance of the
+``InnerDoc`` subclass should be used just like in the ``add_comment`` method in
+the above example where we are creating an instance of the ``Comment`` class.
+
+There are some specific types that were created as part of this library to make
+working with specific field types easier, for example the ``Range`` object used
+in any of the `range fields
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/range.html>`_:
+
+.. code:: python
+
+    from elasticsearch_dsl import Document, DateRange, Keyword, Range
+
+    class RoomBooking(Document):
+        room = Keyword()
+        dates = DateRange()
+
+
+    rb = RoomBooking(
+      room='Conference Room II',
+      dates=Range(
+        gte=datetime(2018, 11, 17, 9, 0, 0),
+        lt=datetime(2018, 11, 17, 10, 0, 0)
+      )
+    )
+
+    # Range supports the in operator correctly:
+    datetime(2018, 11, 17, 9, 30, 0) in rb.dates # True
+
+    # you can also get the limits and whether they are inclusive or exclusive:
+    rb.dates.lower # datetime(2018, 11, 17, 9, 0, 0), True
+    rb.dates.upper # datetime(2018, 11, 17, 10, 0, 0), False
+
+    # empty range is unbounded
+    Range().lower # None, False
+
 Note on dates
 ~~~~~~~~~~~~~
 
@@ -148,9 +188,36 @@ To retrieve an existing document use the ``get`` class method:
     # and save the changes into the cluster again
     first.save()
 
-    # you can also update just individual fields which will call the update API
+The `Update API
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html>`_
+can also be used via the ``update`` method. By default any keyword arguments,
+beyond the parameters of the API, will be considered fields with new values.
+Those fields will be updated on the local copy of the document and then sent
+over as partial document to be updated:
+
+.. code:: python
+
+    # retrieve the document
+    first = Post.get(id=42)
+    # you can update just individual fields which will call the update API
     # and also update the document in place
     first.update(published=True, published_by='me')
+
+In case you wish to use a ``painless`` script to perform the update you can
+pass in the script string as ``script`` or the ``id`` of a `stored script
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-using.html#modules-scripting-stored-scripts>`_
+via ``script_id``. All additional keyword arguments to the ``update`` method
+will then be passed in as parameters of the script. The document will not be
+updated in place.
+
+.. code:: python
+
+    # retrieve the document
+    first = Post.get(id=42)
+    # we execute a script in elasticsearch with additional kwargs being passed
+    # as params into the script
+    first.update(script='ctx._source.category.add(params.new_category)',
+                 new_category='testing')
 
 If the document is not found in elasticsearch an exception
 (``elasticsearch.NotFoundError``) will be raised. If you wish to return
@@ -226,6 +293,18 @@ handle its creation, from our example earlier:
 Each analysis object needs to have a name (``my_analyzer`` and ``trigram`` in
 our example) and tokenizers, token filters and char filters also need to
 specify type (``nGram`` in our example).
+
+Once you have an instance of a custom ``analyzer`` you can also call the
+`analyze API
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-analyze.html>`_
+on it by using the ``simulate`` method:
+
+.. code:: python
+
+    response = my_analyzer.simulate('Hello World!')
+
+    # ['hel', 'ell', 'llo', 'lo ', 'o w', ' wo', 'wor', 'orl', 'rld', 'ld!']
+    tokens = [t.token for t in response.tokens]
 
 .. note::
 
@@ -314,10 +393,6 @@ the index, its name, settings and other attributes:
   name of the index to use, if it contains a wildcard (``*``) then it cannot be
   used for any write operations and an ``index`` kwarg will have to be passed
   explicitly when calling methods like ``.save()``.
-
-``doc_type``
-  name of the ``_type`` in elasticsearch. Note that you have to define this as
-  well as ``doc_type`` in ``class Meta`` in order for it to take effect.
 
 ``using``
   default connection alias to use, defaults to ``'default'``
@@ -487,7 +562,7 @@ Potential workflow for a set of time based indices governed by a single template
             return super().save(**kwargs)
 
     # once, as part of application setup, during deploy/migrations:
-    logs = Log._index.as_template('logs')
+    logs = Log._index.as_template('logs', order=0)
     logs.save()
 
     # to perform search across all logs:

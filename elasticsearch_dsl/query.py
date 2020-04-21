@@ -1,4 +1,7 @@
-import collections
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
 
 from itertools import chain
 
@@ -8,7 +11,7 @@ from .function import SF, ScoreFunction
 
 def Q(name_or_query='match_all', **params):
     # {"match": {"title": "python"}}
-    if isinstance(name_or_query, collections.Mapping):
+    if isinstance(name_or_query, collections_abc.Mapping):
         if params:
             raise ValueError('Q() cannot accept parameters when passing in a dict.')
         if len(name_or_query) != 1:
@@ -282,6 +285,12 @@ class FuzzyLikeThis(Query):
 
 class FuzzyLikeThisField(Query):
     name = 'fuzzy_like_this_field'
+
+class RankFeature(Query):
+    name = 'rank_feature'
+
+class DistanceFeature(Query):
+    name = 'distance_feature'
 
 class GeoBoundingBox(Query):
     name = 'geo_bounding_box'

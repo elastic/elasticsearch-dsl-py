@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import Document, Boolean, Date
+from elasticsearch_dsl import Document, Boolean, Date, A, Keyword
 from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, \
     DateHistogramFacet, RangeFacet, NestedFacet
 
@@ -21,6 +21,17 @@ class Repos(Document):
     is_public = Boolean()
     created_at = Date()
 
+    class Index:
+        name = 'git'
+
+
+class Commit(Document):
+    files = Keyword()
+    committed_date = Date()
+
+    class Index:
+        name = 'git'
+
 class RepoSearch(FacetedSearch):
     index = 'git'
     doc_types = [Repos]
@@ -32,6 +43,14 @@ class RepoSearch(FacetedSearch):
     def search(self):
         s = super(RepoSearch, self).search()
         return s.filter('term', commit_repo='repo')
+
+class MetricSearch(FacetedSearch):
+    index = 'git'
+    doc_types = [Commit]
+
+    facets = {
+        'files': TermsFacet(field='files', metric=A('max', field='committed_date')),
+    }
 
 class PRSearch(FacetedSearch):
     index = 'test-prs'
@@ -46,18 +65,27 @@ class PRSearch(FacetedSearch):
         )
     }
 
+def test_facet_with_custom_metric(data_client):
+    ms = MetricSearch()
+    r = ms.execute()
+
+    dates = [f[1] for f in r.facets.files]
+    assert dates == list(sorted(dates, reverse=True))
+    assert dates[0] == 1399038439000
+
+
 def test_nested_facet(pull_request):
     prs = PRSearch()
     r = prs.execute()
 
-    assert r.hits.total == 1
+    assert r.hits.total.value == 1
     assert [(datetime(2018, 1, 1, 0, 0), 1, False)] == r.facets.comments
 
 def test_nested_facet_with_filter(pull_request):
     prs = PRSearch(filters={'comments': datetime(2018, 1, 1, 0, 0)})
     r = prs.execute()
 
-    assert r.hits.total == 1
+    assert r.hits.total.value == 1
     assert [(datetime(2018, 1, 1, 0, 0), 1, True)] == r.facets.comments
 
     prs = PRSearch(filters={'comments': datetime(2018, 2, 1, 0, 0)})
@@ -68,14 +96,14 @@ def test_datehistogram_facet(data_client):
     rs = RepoSearch()
     r = rs.execute()
 
-    assert r.hits.total == 1
+    assert r.hits.total.value == 1
     assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 def test_boolean_facet(data_client):
     rs = RepoSearch()
     r = rs.execute()
 
-    assert r.hits.total == 1
+    assert r.hits.total.value == 1
     assert [(True, 1, False)] == r.facets.public
     value, count, selected = r.facets.public[0]
     assert value is True
@@ -86,7 +114,7 @@ def test_empty_search_finds_everything(data_client):
 
     r = cs.execute()
 
-    assert r.hits.total == 52
+    assert r.hits.total.value == 52
     assert [
         ('elasticsearch_dsl', 40, False),
         ('test_elasticsearch_dsl', 35, False),
@@ -131,7 +159,7 @@ def test_term_filters_are_shown_as_selected_and_data_is_filtered(data_client):
 
     r = cs.execute()
 
-    assert 35 == r.hits.total
+    assert 35 == r.hits.total.value
     assert [
         ('elasticsearch_dsl', 40, False),
         ('test_elasticsearch_dsl', 35, True), # selected
@@ -174,7 +202,7 @@ def test_range_filters_are_shown_as_selected_and_data_is_filtered(data_client):
 
     r = cs.execute()
 
-    assert 19 == r.hits.total
+    assert 19 == r.hits.total.value
 
 def test_pagination(data_client):
     cs = CommitSearch()

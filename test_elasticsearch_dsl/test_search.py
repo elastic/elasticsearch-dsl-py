@@ -25,7 +25,6 @@ def test_cache_can_be_ignored(mock_client):
     s.execute(ignore_cache=True)
 
     mock_client.search.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={}
     )
@@ -35,12 +34,6 @@ def test_iter_iterates_over_hits():
     s._response = [1, 2, 3]
 
     assert [1, 2, 3] == list(s)
-
-def test_count_uses_cache():
-    s = search.Search()
-    s._response = utils.AttrDict({'hits': {'total': 42}})
-
-    assert 42 == s.count()
 
 def test_cache_isnt_cloned():
     s = search.Search()
@@ -127,6 +120,25 @@ def test_copy_clones():
     assert s1 == s2
     assert s1 is not s2
 
+def test_aggs_allow_two_metric():
+    s = search.Search()
+
+    s.aggs.metric('a', 'max', field='a').metric('b', 'max', field='b')
+
+    assert s.to_dict() ==  {
+        'aggs': {
+            'a': {
+                'max': {
+                    'field': 'a'
+                }
+            },
+            'b': {
+                'max': {
+                    'field': 'b'
+                }
+            }
+        }
+    }
 
 def test_aggs_get_copied_on_change():
     s = search.Search().query('match_all')
@@ -187,38 +199,17 @@ def test_search_index():
     s2 = s.index(('i4', 'i5'))
     assert s2._index == ['i', 'i2', 'i3', 'i4', 'i5']
 
-def test_search_doc_type():
-    s = search.Search(doc_type='i')
-    assert s._doc_type == ['i']
-    s = s.doc_type('i2')
-    assert s._doc_type == ['i', 'i2']
-    s = s.doc_type()
-    assert s._doc_type == []
-    s = search.Search(doc_type=('i', 'i2'))
-    assert s._doc_type == ['i', 'i2']
-    s = search.Search(doc_type=['i', 'i2'])
-    assert s._doc_type == ['i', 'i2']
-    s = search.Search()
-    s = s.doc_type('i', 'i2')
-    assert s._doc_type == ['i', 'i2']
-    s2 = s.doc_type('i3')
-    assert s._doc_type == ['i', 'i2']
-    assert s2._doc_type == ['i', 'i2', 'i3']
-
-
-def test_doc_type_can_be_document_class():
+def test_doc_type_document_class():
     class MyDocument(Document):
         pass
 
     s = search.Search(doc_type=MyDocument)
     assert s._doc_type == [MyDocument]
     assert s._doc_type_map == {}
-    assert s._get_doc_type() == ['doc']
 
     s = search.Search().doc_type(MyDocument)
     assert s._doc_type == [MyDocument]
     assert s._doc_type_map == {}
-    assert s._get_doc_type() == ['doc']
 
 def test_sort():
     s = search.Search()
@@ -414,7 +405,6 @@ def test_params_being_passed_to_search(mock_client):
     s.execute()
 
     mock_client.search.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={},
         routing='42'
@@ -425,10 +415,10 @@ def test_source():
 
     assert {
         '_source': {
-            'include': ['foo.bar.*'],
-            'exclude': ['foo.one']
+            'includes': ['foo.bar.*'],
+            'excludes': ['foo.one']
         }
-    } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).to_dict()
+    } == search.Search().source(includes=['foo.bar.*'], excludes=['foo.one']).to_dict()
 
     assert {
         '_source': False
@@ -436,21 +426,21 @@ def test_source():
 
     assert {
         '_source': ['f1', 'f2']
-    } == search.Search().source(include=['foo.bar.*'], exclude=['foo.one']).source(['f1', 'f2']).to_dict()
+    } == search.Search().source(includes=['foo.bar.*'], excludes=['foo.one']).source(['f1', 'f2']).to_dict()
 
 def test_source_on_clone():
     assert {
         '_source': {
-            'include': ['foo.bar.*'],
-            'exclude': ['foo.one']
+            'includes': ['foo.bar.*'],
+            'excludes': ['foo.one']
         },
         'query': {
             'bool': {
                 'filter': [{'term': {'title': 'python'}}],
             }
         }
-    } == search.Search().source(include=['foo.bar.*']).\
-        source(exclude=['foo.one']).\
+    } == search.Search().source(includes=['foo.bar.*']).\
+        source(excludes=['foo.one']).\
         filter('term', title='python').to_dict()\
 
     assert {'_source': False,
@@ -463,8 +453,8 @@ def test_source_on_clone():
 
 def test_source_on_clear():
     assert {
-    } == search.Search().source(include=['foo.bar.*']).\
-        source(include=None, exclude=None).to_dict()
+    } == search.Search().source(includes=['foo.bar.*']).\
+        source(includes=None, excludes=None).to_dict()
 
 def test_suggest_accepts_global_text():
     s = search.Search.from_dict({
@@ -531,7 +521,21 @@ def test_delete_by_query(mock_client):
     s.delete()
 
     mock_client.delete_by_query.assert_called_once_with(
-        doc_type=[],
         index=None,
         body={"query": {"match": {"lang": "java"}}}
     )
+
+def test_update_from_dict():
+    s = search.Search()
+    s.update_from_dict({"indices_boost": [{"important-documents": 2}]})
+    s.update_from_dict({"_source": ["id", "name"]})
+
+    assert {
+        'indices_boost': [{
+            'important-documents': 2
+        }],
+        '_source': [
+            'id',
+            'name'
+        ]
+    } == s.to_dict()

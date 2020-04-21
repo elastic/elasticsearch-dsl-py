@@ -8,7 +8,7 @@ from .response import Response
 from .query import Terms, Nested, Range, MatchAll
 
 __all__ = [
-    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet', 
+    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet',
     'NestedFacet',
 ]
 
@@ -20,15 +20,21 @@ class Facet(object):
     """
     agg_type = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, metric=None, metric_sort='desc', **kwargs):
         self.filter_values = ()
         self._params = kwargs
+        self._metric = metric
+        if metric and metric_sort:
+            self._params['order'] = {'metric': metric_sort}
 
     def get_aggregation(self):
         """
         Return the aggregation object.
         """
-        return A(self.agg_type, **self._params)
+        agg = A(self.agg_type, **self._params)
+        if self._metric:
+            agg.metric('metric', self._metric)
+        return agg
 
     def add_filter(self, filter_values):
         """
@@ -60,6 +66,14 @@ class Facet(object):
         """
         return bucket['key']
 
+    def get_metric(self, bucket):
+        """
+        Return a metric, by default doc_count for a bucket.
+        """
+        if self._metric:
+            return bucket['metric']['value']
+        return bucket['doc_count']
+
     def get_values(self, data, filter_values):
         """
         Turn the raw bucket data into a list of tuples containing the key,
@@ -71,7 +85,7 @@ class Facet(object):
             key = self.get_value(bucket)
             out.append((
                 key,
-                bucket['doc_count'],
+                self.get_metric(bucket),
                 self.is_filtered(key, filter_values)
             ))
         return out
@@ -83,7 +97,7 @@ class TermsFacet(Facet):
     def add_filter(self, filter_values):
         """ Create a terms filter instead of bool containing term filters.  """
         if filter_values:
-            return Terms(**{self._params['field']: filter_values})
+            return Terms(_expand__to_dot=False, **{self._params['field']: filter_values})
 
 
 class RangeFacet(Facet):
@@ -112,7 +126,7 @@ class RangeFacet(Facet):
         if t is not None:
             limits['lt'] = t
 
-        return Range(**{
+        return Range(_expand__to_dot=False, **{
             self._params['field']: limits
         })
 
@@ -120,7 +134,7 @@ class HistogramFacet(Facet):
     agg_type = 'histogram'
 
     def get_value_filter(self, filter_value):
-        return Range(**{
+        return Range(_expand__to_dot=False, **{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': filter_value + self._params['interval']
@@ -154,7 +168,7 @@ class DateHistogramFacet(Facet):
             return bucket['key']
 
     def get_value_filter(self, filter_value):
-        return Range(**{
+        return Range(_expand__to_dot=False, **{
             self._params['field']: {
                 'gte': filter_value,
                 'lt': self.DATE_INTERVALS[self._params['interval']](filter_value)
@@ -237,7 +251,7 @@ class FacetedSearch(object):
     """
     index = None
     doc_types = None
-    fields = ('*', )
+    fields = None
     facets = {}
     using = 'default'
 
@@ -303,7 +317,10 @@ class FacetedSearch(object):
         Override this if you wish to customize the query used.
         """
         if query:
-            return search.query('multi_match', fields=self.fields, query=query)
+            if self.fields:
+                return search.query('multi_match', fields=self.fields, query=query)
+            else:
+                return search.query('multi_match', query=query)
         return search
 
     def aggregate(self, search):
@@ -359,7 +376,8 @@ class FacetedSearch(object):
         s = self.search()
         s = self.query(s, self._query)
         s = self.filter(s)
-        s = self.highlight(s)
+        if self.fields:
+            s = self.highlight(s)
         s = self.sort(s)
         self.aggregate(s)
         return s

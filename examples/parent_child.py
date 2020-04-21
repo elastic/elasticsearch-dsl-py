@@ -92,7 +92,7 @@ class Question(Post):
 
     @classmethod
     def _matches(cls, hit):
-        " Use Question class for parent documents "
+        """ Use Question class for parent documents """
         return hit['_source']['question_answer'] == 'question'
 
     @classmethod
@@ -146,7 +146,7 @@ class Answer(Post):
 
     @classmethod
     def _matches(cls, hit):
-        " Use Answer class for child documents with child name 'answer' "
+        """ Use Answer class for child documents with child name 'answer' """
         return isinstance(hit['_source']['question_answer'], dict) \
             and hit['_source']['question_answer'].get('name') == 'answer'
 
@@ -170,7 +170,7 @@ class Answer(Post):
 
 
 def setup():
-    " Create an IndexTemplate and save it into elasticsearch. "
+    """ Create an IndexTemplate and save it into elasticsearch. """
     index_template = Post._index.as_template('base')
     index_template.save()
 
@@ -183,9 +183,9 @@ if __name__ == '__main__':
 
     # user objects to use
     nick = User(id=47, signed_up=datetime(2017, 4, 3), username='fxdgear',
-                email='nick.lang@elastic.co', localtion='Colorado')
+                email='nick.lang@elastic.co', location='Colorado')
     honza = User(id=42, signed_up=datetime(2013, 4, 3), username='honzakral',
-                 email='honza@elastic.co', localtion='Prague')
+                 email='honza@elastic.co', location='Prague')
 
     # create a question object
     question = Question(

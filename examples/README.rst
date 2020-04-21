@@ -37,3 +37,11 @@ to paginate over aggregation results.
 A ``BlogPost`` document with automatic classification using the `percolator
 <https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-percolate-query.html>`_
 functionality.
+
+``completion.py``
+-----------------
+
+As example using `completion suggester
+<https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html>`_
+to auto complete people's names.
+

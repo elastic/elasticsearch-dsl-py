@@ -27,8 +27,14 @@ directory to see some complex examples using ``elasticsearch-dsl``.
 Compatibility
 -------------
 
-The library is compatible with all Elasticsearch versions since ``1.x`` but you
+The library is compatible with all Elasticsearch versions since ``2.x`` but you
 **have to use a matching major version**:
+
+For **Elasticsearch 7.0** and later, use the major version 7 (``7.x.y``) of the
+library.
+
+For **Elasticsearch 6.0** and later, use the major version 6 (``6.x.y``) of the
+library.
 
 For **Elasticsearch 5.0** and later, use the major version 5 (``5.x.y``) of the
 library.
@@ -36,12 +42,14 @@ library.
 For **Elasticsearch 2.0** and later, use the major version 2 (``2.x.y``) of the
 library.
 
-For **Elasticsearch 1.0** and later, use the major version 0 (``0.x.y``) of the
-library.
-
-
 The recommended way to set your requirements in your `setup.py` or
 `requirements.txt` is::
+
+    # Elasticsearch 7.x
+    elasticsearch-dsl>=7.0.0,<8.0.0
+
+    # Elasticsearch 6.x
+    elasticsearch-dsl>=6.0.0,<7.0.0
 
     # Elasticsearch 5.x
     elasticsearch-dsl>=5.0.0,<6.0.0
@@ -49,11 +57,8 @@ The recommended way to set your requirements in your `setup.py` or
     # Elasticsearch 2.x
     elasticsearch-dsl>=2.0.0,<3.0.0
 
-    # Elasticsearch 1.x
-    elasticsearch-dsl<2.0.0
 
-
-The development is happening on ``master`` and ``1.x`` branches, respectively.
+The development is happening on ``master``, older branches only get bugfix releases
 
 Search Example
 --------------
@@ -250,6 +255,54 @@ search class to simplify searching and filtering.
 
 You can find more details in the :ref:`faceted_search` chapter.
 
+
+Update By Query Example
+------------------------
+
+Let's resume the simple example of articles on a blog, and let's assume that each article has a number of likes.
+For this example, imagine we want to increment the number of likes by 1 for all articles that match a certain tag and do not match a certain description.
+Writing this as a ``dict``, we would have the following code:
+
+.. code:: python
+
+    from elasticsearch import Elasticsearch
+    client = Elasticsearch()
+
+    response = client.update_by_query(
+        index="my-index",
+        body={
+          "query": {
+            "bool": {
+              "must": [{"match": {"tag": "python"}}],
+              "must_not": [{"match": {"description": "beta"}}]
+            }
+          },
+          "script"={
+            "source": "ctx._source.likes++",
+            "lang": "painless"
+          }
+        },
+      )
+
+Using the DSL, we can now express this query as such: 
+
+.. code:: python
+
+    from elasticsearch import Elasticsearch
+    from elasticsearch_dsl import Search, UpdateByQuery
+
+    client = Elasticsearch()
+    ubq = UpdateByQuery(using=client, index="my-index") \
+          .query("match", title="python")   \
+          .exclude("match", description="beta") \
+          .script(source="ctx._source.likes++", lang="painless")
+
+    response = ubq.execute()
+
+As you can see, the ``Update By Query`` object provides many of the savings offered
+by the ``Search`` object, and additionally allows one to update the results of the search
+based on a script assigned in the same manner.
+
 Migration from ``elasticsearch-py``
 -----------------------------------
 
@@ -299,6 +352,7 @@ Contents
    search_dsl
    persistence
    faceted_search
+   update_by_query
    api
    CONTRIBUTING
    Changelog

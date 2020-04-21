@@ -1,3 +1,5 @@
+.. _search_dsl:
+
 Search DSL
 ==========
 
@@ -93,7 +95,7 @@ You can delete the documents matching a search by calling ``delete`` on the ``Se
 
 .. code:: python
 
-    s = Search().query("match", title="python")
+    s = Search(index='i').query("match", title="python")
     response = s.delete()
 
 
@@ -406,7 +408,7 @@ Enabling highlighting for individual fields is done using the ``highlight`` meth
     # or, including parameters:
     s = s.highlight('title', fragment_size=50)
 
-The fragments in the response will then be available on reach ``Result`` object
+The fragments in the response will then be available on each ``Result`` object
 as ``.meta.highlight.FIELD`` which will contain the list of fragments:
 
 .. code:: python
@@ -423,6 +425,7 @@ To specify a suggest request on your ``Search`` object use the ``suggest`` metho
 
 .. code:: python
 
+    # check for correct spelling
     s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
 
 The first argument is the name of the suggestions (name under which it will be
@@ -460,7 +463,7 @@ If you need to limit the fields being returned by elasticsearch, use the
   # don't return any fields, just the metadata
   s = s.source(False)
   # explicitly include/exclude fields
-  s = s.source(include=["title"], exclude=["user.*"])
+  s = s.source(includes=["title"], excludes=["user.*"])
   # reset the field selection
   s = s.source(None)
 
@@ -505,7 +508,10 @@ convenient helpers:
   print(response.took)
   # 12
 
-  print(response.hits.total)
+  print(response.hits.total.relation)
+  # eq
+  print(response.hits.total.value)
+  # 142
 
   print(response.suggest.my_suggestions)
 
