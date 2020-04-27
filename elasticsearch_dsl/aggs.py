@@ -174,6 +174,9 @@ class GeoDistance(Bucket):
 class GeohashGrid(Bucket):
     name = 'geohash_grid'
 
+class GeotileGrid(Bucket):
+    name = 'geotile_grid'
+
 class GeoCentroid(Bucket):
     name = 'geo_centroid'
 
