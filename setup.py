@@ -2,7 +2,7 @@
 from os.path import join, dirname
 from setuptools import setup, find_packages
 
-VERSION = (7, 1, 0)
+VERSION = (7, 2, 0)
 __version__ = VERSION
 __versionstr__ = '.'.join(map(str, VERSION))
 
@@ -14,7 +14,7 @@ install_requires = [
     'six',
     'python-dateutil',
     'elasticsearch>=7.0.0,<8.0.0',
-    # ipaddress is included in stdlib sincxe py 3.3
+    # ipaddress is included in stdlib since python 3.3
     'ipaddress; python_version<"3.3"'
 ]
 
@@ -30,12 +30,14 @@ tests_require = [
 setup(
     name = "elasticsearch-dsl",
     description = "Python client for Elasticsearch",
-    license="Apache License, Version 2.0",
+    license="Apache-2.0",
     url = "https://github.com/elasticsearch/elasticsearch-dsl-py",
     long_description = long_description,
     version = __versionstr__,
     author = "Honza Král",
     author_email = "honza.kral@gmail.com",
+    maintainer = "Seth Michael Larson",
+    maintainer_email = "seth.larson@elastic.co",
     packages=find_packages(
         where='.',
         exclude=('test_elasticsearch_dsl*', )
