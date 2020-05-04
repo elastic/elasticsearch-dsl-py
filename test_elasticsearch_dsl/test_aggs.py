@@ -252,3 +252,23 @@ def test_bucket_sort_agg_only_trnunc():
             }
         }
     } == a.to_dict()
+
+def test_geohash_grid_aggregation():
+    a = aggs.GeohashGrid(**{'field': 'centroid', 'precision': 3})
+
+    assert {
+        'geohash_grid': {
+            'field': 'centroid',
+            'precision': 3
+        }
+    } == a.to_dict()
+
+def test_geotile_grid_aggregation():
+    a = aggs.GeotileGrid(**{'field': 'centroid', 'precision': 3})
+
+    assert {
+        'geotile_grid': {
+            'field': 'centroid',
+            'precision': 3
+        }
+    } == a.to_dict()
