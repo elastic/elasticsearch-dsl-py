@@ -3,6 +3,22 @@
 Changelog
 =========
 
+7.2.0 (2020-05-04)
+------------------
+
+* Added support for ``geotile_grid`` aggregation (`#1350`_, contributed by `@owrcasstevens`_)
+* Added the ``DenseVector`` and ``SparseVector`` data types (`#1278`_)
+* Added the ``SearchAsYouType`` field (`#1295`_, contributed by `@dpasqualin`_)
+* Fixed name of ``DoubleRange`` (`#1272`_, contributed by `@braunsonm`_)
+
+ .. _@braunsonm: https://github.com/braunsonm
+ .. _@dpasqualin: https://github.com/dpasqualin
+ .. _@owrcasstevens: https://github.com/owrcasstevens
+ .. _#1272: https://github.com/elastic/elasticsearch-dsl-py/pull/1272
+ .. _#1278: https://github.com/elastic/elasticsearch-dsl-py/issues/1278
+ .. _#1295: https://github.com/elastic/elasticsearch-dsl-py/pull/1295
+ .. _#1350: https://github.com/elastic/elasticsearch-dsl-py/pull/1350
+
 7.1.0 (2019-10-23)
 ------------------
 
