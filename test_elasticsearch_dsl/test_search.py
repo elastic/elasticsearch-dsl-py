@@ -237,6 +237,7 @@ def test_slice():
     assert {'from': 0, 'size': 5} == s[:5].to_dict()
     assert {'from': 3, 'size': 10} == s[3:].to_dict()
     assert {'from': 0, 'size': 0} == s[0:0].to_dict()
+    assert {'from': 20, 'size': 0} == s[20:0].to_dict()
 
 def test_index():
     s = search.Search()
