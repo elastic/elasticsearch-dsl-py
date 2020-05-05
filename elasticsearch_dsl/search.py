@@ -345,6 +345,7 @@ class Search(Request):
             # stop not given.
             s._extra['from'] = n.start or 0
             s._extra['size'] = n.stop - (n.start or 0) if n.stop is not None else 10
+            s._extra['size'] = max(s._extra['size'], 0)
             return s
         else:  # This is an index lookup, equivalent to slicing by [n:n+1].
             # If negative index, abort.
