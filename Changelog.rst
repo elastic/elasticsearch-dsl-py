@@ -3,6 +3,15 @@
 Changelog
 =========
 
+7.2.1 (2020-06-02)
+------------------
+
+* Fixed issue when slicing a Search that would result in a negative
+  ``size`` instead of a ``size`` of 0. (`#1360`_, contributed by `@bk-equityzen`_)
+
+ .. _@bk-equityzen: https://github.com/bk-equityzen
+ .. _#1360: https://github.com/elastic/elasticsearch-dsl-py/pull/1360
+
 7.2.0 (2020-05-04)
 ------------------
 
