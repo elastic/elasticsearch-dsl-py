@@ -314,7 +314,7 @@ class Search(Request):
         return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
     def exclude(self, *args, **kwargs):
-        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
+        return self.query(~Q(*args, **kwargs))
 
     def __iter__(self):
         """

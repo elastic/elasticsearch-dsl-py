@@ -503,13 +503,9 @@ def test_exclude():
     assert {
         'query': {
             'bool': {
-                'filter': [{
-                    'bool': {
-                        'must_not': [{
-                            'match': {
-                                'title': 'python'
-                            }
-                        }]
+                'must_not': [{
+                    'match': {
+                        'title': 'python'
                     }
                 }]
             }
