@@ -528,7 +528,7 @@ just iterate over the ``Response`` object:
 .. code:: python
 
     response = s.execute()
-    print('Total %d hits found.' % response.hits.total)
+    print('Total %d hits found.' % response.hits.total.value)
     for h in response:
         print(h.title, h.body)
 
