@@ -7,10 +7,10 @@ from elasticsearch_dsl import Q
 from .parent_child import User, Question, Answer, setup, Comment
 
 honza = User(id=42, signed_up=datetime(2013, 4, 3), username='honzakral',
-            email='honza@elastic.co', localtion='Prague')
+            email='honza@elastic.co', location='Prague')
 
 nick = User(id=47, signed_up=datetime(2017, 4, 3), username='fxdgear',
-            email='nick.lang@elastic.co', localtion='Colorado')
+            email='nick.lang@elastic.co', location='Colorado')
 
 
 @fixture
