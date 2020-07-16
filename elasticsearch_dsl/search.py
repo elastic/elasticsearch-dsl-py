@@ -603,7 +603,8 @@ class Search(Request):
                 }
             }
 
-        If you want to have different options for different fields you can call ``highlight`` twice::
+        If you want to have different options for different fields
+        you can call ``highlight`` twice::
 
             Search().highlight('title', fragment_size=50).highlight('body', fragment_size=100)
 

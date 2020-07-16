@@ -185,7 +185,7 @@ def test_filter_aggregation_as_nested_agg():
 
     assert {
         "terms": {"field": "tags"},
-        "aggs": {"filtered": {"filter": {"term": {"f": 42}},}},
+        "aggs": {"filtered": {"filter": {"term": {"f": 42}}}},
     } == a.to_dict()
 
 

@@ -56,7 +56,7 @@ def test_mapping_update_is_recursive():
             "lang": {"type": "keyword"},
             "author": {
                 "type": "object",
-                "properties": {"name": {"type": "text"}, "email": {"type": "text"},},
+                "properties": {"name": {"type": "text"}, "email": {"type": "text"}},
             },
         },
     } == m1.to_dict()
@@ -105,7 +105,7 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
         "title",
         "text",
         analyzer=a1,
-        fields={"english": Text(analyzer=a2), "unknown": Keyword(search_analyzer=a3),},
+        fields={"english": Text(analyzer=a2), "unknown": Keyword(search_analyzer=a3)},
     )
     m.field("comments", Nested(properties={"author": Text(analyzer=a4)}))
     m.field("normalized_title", "keyword", normalizer=n1)
@@ -139,7 +139,7 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
             "my_filter2": {"stopwords": ["c", "d"], "type": "stop"},
             "my_filter3": {"stopwords": ["e", "f"], "type": "stop"},
         },
-        "tokenizer": {"trigram": {"max_gram": 3, "min_gram": 3, "type": "nGram"},},
+        "tokenizer": {"trigram": {"max_gram": 3, "min_gram": 3, "type": "nGram"}},
     } == m._collect_analysis()
 
     assert json.loads(json.dumps(m.to_dict())) == m.to_dict()

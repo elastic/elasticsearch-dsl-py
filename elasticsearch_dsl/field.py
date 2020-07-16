@@ -60,7 +60,8 @@ def construct_field(name_or_field, **params):
     if isinstance(name_or_field, Field):
         if params:
             raise ValueError(
-                "construct_field() cannot accept parameters when passing in a construct_field object."
+                "construct_field() cannot accept parameters "
+                "when passing in a construct_field object."
             )
         return name_or_field
 

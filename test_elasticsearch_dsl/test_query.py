@@ -331,18 +331,18 @@ def test_or_bool_doesnt_loop_infinitely_issue_96():
 
 
 def test_bool_will_append_another_query_with_or():
-    qb = query.Bool(should=[query.Match(f="v"), query.Match(f="v2"),])
+    qb = query.Bool(should=[query.Match(f="v"), query.Match(f="v2")])
     q = query.Match(g=42)
 
     assert (q | qb) == query.Bool(should=[query.Match(f="v"), query.Match(f="v2"), q])
 
 
 def test_bool_queries_with_only_should_get_concatenated():
-    q1 = query.Bool(should=[query.Match(f=1), query.Match(f=2),])
-    q2 = query.Bool(should=[query.Match(f=3), query.Match(f=4),])
+    q1 = query.Bool(should=[query.Match(f=1), query.Match(f=2)])
+    q2 = query.Bool(should=[query.Match(f=3), query.Match(f=4)])
 
     assert (q1 | q2) == query.Bool(
-        should=[query.Match(f=1), query.Match(f=2), query.Match(f=3), query.Match(f=4),]
+        should=[query.Match(f=1), query.Match(f=2), query.Match(f=3), query.Match(f=4)]
     )
 
 
@@ -404,7 +404,7 @@ def test_Q_constructs_simple_query_from_dict():
 
 
 def test_Q_constructs_compound_query_from_dict():
-    q = query.Q({"bool": {"must": [{"match": {"f": "value"}},]}})
+    q = query.Q({"bool": {"must": [{"match": {"f": "value"}}]}})
 
     assert q == query.Bool(must=[query.Match(f="value")])
 
@@ -479,7 +479,7 @@ def test_function_score_to_dict():
                 {"random_score": {}},
                 {
                     "filter": {"term": {"tags": "python"}},
-                    "field_value_factor": {"field": "comment_count",},
+                    "field_value_factor": {"field": "comment_count"},
                 },
             ],
         }

@@ -17,7 +17,7 @@
 
 from copy import deepcopy
 
-from elasticsearch_dsl import search, query, Q, Document, utils
+from elasticsearch_dsl import search, query, Q, Document
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 from pytest import raises
@@ -432,7 +432,7 @@ def test_source_on_clone():
     assert (
         {
             "_source": {"includes": ["foo.bar.*"], "excludes": ["foo.one"]},
-            "query": {"bool": {"filter": [{"term": {"title": "python"}}],}},
+            "query": {"bool": {"filter": [{"term": {"title": "python"}}]}},
         }
         == search.Search()
         .source(includes=["foo.bar.*"])
@@ -442,7 +442,7 @@ def test_source_on_clone():
     )
     assert {
         "_source": False,
-        "query": {"bool": {"filter": [{"term": {"title": "python"}}],}},
+        "query": {"bool": {"filter": [{"term": {"title": "python"}}]}},
     } == search.Search().source(False).filter("term", title="python").to_dict()
 
 

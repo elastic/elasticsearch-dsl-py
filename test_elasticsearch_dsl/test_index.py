@@ -91,9 +91,7 @@ def test_settings_are_saved():
     i.settings(number_of_replicas=0)
     i.settings(number_of_shards=1)
 
-    assert {
-        "settings": {"number_of_shards": 1, "number_of_replicas": 0,}
-    } == i.to_dict()
+    assert {"settings": {"number_of_shards": 1, "number_of_replicas": 0}} == i.to_dict()
 
 
 def test_registered_doc_type_included_in_to_dict():

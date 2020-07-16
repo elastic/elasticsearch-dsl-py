@@ -19,7 +19,6 @@ from elasticsearch_dsl import (
     Document,
     Index,
     Text,
-    Keyword,
     Date,
     analysis,
     IndexTemplate,

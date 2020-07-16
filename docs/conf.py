@@ -30,6 +30,7 @@
 
 import os
 import datetime
+import elasticsearch_dsl
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -66,9 +67,6 @@ copyright = u"%d, Elasticsearch B.V" % datetime.datetime.now().year
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
-
-import elasticsearch_dsl
 
 # The short X.Y version.
 version = elasticsearch_dsl.__versionstr__
@@ -204,11 +202,11 @@ htmlhelp_basename = "Elasticsearchdoc"
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
+    # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
+    # 'pointsize': '10pt',
     # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -218,7 +216,7 @@ latex_documents = [
         "index",
         "Elasticsearch-dsl.tex",
         u"Elasticsearch DSL Documentation",
-        u"Honza Král",
+        u"Elasticsearch B.V",
         "manual",
     ),
 ]
@@ -253,7 +251,7 @@ man_pages = [
         "index",
         "elasticsearch-dsl",
         u"Elasticsearch DSL Documentation",
-        [u"Honza Král"],
+        [u"Elasticsearch B.V"],
         1,
     )
 ]
@@ -272,7 +270,7 @@ texinfo_documents = [
         "index",
         "Elasticsearch",
         u"Elasticsearch Documentation",
-        u"Honza Král",
+        u"Elasticsearch B.V",
         "Elasticsearch",
         "One line description of project.",
         "Miscellaneous",

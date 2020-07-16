@@ -78,7 +78,10 @@ def test_interactive_helpers(dummy_response):
     hits = res.hits
     h = hits[0]
 
-    rhits = "[<Hit(test-index/elasticsearch): {}>, <Hit(test-index/42): {}...}}>, <Hit(test-index/47): {}...}}>, <Hit(test-index/53): {{}}>]".format(
+    rhits = (
+        "[<Hit(test-index/elasticsearch): {}>, <Hit(test-index/42): {}...}}>, "
+        "<Hit(test-index/47): {}...}}>, <Hit(test-index/53): {{}}>]"
+    ).format(
         repr(dummy_response["hits"]["hits"][0]["_source"]),
         repr(dummy_response["hits"]["hits"][1]["_source"])[:60],
         repr(dummy_response["hits"]["hits"][2]["_source"])[:60],

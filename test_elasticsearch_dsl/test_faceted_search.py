@@ -45,11 +45,11 @@ def test_query_is_created_properly():
     assert {
         "aggs": {
             "_filter_tags": {
-                "filter": {"match_all": {},},
+                "filter": {"match_all": {}},
                 "aggs": {"tags": {"terms": {"field": "tags"}}},
             },
             "_filter_category": {
-                "filter": {"match_all": {},},
+                "filter": {"match_all": {}},
                 "aggs": {"category": {"terms": {"field": "category.raw"}}},
             },
         },
@@ -68,11 +68,11 @@ def test_query_is_created_properly_with_sort_tuple():
     assert {
         "aggs": {
             "_filter_tags": {
-                "filter": {"match_all": {},},
+                "filter": {"match_all": {}},
                 "aggs": {"tags": {"terms": {"field": "tags"}}},
             },
             "_filter_category": {
-                "filter": {"match_all": {},},
+                "filter": {"match_all": {}},
                 "aggs": {"category": {"terms": {"field": "category.raw"}}},
             },
         },
@@ -95,7 +95,7 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
                 "aggs": {"tags": {"terms": {"field": "tags"}}},
             },
             "_filter_category": {
-                "filter": {"match_all": {},},
+                "filter": {"match_all": {}},
                 "aggs": {"category": {"terms": {"field": "category.raw"}}},
             },
         },
@@ -124,11 +124,11 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
     assert {
         "aggs": {
             "_filter_tags": {
-                "filter": {"terms": {"category.raw": ["elastic"]},},
+                "filter": {"terms": {"category.raw": ["elastic"]}},
                 "aggs": {"tags": {"terms": {"field": "tags"}}},
             },
             "_filter_category": {
-                "filter": {"terms": {"tags": ["python", "django"]},},
+                "filter": {"terms": {"tags": ["python", "django"]}},
                 "aggs": {"category": {"terms": {"field": "category.raw"}}},
             },
         },

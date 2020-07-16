@@ -306,7 +306,7 @@ def test_to_dict_with_meta_includes_custom_index():
     d = MySubDoc(title="hello")
     d.meta.index = "other-index"
 
-    assert {"_index": "other-index", "_source": {"title": "hello"},} == d.to_dict(True)
+    assert {"_index": "other-index", "_source": {"title": "hello"}} == d.to_dict(True)
 
 
 def test_to_dict_without_skip_empty_will_include_empty_fields():

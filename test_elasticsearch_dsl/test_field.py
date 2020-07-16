@@ -83,7 +83,7 @@ def test_field_from_dict():
 def test_multi_fields_are_accepted_and_parsed():
     f = field.construct_field(
         "text",
-        fields={"raw": {"type": "keyword"}, "eng": field.Text(analyzer="english"),},
+        fields={"raw": {"type": "keyword"}, "eng": field.Text(analyzer="english")},
     )
 
     assert isinstance(f, field.Text)

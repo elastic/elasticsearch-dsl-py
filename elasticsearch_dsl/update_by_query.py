@@ -110,7 +110,8 @@ class UpdateByQuery(Request):
         https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-using.html
         for more details.
 
-        Note: the API only accepts a single script, so calling the script multiple times will overwrite.
+        Note: the API only accepts a single script, so
+        calling the script multiple times will overwrite.
 
         Example::
 

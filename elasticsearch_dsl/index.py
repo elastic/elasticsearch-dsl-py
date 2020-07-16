@@ -317,8 +317,8 @@ class Index(object):
                     for k in analysis[section]
                 ):
                     raise IllegalOperation(
-                        "You cannot update analysis configuration on an open index, you need to close index %s first."
-                        % self._name
+                        "You cannot update analysis configuration on an open index, "
+                        "you need to close index %s first." % self._name
                     )
 
         # try and update the settings

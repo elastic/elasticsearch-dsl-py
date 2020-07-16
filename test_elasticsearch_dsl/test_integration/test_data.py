@@ -21,9 +21,7 @@ from __future__ import unicode_literals
 def create_flat_git_index(client, index):
     # we will use user on several places
     user_mapping = {
-        "properties": {
-            "name": {"type": "text", "fields": {"raw": {"type": "keyword"},}}
-        }
+        "properties": {"name": {"type": "text", "fields": {"raw": {"type": "keyword"}}}}
     }
 
     client.indices.create(
@@ -66,9 +64,7 @@ def create_flat_git_index(client, index):
 def create_git_index(client, index):
     # we will use user on several places
     user_mapping = {
-        "properties": {
-            "name": {"type": "text", "fields": {"raw": {"type": "keyword"},}}
-        }
+        "properties": {"name": {"type": "text", "fields": {"raw": {"type": "keyword"}}}}
     }
 
     client.indices.create(

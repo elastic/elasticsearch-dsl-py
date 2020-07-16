@@ -87,7 +87,7 @@ def dummy_response():
                     "_type": "company",
                     "_id": "elasticsearch",
                     "_score": 12.0,
-                    "_source": {"city": "Amsterdam", "name": "Elasticsearch",},
+                    "_source": {"city": "Amsterdam", "name": "Elasticsearch"},
                 },
                 {
                     "_index": "test-index",

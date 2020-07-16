@@ -19,8 +19,9 @@
 """
 Example ``Document`` with search_as_you_type field datatype and how to search it.
 
-When creating a field with search_as_you_type datatype ElasticSearch creates additional subfields to enable efficient
-as-you-type completion, matching terms at any position within the input.
+When creating a field with search_as_you_type datatype ElasticSearch creates additional
+subfields to enable efficient as-you-type completion, matching terms at any position
+within the input.
 
 To custom analyzer with ascii folding allow search to work in different languages.
 """

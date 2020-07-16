@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     # index some sample data
     for id, (name, popularity) in enumerate(
-        [("Henri de Toulouse-Lautrec", 42), ("Jára Cimrman", 124),]
+        [("Henri de Toulouse-Lautrec", 42), ("Jára Cimrman", 124)]
     ):
         Person(_id=id, name=name, popularity=popularity).save()
 

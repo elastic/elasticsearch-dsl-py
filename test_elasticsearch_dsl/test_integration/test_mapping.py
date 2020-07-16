@@ -57,7 +57,7 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(write_client):
     assert {
         "test-mapping": {
             "mappings": {
-                "properties": {"name": {"type": "text", "analyzer": "my_analyzer"},}
+                "properties": {"name": {"type": "text", "analyzer": "my_analyzer"}}
             }
         }
     } == write_client.indices.get_mapping(index="test-mapping")

@@ -26,7 +26,6 @@ from elasticsearch_dsl import (
     Text,
     Keyword,
     MultiSearch,
-    Index,
     Q,
 )
 from elasticsearch_dsl.response import aggs
