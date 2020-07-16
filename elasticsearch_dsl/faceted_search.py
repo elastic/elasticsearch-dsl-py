@@ -1,3 +1,20 @@
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
 from datetime import timedelta, datetime
 from six import iteritems, itervalues
 
@@ -8,9 +25,14 @@ from .response import Response
 from .query import Terms, Nested, Range, MatchAll
 
 __all__ = [
-    'FacetedSearch', 'HistogramFacet', 'TermsFacet', 'DateHistogramFacet', 'RangeFacet',
-    'NestedFacet',
+    "FacetedSearch",
+    "HistogramFacet",
+    "TermsFacet",
+    "DateHistogramFacet",
+    "RangeFacet",
+    "NestedFacet",
 ]
+
 
 class Facet(object):
     """
@@ -18,14 +40,15 @@ class Facet(object):
     to create a filter for selected values and return a list of facet values
     from the result of the aggregation.
     """
+
     agg_type = None
 
-    def __init__(self, metric=None, metric_sort='desc', **kwargs):
+    def __init__(self, metric=None, metric_sort="desc", **kwargs):
         self.filter_values = ()
         self._params = kwargs
         self._metric = metric
         if metric and metric_sort:
-            self._params['order'] = {'metric': metric_sort}
+            self._params["order"] = {"metric": metric_sort}
 
     def get_aggregation(self):
         """
@@ -33,7 +56,7 @@ class Facet(object):
         """
         agg = A(self.agg_type, **self._params)
         if self._metric:
-            agg.metric('metric', self._metric)
+            agg.metric("metric", self._metric)
         return agg
 
     def add_filter(self, filter_values):
@@ -64,15 +87,15 @@ class Facet(object):
         """
         return a value representing a bucket. Its key as default.
         """
-        return bucket['key']
+        return bucket["key"]
 
     def get_metric(self, bucket):
         """
         Return a metric, by default doc_count for a bucket.
         """
         if self._metric:
-            return bucket['metric']['value']
-        return bucket['doc_count']
+            return bucket["metric"]["value"]
+        return bucket["doc_count"]
 
     def get_values(self, data, filter_values):
         """
@@ -83,73 +106,75 @@ class Facet(object):
         out = []
         for bucket in data.buckets:
             key = self.get_value(bucket)
-            out.append((
-                key,
-                self.get_metric(bucket),
-                self.is_filtered(key, filter_values)
-            ))
+            out.append(
+                (key, self.get_metric(bucket), self.is_filtered(key, filter_values))
+            )
         return out
 
 
 class TermsFacet(Facet):
-    agg_type = 'terms'
+    agg_type = "terms"
 
     def add_filter(self, filter_values):
         """ Create a terms filter instead of bool containing term filters.  """
         if filter_values:
-            return Terms(_expand__to_dot=False, **{self._params['field']: filter_values})
+            return Terms(
+                _expand__to_dot=False, **{self._params["field"]: filter_values}
+            )
 
 
 class RangeFacet(Facet):
-    agg_type = 'range'
+    agg_type = "range"
 
     def _range_to_dict(self, range):
         key, range = range
-        out = {'key': key}
+        out = {"key": key}
         if range[0] is not None:
-            out['from'] = range[0]
+            out["from"] = range[0]
         if range[1] is not None:
-            out['to'] = range[1]
+            out["to"] = range[1]
         return out
 
     def __init__(self, ranges, **kwargs):
         super(RangeFacet, self).__init__(**kwargs)
-        self._params['ranges'] = list(map(self._range_to_dict, ranges))
-        self._params['keyed'] = False
+        self._params["ranges"] = list(map(self._range_to_dict, ranges))
+        self._params["keyed"] = False
         self._ranges = dict(ranges)
 
     def get_value_filter(self, filter_value):
         f, t = self._ranges[filter_value]
         limits = {}
         if f is not None:
-            limits['gte'] = f
+            limits["gte"] = f
         if t is not None:
-            limits['lt'] = t
+            limits["lt"] = t
 
-        return Range(_expand__to_dot=False, **{
-            self._params['field']: limits
-        })
+        return Range(_expand__to_dot=False, **{self._params["field"]: limits})
+
 
 class HistogramFacet(Facet):
-    agg_type = 'histogram'
+    agg_type = "histogram"
 
     def get_value_filter(self, filter_value):
-        return Range(_expand__to_dot=False, **{
-            self._params['field']: {
-                'gte': filter_value,
-                'lt': filter_value + self._params['interval']
+        return Range(
+            _expand__to_dot=False,
+            **{
+                self._params["field"]: {
+                    "gte": filter_value,
+                    "lt": filter_value + self._params["interval"],
+                }
             }
-        })
+        )
 
 
 class DateHistogramFacet(Facet):
-    agg_type = 'date_histogram'
+    agg_type = "date_histogram"
 
     DATE_INTERVALS = {
-        'month': lambda d: (d+timedelta(days=32)).replace(day=1),
-        'week': lambda d: d+timedelta(days=7),
-        'day': lambda d: d+timedelta(days=1),
-        'hour': lambda d: d+timedelta(hours=1),
+        "month": lambda d: (d + timedelta(days=32)).replace(day=1),
+        "week": lambda d: d + timedelta(days=7),
+        "day": lambda d: d + timedelta(days=1),
+        "hour": lambda d: d + timedelta(hours=1),
     }
 
     def __init__(self, **kwargs):
@@ -157,31 +182,37 @@ class DateHistogramFacet(Facet):
         super(DateHistogramFacet, self).__init__(**kwargs)
 
     def get_value(self, bucket):
-        if not isinstance(bucket['key'], datetime):
+        if not isinstance(bucket["key"], datetime):
             # Elasticsearch returns key=None instead of 0 for date 1970-01-01,
             # so we need to set key to 0 to avoid TypeError exception
-            if bucket['key'] is None:
-                bucket['key'] = 0
+            if bucket["key"] is None:
+                bucket["key"] = 0
             # Preserve milliseconds in the datetime
-            return datetime.utcfromtimestamp(int(bucket['key']) / 1000.0)
+            return datetime.utcfromtimestamp(int(bucket["key"]) / 1000.0)
         else:
-            return bucket['key']
+            return bucket["key"]
 
     def get_value_filter(self, filter_value):
-        return Range(_expand__to_dot=False, **{
-            self._params['field']: {
-                'gte': filter_value,
-                'lt': self.DATE_INTERVALS[self._params['interval']](filter_value)
+        return Range(
+            _expand__to_dot=False,
+            **{
+                self._params["field"]: {
+                    "gte": filter_value,
+                    "lt": self.DATE_INTERVALS[self._params["interval"]](filter_value),
+                }
             }
-        })
+        )
+
 
 class NestedFacet(Facet):
-    agg_type = 'nested'
+    agg_type = "nested"
 
     def __init__(self, path, nested_facet):
         self._path = path
         self._inner = nested_facet
-        super(NestedFacet, self).__init__(path=path, aggs={'inner': nested_facet.get_aggregation()})
+        super(NestedFacet, self).__init__(
+            path=path, aggs={"inner": nested_facet.get_aggregation()}
+        )
 
     def get_values(self, data, filter_values):
         return self._inner.get_values(data.inner, filter_values)
@@ -191,6 +222,7 @@ class NestedFacet(Facet):
         if inner_q:
             return Nested(path=self._path, query=inner_q)
 
+
 class FacetedResponse(Response):
     @property
     def query_string(self):
@@ -198,12 +230,12 @@ class FacetedResponse(Response):
 
     @property
     def facets(self):
-        if not hasattr(self, '_facets'):
-            super(AttrDict, self).__setattr__('_facets', AttrDict({}))
+        if not hasattr(self, "_facets"):
+            super(AttrDict, self).__setattr__("_facets", AttrDict({}))
             for name, facet in iteritems(self._faceted_search.facets):
                 self._facets[name] = facet.get_values(
-                    getattr(getattr(self.aggregations, '_filter_' + name), name),
-                    self._faceted_search.filter_values.get(name, ())
+                    getattr(getattr(self.aggregations, "_filter_" + name), name),
+                    self._faceted_search.filter_values.get(name, ()),
                 )
         return self._facets
 
@@ -249,11 +281,12 @@ class FacetedSearch(object):
             )
 
     """
+
     index = None
     doc_types = None
     fields = None
     facets = {}
-    using = 'default'
+    using = "default"
 
     def __init__(self, query=None, filters={}, sort=()):
         """
@@ -288,7 +321,9 @@ class FacetedSearch(object):
         if not isinstance(filter_values, (tuple, list)):
             if filter_values is None:
                 return
-            filter_values = [filter_values, ]
+            filter_values = [
+                filter_values,
+            ]
 
         # remember the filter values for use in FacetedResponse
         self.filter_values[name] = filter_values
@@ -318,9 +353,9 @@ class FacetedSearch(object):
         """
         if query:
             if self.fields:
-                return search.query('multi_match', fields=self.fields, query=query)
+                return search.query("multi_match", fields=self.fields, query=query)
             else:
-                return search.query('multi_match', query=query)
+                return search.query("multi_match", query=query)
         return search
 
     def aggregate(self, search):
@@ -335,11 +370,9 @@ class FacetedSearch(object):
                 if f == field:
                     continue
                 agg_filter &= filter
-            search.aggs.bucket(
-                '_filter_' + f,
-                'filter',
-                filter=agg_filter
-            ).bucket(f, agg)
+            search.aggs.bucket("_filter_" + f, "filter", filter=agg_filter).bucket(
+                f, agg
+            )
 
     def filter(self, search):
         """
@@ -358,8 +391,9 @@ class FacetedSearch(object):
         """
         Add highlighting for all the fields
         """
-        return search.highlight(*(f if '^' not in f else f.split('^', 1)[0]
-                                  for f in self.fields))
+        return search.highlight(
+            *(f if "^" not in f else f.split("^", 1)[0] for f in self.fields)
+        )
 
     def sort(self, search):
         """

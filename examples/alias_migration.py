@@ -1,3 +1,20 @@
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
 """
 Simple example with a single Document demonstrating how schema can be managed,
 including upgrading with reindexing.
@@ -23,8 +40,9 @@ from fnmatch import fnmatch
 
 from elasticsearch_dsl import Document, Date, Text, Keyword, connections
 
-ALIAS = 'test-blog'
-PATTERN = ALIAS + '-*'
+ALIAS = "test-blog"
+PATTERN = ALIAS + "-*"
+
 
 class BlogPost(Document):
     title = Text()
@@ -39,17 +57,15 @@ class BlogPost(Document):
     def _matches(cls, hit):
         # override _matches to match indices in a pattern instead of just ALIAS
         # hit is the raw dict as returned by elasticsearch
-        return fnmatch(hit['_index'], PATTERN)
+        return fnmatch(hit["_index"], PATTERN)
 
     class Index:
         # we will use an alias instead of the index
         name = ALIAS
         # set settings and possibly other attributes of the index like
         # analyzers
-        settings = {
-            'number_of_shards': 1,
-            'number_of_replicas': 0
-        }
+        settings = {"number_of_shards": 1, "number_of_replicas": 0}
+
 
 def setup():
     """
@@ -67,6 +83,7 @@ def setup():
     if not BlogPost._index.exists():
         migrate(move_data=False)
 
+
 def migrate(move_data=True, update_alias=True):
     """
     Upgrade function that creates a new index for the data. Optionally it also can
@@ -79,7 +96,7 @@ def migrate(move_data=True, update_alias=True):
     not perform any writes at this time as those might be lost.
     """
     # construct a new index name by appending current timestamp
-    next_index = PATTERN.replace('*', datetime.now().strftime('%Y%m%d%H%M%S%f'))
+    next_index = PATTERN.replace("*", datetime.now().strftime("%Y%m%d%H%M%S%f"))
 
     # get the low level connection
     es = connections.get_connection()
@@ -91,21 +108,24 @@ def migrate(move_data=True, update_alias=True):
         # move data from current alias to the new index
         es.reindex(
             body={"source": {"index": ALIAS}, "dest": {"index": next_index}},
-            request_timeout=3600
+            request_timeout=3600,
         )
         # refresh the index to make the changes visible
         es.indices.refresh(index=next_index)
 
     if update_alias:
         # repoint the alias to point to the newly created index
-        es.indices.update_aliases(body={
-            'actions': [
-                {"remove": {"alias": ALIAS, "index": PATTERN}},
-                {"add": {"alias": ALIAS, "index": next_index}},
-            ]
-        })
+        es.indices.update_aliases(
+            body={
+                "actions": [
+                    {"remove": {"alias": ALIAS, "index": PATTERN}},
+                    {"add": {"alias": ALIAS, "index": next_index}},
+                ]
+            }
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # initiate the default connection to elasticsearch
     connections.create_connection()
 
@@ -115,9 +135,9 @@ if __name__ == '__main__':
     # create a new document
     bp = BlogPost(
         _id=0,
-        title='Hello World!',
-        tags = ['testing', 'dummy'],
-        content=open(__file__).read()
+        title="Hello World!",
+        tags=["testing", "dummy"],
+        content=open(__file__).read(),
     )
     bp.save(refresh=True)
 
