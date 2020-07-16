@@ -1,4 +1,5 @@
 import base64
+import copy
 import ipaddress
 
 try:
@@ -151,7 +152,7 @@ class Object(Field):
             if dynamic is not None:
                 self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
 
-        self._mapping = self._doc_class._doc_type.mapping
+        self._mapping = copy.deepcopy(self._doc_class._doc_type.mapping)
         super(Object, self).__init__(**kwargs)
 
     def __getitem__(self, name):
