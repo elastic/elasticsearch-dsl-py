@@ -582,3 +582,20 @@ def test_from_es_respects_underscored_non_meta_fields():
     assert c.meta.fields._tags == ['search']
     assert c.meta.fields._routing == 'es'
     assert c._tagline == 'You know, for search'
+
+def test_nested_and_object_inner_doc():
+    class MySubDocWithNested(MyDoc):
+        nested_inner = field.Nested(MyInner)
+
+    props = MySubDocWithNested._doc_type.mapping.to_dict()['properties']
+    assert props == {
+        "created_at": {"type": "date"},
+        "inner": {"properties": {"old_field": {"type": "text"}}, "type": "object"},
+        "name": {"type": "text"},
+        "nested_inner": {
+            "properties": {"old_field": {"type": "text"}},
+            "type": "nested",
+        },
+        "title": {"type": "keyword"},
+    }
+
