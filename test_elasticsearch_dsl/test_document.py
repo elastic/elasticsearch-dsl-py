@@ -588,5 +588,14 @@ def test_nested_and_object_inner_doc():
         nested_inner = field.Nested(MyInner)
 
     props = MySubDocWithNested._doc_type.mapping.to_dict()['properties']
-    assert props['nested_inner']['type'] == 'nested'
-    assert props['inner']['type'] == 'object'
+    assert props == {
+        "created_at": {"type": "date"},
+        "inner": {"properties": {"old_field": {"type": "text"}}, "type": "object"},
+        "name": {"type": "text"},
+        "nested_inner": {
+            "properties": {"old_field": {"type": "text"}},
+            "type": "nested",
+        },
+        "title": {"type": "keyword"},
+    }
+
