@@ -1,3 +1,20 @@
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
 import base64
 import copy
 import ipaddress
@@ -18,38 +35,45 @@ from .utils import DslBase, AttrDict, AttrList
 from .exceptions import ValidationException
 from .wrappers import Range
 
-unicode = type(u'')
+unicode = type(u"")
+
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
     if isinstance(name_or_field, collections_abc.Mapping):
         if params:
-            raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
+            raise ValueError(
+                "construct_field() cannot accept parameters when passing in a dict."
+            )
         params = name_or_field.copy()
-        if 'type' not in params:
+        if "type" not in params:
             # inner object can be implicitly defined
-            if 'properties' in params:
-                name = 'object'
+            if "properties" in params:
+                name = "object"
             else:
                 raise ValueError('construct_field() needs to have a "type" key.')
         else:
-            name = params.pop('type')
+            name = params.pop("type")
         return Field.get_dsl_class(name)(**params)
 
     # Text()
     if isinstance(name_or_field, Field):
         if params:
-            raise ValueError('construct_field() cannot accept parameters when passing in a construct_field object.')
+            raise ValueError(
+                "construct_field() cannot accept parameters "
+                "when passing in a construct_field object."
+            )
         return name_or_field
 
     # "text", analyzer="snowball"
     return Field.get_dsl_class(name_or_field)(**params)
 
+
 class Field(DslBase):
-    _type_name = 'field'
+    _type_name = "field"
     _type_shortcut = staticmethod(construct_field)
     # all fields can be multifields
-    _param_defs = {'fields': {'type': 'field', 'hash': True}}
+    _param_defs = {"fields": {"type": "field", "hash": True}}
     name = None
     _coerce = False
 
@@ -63,7 +87,7 @@ class Field(DslBase):
         super(Field, self).__init__(*args, **kwargs)
 
     def __getitem__(self, subfield):
-        return self._params.get('fields', {})[subfield]
+        return self._params.get("fields", {})[subfield]
 
     def _serialize(self, data):
         return data
@@ -86,10 +110,7 @@ class Field(DslBase):
 
     def deserialize(self, data):
         if isinstance(data, (list, AttrList, tuple)):
-            data = [
-                None if d is None else self._deserialize(d)
-                for d in data
-            ]
+            data = [None if d is None else self._deserialize(d) for d in data]
             return data
         if data is None:
             return None
@@ -105,11 +126,12 @@ class Field(DslBase):
     def to_dict(self):
         d = super(Field, self).to_dict()
         name, value = d.popitem()
-        value['type'] = name
+        value["type"] = name
         return value
 
+
 class CustomField(Field):
-    name = 'custom'
+    name = "custom"
     _coerce = True
 
     def to_dict(self):
@@ -117,11 +139,12 @@ class CustomField(Field):
             return self.builtin_type.to_dict()
 
         d = super(CustomField, self).to_dict()
-        d['type'] = self.builtin_type
+        d["type"] = self.builtin_type
         return d
 
+
 class Object(Field):
-    name = 'object'
+    name = "object"
     _coerce = True
 
     def __init__(self, doc_class=None, dynamic=None, properties=None, **kwargs):
@@ -139,18 +162,20 @@ class Object(Field):
         """
         if doc_class and (properties or dynamic is not None):
             raise ValidationException(
-                'doc_class and properties/dynamic should not be provided together')
+                "doc_class and properties/dynamic should not be provided together"
+            )
         if doc_class:
             self._doc_class = doc_class
         else:
             # FIXME import
             from .document import InnerDoc
+
             # no InnerDoc subclass, creating one instead...
-            self._doc_class = type('InnerDoc', (InnerDoc, ), {})
+            self._doc_class = type("InnerDoc", (InnerDoc,), {})
             for name, field in iteritems(properties or {}):
                 self._doc_class._doc_type.mapping.field(name, field)
             if dynamic is not None:
-                self._doc_class._doc_type.mapping.meta('dynamic', dynamic)
+                self._doc_class._doc_type.mapping.meta("dynamic", dynamic)
 
         self._mapping = copy.deepcopy(self._doc_class._doc_type.mapping)
         super(Object, self).__init__(**kwargs)
@@ -218,15 +243,17 @@ class Object(Field):
 
         self._mapping.update(other._mapping, update_only)
 
+
 class Nested(Object):
-    name = 'nested'
+    name = "nested"
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('multi', True)
+        kwargs.setdefault("multi", True)
         super(Nested, self).__init__(*args, **kwargs)
 
+
 class Date(Field):
-    name = 'date'
+    name = "date"
     _coerce = True
 
     def __init__(self, default_timezone=None, *args, **kwargs):
@@ -244,7 +271,9 @@ class Date(Field):
             try:
                 data = parser.parse(data)
             except Exception as e:
-                raise ValidationException('Could not parse date from the value (%r)' % data, e)
+                raise ValidationException(
+                    "Could not parse date from the value (%r)" % data, e
+                )
 
         if isinstance(data, datetime):
             if self._default_timezone and data.tzinfo is None:
@@ -256,35 +285,39 @@ class Date(Field):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
 
-        raise ValidationException('Could not parse date from the value (%r)' % data)
+        raise ValidationException("Could not parse date from the value (%r)" % data)
+
 
 class Text(Field):
     _param_defs = {
-        'fields': {'type': 'field', 'hash': True},
-        'analyzer': {'type': 'analyzer'},
-        'search_analyzer': {'type': 'analyzer'},
-        'search_quote_analyzer': {'type': 'analyzer'},
+        "fields": {"type": "field", "hash": True},
+        "analyzer": {"type": "analyzer"},
+        "search_analyzer": {"type": "analyzer"},
+        "search_quote_analyzer": {"type": "analyzer"},
     }
-    name = 'text'
+    name = "text"
+
 
 class SearchAsYouType(Field):
     _param_defs = {
-        'analyzer': {'type': 'analyzer'},
-        'search_analyzer': {'type': 'analyzer'},
-        'search_quote_analyzer': {'type': 'analyzer'},
+        "analyzer": {"type": "analyzer"},
+        "search_analyzer": {"type": "analyzer"},
+        "search_quote_analyzer": {"type": "analyzer"},
     }
-    name = 'search_as_you_type'
+    name = "search_as_you_type"
+
 
 class Keyword(Field):
     _param_defs = {
-        'fields': {'type': 'field', 'hash': True},
-        'search_analyzer': {'type': 'analyzer'},
-        'normalizer': {'type': 'normalizer'}
+        "fields": {"type": "field", "hash": True},
+        "search_analyzer": {"type": "analyzer"},
+        "normalizer": {"type": "normalizer"},
     }
-    name = 'keyword'
+    name = "keyword"
+
 
 class Boolean(Field):
-    name = 'boolean'
+    name = "boolean"
     _coerce = True
 
     def _deserialize(self, data):
@@ -299,56 +332,70 @@ class Boolean(Field):
             raise ValidationException("Value required for this field.")
         return data
 
+
 class Float(Field):
-    name = 'float'
+    name = "float"
     _coerce = True
 
     def _deserialize(self, data):
         return float(data)
 
+
 class DenseVector(Float):
-    name = 'dense_vector'
+    name = "dense_vector"
 
     def __init__(self, dims, **kwargs):
         kwargs["multi"] = True
         super(DenseVector, self).__init__(dims=dims, **kwargs)
 
+
 class SparseVector(Field):
-    name = 'sparse_vector'
+    name = "sparse_vector"
+
 
 class HalfFloat(Float):
-    name = 'half_float'
+    name = "half_float"
+
 
 class ScaledFloat(Float):
-    name = 'scaled_float'
+    name = "scaled_float"
 
     def __init__(self, scaling_factor, *args, **kwargs):
-        super(ScaledFloat, self).__init__(scaling_factor=scaling_factor, *args, **kwargs)
+        super(ScaledFloat, self).__init__(
+            scaling_factor=scaling_factor, *args, **kwargs
+        )
+
 
 class Double(Float):
-    name = 'double'
+    name = "double"
+
 
 class RankFeature(Float):
-    name = 'rank_feature'
+    name = "rank_feature"
+
 
 class Integer(Field):
-    name = 'integer'
+    name = "integer"
     _coerce = True
 
     def _deserialize(self, data):
         return int(data)
 
+
 class Byte(Integer):
-    name = 'byte'
+    name = "byte"
+
 
 class Short(Integer):
-    name = 'short'
+    name = "short"
+
 
 class Long(Integer):
-    name = 'long'
+    name = "long"
+
 
 class Ip(Field):
-    name = 'ip'
+    name = "ip"
     _coerce = True
 
     def _deserialize(self, data):
@@ -360,8 +407,9 @@ class Ip(Field):
             return None
         return str(data)
 
+
 class Binary(Field):
-    name = 'binary'
+    name = "binary"
     _coerce = True
 
     def clean(self, data):
@@ -377,21 +425,25 @@ class Binary(Field):
             return None
         return base64.b64encode(data).decode()
 
+
 class GeoPoint(Field):
-    name = 'geo_point'
+    name = "geo_point"
+
 
 class GeoShape(Field):
-    name = 'geo_shape'
+    name = "geo_shape"
+
 
 class Completion(Field):
     _param_defs = {
-        'analyzer': {'type': 'analyzer'},
-        'search_analyzer': {'type': 'analyzer'},
+        "analyzer": {"type": "analyzer"},
+        "search_analyzer": {"type": "analyzer"},
     }
-    name = 'completion'
+    name = "completion"
+
 
 class Percolator(Field):
-    name = 'percolator'
+    name = "percolator"
     _coerce = True
 
     def _deserialize(self, data):
@@ -401,6 +453,7 @@ class Percolator(Field):
         if data is None:
             return None
         return data.to_dict()
+
 
 class RangeField(Field):
     _coerce = True
@@ -421,34 +474,42 @@ class RangeField(Field):
 
 
 class IntegerRange(RangeField):
-    name = 'integer_range'
+    name = "integer_range"
     _core_field = Integer()
 
+
 class FloatRange(RangeField):
-    name = 'float_range'
+    name = "float_range"
     _core_field = Float()
 
+
 class LongRange(RangeField):
-    name = 'long_range'
+    name = "long_range"
     _core_field = Long()
 
+
 class DoubleRange(RangeField):
-    name = 'double_range'
+    name = "double_range"
     _core_field = Double()
 
+
 class DateRange(RangeField):
-    name = 'date_range'
+    name = "date_range"
     _core_field = Date()
+
 
 class IpRange(Field):
     # not a RangeField since ip_range supports CIDR ranges
-    name = 'ip_range'
+    name = "ip_range"
+
 
 class Join(Field):
-    name = 'join'
+    name = "join"
+
 
 class TokenCount(Field):
-    name = 'token_count'
+    name = "token_count"
+
 
 class Murmur3(Field):
-    name = 'murmur3'
+    name = "murmur3"
