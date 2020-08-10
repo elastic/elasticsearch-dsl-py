@@ -433,7 +433,7 @@ A simple example is below
     s = s.query(MoreLikeThis(like=my_text, fields=['text', 'title]))
     # You can also exclude fields from the result to make the response quicker in the normal way
     s = s.source(exclude=["text"])
-    response = s.execute().to_dict()
+    response = s.execute()
     
     for hit in response:
         print(hit.title)
