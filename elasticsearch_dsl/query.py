@@ -415,7 +415,8 @@ class MatchPhrasePrefix(Query):
 
 
 class MatchBoolPrefix(Query):
-    name = 'match_bool_prefix'
+    name = "match_bool_prefix"
+
 
 class Exists(Query):
     name = "exists"
