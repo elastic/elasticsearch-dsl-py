@@ -223,7 +223,6 @@ to directly construct the combined query:
 Filters
 ~~~~~~~
 
-
 If you want to add a query in a `filter context
 <https://www.elastic.co/guide/en/elasticsearch/reference/2.0/query-filter-context.html>`_
 you can use the ``filter()`` method to make things easier:
@@ -434,6 +433,32 @@ keyword arguments will be added to the suggest's json as-is which means that it
 should be one of ``term``, ``phrase`` or ``completion`` to indicate which type
 of suggester should be used.
 
+
+
+More Like This Query
+~~~~~~~~~~~~~~~~~~~~
+
+To use Elasticsearch's more_like_this functionality, you can use the MoreLikeThis query type.
+
+A simple example is below
+
+.. code:: python
+
+    from elasticsearch_dsl.query import MoreLikeThis
+    from elasticsearch_dsl Search
+
+    my_text = 'I want to find something similar'
+
+    s = Search()
+    # We're going to match based only on two fields, in this case text and title
+    s = s.query(MoreLikeThis(like=my_text, fields=['text', 'title]))
+    # You can also exclude fields from the result to make the response quicker in the normal way
+    s = s.source(exclude=["text"])
+    response = s.execute()
+    
+    for hit in response:
+        print(hit.title)
+    
 
 Extra properties and parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
