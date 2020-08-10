@@ -17,6 +17,14 @@ env:
   matrix:
     - ES_VERSION=7.0.0
 
+matrix:
+  include:
+    - python: 3.8
+      install:
+        - python -m pip install nox
+      script:
+        - nox -s lint
+
 install:
   - mkdir /tmp/elasticsearch
   - wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
