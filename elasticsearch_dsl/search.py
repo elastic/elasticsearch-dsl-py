@@ -1,3 +1,20 @@
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
 import copy
 
 try:
@@ -24,6 +41,7 @@ class QueryProxy(object):
     (to add query/post_filter) and also allows attribute access which is proxied to
     the wrapped query.
     """
+
     def __init__(self, search, attr_name):
         self._search = search
         self._proxied = None
@@ -31,6 +49,7 @@ class QueryProxy(object):
 
     def __nonzero__(self):
         return self._proxied is not None
+
     __bool__ = __nonzero__
 
     def __call__(self, *args, **kwargs):
@@ -51,7 +70,7 @@ class QueryProxy(object):
         return getattr(self._proxied, attr_name)
 
     def __setattr__(self, attr_name, value):
-        if not attr_name.startswith('_'):
+        if not attr_name.startswith("_"):
             self._proxied = Q(self._proxied.to_dict())
             setattr(self._proxied, attr_name, value)
         super(QueryProxy, self).__setattr__(attr_name, value)
@@ -71,8 +90,9 @@ class ProxyDescriptor(object):
         s.query = Q(...)
 
     """
+
     def __init__(self, name):
-        self._attr_name = '_%s_proxy' % name
+        self._attr_name = "_%s_proxy" % name
 
     def __get__(self, instance, owner):
         return getattr(instance, self._attr_name)
@@ -83,18 +103,19 @@ class ProxyDescriptor(object):
 
 
 class AggsProxy(AggBase, DslBase):
-    name = 'aggs'
+    name = "aggs"
+
     def __init__(self, search):
         self._base = self
         self._search = search
-        self._params = {'aggs': {}}
+        self._params = {"aggs": {}}
 
     def to_dict(self):
-        return super(AggsProxy, self).to_dict().get('aggs', {})
+        return super(AggsProxy, self).to_dict().get("aggs", {})
 
 
 class Request(object):
-    def __init__(self, using='default', index=None, doc_type=None, extra=None):
+    def __init__(self, using="default", index=None, doc_type=None, extra=None):
         self._using = using
 
         self._index = None
@@ -118,11 +139,11 @@ class Request(object):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Request) and
-            other._params == self._params and
-            other._index == self._index and
-            other._doc_type == self._doc_type and
-            other.to_dict() == self.to_dict()
+            isinstance(other, Request)
+            and other._params == self._params
+            and other._index == self._index
+            and other._doc_type == self._doc_type
+            and other.to_dict() == self.to_dict()
         )
 
     def __copy__(self):
@@ -174,7 +195,7 @@ class Request(object):
 
     def _resolve_field(self, path):
         for dt in self._doc_type:
-            if not hasattr(dt, '_index'):
+            if not hasattr(dt, "_index"):
                 continue
             field = dt._index.resolve_field(path)
             if field is not None:
@@ -184,13 +205,13 @@ class Request(object):
         doc_class = Hit
 
         nested_path = []
-        nesting = hit['_nested']
-        while nesting and 'field' in nesting:
-            nested_path.append(nesting['field'])
-            nesting = nesting.get('_nested')
-        nested_path = '.'.join(nested_path)
+        nesting = hit["_nested"]
+        while nesting and "field" in nesting:
+            nested_path.append(nesting["field"])
+            nesting = nesting.get("_nested")
+        nested_path = ".".join(nested_path)
 
-        if hasattr(parent_class, '_index'):
+        if hasattr(parent_class, "_index"):
             nested_field = parent_class._index.resolve_field(nested_path)
         else:
             nested_field = self._resolve_field(nested_path)
@@ -202,9 +223,9 @@ class Request(object):
 
     def _get_result(self, hit, parent_class=None):
         doc_class = Hit
-        dt = hit.get('_type')
+        dt = hit.get("_type")
 
-        if '_nested' in hit:
+        if "_nested" in hit:
             doc_class = self._resolve_nested(hit, parent_class)
 
         elif dt in self._doc_type_map:
@@ -212,14 +233,16 @@ class Request(object):
 
         else:
             for doc_type in self._doc_type:
-                if hasattr(doc_type, '_matches') and doc_type._matches(hit):
+                if hasattr(doc_type, "_matches") and doc_type._matches(hit):
                     doc_class = doc_type
                     break
 
-        for t in hit.get('inner_hits', ()):
-            hit['inner_hits'][t] = Response(self, hit['inner_hits'][t], doc_class=doc_class)
+        for t in hit.get("inner_hits", ()):
+            hit["inner_hits"][t] = Response(
+                self, hit["inner_hits"][t], doc_class=doc_class
+            )
 
-        callback = getattr(doc_class, 'from_es', doc_class)
+        callback = getattr(doc_class, "from_es", doc_class)
         return callback(hit)
 
     def doc_type(self, *doc_type, **kwargs):
@@ -267,14 +290,15 @@ class Request(object):
         compatibility.
         """
         s = self._clone()
-        if 'from_' in kwargs:
-            kwargs['from'] = kwargs.pop('from_')
+        if "from_" in kwargs:
+            kwargs["from"] = kwargs.pop("from_")
         s._extra.update(kwargs)
         return s
 
     def _clone(self):
-        s = self.__class__(using=self._using, index=self._index,
-                           doc_type=self._doc_type)
+        s = self.__class__(
+            using=self._using, index=self._index, doc_type=self._doc_type
+        )
         s._doc_type_map = self._doc_type_map.copy()
         s._extra = self._extra.copy()
         s._params = self._params.copy()
@@ -282,8 +306,8 @@ class Request(object):
 
 
 class Search(Request):
-    query = ProxyDescriptor('query')
-    post_filter = ProxyDescriptor('post_filter')
+    query = ProxyDescriptor("query")
+    post_filter = ProxyDescriptor("post_filter")
 
     def __init__(self, **kwargs):
         """
@@ -307,8 +331,8 @@ class Search(Request):
         self._script_fields = {}
         self._response_class = Response
 
-        self._query_proxy = QueryProxy(self, 'query')
-        self._post_filter_proxy = QueryProxy(self, 'post_filter')
+        self._query_proxy = QueryProxy(self, "query")
+        self._post_filter_proxy = QueryProxy(self, "post_filter")
 
     def filter(self, *args, **kwargs):
         return self.query(Bool(filter=[Q(*args, **kwargs)]))
@@ -343,15 +367,17 @@ class Search(Request):
                 raise ValueError("Search does not support negative slicing.")
             # Elasticsearch won't get all results so we default to size: 10 if
             # stop not given.
-            s._extra['from'] = n.start or 0
-            s._extra['size'] = max(0, n.stop - (n.start or 0) if n.stop is not None else 10)
+            s._extra["from"] = n.start or 0
+            s._extra["size"] = max(
+                0, n.stop - (n.start or 0) if n.stop is not None else 10
+            )
             return s
         else:  # This is an index lookup, equivalent to slicing by [n:n+1].
             # If negative index, abort.
             if n < 0:
                 raise ValueError("Search does not support negative indexing.")
-            s._extra['from'] = n
-            s._extra['size'] = 1
+            s._extra["from"] = n
+            s._extra["size"] = 1
             return s
 
     @classmethod
@@ -386,18 +412,17 @@ class Search(Request):
 
         s._response_class = self._response_class
         s._sort = self._sort[:]
-        s._source = copy.copy(self._source) \
-            if self._source is not None else None
+        s._source = copy.copy(self._source) if self._source is not None else None
         s._highlight = self._highlight.copy()
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
         s._script_fields = self._script_fields.copy()
-        for x in ('query', 'post_filter'):
+        for x in ("query", "post_filter"):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
         # copy top-level bucket definitions
-        if self.aggs._params.get('aggs'):
-            s.aggs._params = {'aggs': self.aggs._params['aggs'].copy()}
+        if self.aggs._params.get("aggs"):
+            s.aggs._params = {"aggs": self.aggs._params["aggs"].copy()}
         return s
 
     def response_class(self, cls):
@@ -414,33 +439,32 @@ class Search(Request):
         the object in-place. Used mostly by ``from_dict``.
         """
         d = d.copy()
-        if 'query' in d:
-            self.query._proxied = Q(d.pop('query'))
-        if 'post_filter' in d:
-            self.post_filter._proxied = Q(d.pop('post_filter'))
+        if "query" in d:
+            self.query._proxied = Q(d.pop("query"))
+        if "post_filter" in d:
+            self.post_filter._proxied = Q(d.pop("post_filter"))
 
-        aggs = d.pop('aggs', d.pop('aggregations', {}))
+        aggs = d.pop("aggs", d.pop("aggregations", {}))
         if aggs:
             self.aggs._params = {
-                'aggs': {
-                    name: A(value) for (name, value) in iteritems(aggs)}
+                "aggs": {name: A(value) for (name, value) in iteritems(aggs)}
             }
-        if 'sort' in d:
-            self._sort = d.pop('sort')
-        if '_source' in d:
-            self._source = d.pop('_source')
-        if 'highlight' in d:
-            high = d.pop('highlight').copy()
-            self._highlight = high.pop('fields')
+        if "sort" in d:
+            self._sort = d.pop("sort")
+        if "_source" in d:
+            self._source = d.pop("_source")
+        if "highlight" in d:
+            high = d.pop("highlight").copy()
+            self._highlight = high.pop("fields")
             self._highlight_opts = high
-        if 'suggest' in d:
-            self._suggest = d.pop('suggest')
-            if 'text' in self._suggest:
-                text = self._suggest.pop('text')
+        if "suggest" in d:
+            self._suggest = d.pop("suggest")
+            if "text" in self._suggest:
+                text = self._suggest.pop("text")
                 for s in self._suggest.values():
-                    s.setdefault('text', text)
-        if 'script_fields' in d:
-            self._script_fields = d.pop('script_fields')
+                    s.setdefault("text", text)
+        if "script_fields" in d:
+            self._script_fields = d.pop("script_fields")
         self._extra.update(d)
         return self
 
@@ -467,7 +491,7 @@ class Search(Request):
         s = self._clone()
         for name in kwargs:
             if isinstance(kwargs[name], string_types):
-                kwargs[name] = {'script': kwargs[name]}
+                kwargs[name] = {"script": kwargs[name]}
         s._script_fields.update(kwargs)
         return s
 
@@ -542,9 +566,9 @@ class Search(Request):
         s = self._clone()
         s._sort = []
         for k in keys:
-            if isinstance(k, string_types) and k.startswith('-'):
-                if k[1:] == '_score':
-                    raise IllegalOperation('Sorting by `-_score` is not allowed.')
+            if isinstance(k, string_types) and k.startswith("-"):
+                if k[1:] == "_score":
+                    raise IllegalOperation("Sorting by `-_score` is not allowed.")
                 k = {k[1:]: {"order": "desc"}}
             s._sort.append(k)
         return s
@@ -579,7 +603,8 @@ class Search(Request):
                 }
             }
 
-        If you want to have different options for different fields you can call ``highlight`` twice::
+        If you want to have different options for different fields
+        you can call ``highlight`` twice::
 
             Search().highlight('title', fragment_size=50).highlight('body', fragment_size=100)
 
@@ -613,7 +638,7 @@ class Search(Request):
             s = s.suggest('suggestion-1', 'Elasticsearch', term={'field': 'body'})
         """
         s = self._clone()
-        s._suggest[name] = {'text': text}
+        s._suggest[name] = {"text": text}
         s._suggest[name].update(kwargs)
         return s
 
@@ -635,28 +660,28 @@ class Search(Request):
         # count request doesn't care for sorting and other things
         if not count:
             if self.post_filter:
-                d['post_filter'] = self.post_filter.to_dict()
+                d["post_filter"] = self.post_filter.to_dict()
 
             if self.aggs.aggs:
                 d.update(self.aggs.to_dict())
 
             if self._sort:
-                d['sort'] = self._sort
+                d["sort"] = self._sort
 
             d.update(self._extra)
 
             if self._source not in (None, {}):
-                d['_source'] = self._source
+                d["_source"] = self._source
 
             if self._highlight:
-                d['highlight'] = {'fields': self._highlight}
-                d['highlight'].update(self._highlight_opts)
+                d["highlight"] = {"fields": self._highlight}
+                d["highlight"].update(self._highlight_opts)
 
             if self._suggest:
-                d['suggest'] = self._suggest
+                d["suggest"] = self._suggest
 
             if self._script_fields:
-                d['script_fields'] = self._script_fields
+                d["script_fields"] = self._script_fields
 
         d.update(kwargs)
         return d
@@ -666,18 +691,14 @@ class Search(Request):
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if hasattr(self, '_response') and self._response.hits.total.relation == 'eq':
+        if hasattr(self, "_response") and self._response.hits.total.relation == "eq":
             return self._response.hits.total.value
 
         es = get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
-        return es.count(
-            index=self._index,
-            body=d,
-            **self._params
-        )['count']
+        return es.count(index=self._index, body=d, **self._params)["count"]
 
     def execute(self, ignore_cache=False):
         """
@@ -687,16 +708,11 @@ class Search(Request):
         :arg ignore_cache: if set to ``True``, consecutive calls will hit
             ES, while cached result will be ignored. Defaults to `False`
         """
-        if ignore_cache or not hasattr(self, '_response'):
+        if ignore_cache or not hasattr(self, "_response"):
             es = get_connection(self._using)
 
             self._response = self._response_class(
-                self,
-                es.search(
-                    index=self._index,
-                    body=self.to_dict(),
-                    **self._params
-                )
+                self, es.search(index=self._index, body=self.to_dict(), **self._params)
             )
         return self._response
 
@@ -712,12 +728,7 @@ class Search(Request):
         """
         es = get_connection(self._using)
 
-        for hit in scan(
-                es,
-                query=self.to_dict(),
-                index=self._index,
-                **self._params
-        ):
+        for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
             yield self._get_result(hit)
 
     def delete(self):
@@ -728,11 +739,7 @@ class Search(Request):
         es = get_connection(self._using)
 
         return AttrDict(
-            es.delete_by_query(
-                index=self._index,
-                body=self.to_dict(),
-                **self._params
-            )
+            es.delete_by_query(index=self._index, body=self.to_dict(), **self._params)
         )
 
 
@@ -741,6 +748,7 @@ class MultiSearch(Request):
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.
     """
+
     def __init__(self, **kwargs):
         super(MultiSearch, self).__init__(**kwargs)
         self._searches = []
@@ -773,7 +781,7 @@ class MultiSearch(Request):
         for s in self._searches:
             meta = {}
             if s._index:
-                meta['index'] = s._index
+                meta["index"] = s._index
             meta.update(s._params)
 
             out.append(meta)
@@ -785,20 +793,18 @@ class MultiSearch(Request):
         """
         Execute the multi search request and return a list of search results.
         """
-        if ignore_cache or not hasattr(self, '_response'):
+        if ignore_cache or not hasattr(self, "_response"):
             es = get_connection(self._using)
 
             responses = es.msearch(
-                index=self._index,
-                body=self.to_dict(),
-                **self._params
+                index=self._index, body=self.to_dict(), **self._params
             )
 
             out = []
-            for s, r in zip(self._searches, responses['responses']):
-                if r.get('error', False):
+            for s, r in zip(self._searches, responses["responses"]):
+                if r.get("error", False):
                     if raise_on_error:
-                        raise TransportError('N/A', r['error']['type'], r['error'])
+                        raise TransportError("N/A", r["error"]["type"], r["error"])
                     r = None
                 else:
                     r = Response(s, r)

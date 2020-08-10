@@ -1,3 +1,20 @@
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
 from __future__ import unicode_literals
 
 try:
@@ -12,17 +29,23 @@ from six.moves import map
 
 from .exceptions import UnknownDslObject, ValidationException
 
-SKIP_VALUES = ('', None)
+SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
 
-DOC_META_FIELDS = frozenset((
-    'id', 'routing',
-))
+DOC_META_FIELDS = frozenset(("id", "routing",))
 
-META_FIELDS = frozenset((
-    # Elasticsearch metadata fields, except 'type'
-    'index', 'using', 'score', 'version', 'seq_no', 'primary_term'
-)).union(DOC_META_FIELDS)
+META_FIELDS = frozenset(
+    (
+        # Elasticsearch metadata fields, except 'type'
+        "index",
+        "using",
+        "score",
+        "version",
+        "seq_no",
+        "primary_term",
+    )
+).union(DOC_META_FIELDS)
+
 
 def _wrap(val, obj_wrapper=None):
     if isinstance(val, collections_abc.Mapping):
@@ -30,6 +53,7 @@ def _wrap(val, obj_wrapper=None):
     if isinstance(val, list):
         return AttrList(val)
     return val
+
 
 class AttrList(object):
     def __init__(self, l, obj_wrapper=None):
@@ -68,6 +92,7 @@ class AttrList(object):
 
     def __nonzero__(self):
         return bool(self._l_)
+
     __bool__ = __nonzero__
 
     def __getattr__(self, name):
@@ -86,15 +111,17 @@ class AttrDict(object):
     dictionaries. Used to provide a convenient way to access both results and
     nested dsl dicts.
     """
+
     def __init__(self, d):
         # assign the inner dict manually to prevent __setattr__ from firing
-        super(AttrDict, self).__setattr__('_d_', d)
+        super(AttrDict, self).__setattr__("_d_", d)
 
     def __contains__(self, key):
         return key in self._d_
 
     def __nonzero__(self):
         return bool(self._d_)
+
     __bool__ = __nonzero__
 
     def __dir__(self):
@@ -113,28 +140,34 @@ class AttrDict(object):
     def __repr__(self):
         r = repr(self._d_)
         if len(r) > 60:
-            r = r[:60] + '...}'
+            r = r[:60] + "...}"
         return r
 
     def __getstate__(self):
-        return self._d_,
+        return (self._d_,)
 
     def __setstate__(self, state):
-        super(AttrDict, self).__setattr__('_d_', state[0])
+        super(AttrDict, self).__setattr__("_d_", state[0])
 
     def __getattr__(self, attr_name):
         try:
             return self.__getitem__(attr_name)
         except KeyError:
             raise AttributeError(
-                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, attr_name))
+                "{!r} object has no attribute {!r}".format(
+                    self.__class__.__name__, attr_name
+                )
+            )
 
     def __delattr__(self, attr_name):
         try:
             del self._d_[attr_name]
         except KeyError:
             raise AttributeError(
-                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, attr_name))
+                "{!r} object has no attribute {!r}".format(
+                    self.__class__.__name__, attr_name
+                )
+            )
 
     def __getitem__(self, key):
         return _wrap(self._d_[key])
@@ -171,17 +204,19 @@ class DslMeta(type):
 
     For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
     """
+
     _types = {}
+
     def __init__(cls, name, bases, attrs):
         super(DslMeta, cls).__init__(name, bases, attrs)
         # skip for DslBase
-        if not hasattr(cls, '_type_shortcut'):
+        if not hasattr(cls, "_type_shortcut"):
             return
         if cls.name is None:
             # abstract base class, register it's shortcut
             cls._types[cls._type_name] = cls._type_shortcut
             # and create a registry for subclasses
-            if not hasattr(cls, '_classes'):
+            if not hasattr(cls, "_classes"):
                 cls._classes = {}
         elif cls.name not in cls._classes:
             # normal class, register it
@@ -192,7 +227,7 @@ class DslMeta(type):
         try:
             return cls._types[name]
         except KeyError:
-            raise UnknownDslObject('DSL type %s does not exist.' % name)
+            raise UnknownDslObject("DSL type %s does not exist." % name)
 
 
 @add_metaclass(DslMeta)
@@ -211,6 +246,7 @@ class DslBase(object):
           attributes based on the `_param_defs` definition (for example turning
           all values in the `must` attribute into Query objects)
     """
+
     _param_defs = {}
 
     @classmethod
@@ -220,29 +256,28 @@ class DslBase(object):
         except KeyError:
             if default is not None:
                 return cls._classes[default]
-            raise UnknownDslObject('DSL class `{}` does not exist in {}.'.format(name, cls._type_name))
+            raise UnknownDslObject(
+                "DSL class `{}` does not exist in {}.".format(name, cls._type_name)
+            )
 
     def __init__(self, _expand__to_dot=EXPAND__TO_DOT, **params):
         self._params = {}
         for pname, pvalue in iteritems(params):
-            if '__' in pname and _expand__to_dot:
-                pname = pname.replace('__', '.')
+            if "__" in pname and _expand__to_dot:
+                pname = pname.replace("__", ".")
             self._setattr(pname, pvalue)
 
     def _repr_params(self):
         """ Produce a repr of all our parameters to be used in __repr__. """
-        return ', '.join(
-            '{}={!r}'.format(n.replace('.', '__'), v)
+        return ", ".join(
+            "{}={!r}".format(n.replace(".", "__"), v)
             for (n, v) in sorted(iteritems(self._params))
             # make sure we don't include empty typed params
-            if 'type' not in self._param_defs.get(n, {}) or v
+            if "type" not in self._param_defs.get(n, {}) or v
         )
 
     def __repr__(self):
-        return '{}({})'.format(
-            self.__class__.__name__,
-            self._repr_params()
-        )
+        return "{}({})".format(self.__class__.__name__, self._repr_params())
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()
@@ -251,7 +286,7 @@ class DslBase(object):
         return not self == other
 
     def __setattr__(self, name, value):
-        if name.startswith('_'):
+        if name.startswith("_"):
             return super(DslBase, self).__setattr__(name, value)
         return self._setattr(name, value)
 
@@ -260,22 +295,24 @@ class DslBase(object):
         if name in self._param_defs:
             pinfo = self._param_defs[name]
 
-            if 'type' in pinfo:
+            if "type" in pinfo:
                 # get the shortcut used to construct this type (query.Q, aggs.A, etc)
-                shortcut = self.__class__.get_dsl_type(pinfo['type'])
+                shortcut = self.__class__.get_dsl_type(pinfo["type"])
 
                 # list of dict(name -> DslBase)
-                if pinfo.get('multi') and pinfo.get('hash'):
+                if pinfo.get("multi") and pinfo.get("hash"):
                     if not isinstance(value, (tuple, list)):
-                        value = (value, )
-                    value = list({k: shortcut(v) for (k, v) in iteritems(obj)} for obj in value)
-                elif pinfo.get('multi'):
+                        value = (value,)
+                    value = list(
+                        {k: shortcut(v) for (k, v) in iteritems(obj)} for obj in value
+                    )
+                elif pinfo.get("multi"):
                     if not isinstance(value, (tuple, list)):
-                        value = (value, )
+                        value = (value,)
                     value = list(map(shortcut, value))
 
                 # dict(name -> DslBase), make sure we pickup all the objs
-                elif pinfo.get('hash'):
+                elif pinfo.get("hash"):
                     value = {k: shortcut(v) for (k, v) in iteritems(value)}
 
                 # single value object, just convert
@@ -284,9 +321,12 @@ class DslBase(object):
         self._params[name] = value
 
     def __getattr__(self, name):
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(
-                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, name))
+                "{!r} object has no attribute {!r}".format(
+                    self.__class__.__name__, name
+                )
+            )
 
         value = None
         try:
@@ -296,13 +336,16 @@ class DslBase(object):
             # container instead
             if name in self._param_defs:
                 pinfo = self._param_defs[name]
-                if pinfo.get('multi'):
+                if pinfo.get("multi"):
                     value = self._params.setdefault(name, [])
-                elif pinfo.get('hash'):
+                elif pinfo.get("hash"):
                     value = self._params.setdefault(name, {})
         if value is None:
             raise AttributeError(
-                '{!r} object has no attribute {!r}'.format(self.__class__.__name__, name))
+                "{!r} object has no attribute {!r}".format(
+                    self.__class__.__name__, name
+                )
+            )
 
         # wrap nested dicts in AttrDict for convenient access
         if isinstance(value, collections_abc.Mapping):
@@ -318,24 +361,23 @@ class DslBase(object):
             pinfo = self._param_defs.get(pname)
 
             # typed param
-            if pinfo and 'type' in pinfo:
+            if pinfo and "type" in pinfo:
                 # don't serialize empty lists and dicts for typed fields
                 if value in ({}, []):
                     continue
 
                 # list of dict(name -> DslBase)
-                if pinfo.get('multi') and pinfo.get('hash'):
+                if pinfo.get("multi") and pinfo.get("hash"):
                     value = list(
-                        {k: v.to_dict() for k, v in iteritems(obj)}
-                        for obj in value
+                        {k: v.to_dict() for k, v in iteritems(obj)} for obj in value
                     )
 
                 # multi-values are serialized as list of dicts
-                elif pinfo.get('multi'):
+                elif pinfo.get("multi"):
                     value = list(map(lambda x: x.to_dict(), value))
 
                 # squash all the hash values into one dict
-                elif pinfo.get('hash'):
+                elif pinfo.get("hash"):
                     value = {k: v.to_dict() for k, v in iteritems(value)}
 
                 # serialize single values
@@ -343,7 +385,7 @@ class DslBase(object):
                     value = value.to_dict()
 
             # serialize anything with to_dict method
-            elif hasattr(value, 'to_dict'):
+            elif hasattr(value, "to_dict"):
                 value = value.to_dict()
 
             d[pname] = value
@@ -355,22 +397,28 @@ class DslBase(object):
             c._params[attr] = copy(self._params[attr])
         return c
 
+
 class HitMeta(AttrDict):
-    def __init__(self, document, exclude=('_source', '_fields')):
-        d = {k[1:] if k.startswith('_') else k: v for (k, v) in iteritems(document) if k not in exclude}
-        if 'type' in d:
+    def __init__(self, document, exclude=("_source", "_fields")):
+        d = {
+            k[1:] if k.startswith("_") else k: v
+            for (k, v) in iteritems(document)
+            if k not in exclude
+        }
+        if "type" in d:
             # make sure we are consistent everywhere in python
-            d['doc_type'] = d.pop('type')
+            d["doc_type"] = d.pop("type")
         super(HitMeta, self).__init__(d)
+
 
 class ObjectBase(AttrDict):
     def __init__(self, meta=None, **kwargs):
         meta = meta or {}
         for k in list(kwargs):
-            if k.startswith('_') and k[1:] in META_FIELDS:
+            if k.startswith("_") and k[1:] in META_FIELDS:
                 meta[k] = kwargs.pop(k)
 
-        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
+        super(AttrDict, self).__setattr__("meta", HitMeta(meta))
 
         super(ObjectBase, self).__init__(kwargs)
 
@@ -385,7 +433,7 @@ class ObjectBase(AttrDict):
             field = cls._doc_type.mapping[name]
             yield name, field, False
 
-        if hasattr(cls.__class__, '_index'):
+        if hasattr(cls.__class__, "_index"):
             if not cls._index._mapping:
                 return
             for name in cls._index._mapping:
@@ -401,7 +449,7 @@ class ObjectBase(AttrDict):
             return cls._doc_type.mapping[name]
         except KeyError:
             # fallback to fields on the Index
-            if hasattr(cls, '_index') and cls._index._mapping:
+            if hasattr(cls, "_index") and cls._index._mapping:
                 try:
                     return cls._index._mapping[name]
                 except KeyError:
@@ -410,7 +458,7 @@ class ObjectBase(AttrDict):
     @classmethod
     def from_es(cls, hit):
         meta = hit.copy()
-        data = meta.pop('_source', {})
+        data = meta.pop("_source", {})
         doc = cls(meta=meta)
         doc._from_dict(data)
         return doc
@@ -427,8 +475,8 @@ class ObjectBase(AttrDict):
 
     def __setstate__(self, state):
         data, meta = state
-        super(AttrDict, self).__setattr__('_d_', {})
-        super(AttrDict, self).__setattr__('meta', HitMeta(meta))
+        super(AttrDict, self).__setattr__("_d_", {})
+        super(AttrDict, self).__setattr__("meta", HitMeta(meta))
         self._from_dict(data)
 
     def __getattr__(self, name):
@@ -436,7 +484,7 @@ class ObjectBase(AttrDict):
             return super(ObjectBase, self).__getattr__(name)
         except AttributeError:
             f = self.__get_field(name)
-            if hasattr(f, 'empty'):
+            if hasattr(f, "empty"):
                 value = f.empty()
                 if value not in SKIP_VALUES:
                     setattr(self, name, value)
@@ -490,16 +538,26 @@ class ObjectBase(AttrDict):
         self.clean_fields()
         self.clean()
 
+
 def merge(data, new_data, raise_on_conflict=False):
-    if not (isinstance(data, (AttrDict, collections_abc.Mapping))
-            and isinstance(new_data, (AttrDict, collections_abc.Mapping))):
-        raise ValueError('You can only merge two dicts! Got {!r} and {!r} instead.'.format(data, new_data))
+    if not (
+        isinstance(data, (AttrDict, collections_abc.Mapping))
+        and isinstance(new_data, (AttrDict, collections_abc.Mapping))
+    ):
+        raise ValueError(
+            "You can only merge two dicts! Got {!r} and {!r} instead.".format(
+                data, new_data
+            )
+        )
 
     for key, value in iteritems(new_data):
-        if key in data and isinstance(data[key], (AttrDict, collections_abc.Mapping)) and \
-                isinstance(value, (AttrDict, collections_abc.Mapping)):
+        if (
+            key in data
+            and isinstance(data[key], (AttrDict, collections_abc.Mapping))
+            and isinstance(value, (AttrDict, collections_abc.Mapping))
+        ):
             merge(data[key], value, raise_on_conflict)
         elif key in data and data[key] != value and raise_on_conflict:
-            raise ValueError('Incompatible data for key %r, cannot be merged.' % key)
+            raise ValueError("Incompatible data for key %r, cannot be merged." % key)
         else:
             data[key] = value
