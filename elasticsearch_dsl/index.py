@@ -264,7 +264,7 @@ class Index(object):
         For more information, see here:
         https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html
         """
-        return UpdateByQuery(using=using or self._using, index=self._name,)
+        return UpdateByQuery(using=using or self._using, index=self._name)
 
     def create(self, using=None, **kwargs):
         """

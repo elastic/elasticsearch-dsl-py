@@ -437,7 +437,7 @@ def test_delete(write_client):
     test_repo.meta.index = "test-document"
     test_repo.delete()
 
-    assert not write_client.exists(index="test-document", id="elasticsearch-dsl-py",)
+    assert not write_client.exists(index="test-document", id="elasticsearch-dsl-py")
 
 
 def test_search(data_client):
