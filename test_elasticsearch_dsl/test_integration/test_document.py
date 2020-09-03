@@ -44,7 +44,7 @@ from elasticsearch_dsl.utils import AttrList
 from pytest import raises
 
 snowball = analyzer(
-    "my_snow", tokenizer="standard", filter=["standard", "lowercase", "snowball"]
+    "my_snow", tokenizer="standard", filter=["lowercase", "snowball"]
 )
 
 
