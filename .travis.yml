@@ -24,6 +24,8 @@ matrix:
         - python -m pip install nox
       script:
         - nox -s lint
+  allow_failures:
+    - { python: "nightly" }
 
 install:
   - mkdir /tmp/elasticsearch
