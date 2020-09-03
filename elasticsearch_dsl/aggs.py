@@ -298,6 +298,10 @@ class WeightedAvg(Agg):
     name = "weighted_avg"
 
 
+class BoxPlot(Agg):
+    name = "boxplot"
+
+
 class Cardinality(Agg):
     name = "cardinality"
 
