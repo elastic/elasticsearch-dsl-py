@@ -266,3 +266,9 @@ def test_geotile_grid_aggregation():
     a = aggs.GeotileGrid(**{"field": "centroid", "precision": 3})
 
     assert {"geotile_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
+
+
+def test_boxplot_aggregation():
+    a = aggs.Boxplot(field="load_time")
+
+    assert {"boxplot": {"field": "load_time"}} == a.to_dict()
