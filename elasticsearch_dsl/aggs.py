@@ -306,6 +306,10 @@ class ExtendedStats(Agg):
     name = "extended_stats"
 
 
+class Boxplot(Agg):
+    name = "boxplot"
+
+
 class GeoBounds(Agg):
     name = "geo_bounds"
 
