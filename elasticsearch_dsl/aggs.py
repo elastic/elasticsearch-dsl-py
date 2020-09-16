@@ -247,6 +247,13 @@ class Range(Bucket):
     name = "range"
 
 
+class RareTerms(Bucket):
+    name = "rare_terms"
+
+    def result(self, search, data):
+        return FieldBucketData(self, search, data)
+
+
 class ReverseNested(Bucket):
     name = "reverse_nested"
 
@@ -280,6 +287,13 @@ class Composite(Bucket):
         "sources": {"type": "agg", "hash": True, "multi": True},
         "aggs": {"type": "agg", "hash": True},
     }
+
+
+class VariableWidthHistogram(Bucket):
+    name = "variable_width_histogram"
+
+    def result(self, search, data):
+        return FieldBucketData(self, search, data)
 
 
 # metric aggregations
@@ -318,6 +332,10 @@ class Max(Agg):
     name = "max"
 
 
+class MedianAbsoluteDeviation(Agg):
+    name = "median_absolute_deviation"
+
+
 class Min(Agg):
     name = "min"
 
@@ -342,6 +360,10 @@ class Sum(Agg):
     name = "sum"
 
 
+class TTest(Agg):
+    name = "t_test"
+
+
 class ValueCount(Agg):
     name = "value_count"
 
@@ -363,12 +385,20 @@ class CumulativeSum(Pipeline):
     name = "cumulative_sum"
 
 
+class CumulativeCardinality(Pipeline):
+    name = "cumulative_cardinality"
+
+
 class Derivative(Pipeline):
     name = "derivative"
 
 
 class ExtendedStatsBucket(Pipeline):
     name = "extended_stats_bucket"
+
+
+class Inference(Pipeline):
+    name = "inference"
 
 
 class MaxBucket(Pipeline):
@@ -385,6 +415,14 @@ class MovingFn(Pipeline):
 
 class MovingAvg(Pipeline):
     name = "moving_avg"
+
+
+class MovingPercentiles(Pipeline):
+    name = "moving_percentiles"
+
+
+class Normalize(Pipeline):
+    name = "normalize"
 
 
 class PercentilesBucket(Pipeline):

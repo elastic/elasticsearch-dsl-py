@@ -272,3 +272,85 @@ def test_boxplot_aggregation():
     a = aggs.Boxplot(field="load_time")
 
     assert {"boxplot": {"field": "load_time"}} == a.to_dict()
+
+
+def test_rare_terms_aggregation():
+    a = aggs.RareTerms(field="the-field")
+    a.bucket("total_sales", "sum", field="price")
+    a.bucket(
+        "sales_bucket_sort",
+        "bucket_sort",
+        sort=[{"total_sales": {"order": "desc"}}],
+        size=3,
+    )
+
+    assert {
+        "aggs": {
+            "sales_bucket_sort": {
+                "bucket_sort": {"size": 3, "sort": [{"total_sales": {"order": "desc"}}]}
+            },
+            "total_sales": {"sum": {"field": "price"}},
+        },
+        "rare_terms": {"field": "the-field"},
+    } == a.to_dict()
+
+
+def test_variable_width_histogram_aggregation():
+    a = aggs.VariableWidthHistogram(field="price", buckets=2)
+    assert {"variable_width_histogram": {"buckets": 2, "field": "price"}} == a.to_dict()
+
+
+def test_median_absolute_deviation_aggregation():
+    a = aggs.MedianAbsoluteDeviation(field="rating")
+
+    assert {"median_absolute_deviation": {"field": "rating"}} == a.to_dict()
+
+
+def test_t_test_aggregation():
+    a = aggs.TTest(
+        a={"field": "startup_time_before"},
+        b={"field": "startup_time_after"},
+        type="paired",
+    )
+
+    assert {
+        "t_test": {
+            "a": {"field": "startup_time_before"},
+            "b": {"field": "startup_time_after"},
+            "type": "paired",
+        }
+    } == a.to_dict()
+
+
+def test_inference_aggregation():
+    a = aggs.Inference(model_id="model-id", buckets_path={"agg_name": "agg_name"})
+    assert {
+        "inference": {"buckets_path": {"agg_name": "agg_name"}, "model_id": "model-id"}
+    } == a.to_dict()
+
+
+def test_moving_percentiles_aggregation():
+    a = aggs.DateHistogram()
+    a.bucket("the_percentile", "percentiles", field="price", percents=[1.0, 99.0])
+    a.pipeline(
+        "the_movperc", "moving_percentiles", buckets_path="the_percentile", window=10
+    )
+
+    assert {
+        "aggs": {
+            "the_movperc": {
+                "moving_percentiles": {"buckets_path": "the_percentile", "window": 10}
+            },
+            "the_percentile": {
+                "percentiles": {"field": "price", "percents": [1.0, 99.0]}
+            },
+        },
+        "date_histogram": {},
+    } == a.to_dict()
+
+
+def test_normalize_aggregation():
+    a = aggs.Normalize(buckets_path="normalized", method="percent_of_sum")
+    assert {
+        "normalize": {"buckets_path": "normalized", "method": "percent_of_sum"}
+    } == a.to_dict()
