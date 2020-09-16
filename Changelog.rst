@@ -3,6 +3,28 @@
 Changelog
 =========
 
+7.3.0 (2020-09-16)
+------------------
+
+* Added ``Intervals``, ``MatchBoolPrefix``, ``Shape``, and ``Wrapper`` queries (`#1392`_, `#1418`_)
+* Added ``Boxplot``, ``RareTerms``, ``VariableWidthHistogram``, ``MedianAbsoluteDeviation``,
+  ``TTest``, ``CumulativeCardinality``, ``Inference``, ``MovingPercentiles``,
+  and ``Normalize`` aggregations (`#1416`_, `#1418`_)
+* Added ``__all__`` to ``elasticsearch_dsl`` namespace for star imports
+  (ie ``from elasticsearch_dsl import *``) will not leak unintended definitions (`#1390`_)
+* Removed all star imports within ``elasticsearch_dsl``
+  namespace to prevent leaking unintended definitions and modules (`#1390`_)
+* Fixed an issue where ``Object`` and ``Nested`` could mutate the inner
+  ``doc_class`` mapping (`#1255`_, contributed by `@l1nd3r0th`_)
+* Fixed a typo in query ``SpanContaining``, previously was ``SpanContainining`` (`#1418`_)
+
+ .. _@l1nd3r0th: https://github.com/l1nd3r0th
+ .. _#1255: https://github.com/elastic/elasticsearch-dsl-py/pull/1255
+ .. _#1390: https://github.com/elastic/elasticsearch-dsl-py/pull/1390
+ .. _#1392: https://github.com/elastic/elasticsearch-dsl-py/pull/1392
+ .. _#1416: https://github.com/elastic/elasticsearch-dsl-py/pull/1416
+ .. _#1418: https://github.com/elastic/elasticsearch-dsl-py/pull/1418
+
 7.2.1 (2020-06-02)
 ------------------
 
