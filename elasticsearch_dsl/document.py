@@ -22,7 +22,7 @@ except ImportError:
 
 from fnmatch import fnmatch
 
-from elasticsearch.exceptions import NotFoundError, RequestError
+from elasticsearch7.exceptions import NotFoundError, RequestError
 from six import add_metaclass, iteritems
 
 from .connections import get_connection
