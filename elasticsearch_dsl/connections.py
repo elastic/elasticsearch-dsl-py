@@ -17,7 +17,7 @@
 
 from six import string_types
 
-from elasticsearch import Elasticsearch
+from elasticsearch7 import Elasticsearch
 
 from .serializer import serializer
 
