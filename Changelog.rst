@@ -10,10 +10,8 @@ Changelog
 * Added ``Boxplot``, ``RareTerms``, ``VariableWidthHistogram``, ``MedianAbsoluteDeviation``,
   ``TTest``, ``CumulativeCardinality``, ``Inference``, ``MovingPercentiles``,
   and ``Normalize`` aggregations (`#1416`_, `#1418`_)
-* Added ``__all__`` to ``elasticsearch_dsl`` namespace for star imports
-  (ie ``from elasticsearch_dsl import *``) will not leak unintended definitions (`#1390`_)
-* Removed all star imports within ``elasticsearch_dsl``
-  namespace to prevent leaking unintended definitions and modules (`#1390`_)
+* Added ``__all__``  and removed all star imports from ``elasticsearch_dsl`` namespace
+  to avoid leaking unintended names (`#1390`_)
 * Fixed an issue where ``Object`` and ``Nested`` could mutate the inner
   ``doc_class`` mapping (`#1255`_, contributed by `@l1nd3r0th`_)
 * Fixed a typo in query ``SpanContaining``, previously was ``SpanContainining`` (`#1418`_)
