@@ -83,7 +83,7 @@ from .faceted_search import (
 from .wrappers import Range
 from .utils import AttrDict, AttrList, DslBase
 
-VERSION = (7, 2, 1)
+VERSION = (7, 3, 0)
 __version__ = VERSION
 __versionstr__ = ".".join(map(str, VERSION))
 __all__ = [
