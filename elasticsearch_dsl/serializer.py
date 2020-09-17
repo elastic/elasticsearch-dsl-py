@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch.serializer import JSONSerializer
+from elasticsearch7.serializer import JSONSerializer
 
 from .utils import AttrList
 
