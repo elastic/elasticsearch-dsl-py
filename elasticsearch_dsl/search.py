@@ -24,8 +24,8 @@ except ImportError:
 
 from six import iteritems, string_types
 
-from elasticsearch.helpers import scan
-from elasticsearch.exceptions import TransportError
+from elasticsearch7.helpers import scan
+from elasticsearch7.exceptions import TransportError
 
 from .query import Q, Bool
 from .aggs import A, AggBase
