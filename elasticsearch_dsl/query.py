@@ -335,9 +335,14 @@ class FieldMaskingSpan(Query):
     _param_defs = {"query": {"type": "query"}}
 
 
-class SpanContainining(Query):
+class SpanContaining(Query):
     name = "span_containing"
     _param_defs = {"little": {"type": "query"}, "big": {"type": "query"}}
+
+
+# Original implementation contained
+# a typo: remove in v8.0.
+SpanContainining = SpanContaining
 
 
 class SpanWithin(Query):
@@ -398,6 +403,10 @@ class Ids(Query):
     name = "ids"
 
 
+class Intervals(Query):
+    name = "intervals"
+
+
 class Limit(Query):
     name = "limit"
 
@@ -450,6 +459,10 @@ class Regexp(Query):
     name = "regexp"
 
 
+class Shape(Query):
+    name = "shape"
+
+
 class SimpleQueryString(Query):
     name = "simple_query_string"
 
@@ -488,3 +501,7 @@ class Type(Query):
 
 class ParentId(Query):
     name = "parent_id"
+
+
+class Wrapper(Query):
+    name = "wrapper"
