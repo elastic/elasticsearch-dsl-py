@@ -481,7 +481,8 @@ class Search(Request):
             s = s.script_fields(
                 times_three={
                     'script': {
-                        'inline': "doc['field'].value * params.n",
+                        'lang': 'painless',
+                        'source': "doc['field'].value * params.n",
                         'params': {'n': 3}
                     }
                 }
