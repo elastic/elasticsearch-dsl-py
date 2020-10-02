@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl import analyzer, tokenizer, token_filter
+from elasticsearch_dsl import analyzer, token_filter, tokenizer
 
 
 def test_simulate_with_just__builtin_tokenizer(client):

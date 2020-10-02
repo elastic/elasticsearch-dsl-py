@@ -17,11 +17,12 @@
 
 import pickle
 from datetime import date
-from pytest import raises, fixture
 
-from elasticsearch_dsl import response, Search, Document, Date, Object
+from pytest import fixture, raises
+
+from elasticsearch_dsl import Date, Document, Object, Search, response
 from elasticsearch_dsl.aggs import Terms
-from elasticsearch_dsl.response.aggs import AggResponse, BucketData, Bucket
+from elasticsearch_dsl.response.aggs import AggResponse, Bucket, BucketData
 
 
 @fixture

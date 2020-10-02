@@ -16,8 +16,9 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from os.path import join, dirname
-from setuptools import setup, find_packages
+from os.path import dirname, join
+
+from setuptools import find_packages, setup
 
 VERSION = (7, 2, 0)
 __version__ = VERSION

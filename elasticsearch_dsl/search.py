@@ -22,17 +22,16 @@ try:
 except ImportError:
     import collections as collections_abc
 
+from elasticsearch.exceptions import TransportError
+from elasticsearch.helpers import scan
 from six import iteritems, string_types
 
-from elasticsearch.helpers import scan
-from elasticsearch.exceptions import TransportError
-
-from .query import Q, Bool
 from .aggs import A, AggBase
-from .utils import DslBase, AttrDict
-from .response import Response, Hit
 from .connections import get_connection
 from .exceptions import IllegalOperation
+from .query import Bool, Q
+from .response import Hit, Response
+from .utils import AttrDict, DslBase
 
 
 class QueryProxy(object):

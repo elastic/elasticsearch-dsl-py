@@ -18,11 +18,11 @@
 import base64
 import ipaddress
 from datetime import datetime
-from dateutil import tz
 
 import pytest
+from dateutil import tz
 
-from elasticsearch_dsl import field, InnerDoc, ValidationException, Range
+from elasticsearch_dsl import InnerDoc, Range, ValidationException, field
 
 
 def test_date_range_deserialization():

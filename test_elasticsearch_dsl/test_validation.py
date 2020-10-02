@@ -17,19 +17,19 @@
 
 from datetime import datetime
 
+from pytest import raises
+
 from elasticsearch_dsl import (
-    Document,
-    Nested,
-    Text,
-    Date,
-    Object,
     Boolean,
-    Integer,
+    Date,
+    Document,
     InnerDoc,
+    Integer,
+    Nested,
+    Object,
+    Text,
 )
 from elasticsearch_dsl.exceptions import ValidationException
-
-from pytest import raises
 
 
 class Author(InnerDoc):

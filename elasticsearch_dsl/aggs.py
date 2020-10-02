@@ -20,8 +20,8 @@ try:
 except ImportError:
     import collections as collections_abc
 
+from .response.aggs import AggResponse, BucketData, FieldBucketData, TopHitsData
 from .utils import DslBase
-from .response.aggs import BucketData, FieldBucketData, AggResponse, TopHitsData
 
 
 def A(name_or_agg, filter=None, **params):

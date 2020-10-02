@@ -27,12 +27,12 @@ except ImportError:
 from datetime import date, datetime
 
 from dateutil import parser, tz
-from six import string_types, iteritems, integer_types
+from six import integer_types, iteritems, string_types
 from six.moves import map
 
-from .query import Q
-from .utils import DslBase, AttrDict, AttrList
 from .exceptions import ValidationException
+from .query import Q
+from .utils import AttrDict, AttrList, DslBase
 from .wrappers import Range
 
 unicode = type(u"")

@@ -17,9 +17,9 @@
 
 import pickle
 
-from elasticsearch_dsl import utils, serializer
-
 from pytest import raises
+
+from elasticsearch_dsl import serializer, utils
 
 
 def test_attrdict_pickle():

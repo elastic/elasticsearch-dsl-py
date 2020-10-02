@@ -31,13 +31,13 @@ from __future__ import print_function, unicode_literals
 from itertools import permutations
 
 from elasticsearch_dsl import (
-    connections,
-    Document,
     Completion,
-    Text,
-    Long,
+    Document,
     Keyword,
+    Long,
+    Text,
     analyzer,
+    connections,
     token_filter,
 )
 
