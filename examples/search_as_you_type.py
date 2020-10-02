@@ -28,11 +28,11 @@ To custom analyzer with ascii folding allow search to work in different language
 from __future__ import print_function, unicode_literals
 
 from elasticsearch_dsl import (
-    connections,
     Document,
-    analyzer,
-    token_filter,
     SearchAsYouType,
+    analyzer,
+    connections,
+    token_filter,
 )
 from elasticsearch_dsl.query import MultiMatch
 

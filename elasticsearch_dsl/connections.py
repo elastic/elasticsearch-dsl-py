@@ -15,9 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from six import string_types
-
 from elasticsearch import Elasticsearch
+from six import string_types
 
 from .serializer import serializer
 

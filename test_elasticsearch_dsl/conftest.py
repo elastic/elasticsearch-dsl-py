@@ -25,15 +25,16 @@ from elasticsearch.helpers.test import SkipTest, get_test_client
 from mock import Mock
 from pytest import fixture, skip
 
-from elasticsearch_dsl.connections import connections, add_connection
+from elasticsearch_dsl.connections import add_connection, connections
+
 from .test_integration.test_data import (
     DATA,
     FLAT_DATA,
     TEST_GIT_DATA,
-    create_git_index,
     create_flat_git_index,
+    create_git_index,
 )
-from .test_integration.test_document import PullRequest, Comment, User, History
+from .test_integration.test_document import Comment, History, PullRequest, User
 
 
 @fixture(scope="session")

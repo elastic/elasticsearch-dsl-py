@@ -15,14 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl import (
-    Document,
-    Index,
-    Text,
-    Date,
-    analysis,
-    IndexTemplate,
-)
+from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analysis
 
 
 class Post(Document):

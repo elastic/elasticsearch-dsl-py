@@ -17,7 +17,7 @@
 
 from __future__ import print_function
 
-from elasticsearch_dsl import connections, Search, A
+from elasticsearch_dsl import A, Search, connections
 
 
 def scan_aggs(search, source_aggs, inner_aggs={}, size=10):

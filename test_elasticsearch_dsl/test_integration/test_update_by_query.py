@@ -15,8 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl.update_by_query import UpdateByQuery
 from elasticsearch_dsl.search import Q
+from elasticsearch_dsl.update_by_query import UpdateByQuery
 
 
 def test_update_by_query_no_script(write_client, setup_ubq_tests):
