@@ -17,7 +17,7 @@
 
 import operator
 
-from six import string_types, iteritems
+from six import iteritems, string_types
 
 from .utils import AttrDict
 

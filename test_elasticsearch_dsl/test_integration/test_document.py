@@ -16,32 +16,31 @@
 #  under the License.
 
 from datetime import datetime
-from pytz import timezone
 from ipaddress import ip_address
 
 from elasticsearch import ConflictError, NotFoundError
+from pytest import raises
+from pytz import timezone
 
 from elasticsearch_dsl import (
-    Document,
-    Date,
-    Text,
-    Keyword,
-    Mapping,
-    InnerDoc,
-    Object,
-    Nested,
-    MetaField,
-    Q,
-    Long,
-    Boolean,
-    Double,
     Binary,
+    Boolean,
+    Date,
+    Document,
+    Double,
+    InnerDoc,
     Ip,
+    Keyword,
+    Long,
+    Mapping,
+    MetaField,
+    Nested,
+    Object,
+    Q,
+    Text,
     analyzer,
 )
 from elasticsearch_dsl.utils import AttrList
-
-from pytest import raises
 
 snowball = analyzer(
     "my_snow", tokenizer="standard", filter=["standard", "lowercase", "snowball"]

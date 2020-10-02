@@ -15,25 +15,25 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import pickle
 import codecs
-from hashlib import md5
-from datetime import datetime
 import ipaddress
-
-from elasticsearch_dsl import (
-    document,
-    field,
-    Mapping,
-    utils,
-    InnerDoc,
-    analyzer,
-    Index,
-    Range,
-)
-from elasticsearch_dsl.exceptions import ValidationException, IllegalOperation
+import pickle
+from datetime import datetime
+from hashlib import md5
 
 from pytest import raises
+
+from elasticsearch_dsl import (
+    Index,
+    InnerDoc,
+    Mapping,
+    Range,
+    analyzer,
+    document,
+    field,
+    utils,
+)
+from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
 
 
 class MyInner(InnerDoc):

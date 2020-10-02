@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl.search import Search, Q
+from elasticsearch_dsl.search import Q, Search
 
 
 def test_count_all(data_client):

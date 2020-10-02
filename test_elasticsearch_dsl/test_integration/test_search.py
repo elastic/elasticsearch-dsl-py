@@ -17,22 +17,14 @@
 #  under the License.
 
 from __future__ import unicode_literals
-from elasticsearch import TransportError
 
-from elasticsearch_dsl import (
-    Search,
-    Document,
-    Date,
-    Text,
-    Keyword,
-    MultiSearch,
-    Q,
-)
+from elasticsearch import TransportError
+from pytest import raises
+
+from elasticsearch_dsl import Date, Document, Keyword, MultiSearch, Q, Search, Text
 from elasticsearch_dsl.response import aggs
 
 from .test_data import FLAT_DATA
-
-from pytest import raises
 
 
 class Repository(Document):

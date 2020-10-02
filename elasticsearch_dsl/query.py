@@ -22,12 +22,11 @@ except ImportError:
 
 from itertools import chain
 
-from .utils import DslBase
-from .function import ScoreFunction
-
 # 'SF' looks unused but the test suite assumes it's available
 # from this module so others are liable to do so as well.
 from .function import SF  # noqa: F401
+from .function import ScoreFunction
+from .utils import DslBase
 
 
 def Q(name_or_query="match_all", **params):

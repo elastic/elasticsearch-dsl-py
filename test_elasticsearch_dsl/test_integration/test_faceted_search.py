@@ -17,13 +17,13 @@
 
 from datetime import datetime
 
-from elasticsearch_dsl import Document, Boolean, Date, A, Keyword
+from elasticsearch_dsl import A, Boolean, Date, Document, Keyword
 from elasticsearch_dsl.faceted_search import (
-    FacetedSearch,
-    TermsFacet,
     DateHistogramFacet,
-    RangeFacet,
+    FacetedSearch,
     NestedFacet,
+    RangeFacet,
+    TermsFacet,
 )
 
 from .test_document import PullRequest

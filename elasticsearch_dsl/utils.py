@@ -24,7 +24,7 @@ except ImportError:
 
 from copy import copy
 
-from six import iteritems, add_metaclass
+from six import add_metaclass, iteritems
 from six.moves import map
 
 from .exceptions import UnknownDslObject, ValidationException
