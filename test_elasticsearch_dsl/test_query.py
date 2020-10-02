@@ -15,9 +15,9 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl import query, function
-
 from pytest import raises
+
+from elasticsearch_dsl import function, query
 
 
 def test_empty_Q_is_match_all():

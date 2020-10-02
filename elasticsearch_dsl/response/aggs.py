@@ -16,7 +16,7 @@
 #  under the License.
 
 from ..utils import AttrDict, AttrList
-from . import Response, AggResponse
+from . import AggResponse, Response
 
 
 class Bucket(AggResponse):

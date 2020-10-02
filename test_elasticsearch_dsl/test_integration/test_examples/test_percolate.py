@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .percolate import setup, BlogPost
+from .percolate import BlogPost, setup
 
 
 def test_post_gets_tagged_automatically(write_client):

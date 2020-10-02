@@ -16,7 +16,6 @@
 #  under the License.
 
 from ..utils import AttrDict, AttrList, _wrap
-
 from .hit import Hit, HitMeta
 
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]

@@ -16,7 +16,7 @@
 #  under the License.
 
 from . import alias_migration
-from .alias_migration import BlogPost, PATTERN, ALIAS, migrate
+from .alias_migration import ALIAS, PATTERN, BlogPost, migrate
 
 
 def test_alias_migration(write_client):

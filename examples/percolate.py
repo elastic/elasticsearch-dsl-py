@@ -17,12 +17,12 @@
 
 from elasticsearch_dsl import (
     Document,
-    Percolator,
-    Text,
     Keyword,
-    connections,
+    Percolator,
     Q,
     Search,
+    Text,
+    connections,
 )
 
 

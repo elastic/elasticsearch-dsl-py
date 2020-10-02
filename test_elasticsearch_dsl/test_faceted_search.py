@@ -18,9 +18,9 @@
 from datetime import datetime
 
 from elasticsearch_dsl.faceted_search import (
+    DateHistogramFacet,
     FacetedSearch,
     TermsFacet,
-    DateHistogramFacet,
 )
 
 
