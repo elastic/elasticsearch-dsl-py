@@ -797,7 +797,7 @@ class MultiSearch(Request):
             es = get_connection(self._using)
 
             responses = es.msearch(
-                index=self._index, body=self.to_dict(), **self.params
+                index=self._index, body=self.to_dict(), **self._params
             )
 
             self._response = self._process_responses(
