@@ -1,7 +1,6 @@
-from elasticsearch import AsyncElasticsearch
-
 from elasticsearch_dsl._async.utils import ensure_async_connection
 from elasticsearch_dsl.connections import get_connection
+from elasticsearch_dsl.exceptions import IllegalOperation
 from elasticsearch_dsl.index import Index, IndexTemplate
 
 

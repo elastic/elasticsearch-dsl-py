@@ -26,8 +26,6 @@ from elasticsearch import AsyncElasticsearch
 from elasticsearch.exceptions import NotFoundError, RequestError
 from six import add_metaclass, iteritems
 
-from elasticsearch_dsl._async.utils import ensure_async_connection
-
 from ._async.search import AsyncSearch
 from ._async.utils import ensure_async_connection
 from .connections import get_connection

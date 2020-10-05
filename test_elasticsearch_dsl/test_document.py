@@ -21,7 +21,6 @@ import pickle
 from datetime import datetime
 from hashlib import md5
 
-from elasticsearch import AsyncElasticsearch
 from pytest import raises
 
 from elasticsearch_dsl import (
@@ -30,14 +29,11 @@ from elasticsearch_dsl import (
     Mapping,
     Range,
     analyzer,
-    connections,
     document,
     field,
     utils,
 )
-from elasticsearch_dsl._async.search import AsyncSearch
 from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
-from elasticsearch_dsl.search import Search
 
 
 class MyInner(InnerDoc):

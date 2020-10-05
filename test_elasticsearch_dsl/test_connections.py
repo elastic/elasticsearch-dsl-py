@@ -15,8 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import asyncio
-
 from elasticsearch import AsyncElasticsearch, Elasticsearch
 from pytest import raises
 

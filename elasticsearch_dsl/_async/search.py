@@ -1,4 +1,3 @@
-from elasticsearch import AsyncElasticsearch
 from elasticsearch._async.helpers import async_scan
 
 from elasticsearch_dsl._async.utils import ensure_async_connection

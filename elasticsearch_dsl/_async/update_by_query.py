@@ -1,5 +1,3 @@
-from elasticsearch import AsyncElasticsearch
-
 from elasticsearch_dsl._async.utils import ensure_async_connection
 from elasticsearch_dsl.connections import get_connection
 from elasticsearch_dsl.update_by_query import UpdateByQuery
