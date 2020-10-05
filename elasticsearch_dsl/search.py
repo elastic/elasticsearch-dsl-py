@@ -797,19 +797,26 @@ class MultiSearch(Request):
             es = get_connection(self._using)
 
             responses = es.msearch(
-                index=self._index, body=self.to_dict(), **self._params
+                index=self._index, body=self.to_dict(), **self.params
             )
 
-            out = []
-            for s, r in zip(self._searches, responses["responses"]):
-                if r.get("error", False):
-                    if raise_on_error:
-                        raise TransportError("N/A", r["error"]["type"], r["error"])
-                    r = None
-                else:
-                    r = Response(s, r)
-                out.append(r)
-
-            self._response = out
+            self._response = self._process_responses(
+                responses, raise_on_error=raise_on_error
+            )
 
         return self._response
+
+    def _process_responses(self, responses, raise_on_error=True):
+        out = []
+
+        for s, r in zip(self._searches, responses["responses"]):
+            if r.get("error", False):
+                if raise_on_error:
+                    raise TransportError("N/A", r["error"]["type"], r["error"])
+                r = None
+            else:
+                r = Response(s, r)
+
+            out.append(r)
+
+        return out

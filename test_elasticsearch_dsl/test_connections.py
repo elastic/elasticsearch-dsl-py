@@ -15,7 +15,9 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch import Elasticsearch
+import asyncio
+
+from elasticsearch import AsyncElasticsearch, Elasticsearch
 from pytest import raises
 
 from elasticsearch_dsl import connections, serializer
@@ -81,7 +83,15 @@ def test_create_connection_constructs_client():
     c.create_connection("testing", hosts=["es.com"])
 
     con = c.get_connection("testing")
+    assert isinstance(c.get_connection("testing"), Elasticsearch)
     assert [{"host": "es.com"}] == con.transport.hosts
+
+
+def test_create_connection_constructs_async_client():
+    c = connections.Connections()
+    c.create_connection("testing", client=AsyncElasticsearch, hosts=["es.com"])
+
+    assert isinstance(c.get_connection("testing"), AsyncElasticsearch)
 
 
 def test_create_connection_adds_our_serializer():

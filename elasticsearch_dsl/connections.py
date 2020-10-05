@@ -75,13 +75,13 @@ class Connections(object):
         if errors == 2:
             raise KeyError("There is no connection with alias %r." % alias)
 
-    def create_connection(self, alias="default", **kwargs):
+    def create_connection(self, alias="default", client=Elasticsearch, **kwargs):
         """
         Construct an instance of ``elasticsearch.Elasticsearch`` and register
         it under given alias.
         """
         kwargs.setdefault("serializer", serializer)
-        conn = self._conns[alias] = Elasticsearch(**kwargs)
+        conn = self._conns[alias] = client(**kwargs)
         return conn
 
     def get_connection(self, alias="default"):
