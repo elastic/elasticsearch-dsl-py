@@ -15,10 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import os
 from datetime import datetime
 from ipaddress import ip_address
 
 from elasticsearch import ConflictError, NotFoundError
+from elasticsearch.helpers.test import get_test_client
 from pytest import raises
 from pytz import timezone
 
@@ -42,9 +44,17 @@ from elasticsearch_dsl import (
 )
 from elasticsearch_dsl.utils import AttrList
 
-snowball = analyzer(
-    "my_snow", tokenizer="standard", filter=["standard", "lowercase", "snowball"]
-)
+connection = get_test_client(nowait="WAIT_FOR_ES" not in os.environ)
+info = connection.info()
+
+if info["version"]["number"] >= "7.0.0":
+    snowball = analyzer(
+        "my_snow", tokenizer="standard", filter=["lowercase", "snowball"]
+    )
+else:
+    snowball = analyzer(
+        "my_snow", tokenizer="standard", filter=["standard", "lowercase", "snowball"]
+    )
 
 
 class User(InnerDoc):
