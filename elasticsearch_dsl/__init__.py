@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import sys
+
 from . import connections
 from .aggs import A
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
@@ -159,3 +161,31 @@ __all__ = [
     "token_filter",
     "tokenizer",
 ]
+
+
+try:
+    # Asyncio only supported in Python 3.6+
+    if sys.version_info < (3, 6):
+        raise ImportError
+
+    from elasticsearch_dsl._async.faceted_search import AsyncFacetedSearch
+    from elasticsearch_dsl._async.index import AsyncIndex, AsyncIndexTemplate
+    from elasticsearch_dsl._async.mapping import AsyncMapping
+    from elasticsearch_dsl._async.search import AsyncMultiSearch, AsyncSearch
+    from elasticsearch_dsl._async.update_by_query import AsyncUpdateByQuery
+
+    __all__ = sorted(
+        __all__
+        + [
+            "AsyncFacetedSearch",
+            "AsyncIndex",
+            "AsyncIndexTemplate",
+            "AsyncMapping",
+            "AsyncMultiSearch",
+            "AsyncSearch",
+            "AsyncUpdateByQuery",
+        ]
+    )
+
+except (ImportError, SyntaxError):
+    pass

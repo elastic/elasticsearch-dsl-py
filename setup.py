@@ -45,6 +45,10 @@ tests_require = [
     "coverage<5.0.0",
 ]
 
+async_requires = [
+    "aiohttp>=3,<4",
+]
+
 setup(
     name="elasticsearch-dsl",
     description="Python client for Elasticsearch",
@@ -78,6 +82,9 @@ setup(
     ],
     install_requires=install_requires,
     test_suite="test_elasticsearch_dsl.run_tests.run_all",
-    tests_require=tests_require,
-    extras_require={"develop": tests_require + ["sphinx", "sphinx_rtd_theme"]},
+    tests_require=tests_require + async_requires,
+    extras_require={
+        "async": async_requires,
+        "develop": tests_require + async_requires + ["sphinx", "sphinx_rtd_theme"],
+    },
 )
