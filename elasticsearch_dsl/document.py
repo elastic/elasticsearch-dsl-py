@@ -15,8 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import sys
-
 try:
     import collections.abc as collections_abc  # only works on python 3.3+
 except ImportError:

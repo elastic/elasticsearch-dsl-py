@@ -15,6 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+# flake8: noqa:F401
+#
+# The dynamic sorting of `__all__` at the bottom of the file breaks flake8
+# because flake8 is a static analysis tool. The alternative to ignoring these
+# "unused import" errors would be to duplicate  `__all__` statically after the
+# async files are imported.
+
 import sys
 
 from . import connections
@@ -168,6 +175,7 @@ try:
     if sys.version_info < (3, 6):
         raise ImportError
 
+    from elasticsearch_dsl._async.document import AsyncDocument
     from elasticsearch_dsl._async.faceted_search import AsyncFacetedSearch
     from elasticsearch_dsl._async.index import AsyncIndex, AsyncIndexTemplate
     from elasticsearch_dsl._async.mapping import AsyncMapping
@@ -177,6 +185,7 @@ try:
     __all__ = sorted(
         __all__
         + [
+            "AsyncDocument",
             "AsyncFacetedSearch",
             "AsyncIndex",
             "AsyncIndexTemplate",
