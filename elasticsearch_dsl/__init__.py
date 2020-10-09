@@ -181,7 +181,9 @@ try:
     from elasticsearch_dsl._async.mapping import AsyncMapping
     from elasticsearch_dsl._async.search import AsyncMultiSearch, AsyncSearch
     from elasticsearch_dsl._async.update_by_query import AsyncUpdateByQuery
-
+except (ImportError, SyntaxError):
+    pass
+else:
     __all__ = sorted(
         __all__
         + [
@@ -195,6 +197,3 @@ try:
             "AsyncUpdateByQuery",
         ]
     )
-
-except (ImportError, SyntaxError):
-    pass
