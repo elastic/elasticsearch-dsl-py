@@ -46,7 +46,7 @@ tests_require = [
 ]
 
 async_requires = [
-    "aiohttp>=3,<4",
+    'aiohttp>=3,<4; python_version>="3.6"',
 ]
 
 setup(

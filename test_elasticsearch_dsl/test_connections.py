@@ -15,7 +15,10 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch import AsyncElasticsearch, Elasticsearch
+import sys
+
+import pytest
+from elasticsearch import Elasticsearch
 from pytest import raises
 
 from elasticsearch_dsl import connections, serializer
@@ -85,7 +88,12 @@ def test_create_connection_constructs_client():
     assert [{"host": "es.com"}] == con.transport.hosts
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 6), reason="Async features require Python 3.6 or higher"
+)
 def test_create_connection_constructs_async_client():
+    from elasticsearch import AsyncElasticsearch
+
     c = connections.Connections()
     c.create_connection("testing", client=AsyncElasticsearch, hosts=["es.com"])
 
