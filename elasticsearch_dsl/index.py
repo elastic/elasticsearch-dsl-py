@@ -15,13 +15,15 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from . import analysis
-from .connections import get_connection
-from .exceptions import IllegalOperation
-from .mapping import Mapping
-from .search import Search
-from .update_by_query import UpdateByQuery
-from .utils import merge
+from elasticsearch_dsl import analysis
+from elasticsearch_dsl.connections import get_connection
+from elasticsearch_dsl.exceptions import IllegalOperation
+from elasticsearch_dsl.mapping import Mapping
+from elasticsearch_dsl.search import Search
+from elasticsearch_dsl.update_by_query import UpdateByQuery
+from elasticsearch_dsl.utils import merge
+
+from .utils import ensure_sync_connection
 
 
 class IndexTemplate(object):
@@ -50,9 +52,12 @@ class IndexTemplate(object):
         return d
 
     def save(self, using=None):
-
         es = get_connection(using or self._index._using)
-        return es.indices.put_template(name=self._template_name, body=self.to_dict())
+        ensure_sync_connection(es, "IndexTemplate.save")
+
+        return es.indices.put_template(
+            name=self._template_name, body=self.to_dict()
+        )
 
 
 class Index(object):
@@ -101,9 +106,9 @@ class Index(object):
         return None
 
     def load_mappings(self, using=None):
-        self.get_or_create_mapping().update_from_es(
-            self._name, using=using or self._using
-        )
+        mapping = self.get_or_create_mapping()
+
+        mapping.update_from_es(self._name, using=using or self._using)
 
     def clone(self, name=None, using=None):
         """
@@ -276,14 +281,24 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
-        return self._get_connection(using).indices.create(
-            index=self._name, body=self.to_dict(), **kwargs
+        es = get_connection(using)
+        ensure_sync_connection(es, "Index.create")
+
+        return es.indices.create(
+            index=self._name,
+            body=self.to_dict(),
+            **kwargs,
         )
 
     def is_closed(self, using=None):
-        state = self._get_connection(using).cluster.state(
-            index=self._name, metric="metadata"
+        es = get_connection(using)
+        ensure_sync_connection(es, "Index.is_closed")
+
+        state = es.cluster.state(
+            index=self._name,
+            metric="metadata",
         )
+
         return state["metadata"]["indices"][self._name]["state"] == "close"
 
     def save(self, using=None):
@@ -348,7 +363,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.analyze`` unchanged.
         """
-        return self._get_connection(using).indices.analyze(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.analyze")
+
+        return es.indices.analyze(index=self._index, **kwargs)
 
     def refresh(self, using=None, **kwargs):
         """
@@ -357,7 +375,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.refresh`` unchanged.
         """
-        return self._get_connection(using).indices.refresh(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.refresh")
+
+        return es.indices.refresh(index=self._index, **kwargs)
 
     def flush(self, using=None, **kwargs):
         """
@@ -366,7 +387,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.flush`` unchanged.
         """
-        return self._get_connection(using).indices.flush(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.flush")
+
+        return es.indices.flush(index=self._index, **kwargs)
 
     def get(self, using=None, **kwargs):
         """
@@ -375,7 +399,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get`` unchanged.
         """
-        return self._get_connection(using).indices.get(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.get")
+
+        return es.indices.get(index=self._index, **kwargs)
 
     def open(self, using=None, **kwargs):
         """
@@ -384,7 +411,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.open`` unchanged.
         """
-        return self._get_connection(using).indices.open(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.open")
+
+        return es.indices.open(index=self._index, **kwargs)
 
     def close(self, using=None, **kwargs):
         """
@@ -393,7 +423,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.close`` unchanged.
         """
-        return self._get_connection(using).indices.close(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.close")
+
+        return es.indices.close(index=self._index, **kwargs)
 
     def delete(self, using=None, **kwargs):
         """
@@ -402,7 +435,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.delete`` unchanged.
         """
-        return self._get_connection(using).indices.delete(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.delete")
+
+        return es.indices.delete(index=self._index, **kwargs)
 
     def exists(self, using=None, **kwargs):
         """
@@ -411,7 +447,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.exists`` unchanged.
         """
-        return self._get_connection(using).indices.exists(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.exists")
+
+        return es.indices.exists(index=self._index, **kwargs)
 
     def exists_type(self, using=None, **kwargs):
         """
@@ -420,9 +459,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.exists_type`` unchanged.
         """
-        return self._get_connection(using).indices.exists_type(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.exists_type")
+
+        return es.indices.exists_type(index=self._index, **kwargs)
 
     def put_mapping(self, using=None, **kwargs):
         """
@@ -431,9 +471,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.put_mapping`` unchanged.
         """
-        return self._get_connection(using).indices.put_mapping(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.put_mapping")
+
+        return es.indices.put_mapping(index=self._index, **kwargs)
 
     def get_mapping(self, using=None, **kwargs):
         """
@@ -442,9 +483,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get_mapping`` unchanged.
         """
-        return self._get_connection(using).indices.get_mapping(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.get_mapping")
+
+        return es.indices.get_mapping(index=self._index, **kwargs)
 
     def get_field_mapping(self, using=None, **kwargs):
         """
@@ -453,9 +495,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get_field_mapping`` unchanged.
         """
-        return self._get_connection(using).indices.get_field_mapping(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.get_field_mapping")
+
+        return es.indices.get_field_mapping(index=self._index, **kwargs)
 
     def put_alias(self, using=None, **kwargs):
         """
@@ -464,7 +507,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.put_alias`` unchanged.
         """
-        return self._get_connection(using).indices.put_alias(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.put_alias")
+
+        return es.indices.put_alias(index=self._index, **kwargs)
 
     def exists_alias(self, using=None, **kwargs):
         """
@@ -484,7 +530,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get_alias`` unchanged.
         """
-        return self._get_connection(using).indices.get_alias(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.get_alias")
+
+        return es.indices.get_alias(index=self._index, **kwargs)
 
     def delete_alias(self, using=None, **kwargs):
         """
@@ -493,9 +542,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.delete_alias`` unchanged.
         """
-        return self._get_connection(using).indices.delete_alias(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.delete_alias")
+
+        return es.indices.delete_alias(index=self._index, **kwargs)
 
     def get_settings(self, using=None, **kwargs):
         """
@@ -504,9 +554,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get_settings`` unchanged.
         """
-        return self._get_connection(using).indices.get_settings(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.get_settings")
+
+        return es.indices.get_settings(index=self._index, **kwargs)
 
     def put_settings(self, using=None, **kwargs):
         """
@@ -515,9 +566,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.put_settings`` unchanged.
         """
-        return self._get_connection(using).indices.put_settings(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.put_settings")
+
+        return es.indices.put_settings(index=self._index, **kwargs)
 
     def stats(self, using=None, **kwargs):
         """
@@ -526,7 +578,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.stats`` unchanged.
         """
-        return self._get_connection(using).indices.stats(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.stats")
+
+        return es.indices.stats(index=self._index, **kwargs)
 
     def segments(self, using=None, **kwargs):
         """
@@ -536,7 +591,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.segments`` unchanged.
         """
-        return self._get_connection(using).indices.segments(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.segments")
+
+        return es.indices.segments(index=self._index, **kwargs)
 
     def validate_query(self, using=None, **kwargs):
         """
@@ -545,9 +603,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.validate_query`` unchanged.
         """
-        return self._get_connection(using).indices.validate_query(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.validate_query")
+
+        return es.indices.validate_query(index=self._index, **kwargs)
 
     def clear_cache(self, using=None, **kwargs):
         """
@@ -556,9 +615,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.clear_cache`` unchanged.
         """
-        return self._get_connection(using).indices.clear_cache(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.clear_cache")
+
+        return es.indices.clear_cache(index=self._index, **kwargs)
 
     def recovery(self, using=None, **kwargs):
         """
@@ -568,7 +628,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.recovery`` unchanged.
         """
-        return self._get_connection(using).indices.recovery(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.recovery")
+
+        return es.indices.recovery(index=self._index, **kwargs)
 
     def upgrade(self, using=None, **kwargs):
         """
@@ -577,7 +640,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.upgrade`` unchanged.
         """
-        return self._get_connection(using).indices.upgrade(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.upgrade")
+
+        return es.indices.upgrade(index=self._index, **kwargs)
 
     def get_upgrade(self, using=None, **kwargs):
         """
@@ -586,9 +652,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get_upgrade`` unchanged.
         """
-        return self._get_connection(using).indices.get_upgrade(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.get_upgrade")
+
+        return es.indices.get_upgrade(index=self._index, **kwargs)
 
     def flush_synced(self, using=None, **kwargs):
         """
@@ -598,9 +665,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.flush_synced`` unchanged.
         """
-        return self._get_connection(using).indices.flush_synced(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.flush_synced")
+
+        return es.indices.flush_synced(index=self._index, **kwargs)
 
     def shard_stores(self, using=None, **kwargs):
         """
@@ -612,9 +680,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.shard_stores`` unchanged.
         """
-        return self._get_connection(using).indices.shard_stores(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.shard_stores")
+
+        return es.indices.shard_stores(index=self._index, **kwargs)
 
     def forcemerge(self, using=None, **kwargs):
         """
@@ -630,9 +699,10 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.forcemerge`` unchanged.
         """
-        return self._get_connection(using).indices.forcemerge(
-            index=self._name, **kwargs
-        )
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.forcemerge")
+
+        return es.indices.forcemerge(index=self._index, **kwargs)
 
     def shrink(self, using=None, **kwargs):
         """
@@ -649,4 +719,7 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.shrink`` unchanged.
         """
-        return self._get_connection(using).indices.shrink(index=self._name, **kwargs)
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Index.shrink")
+
+        return es.indices.shrink(index=self._index, **kwargs)

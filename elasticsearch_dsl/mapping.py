@@ -24,9 +24,11 @@ from itertools import chain
 
 from six import iteritems, itervalues
 
-from .connections import get_connection
-from .field import Nested, Text, construct_field
-from .utils import DslBase
+from elasticsearch_dsl.connections import get_connection
+from elasticsearch_dsl.field import Nested, Text, construct_field
+from elasticsearch_dsl.utils import DslBase
+
+from .utils import ensure_sync_connection
 
 META_FIELDS = frozenset(
     (
@@ -108,6 +110,7 @@ class Mapping(object):
     def from_es(cls, index, using="default"):
         m = cls()
         m.update_from_es(index, using)
+
         return m
 
     def resolve_nested(self, field_path):
@@ -169,6 +172,8 @@ class Mapping(object):
 
     def update_from_es(self, index, using="default"):
         es = get_connection(using)
+        ensure_sync_connection(es, "Mapping.update_from_es")
+
         raw = es.indices.get_mapping(index=index)
         _, raw = raw.popitem()
         self._update_from_dict(raw["mappings"])

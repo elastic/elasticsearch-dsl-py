@@ -25,26 +25,15 @@ from fnmatch import fnmatch
 from elasticsearch.exceptions import NotFoundError, RequestError
 from six import add_metaclass, iteritems
 
-from .connections import get_connection
-from .exceptions import IllegalOperation, ValidationException
-from .field import Field
-from .index import Index
-from .mapping import Mapping
-from .search import Search
-from .utils import DOC_META_FIELDS, META_FIELDS, ObjectBase, merge
+from elasticsearch_dsl.connections import get_connection
+from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
+from elasticsearch_dsl.field import Field
+from elasticsearch_dsl.index import Index
+from elasticsearch_dsl.mapping import Mapping
+from elasticsearch_dsl.search import Search
+from elasticsearch_dsl.utils import DOC_META_FIELDS, META_FIELDS, ObjectBase, merge
 
-try:
-    from elasticsearch import AsyncElasticsearch
-
-    from elasticsearch_dsl._async.search import AsyncSearch
-except ImportError:
-    # Async is not support for one of two reasons:
-    #
-    # 1. The Python version is less than 3.6, so elasticsearch-py doesn't expose
-    #    it's async features.
-    # 2. The aiohttp package isn't installed, so elasticsearch-py doesn't expose
-    #    it's async features.
-    pass
+from .utils import ensure_sync_connection
 
 
 class MetaField(object):
@@ -195,19 +184,9 @@ class Document(ObjectBase):
         Create an :class:`~elasticsearch_dsl.Search` instance that will search
         over this ``Document``.
         """
-        es = cls._get_using(using)
-        kwargs = {
-            "doc_type": [cls],
-            "index": cls._default_index(index),
-        }
-
-        try:
-            if isinstance(es, AsyncElasticsearch):
-                return AsyncSearch(using=es, **kwargs)
-        except NameError:
-            pass
-
-        return Search(using=es, **kwargs)
+        return Search(
+            using=cls._get_using(using), index=cls._default_index(index), doc_type=[cls]
+        )
 
     @classmethod
     def get(cls, id, using=None, index=None, **kwargs):
@@ -223,6 +202,8 @@ class Document(ObjectBase):
         ``Elasticsearch.get`` unchanged.
         """
         es = cls._get_connection(using)
+        ensure_sync_connection(es, "Document.get")
+
         doc = es.get(index=cls._default_index(index), id=id, **kwargs)
         if not doc.get("found", False):
             return None
@@ -251,18 +232,50 @@ class Document(ObjectBase):
         """
         if missing not in ("raise", "skip", "none"):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
-
+        
         es = cls._get_connection(using)
+        ensure_sync_connection(es, "Document.mget")
 
-        results = es.mget(
-            cls._build_mget_body(docs), index=cls._default_index(index), **kwargs
-        )
+        body = {
+            "docs": [
+                doc if isinstance(doc, collections_abc.Mapping) else {"_id": doc}
+                for doc in docs
+            ]
+        }
+        results = es.mget(body, index=cls._default_index(index), **kwargs)
 
-        return cls._parse_mget_results(
-            results,
-            missing=missing,
-            raise_on_error=raise_on_error,
-        )
+        objs, error_docs, missing_docs = [], [], []
+        for doc in results["docs"]:
+            if doc.get("found"):
+                if error_docs or missing_docs:
+                    # We're going to raise an exception anyway, so avoid an
+                    # expensive call to cls.from_es().
+                    continue
+
+                objs.append(cls.from_es(doc))
+
+            elif doc.get("error"):
+                if raise_on_error:
+                    error_docs.append(doc)
+                if missing == "none":
+                    objs.append(None)
+
+            # The doc didn't cause an error, but the doc also wasn't found.
+            elif missing == "raise":
+                missing_docs.append(doc)
+            elif missing == "none":
+                objs.append(None)
+
+        if error_docs:
+            error_ids = [doc["_id"] for doc in error_docs]
+            message = "Required routing not provided for documents %s."
+            message %= ", ".join(error_ids)
+            raise RequestError(400, message, error_docs)
+        if missing_docs:
+            missing_ids = [doc["_id"] for doc in missing_docs]
+            message = "Documents %s not found." % ", ".join(missing_ids)
+            raise NotFoundError(404, message, {"docs": missing_docs})
+        return objs
 
     def delete(self, using=None, index=None, **kwargs):
         """
@@ -276,7 +289,16 @@ class Document(ObjectBase):
         ``Elasticsearch.delete`` unchanged.
         """
         es = self._get_connection(using)
-        doc_meta = self._build_delete_doc_meta(**kwargs)
+        ensure_sync_connection(es, "Document.delete")
+        # extract routing etc from meta
+        doc_meta = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
+
+        # Optimistic concurrency control
+        if "seq_no" in self.meta and "primary_term" in self.meta:
+            doc_meta["if_seq_no"] = self.meta["seq_no"]
+            doc_meta["if_primary_term"] = self.meta["primary_term"]
+
+        doc_meta.update(kwargs)
         es.delete(index=self._get_index(index), **doc_meta)
 
     def to_dict(self, include_meta=False, skip_empty=True):
@@ -345,94 +367,6 @@ class Document(ObjectBase):
 
         :return operation result noop/updated
         """
-        body, doc_meta = self._build_update_body_and_meta(
-            detect_noop=detect_noop,
-            doc_as_upsert=doc_as_upsert,
-            retry_on_conflict=retry_on_conflict,
-            script=script,
-            script_id=script_id,
-            scripted_upsert=scripted_upsert,
-            upsert=upsert,
-            **fields
-        )
-
-        meta = self._get_connection(using).update(
-            index=self._get_index(index), body=body, refresh=refresh, **doc_meta
-        )
-        self._update_doc_meta(meta)
-
-        return meta["result"]
-
-    def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
-        """
-        Save the document into elasticsearch. If the document doesn't exist it
-        is created, it is overwritten otherwise. Returns ``True`` if this
-        operations resulted in new document being created.
-
-        :arg index: elasticsearch index to use, if the ``Document`` is
-            associated with an index this can be omitted.
-        :arg using: connection alias to use, defaults to ``'default'``
-        :arg validate: set to ``False`` to skip validating the document
-        :arg skip_empty: if set to ``False`` will cause empty values (``None``,
-            ``[]``, ``{}``) to be left on the document. Those values will be
-            stripped out otherwise as they make no difference in elasticsearch.
-
-        Any additional keyword arguments will be passed to
-        ``Elasticsearch.index`` unchanged.
-
-        :return operation result created/updated
-        """
-        if validate:
-            self.full_clean()
-
-        es = self._get_connection(using)
-        doc_meta = self._build_save_doc_meta(**kwargs)
-        meta = es.index(
-            index=self._get_index(index),
-            body=self.to_dict(skip_empty=skip_empty),
-            **doc_meta
-        )
-        self._update_doc_meta(meta)
-
-        return meta["result"]
-
-    def _build_delete_doc_meta(self, **kwargs):
-        # extract routing etc from meta
-        doc_meta = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
-
-        # Optimistic concurrency control
-        if "seq_no" in self.meta and "primary_term" in self.meta:
-            doc_meta["if_seq_no"] = self.meta["seq_no"]
-            doc_meta["if_primary_term"] = self.meta["primary_term"]
-
-        doc_meta.update(kwargs)
-
-        return doc_meta
-
-    def _build_save_doc_meta(self, **kwargs):
-        # extract routing etc from meta
-        doc_meta = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
-
-        # Optimistic concurrency control
-        if "seq_no" in self.meta and "primary_term" in self.meta:
-            doc_meta["if_seq_no"] = self.meta["seq_no"]
-            doc_meta["if_primary_term"] = self.meta["primary_term"]
-
-        doc_meta.update(kwargs)
-
-        return doc_meta
-
-    def _build_update_body_and_meta(
-        self,
-        detect_noop=True,
-        doc_as_upsert=False,
-        retry_on_conflict=None,
-        script=None,
-        script_id=None,
-        scripted_upsert=False,
-        upsert=None,
-        **fields
-    ):
         body = {
             "doc_as_upsert": doc_as_upsert,
             "detect_noop": detect_noop,
@@ -481,55 +415,61 @@ class Document(ObjectBase):
             doc_meta["if_seq_no"] = self.meta["seq_no"]
             doc_meta["if_primary_term"] = self.meta["primary_term"]
 
-        return body, doc_meta
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Document.update")
 
-    @classmethod
-    def _build_mget_body(cls, docs):
-        return {
-            "docs": [
-                doc if isinstance(doc, collections_abc.Mapping) else {"_id": doc}
-                for doc in docs
-            ]
-        }
-
-    @classmethod
-    def _parse_mget_results(cls, results, missing="none", raise_on_error=True):
-        objs, error_docs, missing_docs = [], [], []
-        for doc in results["docs"]:
-            if doc.get("found"):
-                if error_docs or missing_docs:
-                    # We're going to raise an exception anyway, so avoid an
-                    # expensive call to cls.from_es().
-                    continue
-
-                objs.append(cls.from_es(doc))
-
-            elif doc.get("error"):
-                if raise_on_error:
-                    error_docs.append(doc)
-                if missing == "none":
-                    objs.append(None)
-
-            # The doc didn't cause an error, but the doc also wasn't found.
-            elif missing == "raise":
-                missing_docs.append(doc)
-            elif missing == "none":
-                objs.append(None)
-
-        if error_docs:
-            error_ids = [doc["_id"] for doc in error_docs]
-            message = "Required routing not provided for documents %s."
-            message %= ", ".join(error_ids)
-            raise RequestError(400, message, error_docs)
-        if missing_docs:
-            missing_ids = [doc["_id"] for doc in missing_docs]
-            message = "Documents %s not found." % ", ".join(missing_ids)
-            raise NotFoundError(404, message, {"docs": missing_docs})
-
-        return objs
-
-    def _update_doc_meta(self, meta):
+        meta = es.update(
+            index=self._get_index(index), body=body, refresh=refresh, **doc_meta
+        )
         # update meta information from ES
         for k in META_FIELDS:
             if "_" + k in meta:
                 setattr(self.meta, k, meta["_" + k])
+
+        return meta["result"]
+
+    def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
+        """
+        Save the document into elasticsearch. If the document doesn't exist it
+        is created, it is overwritten otherwise. Returns ``True`` if this
+        operations resulted in new document being created.
+
+        :arg index: elasticsearch index to use, if the ``Document`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg validate: set to ``False`` to skip validating the document
+        :arg skip_empty: if set to ``False`` will cause empty values (``None``,
+            ``[]``, ``{}``) to be left on the document. Those values will be
+            stripped out otherwise as they make no difference in elasticsearch.
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.index`` unchanged.
+
+        :return operation result created/updated
+        """
+        if validate:
+            self.full_clean()
+
+        es = self._get_connection(using)
+        ensure_sync_connection(es, "Document.save")
+
+        # extract routing etc from meta
+        doc_meta = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
+
+        # Optimistic concurrency control
+        if "seq_no" in self.meta and "primary_term" in self.meta:
+            doc_meta["if_seq_no"] = self.meta["seq_no"]
+            doc_meta["if_primary_term"] = self.meta["primary_term"]
+
+        doc_meta.update(kwargs)
+        meta = es.index(
+            index=self._get_index(index),
+            body=self.to_dict(skip_empty=skip_empty),
+            **doc_meta
+        )
+        # update meta information from ES
+        for k in META_FIELDS:
+            if "_" + k in meta:
+                setattr(self.meta, k, meta["_" + k])
+
+        return meta["result"]

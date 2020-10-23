@@ -26,12 +26,14 @@ from elasticsearch.exceptions import TransportError
 from elasticsearch.helpers import scan
 from six import iteritems, string_types
 
-from .aggs import A, AggBase
-from .connections import get_connection
-from .exceptions import IllegalOperation
-from .query import Bool, Q
-from .response import Hit, Response
-from .utils import AttrDict, DslBase
+from elasticsearch_dsl.aggs import A, AggBase
+from elasticsearch_dsl.connections import get_connection
+from elasticsearch_dsl.exceptions import IllegalOperation
+from elasticsearch_dsl.query import Bool, Q
+from elasticsearch_dsl.response import Hit, Response
+from elasticsearch_dsl.utils import AttrDict, DslBase
+
+from .utils import ensure_sync_connection
 
 
 class QueryProxy(object):
@@ -710,10 +712,13 @@ class Search(Request):
         """
         if ignore_cache or not hasattr(self, "_response"):
             es = get_connection(self._using)
+            ensure_sync_connection(es, "Search.execute")
 
             self._response = self._response_class(
-                self, es.search(index=self._index, body=self.to_dict(), **self._params)
+                self,
+                es.search(index=self._index, body=self.to_dict(), **self._params),
             )
+
         return self._response
 
     def scan(self):
@@ -727,19 +732,24 @@ class Search(Request):
 
         """
         es = get_connection(self._using)
+        ensure_sync_connection(es, "Search.scan")
 
-        for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
+        for hit in scan(
+            es, query=self.to_dict(), index=self._index, **self._params
+        ):
             yield self._get_result(hit)
 
     def delete(self):
         """
         delete() executes the query by delegating to delete_by_query()
         """
-
         es = get_connection(self._using)
+        ensure_sync_connection(es, "Search.delete")
 
         return AttrDict(
-            es.delete_by_query(index=self._index, body=self.to_dict(), **self._params)
+            es.delete_by_query(
+                index=self._index, body=self.to_dict(), **self._params
+            )
         )
 
 
@@ -795,28 +805,24 @@ class MultiSearch(Request):
         """
         if ignore_cache or not hasattr(self, "_response"):
             es = get_connection(self._using)
+            ensure_sync_connection(es, "MultiSearch.execute")
 
             responses = es.msearch(
-                index=self._index, body=self.to_dict(), **self._params
+                index=self._index,
+                body=self.to_dict(),
+                **self.params,
             )
 
-            self._response = self._process_responses(
-                responses, raise_on_error=raise_on_error
-            )
+            out = []
+            for s, r in zip(self._searches, responses["responses"]):
+                if r.get("error", False):
+                    if raise_on_error:
+                        raise TransportError("N/A", r["error"]["type"], r["error"])
+                    r = None
+                else:
+                    r = Response(s, r)
+                out.append(r)
+
+            self._response = out
 
         return self._response
-
-    def _process_responses(self, responses, raise_on_error=True):
-        out = []
-
-        for s, r in zip(self._searches, responses["responses"]):
-            if r.get("error", False):
-                if raise_on_error:
-                    raise TransportError("N/A", r["error"]["type"], r["error"])
-                r = None
-            else:
-                r = Response(s, r)
-
-            out.append(r)
-
-        return out

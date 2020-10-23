@@ -15,10 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .connections import get_connection
-from .query import Bool, Q
-from .response import UpdateByQueryResponse
-from .search import ProxyDescriptor, QueryProxy, Request
+from elasticsearch_dsl.connections import get_connection
+from elasticsearch_dsl.query import Bool, Q
+from elasticsearch_dsl.response import UpdateByQueryResponse
+from elasticsearch_dsl.search import ProxyDescriptor, QueryProxy, Request
+
+from .utils import ensure_sync_connection
 
 
 class UpdateByQuery(Request):
@@ -152,9 +154,12 @@ class UpdateByQuery(Request):
         the data.
         """
         es = get_connection(self._using)
+        ensure_sync_connection(es, "SyncMultiSearch.execute")
 
         self._response = self._response_class(
             self,
-            es.update_by_query(index=self._index, body=self.to_dict(), **self._params),
+            es.update_by_query(
+                index=self._index, body=self.to_dict(), **self._params
+            ),
         )
         return self._response

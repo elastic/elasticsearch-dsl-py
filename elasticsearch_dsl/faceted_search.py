@@ -19,11 +19,11 @@ from datetime import datetime, timedelta
 
 from six import iteritems, itervalues
 
-from .aggs import A
-from .query import MatchAll, Nested, Range, Terms
-from .response import Response
-from .search import Search
-from .utils import AttrDict
+from elasticsearch_dsl.aggs import A
+from elasticsearch_dsl.query import MatchAll, Nested, Range, Terms
+from elasticsearch_dsl.response import Response
+from elasticsearch_dsl.search import Search
+from elasticsearch_dsl.utils import AttrDict
 
 __all__ = [
     "FacetedSearch",

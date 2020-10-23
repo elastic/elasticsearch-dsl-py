@@ -24,6 +24,7 @@ except ImportError:
 
 from copy import copy
 
+from elasticsearch import Elasticsearch
 from six import add_metaclass, iteritems
 from six.moves import map
 
@@ -542,6 +543,14 @@ class ObjectBase(AttrDict):
     def full_clean(self):
         self.clean_fields()
         self.clean()
+
+
+def ensure_sync_connection(es, fn_label):
+    if not isinstance(es, Elasticsearch):
+        raise TypeError(
+            f"{fn_label} can only be used with the elasticsearch.Elasticsearch "
+            "client"
+        )
 
 
 def merge(data, new_data, raise_on_conflict=False):

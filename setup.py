@@ -85,6 +85,8 @@ setup(
     tests_require=tests_require + async_requires,
     extras_require={
         "async": async_requires,
-        "develop": tests_require + async_requires + ["sphinx", "sphinx_rtd_theme"],
+        "develop": (
+            tests_require + async_requires + ["sphinx", "sphinx_rtd_theme", "unasync"]
+        ),
     },
 )
