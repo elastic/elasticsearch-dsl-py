@@ -804,7 +804,7 @@ class MultiSearch(Request):
             ensure_sync_connection(es, "MultiSearch.execute")
 
             responses = es.msearch(
-                index=self._index, body=self.to_dict(), **self.params
+                index=self._index, body=self.to_dict(), **self._params
             )
 
             out = []

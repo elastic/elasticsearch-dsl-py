@@ -281,13 +281,13 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
-        es = get_connection(using)
+        es = self._get_connection(using)
         ensure_async_connection(es, "Index.create")
 
         return await es.indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
     async def is_closed(self, using=None):
-        es = get_connection(using)
+        es = self._get_connection(using)
         ensure_async_connection(es, "Index.is_closed")
 
         state = await es.cluster.state(
