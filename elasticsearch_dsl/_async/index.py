@@ -284,11 +284,7 @@ class Index(object):
         es = get_connection(using)
         ensure_async_connection(es, "Index.create")
 
-        return await es.indices.create(
-            index=self._name,
-            body=self.to_dict(),
-            **kwargs,
-        )
+        return await es.indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
     async def is_closed(self, using=None):
         es = get_connection(using)
@@ -366,7 +362,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.analyze")
 
-        return await es.indices.analyze(index=self._index, **kwargs)
+        return await es.indices.analyze(index=self._name, **kwargs)
 
     async def refresh(self, using=None, **kwargs):
         """
@@ -378,7 +374,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.refresh")
 
-        return await es.indices.refresh(index=self._index, **kwargs)
+        return await es.indices.refresh(index=self._name, **kwargs)
 
     async def flush(self, using=None, **kwargs):
         """
@@ -390,7 +386,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.flush")
 
-        return await es.indices.flush(index=self._index, **kwargs)
+        return await es.indices.flush(index=self._name, **kwargs)
 
     async def get(self, using=None, **kwargs):
         """
@@ -402,7 +398,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.get")
 
-        return await es.indices.get(index=self._index, **kwargs)
+        return await es.indices.get(index=self._name, **kwargs)
 
     async def open(self, using=None, **kwargs):
         """
@@ -414,7 +410,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.open")
 
-        return await es.indices.open(index=self._index, **kwargs)
+        return await es.indices.open(index=self._name, **kwargs)
 
     async def close(self, using=None, **kwargs):
         """
@@ -426,7 +422,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.close")
 
-        return await es.indices.close(index=self._index, **kwargs)
+        return await es.indices.close(index=self._name, **kwargs)
 
     async def delete(self, using=None, **kwargs):
         """
@@ -438,7 +434,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.delete")
 
-        return await es.indices.delete(index=self._index, **kwargs)
+        return await es.indices.delete(index=self._name, **kwargs)
 
     async def exists(self, using=None, **kwargs):
         """
@@ -450,7 +446,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.exists")
 
-        return await es.indices.exists(index=self._index, **kwargs)
+        return await es.indices.exists(index=self._name, **kwargs)
 
     async def exists_type(self, using=None, **kwargs):
         """
@@ -462,7 +458,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.exists_type")
 
-        return await es.indices.exists_type(index=self._index, **kwargs)
+        return await es.indices.exists_type(index=self._name, **kwargs)
 
     async def put_mapping(self, using=None, **kwargs):
         """
@@ -474,7 +470,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.put_mapping")
 
-        return await es.indices.put_mapping(index=self._index, **kwargs)
+        return await es.indices.put_mapping(index=self._name, **kwargs)
 
     async def get_mapping(self, using=None, **kwargs):
         """
@@ -486,7 +482,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.get_mapping")
 
-        return await es.indices.get_mapping(index=self._index, **kwargs)
+        return await es.indices.get_mapping(index=self._name, **kwargs)
 
     async def get_field_mapping(self, using=None, **kwargs):
         """
@@ -498,7 +494,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.get_field_mapping")
 
-        return await es.indices.get_field_mapping(index=self._index, **kwargs)
+        return await es.indices.get_field_mapping(index=self._name, **kwargs)
 
     async def put_alias(self, using=None, **kwargs):
         """
@@ -510,7 +506,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.put_alias")
 
-        return await es.indices.put_alias(index=self._index, **kwargs)
+        return await es.indices.put_alias(index=self._name, **kwargs)
 
     def exists_alias(self, using=None, **kwargs):
         """
@@ -533,7 +529,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.get_alias")
 
-        return await es.indices.get_alias(index=self._index, **kwargs)
+        return await es.indices.get_alias(index=self._name, **kwargs)
 
     async def delete_alias(self, using=None, **kwargs):
         """
@@ -545,7 +541,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.delete_alias")
 
-        return await es.indices.delete_alias(index=self._index, **kwargs)
+        return await es.indices.delete_alias(index=self._name, **kwargs)
 
     async def get_settings(self, using=None, **kwargs):
         """
@@ -557,7 +553,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.get_settings")
 
-        return await es.indices.get_settings(index=self._index, **kwargs)
+        return await es.indices.get_settings(index=self._name, **kwargs)
 
     async def put_settings(self, using=None, **kwargs):
         """
@@ -569,7 +565,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.put_settings")
 
-        return await es.indices.put_settings(index=self._index, **kwargs)
+        return await es.indices.put_settings(index=self._name, **kwargs)
 
     async def stats(self, using=None, **kwargs):
         """
@@ -581,7 +577,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.stats")
 
-        return await es.indices.stats(index=self._index, **kwargs)
+        return await es.indices.stats(index=self._name, **kwargs)
 
     async def segments(self, using=None, **kwargs):
         """
@@ -594,7 +590,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.segments")
 
-        return await es.indices.segments(index=self._index, **kwargs)
+        return await es.indices.segments(index=self._name, **kwargs)
 
     async def validate_query(self, using=None, **kwargs):
         """
@@ -606,7 +602,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.validate_query")
 
-        return await es.indices.validate_query(index=self._index, **kwargs)
+        return await es.indices.validate_query(index=self._name, **kwargs)
 
     async def clear_cache(self, using=None, **kwargs):
         """
@@ -618,7 +614,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.clear_cache")
 
-        return await es.indices.clear_cache(index=self._index, **kwargs)
+        return await es.indices.clear_cache(index=self._name, **kwargs)
 
     async def recovery(self, using=None, **kwargs):
         """
@@ -631,7 +627,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.recovery")
 
-        return await es.indices.recovery(index=self._index, **kwargs)
+        return await es.indices.recovery(index=self._name, **kwargs)
 
     async def upgrade(self, using=None, **kwargs):
         """
@@ -643,7 +639,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.upgrade")
 
-        return await es.indices.upgrade(index=self._index, **kwargs)
+        return await es.indices.upgrade(index=self._name, **kwargs)
 
     async def get_upgrade(self, using=None, **kwargs):
         """
@@ -655,7 +651,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.get_upgrade")
 
-        return await es.indices.get_upgrade(index=self._index, **kwargs)
+        return await es.indices.get_upgrade(index=self._name, **kwargs)
 
     async def flush_synced(self, using=None, **kwargs):
         """
@@ -668,7 +664,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.flush_synced")
 
-        return await es.indices.flush_synced(index=self._index, **kwargs)
+        return await es.indices.flush_synced(index=self._name, **kwargs)
 
     async def shard_stores(self, using=None, **kwargs):
         """
@@ -683,7 +679,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.shard_stores")
 
-        return await es.indices.shard_stores(index=self._index, **kwargs)
+        return await es.indices.shard_stores(index=self._name, **kwargs)
 
     async def forcemerge(self, using=None, **kwargs):
         """
@@ -702,7 +698,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.forcemerge")
 
-        return await es.indices.forcemerge(index=self._index, **kwargs)
+        return await es.indices.forcemerge(index=self._name, **kwargs)
 
     async def shrink(self, using=None, **kwargs):
         """
@@ -722,4 +718,4 @@ class Index(object):
         es = self._get_connection(using)
         ensure_async_connection(es, "Index.shrink")
 
-        return await es.indices.shrink(index=self._index, **kwargs)
+        return await es.indices.shrink(index=self._name, **kwargs)

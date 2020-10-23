@@ -232,7 +232,7 @@ class Document(ObjectBase):
         """
         if missing not in ("raise", "skip", "none"):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
-        
+
         es = cls._get_connection(using)
         ensure_sync_connection(es, "Document.mget")
 

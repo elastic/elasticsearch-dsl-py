@@ -734,9 +734,7 @@ class Search(Request):
         es = get_connection(self._using)
         ensure_sync_connection(es, "Search.scan")
 
-        for hit in scan(
-            es, query=self.to_dict(), index=self._index, **self._params
-        ):
+        for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
             yield self._get_result(hit)
 
     def delete(self):
@@ -747,9 +745,7 @@ class Search(Request):
         ensure_sync_connection(es, "Search.delete")
 
         return AttrDict(
-            es.delete_by_query(
-                index=self._index, body=self.to_dict(), **self._params
-            )
+            es.delete_by_query(index=self._index, body=self.to_dict(), **self._params)
         )
 
 
@@ -808,9 +804,7 @@ class MultiSearch(Request):
             ensure_sync_connection(es, "MultiSearch.execute")
 
             responses = es.msearch(
-                index=self._index,
-                body=self.to_dict(),
-                **self.params,
+                index=self._index, body=self.to_dict(), **self.params
             )
 
             out = []

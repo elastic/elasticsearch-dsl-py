@@ -55,9 +55,7 @@ class IndexTemplate(object):
         es = get_connection(using or self._index._using)
         ensure_sync_connection(es, "IndexTemplate.save")
 
-        return es.indices.put_template(
-            name=self._template_name, body=self.to_dict()
-        )
+        return es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 
 class Index(object):
@@ -284,11 +282,7 @@ class Index(object):
         es = get_connection(using)
         ensure_sync_connection(es, "Index.create")
 
-        return es.indices.create(
-            index=self._name,
-            body=self.to_dict(),
-            **kwargs,
-        )
+        return es.indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
     def is_closed(self, using=None):
         es = get_connection(using)
@@ -366,7 +360,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.analyze")
 
-        return es.indices.analyze(index=self._index, **kwargs)
+        return es.indices.analyze(index=self._name, **kwargs)
 
     def refresh(self, using=None, **kwargs):
         """
@@ -378,7 +372,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.refresh")
 
-        return es.indices.refresh(index=self._index, **kwargs)
+        return es.indices.refresh(index=self._name, **kwargs)
 
     def flush(self, using=None, **kwargs):
         """
@@ -390,7 +384,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.flush")
 
-        return es.indices.flush(index=self._index, **kwargs)
+        return es.indices.flush(index=self._name, **kwargs)
 
     def get(self, using=None, **kwargs):
         """
@@ -402,7 +396,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.get")
 
-        return es.indices.get(index=self._index, **kwargs)
+        return es.indices.get(index=self._name, **kwargs)
 
     def open(self, using=None, **kwargs):
         """
@@ -414,7 +408,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.open")
 
-        return es.indices.open(index=self._index, **kwargs)
+        return es.indices.open(index=self._name, **kwargs)
 
     def close(self, using=None, **kwargs):
         """
@@ -426,7 +420,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.close")
 
-        return es.indices.close(index=self._index, **kwargs)
+        return es.indices.close(index=self._name, **kwargs)
 
     def delete(self, using=None, **kwargs):
         """
@@ -438,7 +432,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.delete")
 
-        return es.indices.delete(index=self._index, **kwargs)
+        return es.indices.delete(index=self._name, **kwargs)
 
     def exists(self, using=None, **kwargs):
         """
@@ -450,7 +444,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.exists")
 
-        return es.indices.exists(index=self._index, **kwargs)
+        return es.indices.exists(index=self._name, **kwargs)
 
     def exists_type(self, using=None, **kwargs):
         """
@@ -462,7 +456,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.exists_type")
 
-        return es.indices.exists_type(index=self._index, **kwargs)
+        return es.indices.exists_type(index=self._name, **kwargs)
 
     def put_mapping(self, using=None, **kwargs):
         """
@@ -474,7 +468,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.put_mapping")
 
-        return es.indices.put_mapping(index=self._index, **kwargs)
+        return es.indices.put_mapping(index=self._name, **kwargs)
 
     def get_mapping(self, using=None, **kwargs):
         """
@@ -486,7 +480,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.get_mapping")
 
-        return es.indices.get_mapping(index=self._index, **kwargs)
+        return es.indices.get_mapping(index=self._name, **kwargs)
 
     def get_field_mapping(self, using=None, **kwargs):
         """
@@ -498,7 +492,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.get_field_mapping")
 
-        return es.indices.get_field_mapping(index=self._index, **kwargs)
+        return es.indices.get_field_mapping(index=self._name, **kwargs)
 
     def put_alias(self, using=None, **kwargs):
         """
@@ -510,7 +504,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.put_alias")
 
-        return es.indices.put_alias(index=self._index, **kwargs)
+        return es.indices.put_alias(index=self._name, **kwargs)
 
     def exists_alias(self, using=None, **kwargs):
         """
@@ -533,7 +527,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.get_alias")
 
-        return es.indices.get_alias(index=self._index, **kwargs)
+        return es.indices.get_alias(index=self._name, **kwargs)
 
     def delete_alias(self, using=None, **kwargs):
         """
@@ -545,7 +539,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.delete_alias")
 
-        return es.indices.delete_alias(index=self._index, **kwargs)
+        return es.indices.delete_alias(index=self._name, **kwargs)
 
     def get_settings(self, using=None, **kwargs):
         """
@@ -557,7 +551,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.get_settings")
 
-        return es.indices.get_settings(index=self._index, **kwargs)
+        return es.indices.get_settings(index=self._name, **kwargs)
 
     def put_settings(self, using=None, **kwargs):
         """
@@ -569,7 +563,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.put_settings")
 
-        return es.indices.put_settings(index=self._index, **kwargs)
+        return es.indices.put_settings(index=self._name, **kwargs)
 
     def stats(self, using=None, **kwargs):
         """
@@ -581,7 +575,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.stats")
 
-        return es.indices.stats(index=self._index, **kwargs)
+        return es.indices.stats(index=self._name, **kwargs)
 
     def segments(self, using=None, **kwargs):
         """
@@ -594,7 +588,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.segments")
 
-        return es.indices.segments(index=self._index, **kwargs)
+        return es.indices.segments(index=self._name, **kwargs)
 
     def validate_query(self, using=None, **kwargs):
         """
@@ -606,7 +600,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.validate_query")
 
-        return es.indices.validate_query(index=self._index, **kwargs)
+        return es.indices.validate_query(index=self._name, **kwargs)
 
     def clear_cache(self, using=None, **kwargs):
         """
@@ -618,7 +612,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.clear_cache")
 
-        return es.indices.clear_cache(index=self._index, **kwargs)
+        return es.indices.clear_cache(index=self._name, **kwargs)
 
     def recovery(self, using=None, **kwargs):
         """
@@ -631,7 +625,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.recovery")
 
-        return es.indices.recovery(index=self._index, **kwargs)
+        return es.indices.recovery(index=self._name, **kwargs)
 
     def upgrade(self, using=None, **kwargs):
         """
@@ -643,7 +637,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.upgrade")
 
-        return es.indices.upgrade(index=self._index, **kwargs)
+        return es.indices.upgrade(index=self._name, **kwargs)
 
     def get_upgrade(self, using=None, **kwargs):
         """
@@ -655,7 +649,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.get_upgrade")
 
-        return es.indices.get_upgrade(index=self._index, **kwargs)
+        return es.indices.get_upgrade(index=self._name, **kwargs)
 
     def flush_synced(self, using=None, **kwargs):
         """
@@ -668,7 +662,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.flush_synced")
 
-        return es.indices.flush_synced(index=self._index, **kwargs)
+        return es.indices.flush_synced(index=self._name, **kwargs)
 
     def shard_stores(self, using=None, **kwargs):
         """
@@ -683,7 +677,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.shard_stores")
 
-        return es.indices.shard_stores(index=self._index, **kwargs)
+        return es.indices.shard_stores(index=self._name, **kwargs)
 
     def forcemerge(self, using=None, **kwargs):
         """
@@ -702,7 +696,7 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.forcemerge")
 
-        return es.indices.forcemerge(index=self._index, **kwargs)
+        return es.indices.forcemerge(index=self._name, **kwargs)
 
     def shrink(self, using=None, **kwargs):
         """
@@ -722,4 +716,4 @@ class Index(object):
         es = self._get_connection(using)
         ensure_sync_connection(es, "Index.shrink")
 
-        return es.indices.shrink(index=self._index, **kwargs)
+        return es.indices.shrink(index=self._name, **kwargs)

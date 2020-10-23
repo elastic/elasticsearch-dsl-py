@@ -232,7 +232,7 @@ class Document(ObjectBase):
         """
         if missing not in ("raise", "skip", "none"):
             raise ValueError("'missing' must be 'raise', 'skip', or 'none'.")
-        
+
         es = cls._get_connection(using)
         ensure_async_connection(es, "Document.mget")
 
@@ -428,7 +428,9 @@ class Document(ObjectBase):
 
         return meta["result"]
 
-    async def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
+    async def save(
+        self, using=None, index=None, validate=True, skip_empty=True, **kwargs
+    ):
         """
         Save the document into elasticsearch. If the document doesn't exist it
         is created, it is overwritten otherwise. Returns ``True`` if this

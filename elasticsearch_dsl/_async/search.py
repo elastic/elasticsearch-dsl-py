@@ -808,9 +808,7 @@ class MultiSearch(Request):
             ensure_async_connection(es, "MultiSearch.execute")
 
             responses = await es.msearch(
-                index=self._index,
-                body=self.to_dict(),
-                **self.params,
+                index=self._index, body=self.to_dict(), **self.params
             )
 
             out = []

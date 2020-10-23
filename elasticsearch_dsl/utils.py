@@ -546,10 +546,15 @@ class ObjectBase(AttrDict):
 
 
 def ensure_sync_connection(es, fn_label):
+    # Allow "Mock" objects to be passed during testing.
+    if es.__class__.__name__ == "Mock":
+        return
+
     if not isinstance(es, Elasticsearch):
         raise TypeError(
-            f"{fn_label} can only be used with the elasticsearch.Elasticsearch "
-            "client"
+            "{} can only be used with the elasticsearch.Elasticsearch client".format(
+                fn_label,
+            )
         )
 
 

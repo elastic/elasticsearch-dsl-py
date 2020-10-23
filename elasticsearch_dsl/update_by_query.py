@@ -154,12 +154,10 @@ class UpdateByQuery(Request):
         the data.
         """
         es = get_connection(self._using)
-        ensure_sync_connection(es, "SyncMultiSearch.execute")
+        ensure_sync_connection(es, "MultiSearch.execute")
 
         self._response = self._response_class(
             self,
-            es.update_by_query(
-                index=self._index, body=self.to_dict(), **self._params
-            ),
+            es.update_by_query(index=self._index, body=self.to_dict(), **self._params),
         )
         return self._response
