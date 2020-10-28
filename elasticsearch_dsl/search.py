@@ -28,7 +28,7 @@ from six import iteritems, string_types
 
 from .aggs import A, AggBase
 from .connections import get_connection
-from .exceptions import IllegalOperation, FailedResponseException
+from .exceptions import FailedResponseException, IllegalOperation
 from .query import Bool, Q
 from .response import Hit, Response
 from .utils import AttrDict, DslBase
