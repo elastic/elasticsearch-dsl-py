@@ -429,14 +429,17 @@ def test_source():
 
 
 def test_source_on_clone():
-    assert {
-        "_source": {"includes": ["foo.bar.*"], "excludes": ["foo.one"]},
-        "query": {"bool": {"filter": [{"term": {"title": "python"}}]}},
-    } == search.Search().source(includes=["foo.bar.*"]).source(
-        excludes=["foo.one"]
-    ).filter(
-        "term", title="python"
-    ).to_dict()
+    assert (
+        {
+            "_source": {"includes": ["foo.bar.*"], "excludes": ["foo.one"]},
+            "query": {"bool": {"filter": [{"term": {"title": "python"}}]}},
+        }
+        == search.Search()
+        .source(includes=["foo.bar.*"])
+        .source(excludes=["foo.one"])
+        .filter("term", title="python")
+        .to_dict()
+    )
     assert {
         "_source": False,
         "query": {"bool": {"filter": [{"term": {"title": "python"}}]}},
