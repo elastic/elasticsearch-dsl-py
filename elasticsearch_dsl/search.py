@@ -699,7 +699,7 @@ class Search(Request):
         d = self.to_dict(count=True)
 
         response = es.count(index=self._index, body=d, **self._params)
-        if response.get('_shards', {}).get('failed', 0) > 0:
+        if response.get("_shards", {}).get("failed", 0) > 0:
             raise FailedResponseException("Response contains failed shards!")
 
         return response["count"]

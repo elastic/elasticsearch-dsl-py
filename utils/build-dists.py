@@ -95,10 +95,7 @@ def test_dist(dist):
         # Uninstall the dist, see that we can't import things anymore
         run(venv_python, "-m", "pip", "uninstall", "--yes", dist_name)
         run(
-            venv_python,
-            "-c",
-            f"from {dist_name} import Q",
-            expect_exit_code=256,
+            venv_python, "-c", f"from {dist_name} import Q", expect_exit_code=256,
         )
 
 
