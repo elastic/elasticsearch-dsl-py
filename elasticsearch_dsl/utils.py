@@ -32,7 +32,12 @@ from .exceptions import UnknownDslObject, ValidationException
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
 
-DOC_META_FIELDS = frozenset(("id", "routing",))
+DOC_META_FIELDS = frozenset(
+    (
+        "id",
+        "routing",
+    )
+)
 
 META_FIELDS = frozenset(
     (
