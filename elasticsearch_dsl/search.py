@@ -28,7 +28,7 @@ from six import iteritems, string_types
 
 from .aggs import A, AggBase
 from .connections import get_connection
-from .exceptions import IllegalOperation
+from .exceptions import IllegalOperation, FailedResponseException
 from .query import Bool, Q
 from .response import Hit, Response
 from .utils import AttrDict, DslBase
@@ -697,8 +697,12 @@ class Search(Request):
         es = get_connection(self._using)
 
         d = self.to_dict(count=True)
-        # TODO: failed shards detection
-        return es.count(index=self._index, body=d, **self._params)["count"]
+
+        response = es.count(index=self._index, body=d, **self._params)
+        if response.get('_shards', {}).get('failed', 0) > 0:
+            raise FailedResponseException(f"Response contains failed shards!")
+
+        return response["count"]
 
     def execute(self, ignore_cache=False):
         """
