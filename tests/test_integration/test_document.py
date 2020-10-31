@@ -333,6 +333,14 @@ def test_get(data_client):
     assert datetime(2014, 3, 3) == elasticsearch_repo.created_at
 
 
+def test_exists_return_true(data_client):
+    assert Repository.exists("elasticsearch-dsl-py")
+
+
+def test_exists_false(data_client):
+    assert not Repository.exists("elasticsearch-dsl-php")
+
+
 def test_get_with_tz_date(data_client):
     first_commit = Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
