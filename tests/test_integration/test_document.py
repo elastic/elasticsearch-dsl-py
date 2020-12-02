@@ -42,9 +42,7 @@ from elasticsearch_dsl import (
 )
 from elasticsearch_dsl.utils import AttrList
 
-snowball = analyzer(
-    "my_snow", tokenizer="standard", filter=["standard", "lowercase", "snowball"]
-)
+snowball = analyzer("my_snow", tokenizer="standard", filter=["lowercase", "snowball"])
 
 
 class User(InnerDoc):
