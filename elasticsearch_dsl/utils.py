@@ -566,3 +566,19 @@ def merge(data, new_data, raise_on_conflict=False):
             raise ValueError("Incompatible data for key %r, cannot be merged." % key)
         else:
             data[key] = value
+
+
+def recursive_to_dict(data):
+    """Recursively transform objects that potentially have .to_dict()
+    into dictionary literals by traversing AttrList, AttrDict, list,
+    tuple, and Mapping types.
+    """
+    if isinstance(data, AttrList):
+        data = list(data._l_)
+    elif hasattr(data, "to_dict"):
+        data = data.to_dict()
+    if isinstance(data, (list, tuple)):
+        return type(data)(recursive_to_dict(inner) for inner in data)
+    elif isinstance(data, collections_abc.Mapping):
+        return {key: recursive_to_dict(val) for key, val in data.items()}
+    return data
