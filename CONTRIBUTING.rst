@@ -24,7 +24,7 @@ The process for contributing to any of the Elasticsearch repositories is similar
 
     .. code:: bash
 
-        $ python setup.py test
+        $ nox -rs lint test
 
 3. Rebase your changes.
    Update your local repository with the most recent code from the main

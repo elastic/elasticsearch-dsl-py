@@ -36,13 +36,15 @@ install_requires = [
     'ipaddress; python_version<"3.3"',
 ]
 
-tests_require = [
+develop_requires = [
     "mock",
     "pytest>=3.0.0",
     "pytest-cov",
     "pytest-mock<3.0.0",
     "pytz",
     "coverage<5.0.0",
+    "sphinx",
+    "sphinx_rtd_theme",
 ]
 
 setup(
@@ -51,12 +53,13 @@ setup(
     license="Apache-2.0",
     url="https://github.com/elasticsearch/elasticsearch-dsl-py",
     long_description=long_description,
+    long_description_content_type="text/x-rst",
     version=__versionstr__,
     author="Honza Král",
     author_email="honza.kral@gmail.com",
     maintainer="Seth Michael Larson",
     maintainer_email="seth.larson@elastic.co",
-    packages=find_packages(where=".", exclude=("test_elasticsearch_dsl*",)),
+    packages=find_packages(where=".", exclude=("tests*",)),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -77,7 +80,5 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
     install_requires=install_requires,
-    test_suite="test_elasticsearch_dsl.run_tests.run_all",
-    tests_require=tests_require,
-    extras_require={"develop": tests_require + ["sphinx", "sphinx_rtd_theme"]},
+    extras_require={"develop": develop_requires},
 )
