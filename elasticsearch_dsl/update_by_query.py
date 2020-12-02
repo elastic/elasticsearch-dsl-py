@@ -19,6 +19,7 @@ from .connections import get_connection
 from .query import Bool, Q
 from .response import UpdateByQueryResponse
 from .search import ProxyDescriptor, QueryProxy, Request
+from .utils import recursive_to_dict
 
 
 class UpdateByQuery(Request):
@@ -141,9 +142,8 @@ class UpdateByQuery(Request):
         if self._script:
             d["script"] = self._script
 
-        d.update(self._extra)
-
-        d.update(kwargs)
+        d.update(recursive_to_dict(self._extra))
+        d.update(recursive_to_dict(kwargs))
         return d
 
     def execute(self):
