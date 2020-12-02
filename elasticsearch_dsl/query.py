@@ -180,6 +180,11 @@ class Bool(Query):
         )
 
     def __invert__(self):
+        # Because an empty Bool query is treated like
+        # MatchAll the inverse should be MatchNone
+        if not any(chain(self.must, self.filter, self.should, self.must_not)):
+            return MatchNone()
+
         negations = []
         for q in chain(self.must, self.filter):
             negations.append(~q)
