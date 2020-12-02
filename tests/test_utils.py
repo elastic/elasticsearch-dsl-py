@@ -19,7 +19,7 @@ import pickle
 
 from pytest import raises
 
-from elasticsearch_dsl import serializer, utils
+from elasticsearch_dsl import Q, serializer, utils
 
 
 def test_attrdict_pickle():
@@ -94,3 +94,9 @@ def test_serializer_deals_with_objects_with_to_dict():
             return 42
 
     assert serializer.serializer.dumps(MyClass()) == "42"
+
+
+def test_recursive_to_dict():
+    assert utils.recursive_to_dict({"k": [1, (1.0, {"v": Q("match", key="val")})]}) == {
+        "k": [1, (1.0, {"v": {"match": {"key": "val"}}})]
+    }
