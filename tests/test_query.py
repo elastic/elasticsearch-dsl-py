@@ -206,6 +206,12 @@ def test_not_match_none_is_match_all():
     assert ~q == query.MatchAll()
 
 
+def test_invert_empty_bool_is_match_none():
+    q = query.Bool()
+
+    assert ~q == query.MatchNone()
+
+
 def test_match_none_or_query_equals_query():
     q1 = query.Match(f=42)
     q2 = query.MatchNone()
