@@ -316,6 +316,10 @@ class Keyword(Field):
     name = "keyword"
 
 
+class ConstantKeyword(Keyword):
+    name = "constant_keyword"
+
+
 class Boolean(Field):
     name = "boolean"
     _coerce = True
