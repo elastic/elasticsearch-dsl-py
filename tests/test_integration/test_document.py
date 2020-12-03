@@ -226,6 +226,40 @@ def test_update_script(write_client):
     assert w.views == 47
 
 
+def test_save_and_update_return_doc_meta(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    resp = w.save(return_doc_meta=True)
+    assert resp["_index"] == "test-wiki"
+    assert resp["result"] == "created"
+    assert set(resp.keys()) == {
+        "_id",
+        "_index",
+        "_primary_term",
+        "_seq_no",
+        "_shards",
+        "_type",
+        "_version",
+        "result",
+    }
+
+    resp = w.update(
+        script="ctx._source.views += params.inc", inc=5, return_doc_meta=True
+    )
+    assert resp["_index"] == "test-wiki"
+    assert resp["result"] == "updated"
+    assert set(resp.keys()) == {
+        "_id",
+        "_index",
+        "_primary_term",
+        "_seq_no",
+        "_shards",
+        "_type",
+        "_version",
+        "result",
+    }
+
+
 def test_init(write_client):
     Repository.init(index="test-git")
 
