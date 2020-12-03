@@ -177,9 +177,9 @@ def test_constant_keyword():
     assert f.to_dict() == {"type": "constant_keyword"}
 
 
-def test_ranked_features():
+def test_rank_features():
     f = field.RankFeatures()
-    assert f.to_dict() == {"type": "ranked_features"}
+    assert f.to_dict() == {"type": "rank_features"}
 
 
 def test_object_dynamic_values():
