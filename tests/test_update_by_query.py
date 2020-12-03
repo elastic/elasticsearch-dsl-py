@@ -39,6 +39,9 @@ def test_ubq_to_dict():
     ubq = UpdateByQuery(extra={"size": 5})
     assert {"size": 5} == ubq.to_dict()
 
+    ubq = UpdateByQuery(extra={"extra_q": Q("term", category="conference")})
+    assert {"extra_q": {"term": {"category": "conference"}}} == ubq.to_dict()
+
 
 def test_complex_example():
     ubq = UpdateByQuery()

@@ -515,3 +515,65 @@ def test_update_from_dict():
         "indices_boost": [{"important-documents": 2}],
         "_source": ["id", "name"],
     } == s.to_dict()
+
+
+def test_rescore_query_to_dict():
+    s = search.Search(index="index-name")
+
+    positive_query = Q(
+        "function_score",
+        query=Q("term", tags="a"),
+        script_score={"script": "_score * 1"},
+    )
+
+    negative_query = Q(
+        "function_score",
+        query=Q("term", tags="b"),
+        script_score={"script": "_score * -100"},
+    )
+
+    s = s.query(positive_query)
+    s = s.extra(
+        rescore={"window_size": 100, "query": {"rescore_query": negative_query}}
+    )
+    assert s.to_dict() == {
+        "query": {
+            "function_score": {
+                "query": {"term": {"tags": "a"}},
+                "functions": [{"script_score": {"script": "_score * 1"}}],
+            }
+        },
+        "rescore": {
+            "window_size": 100,
+            "query": {
+                "rescore_query": {
+                    "function_score": {
+                        "query": {"term": {"tags": "b"}},
+                        "functions": [{"script_score": {"script": "_score * -100"}}],
+                    }
+                }
+            },
+        },
+    }
+
+    assert s.to_dict(
+        rescore={"window_size": 10, "query": {"rescore_query": positive_query}}
+    ) == {
+        "query": {
+            "function_score": {
+                "query": {"term": {"tags": "a"}},
+                "functions": [{"script_score": {"script": "_score * 1"}}],
+            }
+        },
+        "rescore": {
+            "window_size": 10,
+            "query": {
+                "rescore_query": {
+                    "function_score": {
+                        "query": {"term": {"tags": "a"}},
+                        "functions": [{"script_score": {"script": "_score * 1"}}],
+                    }
+                }
+            },
+        },
+    }
