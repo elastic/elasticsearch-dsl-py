@@ -18,6 +18,7 @@
 from copy import deepcopy
 
 from elasticsearch_dsl import Q, UpdateByQuery
+from elasticsearch_dsl.response import UpdateByQueryResponse
 
 
 def test_ubq_starts_with_no_query():
@@ -159,3 +160,14 @@ def test_overwrite_script():
     } == ubq.to_dict()
     ubq = ubq.script(source="ctx._source.likes++")
     assert {"script": {"source": "ctx._source.likes++"}} == ubq.to_dict()
+
+
+def test_update_by_query_response_success():
+    ubqr = UpdateByQueryResponse({}, {"timed_out": False, "failures": []})
+    assert ubqr.success()
+
+    ubqr = UpdateByQueryResponse({}, {"timed_out": True, "failures": []})
+    assert not ubqr.success()
+
+    ubqr = UpdateByQueryResponse({}, {"timed_out": False, "failures": [{}]})
+    assert not ubqr.success()
