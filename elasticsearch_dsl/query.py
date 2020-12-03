@@ -499,6 +499,11 @@ class Script(Query):
     name = "script"
 
 
+class ScriptScore(Query):
+    name = "script_score"
+    _param_defs = {"query": {"type": "query"}}
+
+
 class Type(Query):
     name = "type"
 
