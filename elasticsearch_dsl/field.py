@@ -378,6 +378,10 @@ class RankFeature(Float):
     name = "rank_feature"
 
 
+class RankFeatures(Field):
+    name = "rank_features"
+
+
 class Integer(Field):
     name = "integer"
     _coerce = True
