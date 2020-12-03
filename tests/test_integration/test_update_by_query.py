@@ -35,6 +35,7 @@ def test_update_by_query_no_script(write_client, setup_ubq_tests):
     assert response.updated == 52
     assert response.deleted == 0
     assert response.took > 0
+    assert response.success()
 
 
 def test_update_by_query_with_script(write_client, setup_ubq_tests):
@@ -69,3 +70,4 @@ def test_delete_by_query_with_script(write_client, setup_ubq_tests):
 
     assert response.total == 1
     assert response.deleted == 1
+    assert response.success()
