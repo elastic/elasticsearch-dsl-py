@@ -113,3 +113,6 @@ class UpdateByQueryResponse(AttrDict):
         super(AttrDict, self).__setattr__("_search", search)
         super(AttrDict, self).__setattr__("_doc_class", doc_class)
         super(UpdateByQueryResponse, self).__init__(response)
+
+    def success(self):
+        return not self.timed_out and not self.failures
