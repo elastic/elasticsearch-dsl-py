@@ -37,6 +37,7 @@ from elasticsearch_dsl import (
     Nested,
     Object,
     Q,
+    RankFeatures,
     Text,
     analyzer,
 )
@@ -52,6 +53,7 @@ class User(InnerDoc):
 class Wiki(Document):
     owner = Object(User)
     views = Long()
+    ranked = RankFeatures()
 
     class Index:
         name = "test-wiki"
@@ -204,7 +206,11 @@ def test_nested_top_hits_are_wrapped_properly(pull_request):
 
 def test_update_object_field(write_client):
     Wiki.init()
-    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py")
+    w = Wiki(
+        owner=User(name="Honza Kral"),
+        _id="elasticsearch-py",
+        ranked={"test1": 0.1, "topic2": 0.2},
+    )
     w.save()
 
     assert "updated" == w.update(owner=[{"name": "Honza"}, {"name": "Nick"}])
@@ -214,6 +220,8 @@ def test_update_object_field(write_client):
     w = Wiki.get(id="elasticsearch-py")
     assert w.owner[0].name == "Honza"
     assert w.owner[1].name == "Nick"
+
+    assert w.ranked == {"test1": 0.1, "topic2": 0.2}
 
 
 def test_update_script(write_client):
