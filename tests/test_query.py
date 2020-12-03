@@ -538,3 +538,18 @@ def test_function_score_from_dict():
     assert isinstance(sf, function.BoostFactor)
     assert 6 == sf.value
     assert {"boost_factor": 6} == sf.to_dict()
+
+
+def test_script_score():
+    d = {
+        "script_score": {
+            "query": {"match_all": {}},
+            "script": {"source": "...", "params": {}},
+        }
+    }
+    q = query.Q(d)
+
+    assert isinstance(q, query.ScriptScore)
+    assert isinstance(q.query, query.MatchAll)
+    assert q.script == {"source": "...", "params": {}}
+    assert q.to_dict() == d
