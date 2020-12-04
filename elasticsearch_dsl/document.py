@@ -331,6 +331,7 @@ class Document(ObjectBase):
         script_id=None,
         scripted_upsert=False,
         upsert=None,
+        return_doc_meta=False,
         **fields
     ):
         """
@@ -356,6 +357,8 @@ class Document(ObjectBase):
         :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
+        :arg return_doc_meta: set to ``True`` to return all metadata from the
+            index API call instead of only the operation result
 
         :return operation result noop/updated
         """
@@ -415,9 +418,17 @@ class Document(ObjectBase):
             if "_" + k in meta:
                 setattr(self.meta, k, meta["_" + k])
 
-        return meta["result"]
+        return meta if return_doc_meta else meta["result"]
 
-    def save(self, using=None, index=None, validate=True, skip_empty=True, **kwargs):
+    def save(
+        self,
+        using=None,
+        index=None,
+        validate=True,
+        skip_empty=True,
+        return_doc_meta=False,
+        **kwargs
+    ):
         """
         Save the document into elasticsearch. If the document doesn't exist it
         is created, it is overwritten otherwise. Returns ``True`` if this
@@ -430,6 +441,8 @@ class Document(ObjectBase):
         :arg skip_empty: if set to ``False`` will cause empty values (``None``,
             ``[]``, ``{}``) to be left on the document. Those values will be
             stripped out otherwise as they make no difference in elasticsearch.
+        :arg return_doc_meta: set to ``True`` to return all metadata from the
+            update API call instead of only the operation result
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
@@ -459,4 +472,4 @@ class Document(ObjectBase):
             if "_" + k in meta:
                 setattr(self.meta, k, meta["_" + k])
 
-        return meta["result"]
+        return meta if return_doc_meta else meta["result"]
