@@ -49,7 +49,7 @@ There are several different facets available:
   provides an option to split documents into groups based on a value of a field, for example ``TermsFacet(field='category')``
 
 ``DateHistogramFacet``
-  split documents into time intervals, example: ``DateHistogramFacet(field="published_date", interval="day")``
+  split documents into time intervals, example: ``DateHistogramFacet(field="published_date", calendar_interval="day")``
 
 ``HistogramFacet``
   similar to ``DateHistogramFacet`` but for numerical values: ``HistogramFacet(field="rating", interval=2)``

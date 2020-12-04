@@ -168,14 +168,34 @@ class HistogramFacet(Facet):
         )
 
 
+def _date_interval_month(d):
+    return (d + timedelta(days=32)).replace(day=1)
+
+
+def _date_interval_week(d):
+    return d + timedelta(days=7)
+
+
+def _date_interval_day(d):
+    return d + timedelta(days=1)
+
+
+def _date_interval_hour(d):
+    return d + timedelta(hours=1)
+
+
 class DateHistogramFacet(Facet):
     agg_type = "date_histogram"
 
     DATE_INTERVALS = {
-        "month": lambda d: (d + timedelta(days=32)).replace(day=1),
-        "week": lambda d: d + timedelta(days=7),
-        "day": lambda d: d + timedelta(days=1),
-        "hour": lambda d: d + timedelta(hours=1),
+        "month": _date_interval_month,
+        "1M": _date_interval_month,
+        "week": _date_interval_week,
+        "1w": _date_interval_week,
+        "day": _date_interval_day,
+        "1d": _date_interval_day,
+        "hour": _date_interval_hour,
+        "1h": _date_interval_hour,
     }
 
     def __init__(self, **kwargs):
@@ -194,12 +214,20 @@ class DateHistogramFacet(Facet):
             return bucket["key"]
 
     def get_value_filter(self, filter_value):
+        for interval_type in ("calendar_interval", "fixed_interval"):
+            if interval_type in self._params:
+                break
+        else:
+            interval_type = "interval"
+
         return Range(
             _expand__to_dot=False,
             **{
                 self._params["field"]: {
                     "gte": filter_value,
-                    "lt": self.DATE_INTERVALS[self._params["interval"]](filter_value),
+                    "lt": self.DATE_INTERVALS[self._params[interval_type]](
+                        filter_value
+                    ),
                 }
             }
         )
