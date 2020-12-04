@@ -18,6 +18,7 @@
 
 
 import os
+import re
 from datetime import datetime
 
 from elasticsearch.helpers import bulk
@@ -45,6 +46,16 @@ def client():
         return connection
     except SkipTest:
         skip()
+
+
+@fixture(scope="session")
+def es_version(client):
+    info = client.info()
+    print(info)
+    yield tuple(
+        int(x)
+        for x in re.match(r"^([0-9.]+)", info["version"]["number"]).group(1).split(".")
+    )
 
 
 @fixture
