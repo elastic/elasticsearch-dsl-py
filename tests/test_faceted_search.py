@@ -17,6 +17,8 @@
 
 from datetime import datetime
 
+import pytest
+
 from elasticsearch_dsl.faceted_search import (
     DateHistogramFacet,
     FacetedSearch,
@@ -144,3 +146,45 @@ def test_date_histogram_facet_with_1970_01_01_date():
     dhf = DateHistogramFacet()
     assert dhf.get_value({"key": None}) == datetime(1970, 1, 1, 0, 0)
     assert dhf.get_value({"key": 0}) == datetime(1970, 1, 1, 0, 0)
+
+
+@pytest.mark.parametrize(
+    ["interval_type", "interval"],
+    [
+        ("interval", "month"),
+        ("calendar_interval", "month"),
+        ("interval", "week"),
+        ("calendar_interval", "week"),
+        ("interval", "day"),
+        ("calendar_interval", "day"),
+        ("fixed_interval", "day"),
+        ("interval", "hour"),
+        ("fixed_interval", "hour"),
+        ("interval", "1M"),
+        ("calendar_interval", "1M"),
+        ("interval", "1w"),
+        ("calendar_interval", "1w"),
+        ("interval", "1d"),
+        ("calendar_interval", "1d"),
+        ("fixed_interval", "1d"),
+        ("interval", "1h"),
+        ("fixed_interval", "1h"),
+    ],
+)
+def test_date_histogram_interval_types(interval_type, interval):
+    dhf = DateHistogramFacet(field="@timestamp", **{interval_type: interval})
+    assert dhf.get_aggregation().to_dict() == {
+        "date_histogram": {
+            "field": "@timestamp",
+            interval_type: interval,
+            "min_doc_count": 0,
+        }
+    }
+    dhf.get_value_filter(datetime.now())
+
+
+def test_date_histogram_no_interval_keyerror():
+    dhf = DateHistogramFacet(field="@timestamp")
+    with pytest.raises(KeyError) as e:
+        dhf.get_value_filter(datetime.now())
+    assert str(e.value) == "'interval'"

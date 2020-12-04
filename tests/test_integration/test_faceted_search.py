@@ -17,6 +17,8 @@
 
 from datetime import datetime
 
+import pytest
+
 from elasticsearch_dsl import A, Boolean, Date, Document, Keyword
 from elasticsearch_dsl.faceted_search import (
     DateHistogramFacet,
@@ -27,25 +29,6 @@ from elasticsearch_dsl.faceted_search import (
 )
 
 from .test_document import PullRequest
-
-
-class CommitSearch(FacetedSearch):
-    index = "flat-git"
-    fields = (
-        "description",
-        "files",
-    )
-
-    facets = {
-        "files": TermsFacet(field="files"),
-        "frequency": DateHistogramFacet(
-            field="authored_date", interval="day", min_doc_count=1
-        ),
-        "deletions": RangeFacet(
-            field="stats.deletions",
-            ranges=[("ok", (None, 1)), ("good", (1, 5)), ("better", (5, None))],
-        ),
-    }
 
 
 class Repos(Document):
@@ -64,19 +47,6 @@ class Commit(Document):
         name = "git"
 
 
-class RepoSearch(FacetedSearch):
-    index = "git"
-    doc_types = [Repos]
-    facets = {
-        "public": TermsFacet(field="is_public"),
-        "created": DateHistogramFacet(field="created_at", interval="month"),
-    }
-
-    def search(self):
-        s = super(RepoSearch, self).search()
-        return s.filter("term", commit_repo="repo")
-
-
 class MetricSearch(FacetedSearch):
     index = "git"
     doc_types = [Commit]
@@ -86,15 +56,72 @@ class MetricSearch(FacetedSearch):
     }
 
 
-class PRSearch(FacetedSearch):
-    index = "test-prs"
-    doc_types = [PullRequest]
-    facets = {
-        "comments": NestedFacet(
-            "comments",
-            DateHistogramFacet(field="comments.created_at", interval="month"),
+@pytest.fixture(scope="session")
+def commit_search_cls(es_version):
+    if es_version >= (7, 2):
+        interval_kwargs = {"fixed_interval": "1d"}
+    else:
+        interval_kwargs = {"interval": "day"}
+
+    class CommitSearch(FacetedSearch):
+        index = "flat-git"
+        fields = (
+            "description",
+            "files",
         )
-    }
+
+        facets = {
+            "files": TermsFacet(field="files"),
+            "frequency": DateHistogramFacet(
+                field="authored_date", min_doc_count=1, **interval_kwargs
+            ),
+            "deletions": RangeFacet(
+                field="stats.deletions",
+                ranges=[("ok", (None, 1)), ("good", (1, 5)), ("better", (5, None))],
+            ),
+        }
+
+    return CommitSearch
+
+
+@pytest.fixture(scope="session")
+def repo_search_cls(es_version):
+    interval_type = "calendar_interval" if es_version >= (7, 2) else "interval"
+
+    class RepoSearch(FacetedSearch):
+        index = "git"
+        doc_types = [Repos]
+        facets = {
+            "public": TermsFacet(field="is_public"),
+            "created": DateHistogramFacet(
+                field="created_at", **{interval_type: "month"}
+            ),
+        }
+
+        def search(self):
+            s = super(RepoSearch, self).search()
+            return s.filter("term", commit_repo="repo")
+
+    return RepoSearch
+
+
+@pytest.fixture(scope="session")
+def pr_search_cls(es_version):
+    interval_type = "calendar_interval" if es_version >= (7, 2) else "interval"
+
+    class PRSearch(FacetedSearch):
+        index = "test-prs"
+        doc_types = [PullRequest]
+        facets = {
+            "comments": NestedFacet(
+                "comments",
+                DateHistogramFacet(
+                    field="comments.created_at", **{interval_type: "month"}
+                ),
+            )
+        }
+
+    return PRSearch
 
 
 def test_facet_with_custom_metric(data_client):
@@ -106,36 +133,36 @@ def test_facet_with_custom_metric(data_client):
     assert dates[0] == 1399038439000
 
 
-def test_nested_facet(pull_request):
-    prs = PRSearch()
+def test_nested_facet(pull_request, pr_search_cls):
+    prs = pr_search_cls()
     r = prs.execute()
 
     assert r.hits.total.value == 1
     assert [(datetime(2018, 1, 1, 0, 0), 1, False)] == r.facets.comments
 
 
-def test_nested_facet_with_filter(pull_request):
-    prs = PRSearch(filters={"comments": datetime(2018, 1, 1, 0, 0)})
+def test_nested_facet_with_filter(pull_request, pr_search_cls):
+    prs = pr_search_cls(filters={"comments": datetime(2018, 1, 1, 0, 0)})
     r = prs.execute()
 
     assert r.hits.total.value == 1
     assert [(datetime(2018, 1, 1, 0, 0), 1, True)] == r.facets.comments
 
-    prs = PRSearch(filters={"comments": datetime(2018, 2, 1, 0, 0)})
+    prs = pr_search_cls(filters={"comments": datetime(2018, 2, 1, 0, 0)})
     r = prs.execute()
     assert not r.hits
 
 
-def test_datehistogram_facet(data_client):
-    rs = RepoSearch()
+def test_datehistogram_facet(data_client, repo_search_cls):
+    rs = repo_search_cls()
     r = rs.execute()
 
     assert r.hits.total.value == 1
     assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 
-def test_boolean_facet(data_client):
-    rs = RepoSearch()
+def test_boolean_facet(data_client, repo_search_cls):
+    rs = repo_search_cls()
     r = rs.execute()
 
     assert r.hits.total.value == 1
@@ -144,9 +171,8 @@ def test_boolean_facet(data_client):
     assert value is True
 
 
-def test_empty_search_finds_everything(data_client):
-    cs = CommitSearch()
-
+def test_empty_search_finds_everything(data_client, es_version, commit_search_cls):
+    cs = commit_search_cls()
     r = cs.execute()
 
     assert r.hits.total.value == 52
@@ -190,8 +216,10 @@ def test_empty_search_finds_everything(data_client):
     ] == r.facets.deletions
 
 
-def test_term_filters_are_shown_as_selected_and_data_is_filtered(data_client):
-    cs = CommitSearch(filters={"files": "test_elasticsearch_dsl"})
+def test_term_filters_are_shown_as_selected_and_data_is_filtered(
+    data_client, commit_search_cls
+):
+    cs = commit_search_cls(filters={"files": "test_elasticsearch_dsl"})
 
     r = cs.execute()
 
@@ -234,16 +262,18 @@ def test_term_filters_are_shown_as_selected_and_data_is_filtered(data_client):
     ] == r.facets.deletions
 
 
-def test_range_filters_are_shown_as_selected_and_data_is_filtered(data_client):
-    cs = CommitSearch(filters={"deletions": "better"})
+def test_range_filters_are_shown_as_selected_and_data_is_filtered(
+    data_client, commit_search_cls
+):
+    cs = commit_search_cls(filters={"deletions": "better"})
 
     r = cs.execute()
 
     assert 19 == r.hits.total.value
 
 
-def test_pagination(data_client):
-    cs = CommitSearch()
+def test_pagination(data_client, commit_search_cls):
+    cs = commit_search_cls()
     cs = cs[0:20]
 
     assert 52 == cs.count()
