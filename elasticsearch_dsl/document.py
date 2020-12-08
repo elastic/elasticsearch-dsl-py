@@ -406,7 +406,11 @@ class Document(ObjectBase):
             doc_meta["retry_on_conflict"] = retry_on_conflict
 
         # Optimistic concurrency control
-        if "seq_no" in self.meta and "primary_term" in self.meta:
+        if (
+            retry_on_conflict in (None, 0)
+            and "seq_no" in self.meta
+            and "primary_term" in self.meta
+        ):
             doc_meta["if_seq_no"] = self.meta["seq_no"]
             doc_meta["if_primary_term"] = self.meta["primary_term"]
 
