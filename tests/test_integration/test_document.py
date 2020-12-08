@@ -234,6 +234,20 @@ def test_update_script(write_client):
     assert w.views == 47
 
 
+def test_update_retry_on_conflict(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    w1 = Wiki.get(id="elasticsearch-py")
+    w2 = Wiki.get(id="elasticsearch-py")
+    w1.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
+    w2.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
+
+    w = Wiki.get(id="elasticsearch-py")
+    assert w.views == 52
+
+
 def test_save_and_update_return_doc_meta(write_client):
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
