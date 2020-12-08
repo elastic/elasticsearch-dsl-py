@@ -18,6 +18,7 @@
 from datetime import datetime
 from ipaddress import ip_address
 
+import pytest
 from elasticsearch import ConflictError, NotFoundError
 from pytest import raises
 from pytz import timezone
@@ -246,6 +247,24 @@ def test_update_retry_on_conflict(write_client):
 
     w = Wiki.get(id="elasticsearch-py")
     assert w.views == 52
+
+
+@pytest.mark.parametrize("retry_on_conflict", [None, 0])
+def test_update_conflicting_version(write_client, retry_on_conflict):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    w1 = Wiki.get(id="elasticsearch-py")
+    w2 = Wiki.get(id="elasticsearch-py")
+    w1.update(script="ctx._source.views += params.inc", inc=5)
+
+    with raises(ConflictError):
+        w2.update(
+            script="ctx._source.views += params.inc",
+            inc=5,
+            retry_on_conflict=retry_on_conflict,
+        )
 
 
 def test_save_and_update_return_doc_meta(write_client):
