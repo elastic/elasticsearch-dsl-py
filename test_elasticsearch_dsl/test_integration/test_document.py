@@ -8,6 +8,7 @@ from elasticsearch_dsl import Document, Date, Text, Keyword, Mapping, InnerDoc, 
     Object, Nested, MetaField, Q, Long, Boolean, Double, Binary, Ip, analyzer
 from elasticsearch_dsl.utils import AttrList
 
+import pytest
 from pytest import raises, fixture
 
 snowball = analyzer('my_snow',
@@ -168,6 +169,37 @@ def test_update_script(write_client):
     w.update(script="ctx._source.views += params.inc", inc=5)
     w = Wiki.get(id='elasticsearch-py')
     assert w.views == 47
+
+def test_update_script_retry_on_conflict(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name='Honza Kral'), _id='elasticsearch-py', views=42)
+    w.save()
+
+    w1 = Wiki.get(id='elasticsearch-py')
+    w1.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
+
+    w2 = Wiki.get(id='elasticsearch-py')
+    w2.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
+
+    w = Wiki.get(id='elasticsearch-py')
+    assert w.views == 52
+
+@pytest.mark.parametrize("retry_on_conflict", [None, 0])
+def test_update_conflicting_version(write_client, retry_on_conflict):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    w1 = Wiki.get(id="elasticsearch-py")
+    w2 = Wiki.get(id="elasticsearch-py")
+    w1.update(script="ctx._source.views += params.inc", inc=5)
+
+    with raises(ConflictError):
+        w2.update(
+            script="ctx._source.views += params.inc",
+            inc=5,
+            retry_on_conflict=retry_on_conflict,
+        )
 
 def test_init(write_client):
     Repository.init(index='test-git')
