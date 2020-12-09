@@ -391,8 +391,9 @@ class Document(ObjectBase):
             if k in self.meta
         }
 
-        if retry_on_conflict is not None:
+        if retry_on_conflict not in (0, None):
             doc_meta['retry_on_conflict'] = retry_on_conflict
+            doc_meta['version'] = None
 
         meta = self._get_connection(using).update(
             index=self._get_index(index),
