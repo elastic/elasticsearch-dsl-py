@@ -47,6 +47,24 @@ To see all
 possible configuration options refer to the `documentation
 <http://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch>`_.
 
+Accessing the low level client when usingcreate_connection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you use functionality from the low-level elasticsearch_py client you may at time require access to the low-level client.
+You can retrieve and assign it using `connections`
+
+This example applies when you set a default connection:
+
+.. code:: python
+
+    es = connections.get_connection()
+    
+and this example applies if you have created a connection with an alias:
+
+.. code:: python
+
+    es = connections.get_connection('my_new_connection')
+
 Multiple clusters
 -----------------
 
