@@ -18,6 +18,7 @@
 from datetime import datetime
 from ipaddress import ip_address
 
+import pytest
 from elasticsearch import ConflictError, NotFoundError
 from pytest import raises
 from pytz import timezone
@@ -37,14 +38,13 @@ from elasticsearch_dsl import (
     Nested,
     Object,
     Q,
+    RankFeatures,
     Text,
     analyzer,
 )
 from elasticsearch_dsl.utils import AttrList
 
-snowball = analyzer(
-    "my_snow", tokenizer="standard", filter=["standard", "lowercase", "snowball"]
-)
+snowball = analyzer("my_snow", tokenizer="standard", filter=["lowercase", "snowball"])
 
 
 class User(InnerDoc):
@@ -54,6 +54,7 @@ class User(InnerDoc):
 class Wiki(Document):
     owner = Object(User)
     views = Long()
+    ranked = RankFeatures()
 
     class Index:
         name = "test-wiki"
@@ -206,7 +207,11 @@ def test_nested_top_hits_are_wrapped_properly(pull_request):
 
 def test_update_object_field(write_client):
     Wiki.init()
-    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py")
+    w = Wiki(
+        owner=User(name="Honza Kral"),
+        _id="elasticsearch-py",
+        ranked={"test1": 0.1, "topic2": 0.2},
+    )
     w.save()
 
     assert "updated" == w.update(owner=[{"name": "Honza"}, {"name": "Nick"}])
@@ -217,6 +222,8 @@ def test_update_object_field(write_client):
     assert w.owner[0].name == "Honza"
     assert w.owner[1].name == "Nick"
 
+    assert w.ranked == {"test1": 0.1, "topic2": 0.2}
+
 
 def test_update_script(write_client):
     Wiki.init()
@@ -226,6 +233,72 @@ def test_update_script(write_client):
     w.update(script="ctx._source.views += params.inc", inc=5)
     w = Wiki.get(id="elasticsearch-py")
     assert w.views == 47
+
+
+def test_update_retry_on_conflict(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    w1 = Wiki.get(id="elasticsearch-py")
+    w2 = Wiki.get(id="elasticsearch-py")
+    w1.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
+    w2.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
+
+    w = Wiki.get(id="elasticsearch-py")
+    assert w.views == 52
+
+
+@pytest.mark.parametrize("retry_on_conflict", [None, 0])
+def test_update_conflicting_version(write_client, retry_on_conflict):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    w1 = Wiki.get(id="elasticsearch-py")
+    w2 = Wiki.get(id="elasticsearch-py")
+    w1.update(script="ctx._source.views += params.inc", inc=5)
+
+    with raises(ConflictError):
+        w2.update(
+            script="ctx._source.views += params.inc",
+            inc=5,
+            retry_on_conflict=retry_on_conflict,
+        )
+
+
+def test_save_and_update_return_doc_meta(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    resp = w.save(return_doc_meta=True)
+    assert resp["_index"] == "test-wiki"
+    assert resp["result"] == "created"
+    assert set(resp.keys()) == {
+        "_id",
+        "_index",
+        "_primary_term",
+        "_seq_no",
+        "_shards",
+        "_type",
+        "_version",
+        "result",
+    }
+
+    resp = w.update(
+        script="ctx._source.views += params.inc", inc=5, return_doc_meta=True
+    )
+    assert resp["_index"] == "test-wiki"
+    assert resp["result"] == "updated"
+    assert set(resp.keys()) == {
+        "_id",
+        "_index",
+        "_primary_term",
+        "_seq_no",
+        "_shards",
+        "_type",
+        "_version",
+        "result",
+    }
 
 
 def test_init(write_client):

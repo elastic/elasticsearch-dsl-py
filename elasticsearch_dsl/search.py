@@ -31,7 +31,7 @@ from .connections import get_connection
 from .exceptions import FailedResponseException, IllegalOperation
 from .query import Bool, Q
 from .response import Hit, Response
-from .utils import AttrDict, DslBase
+from .utils import AttrDict, DslBase, recursive_to_dict
 
 
 class QueryProxy(object):
@@ -668,7 +668,7 @@ class Search(Request):
             if self._sort:
                 d["sort"] = self._sort
 
-            d.update(self._extra)
+            d.update(recursive_to_dict(self._extra))
 
             if self._source not in (None, {}):
                 d["_source"] = self._source
@@ -683,7 +683,7 @@ class Search(Request):
             if self._script_fields:
                 d["script_fields"] = self._script_fields
 
-        d.update(kwargs)
+        d.update(recursive_to_dict(kwargs))
         return d
 
     def count(self):

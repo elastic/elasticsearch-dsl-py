@@ -172,6 +172,16 @@ def test_binary():
     assert f.deserialize(None) is None
 
 
+def test_constant_keyword():
+    f = field.ConstantKeyword()
+    assert f.to_dict() == {"type": "constant_keyword"}
+
+
+def test_rank_features():
+    f = field.RankFeatures()
+    assert f.to_dict() == {"type": "rank_features"}
+
+
 def test_object_dynamic_values():
     for dynamic in True, False, "strict":
         f = field.Object(dynamic=dynamic)

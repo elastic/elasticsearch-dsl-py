@@ -206,6 +206,12 @@ def test_not_match_none_is_match_all():
     assert ~q == query.MatchAll()
 
 
+def test_invert_empty_bool_is_match_none():
+    q = query.Bool()
+
+    assert ~q == query.MatchNone()
+
+
 def test_match_none_or_query_equals_query():
     q1 = query.Match(f=42)
     q2 = query.MatchNone()
@@ -532,3 +538,18 @@ def test_function_score_from_dict():
     assert isinstance(sf, function.BoostFactor)
     assert 6 == sf.value
     assert {"boost_factor": 6} == sf.to_dict()
+
+
+def test_script_score():
+    d = {
+        "script_score": {
+            "query": {"match_all": {}},
+            "script": {"source": "...", "params": {}},
+        }
+    }
+    q = query.Q(d)
+
+    assert isinstance(q, query.ScriptScore)
+    assert isinstance(q.query, query.MatchAll)
+    assert q.script == {"source": "...", "params": {}}
+    assert q.to_dict() == d

@@ -23,16 +23,25 @@ SOURCE_FILES = (
     "docs/",
     "elasticsearch_dsl/",
     "examples/",
-    "test_elasticsearch_dsl/",
+    "tests/",
     "utils/",
 )
 
 
-@nox.session(python=["2.7", "3.4", "3.5", "3.6", "3.7", "3.8"])
+@nox.session(python=["2.7", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9"])
 def test(session):
     session.install(".[develop]")
 
-    session.run("python", "setup.py", "test")
+    if session.posargs:
+        argv = session.posargs
+    else:
+        argv = (
+            "-vvv",
+            "--cov=elasticsearch_dsl",
+            "--cov=tests.test_integration.test_examples",
+            "tests/",
+        )
+    session.run("pytest", *argv)
 
 
 @nox.session()

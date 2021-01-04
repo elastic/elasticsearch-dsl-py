@@ -316,6 +316,10 @@ class Keyword(Field):
     name = "keyword"
 
 
+class ConstantKeyword(Keyword):
+    name = "constant_keyword"
+
+
 class Boolean(Field):
     name = "boolean"
     _coerce = True
@@ -372,6 +376,10 @@ class Double(Float):
 
 class RankFeature(Float):
     name = "rank_feature"
+
+
+class RankFeatures(Field):
+    name = "rank_features"
 
 
 class Integer(Field):

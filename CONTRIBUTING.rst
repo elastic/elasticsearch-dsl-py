@@ -7,6 +7,11 @@ you would like to do. It may be that somebody is already working on it, or that
 there are particular issues that you should know about before implementing the
 change.
 
+If you want to be rewarded for your contributions, sign up for the
+`Elastic Contributor Program <https://www.elastic.co/community/contributor>`_.
+Each time you make a valid contribution, you’ll earn points that increase your
+chances of winning prizes and being recognized as a top contributor.
+
 We enjoy working with contributors to get their code accepted. There are many
 approaches to fixing a problem and it is important to find the best approach
 before writing too much code.
@@ -24,7 +29,7 @@ The process for contributing to any of the Elasticsearch repositories is similar
 
     .. code:: bash
 
-        $ python setup.py test
+        $ nox -rs lint test
 
 3. Rebase your changes.
    Update your local repository with the most recent code from the main
