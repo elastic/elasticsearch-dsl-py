@@ -38,7 +38,7 @@ from .test_integration.test_data import (
 from .test_integration.test_document import Comment, History, PullRequest, User
 
 
-@fixture(scope="session")
+@fixture(scope="session", autouse=True)
 def client():
     try:
         connection = get_test_client(nowait="WAIT_FOR_ES" not in os.environ)
@@ -51,7 +51,6 @@ def client():
 @fixture(scope="session")
 def es_version(client):
     info = client.info()
-    print(info)
     yield tuple(
         int(x)
         for x in re.match(r"^([0-9.]+)", info["version"]["number"]).group(1).split(".")

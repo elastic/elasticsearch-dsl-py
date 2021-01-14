@@ -15,18 +15,24 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync import Index, IndexTemplate
+from six import iteritems
 
-__all__ = ["Index", "IndexTemplate"]
+from ..response import Response
+from ..utils import AttrDict
 
-try:
-    from ._async import AsyncIndex, AsyncIndexTemplate  # noqa: F401
 
-    __all__.extend(
-        [
-            "AsyncIndex",
-            "AsyncIndexTemplate",
-        ]
-    )
-except ImportError:
-    pass
+class FacetedResponse(Response):
+    @property
+    def query_string(self):
+        return self._faceted_search._query
+
+    @property
+    def facets(self):
+        if not hasattr(self, "_facets"):
+            super(AttrDict, self).__setattr__("_facets", AttrDict({}))
+            for name, facet in iteritems(self._faceted_search.facets):
+                self._facets[name] = facet.get_values(
+                    getattr(getattr(self.aggregations, "_filter_" + name), name),
+                    self._faceted_search.filter_values.get(name, ()),
+                )
+        return self._facets

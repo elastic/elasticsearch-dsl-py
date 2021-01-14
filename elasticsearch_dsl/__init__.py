@@ -161,3 +161,26 @@ __all__ = [
     "token_filter",
     "tokenizer",
 ]
+
+try:
+    from .document import AsyncDocument  # noqa: F401
+    from .faceted_search import AsyncFacetedSearch  # noqa: F401
+    from .index import AsyncIndex, AsyncIndexTemplate  # noqa: F401
+    from .mapping import AsyncMapping  # noqa: F401
+    from .search import AsyncMultiSearch, AsyncSearch  # noqa: F401
+    from .update_by_query import AsyncUpdateByQuery  # noqa: F401
+
+    __all__.extend(
+        [
+            "AsyncDocument",
+            "AsyncFacetedSearch",
+            "AsyncIndex",
+            "AsyncIndexTemplate",
+            "AsyncMapping",
+            "AsyncSearch",
+            "AsyncMultiSearch",
+            "AsyncUpdateByQuery",
+        ]
+    )
+except ImportError:
+    pass

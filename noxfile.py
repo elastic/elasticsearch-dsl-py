@@ -44,9 +44,10 @@ def test(session):
     session.run("pytest", *argv)
 
 
-@nox.session()
+@nox.session(python="3")
 def format(session):
-    session.install("black", "isort")
+    session.install("black", "isort", "unasync")
+    session.run("python", "utils/unasync-files.py", "fix")
     session.run(
         "black", "--target-version=py27", "--target-version=py37", *SOURCE_FILES
     )
@@ -56,9 +57,10 @@ def format(session):
     lint(session)
 
 
-@nox.session
+@nox.session(python="3")
 def lint(session):
-    session.install("flake8", "black", "isort")
+    session.install("flake8", "black", "isort", "unasync")
+    session.run("python", "utils/unasync-files.py", "check")
     session.run(
         "black",
         "--check",
@@ -67,7 +69,7 @@ def lint(session):
         *SOURCE_FILES
     )
     session.run("isort", "--check", *SOURCE_FILES)
-    session.run("flake8", "--ignore=E501,E741,W503", *SOURCE_FILES)
+    session.run("flake8", "--ignore=E501,E741,W503,E402", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
 
 

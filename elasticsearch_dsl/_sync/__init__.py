@@ -15,18 +15,22 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync import Index, IndexTemplate
-
-__all__ = ["Index", "IndexTemplate"]
-
 try:
-    from ._async import AsyncIndex, AsyncIndexTemplate  # noqa: F401
+    from .document import Document, IndexMeta
+    from .faceted_search import FacetedSearch
+    from .index import Index, IndexTemplate
+    from .search import MultiSearch, Search
+    from .update_by_query import UpdateByQuery
 
-    __all__.extend(
-        [
-            "AsyncIndex",
-            "AsyncIndexTemplate",
-        ]
-    )
-except ImportError:
+    __all__ = [
+        "Document",
+        "IndexMeta",
+        "FacetedSearch",
+        "Index",
+        "IndexTemplate",
+        "Search",
+        "MultiSearch",
+        "UpdateByQuery",
+    ]
+except (ImportError, SyntaxError):
     pass

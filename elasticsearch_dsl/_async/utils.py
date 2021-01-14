@@ -15,18 +15,5 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync import Index, IndexTemplate
-
-__all__ = ["Index", "IndexTemplate"]
-
-try:
-    from ._async import AsyncIndex, AsyncIndexTemplate  # noqa: F401
-
-    __all__.extend(
-        [
-            "AsyncIndex",
-            "AsyncIndexTemplate",
-        ]
-    )
-except ImportError:
-    pass
+ASYNC_IS_ASYNC = True
+SYNC_IS_ASYNC = False

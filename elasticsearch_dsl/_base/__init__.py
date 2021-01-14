@@ -15,18 +15,14 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync import Index, IndexTemplate
+from .faceted_search import FacetedResponse
+from .search import AggsProxy, ProxyDescriptor, QueryProxy, Request, Response
 
-__all__ = ["Index", "IndexTemplate"]
-
-try:
-    from ._async import AsyncIndex, AsyncIndexTemplate  # noqa: F401
-
-    __all__.extend(
-        [
-            "AsyncIndex",
-            "AsyncIndexTemplate",
-        ]
-    )
-except ImportError:
-    pass
+__all__ = [
+    "FacetedResponse",
+    "AggsProxy",
+    "ProxyDescriptor",
+    "QueryProxy",
+    "Request",
+    "Response",
+]
