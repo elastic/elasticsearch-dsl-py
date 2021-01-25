@@ -25,8 +25,8 @@ from fnmatch import fnmatch
 from elasticsearch.exceptions import NotFoundError, RequestError
 from six import add_metaclass
 
+from .._base.document import DocumentMeta
 from ..connections import get_connection
-from ..document import DocumentMeta
 from ..exceptions import IllegalOperation, ValidationException
 from ..utils import DOC_META_FIELDS, META_FIELDS, ObjectBase, merge
 from .search import AsyncSearch

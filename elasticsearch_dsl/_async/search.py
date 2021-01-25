@@ -21,7 +21,7 @@ from elasticsearch.exceptions import TransportError
 from elasticsearch.helpers import async_scan
 from six import iteritems, string_types
 
-from .._base import AggsProxy, ProxyDescriptor, QueryProxy, Request
+from .._base.search import AggsProxy, ProxyDescriptor, QueryProxy, Request
 from ..aggs import A
 from ..connections import get_connection
 from ..exceptions import IllegalOperation

@@ -14,15 +14,3 @@
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
-
-from .faceted_search import FacetedResponse
-from .search import AggsProxy, ProxyDescriptor, QueryProxy, Request, Response
-
-__all__ = [
-    "FacetedResponse",
-    "AggsProxy",
-    "ProxyDescriptor",
-    "QueryProxy",
-    "Request",
-    "Response",
-]

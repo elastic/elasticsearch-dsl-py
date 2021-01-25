@@ -15,15 +15,15 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync import UpdateByQuery
+from ._sync.update_by_query import UpdateByQuery
 
 __all__ = [
     "UpdateByQuery",
 ]
 
 try:
-    from ._async import AsyncUpdateByQuery  # noqa: F401
+    from ._async.update_by_query import AsyncUpdateByQuery  # noqa: F401
 
     __all__.append("AsyncUpdateByQuery")
-except ImportError:
+except (ImportError, SyntaxError):
     pass

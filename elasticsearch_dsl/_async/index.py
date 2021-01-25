@@ -18,8 +18,8 @@
 from .. import analysis
 from ..connections import get_connection
 from ..exceptions import IllegalOperation
-from ..mapping import Mapping
 from ..utils import merge
+from .mapping import AsyncMapping
 from .search import AsyncSearch
 from .update_by_query import AsyncUpdateByQuery
 from .utils import ASYNC_IS_ASYNC
@@ -73,7 +73,7 @@ class AsyncIndex(object):
 
     def get_or_create_mapping(self):
         if self._mapping is None:
-            self._mapping = Mapping()
+            self._mapping = AsyncMapping()
         return self._mapping
 
     def as_template(self, template_name, pattern=None, order=None):

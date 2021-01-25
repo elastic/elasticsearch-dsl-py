@@ -15,8 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._base import AggsProxy, ProxyDescriptor, QueryProxy, Request
-from ._sync import MultiSearch, Search
+from ._base.search import AggsProxy, ProxyDescriptor, QueryProxy, Request
+from ._sync.search import MultiSearch, Search
 
 # 'Q' is here because test suite uses it, don't
 # want to break users relying on it.
@@ -33,8 +33,8 @@ __all__ = [
 ]
 
 try:
-    from ._async import AsyncMultiSearch, AsyncSearch  # noqa: F401
+    from ._async.search import AsyncMultiSearch, AsyncSearch  # noqa: F401
 
     __all__.extend(["AsyncSearch", "AsyncMultiSearch"])
-except ImportError:
+except (ImportError, SyntaxError):
     pass

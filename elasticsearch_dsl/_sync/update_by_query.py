@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .._base import ProxyDescriptor, QueryProxy, Request
+from .._base.search import ProxyDescriptor, QueryProxy, Request
 from ..connections import get_connection
 from ..query import Bool, Q
 from ..response import UpdateByQueryResponse

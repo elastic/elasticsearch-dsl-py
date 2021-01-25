@@ -14,23 +14,3 @@
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
-
-try:
-    from .document import Document, IndexMeta
-    from .faceted_search import FacetedSearch
-    from .index import Index, IndexTemplate
-    from .search import MultiSearch, Search
-    from .update_by_query import UpdateByQuery
-
-    __all__ = [
-        "Document",
-        "IndexMeta",
-        "FacetedSearch",
-        "Index",
-        "IndexTemplate",
-        "Search",
-        "MultiSearch",
-        "UpdateByQuery",
-    ]
-except (ImportError, SyntaxError):
-    pass

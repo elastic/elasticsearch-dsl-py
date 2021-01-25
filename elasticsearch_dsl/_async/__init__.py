@@ -14,23 +14,3 @@
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
-
-try:
-    from .document import AsyncDocument, AsyncIndexMeta
-    from .faceted_search import AsyncFacetedSearch
-    from .index import AsyncIndex, AsyncIndexTemplate
-    from .search import AsyncMultiSearch, AsyncSearch
-    from .update_by_query import AsyncUpdateByQuery
-
-    __all__ = [
-        "AsyncDocument",
-        "AsyncIndexMeta",
-        "AsyncFacetedSearch",
-        "AsyncIndex",
-        "AsyncIndexTemplate",
-        "AsyncSearch",
-        "AsyncMultiSearch",
-        "AsyncUpdateByQuery",
-    ]
-except (ImportError, SyntaxError):
-    pass

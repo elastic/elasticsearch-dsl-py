@@ -238,8 +238,8 @@ class NestedFacet(Facet):
             return Nested(path=self._path, query=inner_q)
 
 
-from ._base import FacetedResponse
-from ._sync import FacetedSearch
+from ._base.faceted_search import FacetedResponse
+from ._sync.faceted_search import FacetedSearch
 
 __all__ = [
     "FacetedSearch",
@@ -252,8 +252,8 @@ __all__ = [
 ]
 
 try:
-    from ._async import AsyncFacetedSearch  # noqa: F401
+    from ._async.faceted_search import AsyncFacetedSearch  # noqa: F401
 
     __all__.append("AsyncFacetedSearch")
-except ImportError:
+except (ImportError, SyntaxError):
     pass

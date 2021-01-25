@@ -17,7 +17,7 @@
 
 from six import iteritems, itervalues
 
-from .._base import FacetedResponse
+from .._base.faceted_search import FacetedResponse
 from ..query import MatchAll
 from .search import AsyncSearch
 
