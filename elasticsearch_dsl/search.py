@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 try:
-    from ._sync import AsyncMultiSearch, AsyncSearch  # noqa: F401
+    from ._async import AsyncMultiSearch, AsyncSearch  # noqa: F401
 
     __all__.extend(["AsyncSearch", "AsyncMultiSearch"])
 except ImportError:
