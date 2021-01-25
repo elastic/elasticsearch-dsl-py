@@ -17,11 +17,22 @@
 
 import json
 
+import pytest
+
 from elasticsearch_dsl import Keyword, Nested, Text, analysis, mapping
 
+mapping_classes = [mapping.Mapping]
 
-def test_mapping_can_has_fields():
-    m = mapping.Mapping()
+# If 'AsyncMapping' is available test that as well
+if hasattr(mapping, "AsyncMapping"):
+    mapping_classes.append(mapping.AsyncMapping)
+
+mapping_cls = pytest.mark.parametrize("mapping_cls", mapping_classes)
+
+
+@mapping_cls
+def test_mapping_can_has_fields(mapping_cls):
+    m = mapping_cls()
     m.field("name", "text").field("tags", "keyword")
 
     assert {
@@ -29,7 +40,8 @@ def test_mapping_can_has_fields():
     } == m.to_dict()
 
 
-def test_mapping_update_is_recursive():
+@mapping_cls
+def test_mapping_update_is_recursive(mapping_cls):
     m1 = mapping.Mapping()
     m1.field("title", "text")
     m1.field("author", "object")
@@ -62,8 +74,9 @@ def test_mapping_update_is_recursive():
     } == m1.to_dict()
 
 
-def test_properties_can_iterate_over_all_the_fields():
-    m = mapping.Mapping()
+@mapping_cls
+def test_properties_can_iterate_over_all_the_fields(mapping_cls):
+    m = mapping_cls()
     m.field("f1", "text", test_attr="f1", fields={"f2": Keyword(test_attr="f2")})
     m.field("f3", Nested(test_attr="f3", properties={"f4": Text(test_attr="f4")}))
 
@@ -72,7 +85,8 @@ def test_properties_can_iterate_over_all_the_fields():
     }
 
 
-def test_mapping_can_collect_all_analyzers_and_normalizers():
+@mapping_cls
+def test_mapping_can_collect_all_analyzers_and_normalizers(mapping_cls):
     a1 = analysis.analyzer(
         "my_analyzer1",
         tokenizer="keyword",
@@ -100,7 +114,7 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
     )
     n3 = analysis.normalizer("unknown_custom")
 
-    m = mapping.Mapping()
+    m = mapping_cls()
     m.field(
         "title",
         "text",
@@ -145,7 +159,8 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
     assert json.loads(json.dumps(m.to_dict())) == m.to_dict()
 
 
-def test_mapping_can_collect_multiple_analyzers():
+@mapping_cls
+def test_mapping_can_collect_multiple_analyzers(mapping_cls):
     a1 = analysis.analyzer(
         "my_analyzer1",
         tokenizer="keyword",
@@ -159,7 +174,7 @@ def test_mapping_can_collect_multiple_analyzers():
         tokenizer=analysis.tokenizer("trigram", "nGram", min_gram=3, max_gram=3),
         filter=[analysis.token_filter("my_filter2", "stop", stopwords=["c", "d"])],
     )
-    m = mapping.Mapping()
+    m = mapping_cls()
     m.field("title", "text", analyzer=a1, search_analyzer=a2)
     m.field(
         "text",
@@ -191,9 +206,10 @@ def test_mapping_can_collect_multiple_analyzers():
     } == m._collect_analysis()
 
 
-def test_even_non_custom_analyzers_can_have_params():
+@mapping_cls
+def test_even_non_custom_analyzers_can_have_params(mapping_cls):
     a1 = analysis.analyzer("whitespace", type="pattern", pattern=r"\\s+")
-    m = mapping.Mapping()
+    m = mapping_cls()
     m.field("title", "text", analyzer=a1)
 
     assert {
@@ -201,15 +217,17 @@ def test_even_non_custom_analyzers_can_have_params():
     } == m._collect_analysis()
 
 
-def test_resolve_field_can_resolve_multifields():
-    m = mapping.Mapping()
+@mapping_cls
+def test_resolve_field_can_resolve_multifields(mapping_cls):
+    m = mapping_cls()
     m.field("title", "text", fields={"keyword": Keyword()})
 
     assert isinstance(m.resolve_field("title.keyword"), Keyword)
 
 
-def test_resolve_nested():
-    m = mapping.Mapping()
+@mapping_cls
+def test_resolve_nested(mapping_cls):
+    m = mapping_cls()
     m.field("n1", "nested", properties={"n2": Nested(properties={"k1": Keyword()})})
     m.field("k2", "keyword")
 

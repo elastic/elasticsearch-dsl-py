@@ -17,18 +17,34 @@
 
 from copy import deepcopy
 
+import pytest
+
 from elasticsearch_dsl import Q, UpdateByQuery
 from elasticsearch_dsl.response import UpdateByQueryResponse
 
+ubq_classes = [UpdateByQuery]
 
-def test_ubq_starts_with_no_query():
-    ubq = UpdateByQuery()
+# If 'AsyncUpdateByQuery' is available test that as well
+try:
+    from elasticsearch_dsl import AsyncUpdateByQuery
+
+    ubq_classes.append(AsyncUpdateByQuery)
+except ImportError:
+    pass
+
+ubq_cls = pytest.mark.parametrize("ubq_cls", ubq_classes)
+
+
+@ubq_cls
+def test_ubq_starts_with_no_query(ubq_cls):
+    ubq = ubq_cls()
 
     assert ubq.query._proxied is None
 
 
-def test_ubq_to_dict():
-    ubq = UpdateByQuery()
+@ubq_cls
+def test_ubq_to_dict(ubq_cls):
+    ubq = ubq_cls()
     assert {} == ubq.to_dict()
 
     ubq = ubq.query("match", f=42)
@@ -36,15 +52,16 @@ def test_ubq_to_dict():
 
     assert {"query": {"match": {"f": 42}}, "size": 10} == ubq.to_dict(size=10)
 
-    ubq = UpdateByQuery(extra={"size": 5})
+    ubq = ubq_cls(extra={"size": 5})
     assert {"size": 5} == ubq.to_dict()
 
-    ubq = UpdateByQuery(extra={"extra_q": Q("term", category="conference")})
+    ubq = ubq_cls(extra={"extra_q": Q("term", category="conference")})
     assert {"extra_q": {"term": {"category": "conference"}}} == ubq.to_dict()
 
 
-def test_complex_example():
-    ubq = UpdateByQuery()
+@ubq_cls
+def test_complex_example(ubq_cls):
+    ubq = ubq_cls()
     ubq = (
         ubq.query("match", title="python")
         .query(~Q("match", title="ruby"))
@@ -81,8 +98,9 @@ def test_complex_example():
     } == ubq.to_dict()
 
 
-def test_exclude():
-    ubq = UpdateByQuery()
+@ubq_cls
+def test_exclude(ubq_cls):
+    ubq = ubq_cls()
     ubq = ubq.exclude("match", title="python")
 
     assert {
@@ -94,7 +112,8 @@ def test_exclude():
     } == ubq.to_dict()
 
 
-def test_reverse():
+@ubq_cls
+def test_reverse(ubq_cls):
     d = {
         "query": {
             "filtered": {
@@ -124,14 +143,15 @@ def test_reverse():
 
     d2 = deepcopy(d)
 
-    ubq = UpdateByQuery.from_dict(d)
+    ubq = ubq_cls.from_dict(d)
 
     assert d == d2
     assert d == ubq.to_dict()
 
 
-def test_from_dict_doesnt_need_query():
-    ubq = UpdateByQuery.from_dict({"script": {"source": "test"}})
+@ubq_cls
+def test_from_dict_doesnt_need_query(ubq_cls):
+    ubq = ubq_cls.from_dict({"script": {"source": "test"}})
 
     assert {"script": {"source": "test"}} == ubq.to_dict()
 
@@ -146,8 +166,9 @@ def test_params_being_passed_to_search(mock_client):
     )
 
 
-def test_overwrite_script():
-    ubq = UpdateByQuery()
+@ubq_cls
+def test_overwrite_script(ubq_cls):
+    ubq = ubq_cls()
     ubq = ubq.script(
         source="ctx._source.likes += params.f", lang="painless", params={"f": 3}
     )
