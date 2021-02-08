@@ -41,6 +41,8 @@ def test(session):
             "--cov=tests.test_integration.test_examples",
             "tests/",
         )
+        if session.python in ("2.7", "3.4", "3.5"):
+            argv += ("--ignore=tests/test_async/",)
     session.run("pytest", *argv)
 
 
