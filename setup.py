@@ -41,11 +41,13 @@ develop_requires = [
     "pytest>=3.0.0",
     "pytest-cov",
     "pytest-mock<3.0.0",
-    "pytest-asyncio; python_version>='3.6'",
     "pytz",
     "coverage<5.0.0",
     "sphinx",
     "sphinx_rtd_theme",
+    # async dependencies
+    "aiohttp; python_version>='3.6'",
+    "pytest-asyncio; python_version>='3.6'",
 ]
 
 setup(

@@ -32,7 +32,7 @@ class SerializationDoc(AsyncDocument):
 
 
 async def test_serialization(write_client):
-    await SerializationDoc.init()
+    await SerializationDoc.init(using="async")
     await write_client.index(
         index="test-serialization",
         id=42,
@@ -44,7 +44,7 @@ async def test_serialization(write_client):
             "ip": ["::1", "127.0.0.1", None],
         },
     )
-    sd = await SerializationDoc.get(id=42)
+    sd = await SerializationDoc.get(id=42, using="async")
 
     assert sd.i == [1, 2, 3, None]
     assert sd.b == [True, False, True, False, None]
