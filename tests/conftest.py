@@ -17,12 +17,11 @@
 #  under the License.
 
 
-import os
 import re
 from datetime import datetime
 
+from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from elasticsearch.helpers.test import SkipTest, get_test_client
 from mock import Mock
 from pytest import fixture, skip
 
@@ -41,11 +40,13 @@ from .test_integration.test_document import Comment, History, PullRequest, User
 @fixture(scope="session", autouse=True)
 def client():
     try:
-        connection = get_test_client(nowait="WAIT_FOR_ES" not in os.environ)
-        add_connection("default", connection)
-        return connection
-    except SkipTest:
-        skip()
+        connection = Elasticsearch("http://localhost:9200")
+        connection.info()
+    except Exception:
+        return skip("Couldn't connect to Elasticsearch")
+
+    add_connection("default", connection)
+    return connection
 
 
 @fixture(scope="session")

@@ -374,7 +374,9 @@ class AsyncIndex(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.flush`` unchanged.
         """
-        return self._get_connection(using).indices.flush(index=self._name, **kwargs)
+        return await self._get_connection(using).indices.flush(
+            index=self._name, **kwargs
+        )
 
     async def get(self, using=None, **kwargs):
         """

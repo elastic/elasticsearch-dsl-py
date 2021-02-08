@@ -15,18 +15,31 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl import AsyncDocument, AsyncIndex, AsyncMapping, field
+from pytest import fixture, mark, skip
+
+from elasticsearch_dsl.connections import add_connection
+
+pytestmark = mark.asyncio
 
 
-def test_async_document_index_mapping():
-    class ExampleDoc1(AsyncDocument):
-        title = field.Text()
+@fixture(scope="function", autouse=True)
+async def async_client():
+    try:
+        from elasticsearch import AsyncElasticsearch
+    except ImportError:
+        return skip("asyncio support must be available")
+    try:
+        connection = AsyncElasticsearch("http://localhost:9200")
+        await connection.info()
+    except Exception:
+        return skip("Couldn't connect to Elasticsearch")
 
-        class Index:
-            name = "example-doc-1"
+    add_connection("async", connection)
+    return connection
 
-    index = ExampleDoc1._index
-    assert isinstance(index, AsyncIndex)
 
-    mapping = index.get_or_create_mapping()
-    assert isinstance(mapping, AsyncMapping)
+@fixture
+async def write_client(async_client):
+    yield async_client
+    await async_client.indices.delete("test-*", ignore=404)
+    await async_client.indices.delete_template("test-template", ignore=404)
