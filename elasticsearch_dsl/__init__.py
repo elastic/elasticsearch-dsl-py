@@ -182,5 +182,6 @@ try:
             "AsyncUpdateByQuery",
         ]
     )
+    __all__.sort()
 except ImportError:
     pass
