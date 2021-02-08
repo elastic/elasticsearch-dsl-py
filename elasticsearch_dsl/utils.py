@@ -22,6 +22,7 @@ try:
 except ImportError:
     import collections as collections_abc
 
+import inspect
 from copy import copy
 
 from six import add_metaclass, iteritems
@@ -582,3 +583,13 @@ def recursive_to_dict(data):
     elif isinstance(data, collections_abc.Mapping):
         return {key: recursive_to_dict(val) for key, val in data.items()}
     return data
+
+
+def iscoroutinefunction(x):
+    """Detects whether a function returns a coroutine. Specifically
+    returns 'True' if the function is defined via 'async def'
+    """
+    try:
+        return inspect.iscoroutinefunction(x)
+    except AttributeError:
+        return False

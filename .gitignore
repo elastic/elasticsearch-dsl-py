@@ -8,6 +8,7 @@ build
 *.egg
 coverage.xml
 junit.xml
+elasticsearch_dsl/_unasync/
 test_elasticsearch_dsl/htmlcov
 docs/_build
 .cache

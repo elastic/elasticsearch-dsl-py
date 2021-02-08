@@ -15,18 +15,18 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync.index import Index, IndexTemplate
+from elasticsearch_dsl import AsyncDocument, AsyncIndex, AsyncMapping, field
 
-__all__ = ["Index", "IndexTemplate"]
 
-try:
-    from ._async.index import AsyncIndex, AsyncIndexTemplate  # noqa: F401
+def test_async_document_index_mapping():
+    class ExampleDoc1(AsyncDocument):
+        title = field.Text()
 
-    __all__.extend(
-        [
-            "AsyncIndex",
-            "AsyncIndexTemplate",
-        ]
-    )
-except (ImportError, SyntaxError):
-    pass
+        class Index:
+            name = "example-doc-1"
+
+    index = ExampleDoc1._index
+    assert isinstance(index, AsyncIndex)
+
+    mapping = index.get_or_create_mapping()
+    assert isinstance(mapping, AsyncMapping)

@@ -45,7 +45,16 @@ develop_requires = [
     "coverage<5.0.0",
     "sphinx",
     "sphinx_rtd_theme",
+    # async dependencies
+    "aiohttp; python_version>='3.6'",
+    "pytest-asyncio; python_version>='3.6'",
 ]
+
+packages = [package for package in find_packages(where=".", exclude=("tests*",))]
+if any("_unasync" in package for package in packages):
+    raise RuntimeError(
+        "'elasticsearch_dsl/_unasync' directory shouldn't " "exist when building dists"
+    )
 
 setup(
     name="elasticsearch-dsl",
@@ -59,7 +68,7 @@ setup(
     author_email="honza.kral@gmail.com",
     maintainer="Seth Michael Larson",
     maintainer_email="seth.larson@elastic.co",
-    packages=find_packages(where=".", exclude=("tests*",)),
+    packages=packages,
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     classifiers=[
         "Development Status :: 4 - Beta",

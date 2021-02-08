@@ -15,15 +15,31 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync.update_by_query import UpdateByQuery
+from pytest import fixture, mark, skip
 
-__all__ = [
-    "UpdateByQuery",
-]
+from elasticsearch_dsl.connections import add_connection
 
-try:
-    from ._async.update_by_query import AsyncUpdateByQuery  # noqa: F401
+pytestmark = mark.asyncio
 
-    __all__.append("AsyncUpdateByQuery")
-except (ImportError, SyntaxError):
-    pass
+
+@fixture(scope="function", autouse=True)
+async def async_client():
+    try:
+        from elasticsearch import AsyncElasticsearch
+    except ImportError:
+        return skip("asyncio support must be available")
+    try:
+        connection = AsyncElasticsearch("http://localhost:9200")
+        await connection.info()
+    except Exception:
+        return skip("Couldn't connect to Elasticsearch")
+
+    add_connection("async", connection)
+    return connection
+
+
+@fixture
+async def write_client(async_client):
+    yield async_client
+    await async_client.indices.delete("test-*", ignore=404)
+    await async_client.indices.delete_template("test-template", ignore=404)
