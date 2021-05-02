@@ -168,6 +168,10 @@ class HistogramFacet(Facet):
         )
 
 
+def _date_interval_year(d):
+    return (d + timedelta(days=366)).replace(day=1)
+
+
 def _date_interval_month(d):
     return (d + timedelta(days=32)).replace(day=1)
 
@@ -188,6 +192,8 @@ class DateHistogramFacet(Facet):
     agg_type = "date_histogram"
 
     DATE_INTERVALS = {
+        "year": _date_interval_year,
+        "1Y": _date_interval_year,
         "month": _date_interval_month,
         "1M": _date_interval_month,
         "week": _date_interval_week,
