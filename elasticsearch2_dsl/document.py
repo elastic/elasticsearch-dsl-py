@@ -1,6 +1,6 @@
 import re
 
-from elasticsearch.exceptions import NotFoundError, RequestError
+from elasticsearch2.exceptions import NotFoundError, RequestError
 from six import iteritems, add_metaclass
 
 from .field import Field
@@ -317,4 +317,3 @@ class DocType(ObjectBase):
 
         # return True/False if the document has been created/updated
         return meta['created']
-

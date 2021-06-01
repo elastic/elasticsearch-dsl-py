@@ -1,4 +1,4 @@
-from elasticsearch_dsl.search import Search
+from elasticsearch2_dsl.search import Search
 
 def test_count_all(data_client):
     s = Search(using=data_client).index('git')
@@ -21,4 +21,3 @@ def test_search_type_count(data_client):
 
     assert [] == result.hits
     assert 2 == len(result.aggregations.per_type.buckets)
-

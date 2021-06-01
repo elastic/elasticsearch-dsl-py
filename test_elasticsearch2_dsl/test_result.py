@@ -2,7 +2,7 @@ import pickle
 
 from pytest import raises
 
-from elasticsearch_dsl import result
+from elasticsearch2_dsl import result
 
 def test_response_is_pickleable(dummy_response):
     res = result.Response(dummy_response)
@@ -91,4 +91,3 @@ def test_slicing_on_response_slices_on_hits(dummy_response):
 
     assert res[0] is res.hits[0]
     assert res[::-1] == res.hits[::-1]
-

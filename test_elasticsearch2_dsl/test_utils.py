@@ -1,6 +1,6 @@
 import pickle
 
-from elasticsearch_dsl import utils, serializer
+from elasticsearch2_dsl import utils, serializer
 
 def test_attrdict_pickle():
     ad = utils.AttrDict({})

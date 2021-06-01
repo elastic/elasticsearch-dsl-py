@@ -1,6 +1,6 @@
 from six import string_types
 
-from elasticsearch import Elasticsearch
+from elasticsearch2 import Elasticsearch
 
 from .serializer import serializer
 

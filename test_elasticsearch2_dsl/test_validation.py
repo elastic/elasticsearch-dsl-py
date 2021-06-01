@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from elasticsearch_dsl import DocType, Nested, String, Date, Object, Boolean, Integer
-from elasticsearch_dsl.field import InnerObjectWrapper
-from elasticsearch_dsl.exceptions import ValidationException
+from elasticsearch2_dsl import DocType, Nested, String, Date, Object, Boolean, Integer
+from elasticsearch2_dsl.field import InnerObjectWrapper
+from elasticsearch2_dsl.exceptions import ValidationException
 
 from pytest import raises
 

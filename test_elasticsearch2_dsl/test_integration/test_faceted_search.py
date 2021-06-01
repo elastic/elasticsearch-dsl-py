@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
+from elasticsearch2_dsl.faceted_search import FacetedSearch, TermsFacet, DateHistogramFacet, RangeFacet
 
 class CommitSearch(FacetedSearch):
     doc_types = ['commits']
@@ -20,16 +20,16 @@ def test_empty_search_finds_everything(data_client):
 
     assert r.hits.total == 52
     assert [
-        ('elasticsearch_dsl', 40, False),
-        ('test_elasticsearch_dsl', 35, False),
-        ('elasticsearch_dsl/query.py', 19, False),
-        ('test_elasticsearch_dsl/test_search.py', 15, False),
-        ('elasticsearch_dsl/utils.py', 14, False),
-        ('test_elasticsearch_dsl/test_query.py', 13, False),
-        ('elasticsearch_dsl/search.py', 12, False),
-        ('elasticsearch_dsl/aggs.py', 11, False),
-        ('test_elasticsearch_dsl/test_result.py', 5, False),
-        ('elasticsearch_dsl/result.py', 3, False)
+        ('elasticsearch2_dsl', 40, False),
+        ('test_elasticsearch2_dsl', 35, False),
+        ('elasticsearch2_dsl/query.py', 19, False),
+        ('test_elasticsearch2_dsl/test_search.py', 15, False),
+        ('elasticsearch2_dsl/utils.py', 14, False),
+        ('test_elasticsearch2_dsl/test_query.py', 13, False),
+        ('elasticsearch2_dsl/search.py', 12, False),
+        ('elasticsearch2_dsl/aggs.py', 11, False),
+        ('test_elasticsearch2_dsl/test_result.py', 5, False),
+        ('elasticsearch2_dsl/result.py', 3, False)
     ] == r.facets.files
 
     assert [
@@ -59,22 +59,22 @@ def test_empty_search_finds_everything(data_client):
     ] == r.facets.deletions
 
 def test_term_filters_are_shown_as_selected_and_data_is_filtered(data_client):
-    cs = CommitSearch(filters={'files': 'test_elasticsearch_dsl'})
+    cs = CommitSearch(filters={'files': 'test_elasticsearch2_dsl'})
 
     r = cs.execute()
 
     assert 35 == r.hits.total
     assert [
-        ('elasticsearch_dsl', 40, False),
-        ('test_elasticsearch_dsl', 35, True), # selected
-        ('elasticsearch_dsl/query.py', 19, False),
-        ('test_elasticsearch_dsl/test_search.py', 15, False),
-        ('elasticsearch_dsl/utils.py', 14, False),
-        ('test_elasticsearch_dsl/test_query.py', 13, False),
-        ('elasticsearch_dsl/search.py', 12, False),
-        ('elasticsearch_dsl/aggs.py', 11, False),
-        ('test_elasticsearch_dsl/test_result.py', 5, False),
-        ('elasticsearch_dsl/result.py', 3, False)
+        ('elasticsearch2_dsl', 40, False),
+        ('test_elasticsearch2_dsl', 35, True), # selected
+        ('elasticsearch2_dsl/query.py', 19, False),
+        ('test_elasticsearch2_dsl/test_search.py', 15, False),
+        ('elasticsearch2_dsl/utils.py', 14, False),
+        ('test_elasticsearch2_dsl/test_query.py', 13, False),
+        ('elasticsearch2_dsl/search.py', 12, False),
+        ('elasticsearch2_dsl/aggs.py', 11, False),
+        ('test_elasticsearch2_dsl/test_result.py', 5, False),
+        ('elasticsearch2_dsl/result.py', 3, False)
     ] == r.facets.files
 
     assert [

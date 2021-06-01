@@ -1,4 +1,4 @@
-from elasticsearch_dsl import field
+from elasticsearch2_dsl import field
 
 def test_custom_field_car_wrap_other_field():
     class MyField(field.CustomField):

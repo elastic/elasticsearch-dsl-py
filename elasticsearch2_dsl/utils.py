@@ -163,7 +163,7 @@ class DslMeta(type):
     `shortcut` attributes from the base class) to construct any subclass based
     on it's name.
 
-    For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
+    For typical use see `QueryMeta` and `Query` in `elasticsearch2_dsl.query`.
     """
     _types = {}
     def __init__(cls, name, bases, attrs):
@@ -411,5 +411,3 @@ def merge(data, new_data):
             merge(data[key], value)
         else:
             data[key] = value
-
-

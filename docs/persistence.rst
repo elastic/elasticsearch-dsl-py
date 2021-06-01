@@ -13,7 +13,7 @@ The mapping definition follows a similar pattern to the query dsl:
 
 .. code:: python
 
-    from elasticsearch_dsl import Mapping, String, Nested
+    from elasticsearch2_dsl import Mapping, String, Nested
 
     # name your type
     m = Mapping('my-type')
@@ -82,7 +82,7 @@ handle its creation:
 
 .. code:: python
 
-    from elasticsearch_dsl import analyzer, tokenizer
+    from elasticsearch2_dsl import analyzer, tokenizer
 
     my_analyzer = analyzer('my_analyzer',
         tokenizer=tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
@@ -108,7 +108,7 @@ If you want to create a model-like wrapper around your documents, use the
 .. code:: python
 
     from datetime import datetime
-    from elasticsearch_dsl import DocType, String, Date, Nested, Boolean, \
+    from elasticsearch2_dsl import DocType, String, Date, Nested, Boolean, \
         analyzer, InnerObjectWrapper, Completion
 
     html_strip = analyzer('html_strip',
@@ -378,7 +378,7 @@ in a migration:
 
 .. code:: python
 
-    from elasticsearch_dsl import Index, DocType, String, analyzer
+    from elasticsearch2_dsl import Index, DocType, String, analyzer
 
     blogs = Index('blogs')
 
@@ -433,4 +433,3 @@ create specific copies:
     dev_blogs = blogs.clone('blogs', using='dev')
     # and change its settings
     dev_blogs.setting(number_of_shards=1)
-

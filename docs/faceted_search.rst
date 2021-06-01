@@ -105,7 +105,7 @@ Example
 
     from datetime import date
 
-    from elasticsearch_dsl import FacetedSearch, TermsFacet, DateHistogramFacet
+    from elasticsearch2_dsl import FacetedSearch, TermsFacet, DateHistogramFacet
 
     class BlogSearch(FacetedSearch):
         doc_types = [Article, ]
@@ -136,5 +136,3 @@ Example
 
     for (month, count, selected) in response.facets.publishing_frequency:
         print(month.strftime('%B %Y'), ' (SELECTED):' if selected else ':', count)
-
-

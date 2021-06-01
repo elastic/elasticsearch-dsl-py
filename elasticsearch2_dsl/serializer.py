@@ -1,4 +1,4 @@
-from elasticsearch.serializer import JSONSerializer
+from elasticsearch2.serializer import JSONSerializer
 
 from .utils import AttrList
 

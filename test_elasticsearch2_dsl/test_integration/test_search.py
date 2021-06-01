@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
-from elasticsearch import TransportError
+from elasticsearch2 import TransportError
 
-from elasticsearch_dsl import Search, DocType, Date, String, MultiSearch, \
+from elasticsearch2_dsl import Search, DocType, Date, String, MultiSearch, \
     MetaField, Index, Q
 
 from .test_data import DATA

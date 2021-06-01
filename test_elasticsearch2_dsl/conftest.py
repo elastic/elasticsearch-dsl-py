@@ -2,8 +2,8 @@
 
 import os
 
-from elasticsearch.helpers.test import get_test_client, SkipTest
-from elasticsearch.helpers import bulk
+from elasticsearch2.helpers.test import get_test_client, SkipTest
+from elasticsearch2.helpers import bulk
 
 from pytest import fixture, yield_fixture, skip
 from mock import Mock
@@ -15,7 +15,7 @@ _client_loaded = False
 @fixture(scope='session')
 def client(request):
     # inner import to avoid throwing off coverage
-    from elasticsearch_dsl.connections import connections
+    from elasticsearch2_dsl.connections import connections
     # hack to workaround pytest not caching skip on fixtures (#467)
     global _client_loaded
     if _client_loaded:
@@ -35,11 +35,11 @@ def write_client(request, client):
     client.indices.delete('test-*', ignore=404)
 
 @yield_fixture
-def mock_client(request):
+def mock_client(request, dummy_response):
     # inner import to avoid throwing off coverage
-    from elasticsearch_dsl.connections import connections
+    from elasticsearch2_dsl.connections import connections
     client = Mock()
-    client.search.return_value = dummy_response()
+    client.search.return_value = dummy_response
     connections.add_connection('mock', client)
     yield client
     connections._conn = {}
@@ -122,4 +122,3 @@ def dummy_response():
       "timed_out": False,
       "took": 123
     }
-

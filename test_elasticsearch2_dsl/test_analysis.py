@@ -1,5 +1,5 @@
 # coding: utf-8
-from elasticsearch_dsl import analysis
+from elasticsearch2_dsl import analysis
 
 def test_analyzer_serializes_as_name():
     a = analysis.analyzer('my_analyzer')
@@ -60,4 +60,3 @@ def test_custom_analyzer_can_collect_custom_items():
             'umlauts': umlauts.get_definition()
         }
     } == a.get_analysis_definition()
-

@@ -1,4 +1,4 @@
-from elasticsearch_dsl.faceted_search import FacetedSearch, TermsFacet
+from elasticsearch2_dsl.faceted_search import FacetedSearch, TermsFacet
 
 class BlogSearch(FacetedSearch):
     doc_types = ['user', 'post']
@@ -97,4 +97,3 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
         },
         'highlight': {'fields': {'body': {}, 'title': {}}}
     } == d
-

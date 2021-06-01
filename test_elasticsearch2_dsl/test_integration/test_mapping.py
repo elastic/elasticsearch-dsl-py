@@ -1,4 +1,4 @@
-from elasticsearch_dsl import mapping, analysis, exceptions
+from elasticsearch2_dsl import mapping, analysis, exceptions
 
 from pytest import raises
 
@@ -95,7 +95,7 @@ def test_mapping_gets_updated_from_es(write_client):
             }
         }
     )
-    
+
     m = mapping.Mapping.from_es('test-mapping', 'my_doc', using=write_client)
 
     assert ['comments', 'created_at', 'title'] == list(sorted(m.properties.properties._d_.keys()))

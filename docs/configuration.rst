@@ -6,8 +6,8 @@ option, and most useful, is to just define one default connection that will be
 used every time an API call is made without explicitly passing in other
 connection.
 
-When using ``elasticsearch_dsl`` it is highly recommended to use the attached
-serializer (``elasticsearch_dsl.serializer.serializer``) that will make sure
+When using ``elasticsearch2_dsl`` it is highly recommended to use the attached
+serializer (``elasticsearch2_dsl.serializer.serializer``) that will make sure
 your objects are correctly serialized into json every time. The
 ``create_connection`` method that is described here (and that ``configure``
 method uses under the hood) will do that automatically for you, unless you
@@ -26,7 +26,7 @@ Manual
 ------
 
 If you don't wish to supply global configuration you can always pass in your
-own connection (instance of ``elasticsearch.Elasticsearch``) as parameter
+own connection (instance of ``elasticsearch2.Elasticsearch``) as parameter
 ``using`` wherever it is accepted:
 
 .. code:: python
@@ -51,7 +51,7 @@ To define a default connection that will be used globally, use the
 
 .. code:: python
 
-    from elasticsearch_dsl.connections import connections
+    from elasticsearch2_dsl.connections import connections
 
     connections.create_connection(hosts=['localhost'], timeout=20)
 
@@ -68,7 +68,7 @@ time using the ``configure`` method:
 
 .. code:: python
 
-    from elasticsearch_dsl.connections import connections
+    from elasticsearch2_dsl.connections import connections
 
     connections.configure(
         default={'hosts': 'localhost'},
@@ -102,4 +102,3 @@ alias you registered them under:
 
 ``KeyError`` will be raised if there is no connection registered under that
 alias.
-

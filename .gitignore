@@ -8,6 +8,9 @@ build
 *.egg
 coverage.xml
 junit.xml
-test_elasticsearch_dsl/htmlcov
+test_elasticsearch2_dsl/htmlcov
 docs/_build
 .cache
+__pycache__
+.eggs
+.pytest_cache
