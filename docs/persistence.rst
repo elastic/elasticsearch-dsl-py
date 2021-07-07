@@ -228,7 +228,7 @@ If the document is not found in elasticsearch an exception
     p = Post.get(id='not-in-es', ignore=404)
     p is None
 
-When you wish to retrive multiple documents at the same time by their ``id``
+When you wish to retrieve multiple documents at the same time by their ``id``
 you can use the ``mget`` method:
 
 .. code:: python

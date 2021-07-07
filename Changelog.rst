@@ -100,7 +100,7 @@ Changelog
 * Improved behavior of ``Index.save`` where it does a better job when index
   already exists
 * Composite aggregations now correctly support multiple ``sources`` aggs
-* ``UpdateByQuery`` implementated by @emarcey
+* ``UpdateByQuery`` implemented by @emarcey
 
 6.2.1 (2018-07-03)
 ------------------
@@ -226,7 +226,7 @@ Breaking changes:
 
 2.2.0 (2016-11-04)
 ------------------
- * accessing missing string fields no longer returnd ``''`` but returns
+ * accessing missing string fields no longer returned ``''`` but returns
    ``None`` instead.
  * fix issues with bool's ``|`` and ``&`` operators and ``minimum_should_match``
 
