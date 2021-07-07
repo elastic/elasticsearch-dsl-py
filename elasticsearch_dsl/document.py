@@ -206,6 +206,22 @@ class Document(ObjectBase):
         return cls.from_es(doc)
 
     @classmethod
+    def exists(cls, id, using=None, index=None, **kwargs):
+        """
+        check if exists a single document from elasticsearch using its ``id``.
+
+        :arg id: ``id`` of the document to check if exists
+        :arg index: elasticsearch index to use, if the ``Document`` is
+            associated with an index this can be omitted.
+        :arg using: connection alias to use, defaults to ``'default'``
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.exists`` unchanged.
+        """
+        es = cls._get_connection(using)
+        return es.exists(index=cls._default_index(index), id=id, **kwargs)
+
+    @classmethod
     def mget(
         cls, docs, using=None, index=None, raise_on_error=True, missing="none", **kwargs
     ):
