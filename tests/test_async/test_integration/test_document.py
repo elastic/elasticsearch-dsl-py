@@ -258,8 +258,8 @@ async def test_update_conflicting_version(write_client, retry_on_conflict):
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     await w.save()
 
-    w1 = Wiki.get(id="elasticsearch-py")
-    w2 = Wiki.get(id="elasticsearch-py")
+    w1 = await Wiki.get(id="elasticsearch-py")
+    w2 = await Wiki.get(id="elasticsearch-py")
     await w1.update(script="ctx._source.views += params.inc", inc=5)
 
     with raises(ConflictError):
