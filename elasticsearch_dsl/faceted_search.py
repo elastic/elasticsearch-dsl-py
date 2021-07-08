@@ -169,7 +169,7 @@ class HistogramFacet(Facet):
 
 
 def _date_interval_year(d):
-    return (d + timedelta(days=366)).replace(day=1)
+    return d.replace(year=d.year+1, day=(28 if d.month == 2 and d.day == 29 else d.day))
 
 
 def _date_interval_month(d):
