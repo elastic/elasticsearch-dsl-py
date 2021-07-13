@@ -151,6 +151,8 @@ def test_date_histogram_facet_with_1970_01_01_date():
 @pytest.mark.parametrize(
     ["interval_type", "interval"],
     [
+        ("interval", "year"),
+        ("calendar_interval", "year"),
         ("interval", "month"),
         ("calendar_interval", "month"),
         ("interval", "week"),
@@ -160,6 +162,8 @@ def test_date_histogram_facet_with_1970_01_01_date():
         ("fixed_interval", "day"),
         ("interval", "hour"),
         ("fixed_interval", "hour"),
+        ("interval", "1Y"),
+        ("calendar_interval", "1Y"),
         ("interval", "1M"),
         ("calendar_interval", "1M"),
         ("interval", "1w"),
