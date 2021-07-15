@@ -3,6 +3,36 @@
 Changelog
 =========
 
+7.4.0 (2021-07-15)
+------------------
+
+* Added the ``ConstantKeyword``, ``RankFeatures`` field types (`#1456`_, `#1465`_)
+* Added the ``ScriptScore`` query type (`#1464`_)
+* Added ``UpdateByQueryResponse.success()`` method (`#1463`_)
+* Added ``return_doc_meta`` parameter to ``Document.save()`` and ``Document.update()`` for
+  accessing the complete API response (`#1466`_)
+* Added support for ``calendar_interval`` and ``fixed_interval`` to ``DateHistogramFacet`` (`#1467`_)
+* Added ``Document.exists()`` method (`#1447`_, contributed by `@dem4ply`_)
+* Added support for the ``year`` interval to ``DateHistogramFacet`` (`#1502`_, contributed by `@nrsimha`_)
+* Fixed issue where ``to_dict()`` should be called recursively on ``Search.extras`` and ``**kwargs`` (`#1458`_)
+* Fixed inverse of an empty ``Bool`` query should be ``MatchNone`` (`#1459`_)
+* Fixed issue between ``retry_on_conflict`` and optimistic concurrency control within ``Document.update()`` (`#1461`_, contributed by `@armando1793`_)
+
+ .. _@dem4ply: https://github.com/dem4ply
+ .. _@nrsimha: https://github.com/nrsimha
+ .. _@armando1793: https://github.com/armando1793
+ .. _#1447: https://github.com/elastic/elasticsearch-dsl-py/pull/1447
+ .. _#1456: https://github.com/elastic/elasticsearch-dsl-py/pull/1456
+ .. _#1458: https://github.com/elastic/elasticsearch-dsl-py/pull/1458
+ .. _#1459: https://github.com/elastic/elasticsearch-dsl-py/pull/1459
+ .. _#1461: https://github.com/elastic/elasticsearch-dsl-py/pull/1461
+ .. _#1463: https://github.com/elastic/elasticsearch-dsl-py/pull/1463
+ .. _#1464: https://github.com/elastic/elasticsearch-dsl-py/pull/1464
+ .. _#1465: https://github.com/elastic/elasticsearch-dsl-py/pull/1465
+ .. _#1466: https://github.com/elastic/elasticsearch-dsl-py/pull/1466
+ .. _#1467: https://github.com/elastic/elasticsearch-dsl-py/pull/1467
+ .. _#1502: https://github.com/elastic/elasticsearch-dsl-py/pull/1502
+
 7.3.0 (2020-09-16)
 ------------------
 
