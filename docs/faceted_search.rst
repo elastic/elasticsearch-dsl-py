@@ -26,7 +26,7 @@ declaring a ``FacetedSearch`` subclass:
 
 ``fields``
   list of fields on the document type to search through. The list will be
-  passes to ``MultiMatch`` query so can contain boost values (``'title^5'``),
+  passed to the ``MultiMatch`` query so it can contain boost values (``'title^5'``),
   defaults to ``['*']``.
 
 ``facets``
