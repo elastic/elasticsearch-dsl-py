@@ -390,6 +390,10 @@ If you want to access all the documents matched by your query you can use the
 
 Note that in this case the results won't be sorted.
 
+.. note::
+
+  If you are only seeing partial results, consider using the option ``s.extra(track_total_hits=True)`` to get a full document count.
+
 Highlighting
 ~~~~~~~~~~~~
 
