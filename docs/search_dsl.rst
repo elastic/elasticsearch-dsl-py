@@ -557,6 +557,9 @@ just iterate over the ``Response`` object:
     for h in response:
         print(h.title, h.body)
 
+.. note::
+
+  If you are only seeing partial results (e.g. 10000 or even 10 results), consider using the option ``s.extra(track_total_hits=True)`` to get a full hit count.
 
 Result
 ~~~~~~
