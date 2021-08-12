@@ -65,7 +65,7 @@ class Properties(DslBase):
         return self
 
     def _collect_fields(self):
-        """ Iterate over all Field objects within, including multi fields. """
+        """Iterate over all Field objects within, including multi fields."""
         for f in itervalues(self.properties.to_dict()):
             yield f
             # multi fields
