@@ -555,6 +555,9 @@ def merge(data, new_data, raise_on_conflict=False):
             )
         )
 
+    if isinstance(new_data, AttrDict):
+        new_data = new_data.to_dict()
+
     for key, value in iteritems(new_data):
         if (
             key in data
