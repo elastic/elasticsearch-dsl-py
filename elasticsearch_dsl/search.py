@@ -707,7 +707,7 @@ class Search(Request):
             es = get_connection(self._using)
 
             self._response = self._response_class(
-                self, es.search(index=self._index, body=self.to_dict(), **self._params)
+                self, es.search(index=self._index, **self.to_dict(), **self._params)
             )
         return self._response
 

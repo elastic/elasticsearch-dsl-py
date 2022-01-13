@@ -277,7 +277,7 @@ class Index:
         ``Elasticsearch.indices.create`` unchanged.
         """
         return self._get_connection(using).indices.create(
-            index=self._name, body=self.to_dict(), **kwargs
+            index=self._name, **self.to_dict(), **kwargs
         )
 
     def is_closed(self, using=None):

@@ -80,22 +80,20 @@ Let's have a typical search request written directly as a ``dict``:
 
     response = client.search(
         index="my-index",
-        body={
-          "query": {
+        query={
             "bool": {
-              "must": [{"match": {"title": "python"}}],
-              "must_not": [{"match": {"description": "beta"}}],
-              "filter": [{"term": {"category": "search"}}]
+                "must": [{"match": {"title": "python"}}],
+                "must_not": [{"match": {"description": "beta"}}],
+                "filter": [{"term": {"category": "search"}}]
             }
-          },
-          "aggs" : {
+        },
+        aggs={
             "per_tag": {
-              "terms": {"field": "tags"},
-              "aggs": {
-                "max_lines": {"max": {"field": "lines"}}
-              }
+                "terms": {"field": "tags"},
+                "aggs": {
+                    "max_lines": {"max": {"field": "lines"}}
+                }
             }
-          }
         }
     )
 

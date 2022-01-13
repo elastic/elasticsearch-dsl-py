@@ -18,6 +18,7 @@
 import collections.abc
 from fnmatch import fnmatch
 
+import elasticsearch
 from elasticsearch.exceptions import NotFoundError, RequestError
 
 from .connections import get_connection
@@ -475,11 +476,17 @@ class Document(ObjectBase, metaclass=IndexMeta):
             doc_meta["if_primary_term"] = self.meta["primary_term"]
 
         doc_meta.update(kwargs)
+
+        if elasticsearch.__version__ >= (7, 14, 0):
+            key = 'document'
+        else:
+            key = 'body'
         meta = es.index(
             index=self._get_index(index),
-            body=self.to_dict(skip_empty=skip_empty),
+            **{key: self.to_dict(skip_empty=skip_empty)},
             **doc_meta,
         )
+
         # update meta information from ES
         for k in META_FIELDS:
             if "_" + k in meta:

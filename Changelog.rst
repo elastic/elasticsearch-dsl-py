@@ -3,6 +3,13 @@
 Changelog
 =========
 
+8.0.0 (?)
+------------------
+
+* Fixed DeprecationWarning from elasticsearch-py (`#1558`_)
+
+ .. _#1558: https://github.com/elastic/elasticsearch-dsl-py/pull/1558
+
 7.4.0 (2021-07-15)
 ------------------
 
