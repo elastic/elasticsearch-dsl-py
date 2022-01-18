@@ -189,6 +189,10 @@ class Parent(Bucket):
     name = "parent"
 
 
+class AdjacencyMatrix(Bucket):
+    name = "adjacency_matrix"
+
+
 class DateHistogram(Bucket):
     name = "date_histogram"
 

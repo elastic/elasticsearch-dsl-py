@@ -112,6 +112,25 @@ def test_A_fails_with_agg_and_params():
         aggs.A(a, field="score")
 
 
+def test_adjacency_matrix():
+    filters = {
+        "grpA": {"terms": {"accounts": ["hillary", "sidney"]}},
+        "grpB": {"terms": {"accounts": ["donald", "mitt"]}},
+        "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}},
+    }
+
+    a = aggs.AdjacencyMatrix(filters=filters)
+    assert {
+        "adjacency_matrix": {
+            "filters": {
+                "grpA": {"terms": {"accounts": ["hillary", "sidney"]}},
+                "grpB": {"terms": {"accounts": ["donald", "mitt"]}},
+                "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}}
+            }
+        }
+    } == a.to_dict()
+
+
 def test_buckets_are_nestable():
     a = aggs.Terms(field="tags")
     b = a.bucket("per_author", "terms", field="author.raw")
