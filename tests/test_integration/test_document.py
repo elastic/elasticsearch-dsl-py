@@ -235,6 +235,26 @@ def test_update_script(write_client):
     assert w.views == 47
 
 
+def test_update_script_with_dict(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    try:
+        w.update(
+            script={
+                "source": "ctx._source.views += params.inc1 + params.inc2",
+                "params": {"inc1": 2},
+                "lang": "painless",
+            },
+            inc2=3,
+        )
+    except Exception as e:
+        raise Exception(e.info)
+    w = Wiki.get(id="elasticsearch-py")
+    assert w.views == 47
+
+
 def test_update_retry_on_conflict(write_client):
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)

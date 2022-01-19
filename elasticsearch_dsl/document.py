@@ -388,12 +388,16 @@ class Document(ObjectBase):
             if upsert is not None:
                 body["upsert"] = upsert
 
-            if script:
+            if script is None:
+                script = {}
+            elif isinstance(script, str):
                 script = {"source": script}
-            else:
-                script = {"id": script_id}
 
-            script["params"] = fields
+            if script_id is not None:
+                script["id"] = script_id
+
+            if fields:
+                script["params"] = dict(script.get("params", {}), **fields)
 
             body["script"] = script
             body["scripted_upsert"] = scripted_upsert
