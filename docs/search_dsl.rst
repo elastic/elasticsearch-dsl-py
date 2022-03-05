@@ -445,7 +445,7 @@ A simple example is below
 .. code:: python
 
     from elasticsearch_dsl.query import MoreLikeThis
-    from elasticsearch_dsl Search
+    from elasticsearch_dsl import Search
 
     my_text = 'I want to find something similar'
 
