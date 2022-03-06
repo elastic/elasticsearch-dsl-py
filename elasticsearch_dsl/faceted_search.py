@@ -117,7 +117,7 @@ class TermsFacet(Facet):
     agg_type = "terms"
 
     def add_filter(self, filter_values):
-        """ Create a terms filter instead of bool containing term filters.  """
+        """Create a terms filter instead of bool containing term filters."""
         if filter_values:
             return Terms(
                 _expand__to_dot=False, **{self._params["field"]: filter_values}

@@ -355,6 +355,10 @@ class SpanWithin(Query):
 
 
 # core queries
+class CombinedFields(Query):
+    name = "combined_fields"
+
+
 class Common(Query):
     name = "common"
 

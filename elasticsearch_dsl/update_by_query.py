@@ -35,7 +35,7 @@ class UpdateByQuery(Request):
         :arg doc_type: only query this type.
 
         All the parameters supplied (or omitted) at creation type can be later
-        overriden by methods (`using`, `index` and `doc_type` respectively).
+        overridden by methods (`using`, `index` and `doc_type` respectively).
 
         """
         super(UpdateByQuery, self).__init__(**kwargs)

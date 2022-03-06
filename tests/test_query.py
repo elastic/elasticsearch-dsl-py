@@ -27,6 +27,34 @@ def test_empty_Q_is_match_all():
     assert query.MatchAll() == q
 
 
+def test_combined_fields_to_dict():
+    assert {
+        "combined_fields": {
+            "query": "this is a test",
+            "fields": ["name", "body", "description"],
+            "operator": "and",
+        },
+    } == query.CombinedFields(
+        query="this is a test",
+        fields=["name", "body", "description"],
+        operator="and",
+    ).to_dict()
+
+
+def test_combined_fields_to_dict_extra():
+    assert {
+        "combined_fields": {
+            "query": "this is a test",
+            "fields": ["name", "body^2"],
+            "operator": "or",
+        },
+    } == query.CombinedFields(
+        query="this is a test",
+        fields=["name", "body^2"],
+        operator="or",
+    ).to_dict()
+
+
 def test_match_to_dict():
     assert {"match": {"f": "value"}} == query.Match(f="value").to_dict()
 

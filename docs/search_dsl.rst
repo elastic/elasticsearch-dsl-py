@@ -445,7 +445,7 @@ A simple example is below
 .. code:: python
 
     from elasticsearch_dsl.query import MoreLikeThis
-    from elasticsearch_dsl Search
+    from elasticsearch_dsl import Search
 
     my_text = 'I want to find something similar'
 
@@ -557,6 +557,9 @@ just iterate over the ``Response`` object:
     for h in response:
         print(h.title, h.body)
 
+.. note::
+
+  If you are only seeing partial results (e.g. 10000 or even 10 results), consider using the option ``s.extra(track_total_hits=True)`` to get a full hit count.
 
 Result
 ~~~~~~

@@ -296,6 +296,10 @@ class VariableWidthHistogram(Bucket):
         return FieldBucketData(self, search, data)
 
 
+class MultiTerms(Bucket):
+    name = "multi_terms"
+
+
 # metric aggregations
 class TopHits(Agg):
     name = "top_hits"

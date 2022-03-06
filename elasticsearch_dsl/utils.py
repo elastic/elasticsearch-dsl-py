@@ -273,7 +273,7 @@ class DslBase(object):
             self._setattr(pname, pvalue)
 
     def _repr_params(self):
-        """ Produce a repr of all our parameters to be used in __repr__. """
+        """Produce a repr of all our parameters to be used in __repr__."""
         return ", ".join(
             "{}={!r}".format(n.replace(".", "__"), v)
             for (n, v) in sorted(iteritems(self._params))
