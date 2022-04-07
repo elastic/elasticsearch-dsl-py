@@ -320,6 +320,10 @@ class ConstantKeyword(Keyword):
     name = "constant_keyword"
 
 
+class Wildcard(Keyword):
+    name = "wildcard"
+
+
 class Boolean(Field):
     name = "boolean"
     _coerce = True
