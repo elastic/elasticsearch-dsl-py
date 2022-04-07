@@ -177,6 +177,11 @@ def test_constant_keyword():
     assert f.to_dict() == {"type": "constant_keyword"}
 
 
+def test_wildcard():
+    f = field.Wildcard()
+    assert f.to_dict() == {"type": "wildcard"}
+
+
 def test_rank_features():
     f = field.RankFeatures()
     assert f.to_dict() == {"type": "rank_features"}
