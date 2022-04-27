@@ -100,3 +100,8 @@ def test_recursive_to_dict():
     assert utils.recursive_to_dict({"k": [1, (1.0, {"v": Q("match", key="val")})]}) == {
         "k": [1, (1.0, {"v": {"match": {"key": "val"}}})]
     }
+
+def test_attrlist_to_list():
+    l = utils.AttrList([{}, {}]).to_list()
+    assert isinstance(l, list)
+    assert l == [{}, {}]
