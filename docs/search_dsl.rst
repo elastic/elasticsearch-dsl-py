@@ -445,13 +445,13 @@ A simple example is below
 .. code:: python
 
     from elasticsearch_dsl.query import MoreLikeThis
-    from elasticsearch_dsl Search
+    from elasticsearch_dsl import Search
 
     my_text = 'I want to find something similar'
 
     s = Search()
     # We're going to match based only on two fields, in this case text and title
-    s = s.query(MoreLikeThis(like=my_text, fields=['text', 'title]))
+    s = s.query(MoreLikeThis(like=my_text, fields=['text', 'title']))
     # You can also exclude fields from the result to make the response quicker in the normal way
     s = s.source(exclude=["text"])
     response = s.execute()
