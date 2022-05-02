@@ -59,7 +59,7 @@ class Person(Document):
     def clean(self):
         """
         Automatically construct the suggestion input and weight by taking all
-        possible permutation of Person's name as ``input`` and taking their
+        possible permutations of Person's name as ``input`` and taking their
         popularity as ``weight``.
         """
         self.suggest = {
