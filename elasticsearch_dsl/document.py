@@ -373,8 +373,11 @@ class Document(ObjectBase):
         :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
+        :arg script: Either the source code of the script or the actual dict
+            assigned to the ``script`` field in the update
         :arg return_doc_meta: set to ``True`` to return all metadata from the
             index API call instead of only the operation result
+        :arg fields: params for the script
 
         :return operation result noop/updated
         """
