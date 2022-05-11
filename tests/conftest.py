@@ -21,6 +21,7 @@ import os
 import re
 from datetime import datetime
 
+from elasticsearch_dsl import utils
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers.test import SkipTest, get_test_client
 from mock import Mock
@@ -322,3 +323,10 @@ def setup_ubq_tests(client):
     create_git_index(client, index)
     bulk(client, TEST_GIT_DATA, raise_on_error=True, refresh=True)
     return index
+
+
+@fixture
+def set_global_expand_to_dot_as_false():
+    utils.EXPAND__TO_DOT = False
+    yield
+    utils.EXPAND__TO_DOT = True

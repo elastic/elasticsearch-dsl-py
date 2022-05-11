@@ -17,7 +17,7 @@
 
 from pytest import raises
 
-from elasticsearch_dsl import function, query
+from elasticsearch_dsl import function, query, utils
 
 
 def test_empty_Q_is_match_all():
@@ -426,6 +426,14 @@ def test_Q_translates_double_underscore_to_dots_in_param_names():
 
 def test_Q_doesn_translate_double_underscore_to_dots_in_param_names():
     q = query.Q("match", comment__author="honza", _expand__to_dot=False)
+
+    assert {"comment__author": "honza"} == q._params
+
+
+def test_Q_reevaluate_global_expand_to_dot_settings(
+    set_global_expand_to_dot_as_false
+):
+    q = query.Q("match", comment__author="honza")
 
     assert {"comment__author": "honza"} == q._params
 

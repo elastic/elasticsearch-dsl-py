@@ -265,8 +265,10 @@ class DslBase(object):
                 "DSL class `{}` does not exist in {}.".format(name, cls._type_name)
             )
 
-    def __init__(self, _expand__to_dot=EXPAND__TO_DOT, **params):
+    def __init__(self, _expand__to_dot=None, **params):
         self._params = {}
+        _expand__to_dot = EXPAND__TO_DOT if _expand__to_dot is None else bool(_expand__to_dot)
+
         for pname, pvalue in iteritems(params):
             if "__" in pname and _expand__to_dot:
                 pname = pname.replace("__", ".")
