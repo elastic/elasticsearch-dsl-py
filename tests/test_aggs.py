@@ -262,6 +262,12 @@ def test_geohash_grid_aggregation():
     assert {"geohash_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
 
 
+def test_geohex_grid_aggregation():
+    a = aggs.GeohexGrid(**{"field": "centroid", "precision": 3})
+
+    assert {"geohex_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
+
+
 def test_geotile_grid_aggregation():
     a = aggs.GeotileGrid(**{"field": "centroid", "precision": 3})
 
