@@ -300,6 +300,30 @@ def test_variable_width_histogram_aggregation():
     assert {"variable_width_histogram": {"buckets": 2, "field": "price"}} == a.to_dict()
 
 
+def test_ip_prefix_aggregation():
+    a = aggs.IPPrefix(**{"field": "ipv4", "prefix_length": 24})
+
+    assert {"ip_prefix": {"field": "ipv4", "prefix_length": 24}} == a.to_dict()
+
+
+def test_ip_prefix_aggregation_extra():
+    a = aggs.IPPrefix(
+        **{
+            "field": "ipv6",
+            "prefix_length": 64,
+            "is_ipv6": True,
+        }
+    )
+
+    assert {
+        "ip_prefix": {
+            "field": "ipv6",
+            "prefix_length": 64,
+            "is_ipv6": True,
+        },
+    } == a.to_dict()
+
+
 def test_multi_terms_aggregation():
     a = aggs.MultiTerms(terms=[{"field": "tags"}, {"field": "author.row"}])
     assert {
