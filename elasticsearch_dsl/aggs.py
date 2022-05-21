@@ -212,6 +212,10 @@ class GeohashGrid(Bucket):
     name = "geohash_grid"
 
 
+class GeohexGrid(Bucket):
+    name = "geohex_grid"
+
+
 class GeotileGrid(Bucket):
     name = "geotile_grid"
 
