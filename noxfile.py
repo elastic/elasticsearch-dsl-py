@@ -58,7 +58,7 @@ def format(session):
 
 @nox.session
 def lint(session):
-    session.install("flake8", "black", "isort")
+    session.install("flake8", "black==21.12b0", "click==8.0.4", "isort")
     session.run(
         "black",
         "--check",
