@@ -37,7 +37,6 @@ install_requires = [
 ]
 
 develop_requires = [
-    "mock",
     "pytest>=3.0.0",
     "pytest-cov",
     "pytest-mock<3.0.0",
