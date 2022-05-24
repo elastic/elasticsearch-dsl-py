@@ -30,7 +30,7 @@ class IndexTemplate(object):
 
     def save(self, using=None):
         es = connections.get_connection(using or self._index._using)
-        es.indices.put_template(name=self._template_name, body=self.to_dict())
+        es.indices.put_template(name=self._template_name, body=self.to_dict(), params={'include_type_name': 'true'})
 
 class Index(object):
     def __init__(self, name, doc_type=DEFAULT_DOC_TYPE, using='default'):
@@ -275,6 +275,9 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
+        if 'params' not in kwargs:
+            kwargs['params'] = {}
+        kwargs['params']['include_type_name'] = 'true'
         self._get_connection(using).indices.create(index=self._name, body=self.to_dict(), **kwargs)
 
     def is_closed(self, using=None):
@@ -420,6 +423,9 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.put_mapping`` unchanged.
         """
+        if 'params' not in kwargs:
+            kwargs['params'] = {}
+        kwargs['params']['include_type_name'] = 'true'
         return self._get_connection(using).indices.put_mapping(index=self._name, **kwargs)
 
     def get_mapping(self, using=None, **kwargs):
