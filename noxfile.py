@@ -55,7 +55,7 @@ def test(session):
 def format(session):
     session.install("black==21.12b0", "click==8.0.4", "isort")
     session.run(
-        "black", "--target-version=py27", "--target-version=py37", *SOURCE_FILES
+        "black", "--target-version=py36", *SOURCE_FILES
     )
     session.run("isort", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
@@ -69,8 +69,7 @@ def lint(session):
     session.run(
         "black",
         "--check",
-        "--target-version=py27",
-        "--target-version=py37",
+        "--target-version=py36",
         *SOURCE_FILES
     )
     session.run("isort", "--check", *SOURCE_FILES)
