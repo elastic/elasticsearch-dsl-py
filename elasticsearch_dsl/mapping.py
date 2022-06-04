@@ -22,8 +22,6 @@ except ImportError:
 
 from itertools import chain
 
-from six import iteritems, itervalues
-
 from .connections import get_connection
 from .field import Nested, Text, construct_field
 from .utils import DslBase

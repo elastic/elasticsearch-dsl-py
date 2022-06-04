@@ -17,8 +17,6 @@
 
 from datetime import datetime, timedelta
 
-from six import iteritems, itervalues
-
 from .aggs import A
 from .query import MatchAll, Nested, Range, Terms
 from .response import Response

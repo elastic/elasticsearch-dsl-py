@@ -28,7 +28,6 @@ long_description = f.read().strip()
 f.close()
 
 install_requires = [
-    "six",
     "python-dateutil",
     "elasticsearch>=7.0.0,<8.0.0",
 ]

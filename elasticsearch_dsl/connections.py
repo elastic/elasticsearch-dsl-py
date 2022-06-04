@@ -16,7 +16,6 @@
 #  under the License.
 
 from elasticsearch import Elasticsearch
-from six import string_types
 
 from .serializer import serializer
 

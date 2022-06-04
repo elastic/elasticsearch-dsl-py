@@ -23,8 +23,6 @@ except ImportError:
 
 from copy import copy
 
-from six import add_metaclass, iteritems
-
 from .exceptions import UnknownDslObject, ValidationException
 
 SKIP_VALUES = ("", None)

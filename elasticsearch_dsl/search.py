@@ -24,7 +24,6 @@ except ImportError:
 
 from elasticsearch.exceptions import TransportError
 from elasticsearch.helpers import scan
-from six import iteritems, string_types
 
 from .aggs import A, AggBase
 from .connections import get_connection

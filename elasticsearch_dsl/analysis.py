@@ -15,8 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import six
-
 from .connections import get_connection
 from .utils import AttrDict, DslBase, merge
 

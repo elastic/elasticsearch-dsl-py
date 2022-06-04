@@ -27,7 +27,6 @@ except ImportError:
 from datetime import date, datetime
 
 from dateutil import parser, tz
-from six import integer_types, iteritems, string_types
 
 from .exceptions import ValidationException
 from .query import Q
