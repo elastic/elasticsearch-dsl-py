@@ -28,7 +28,14 @@ SOURCE_FILES = (
 )
 
 
-@nox.session(python=["2.7", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9"])
+@nox.session(
+    python=[
+        "3.6",
+        "3.7",
+        "3.8",
+        "3.9",
+    ]
+)
 def test(session):
     session.install(".[develop]")
 
