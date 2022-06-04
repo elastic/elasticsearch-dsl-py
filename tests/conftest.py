@@ -19,10 +19,10 @@
 import os
 import re
 from datetime import datetime
+from unittest.mock import Mock
 
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers.test import SkipTest, get_test_client
-from unittest.mock import Mock
 from pytest import fixture, skip
 
 from elasticsearch_dsl.connections import add_connection, connections

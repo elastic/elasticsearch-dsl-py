@@ -162,7 +162,7 @@ class HistogramFacet(Facet):
                     "gte": filter_value,
                     "lt": filter_value + self._params["interval"],
                 }
-            }
+            },
         )
 
 
@@ -235,7 +235,7 @@ class DateHistogramFacet(Facet):
                         filter_value
                     ),
                 }
-            }
+            },
         )
 
 
@@ -245,9 +245,7 @@ class NestedFacet(Facet):
     def __init__(self, path, nested_facet):
         self._path = path
         self._inner = nested_facet
-        super().__init__(
-            path=path, aggs={"inner": nested_facet.get_aggregation()}
-        )
+        super().__init__(path=path, aggs={"inner": nested_facet.get_aggregation()})
 
     def get_values(self, data, filter_values):
         return self._inner.get_values(data.inner, filter_values)

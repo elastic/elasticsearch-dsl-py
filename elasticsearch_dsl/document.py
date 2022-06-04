@@ -345,7 +345,7 @@ class Document(ObjectBase, metaclass=IndexMeta):
         scripted_upsert=False,
         upsert=None,
         return_doc_meta=False,
-        **fields
+        **fields,
     ):
         """
         Partial update of the document, specify fields you wish to update and
@@ -444,7 +444,7 @@ class Document(ObjectBase, metaclass=IndexMeta):
         validate=True,
         skip_empty=True,
         return_doc_meta=False,
-        **kwargs
+        **kwargs,
     ):
         """
         Save the document into elasticsearch. If the document doesn't exist it
@@ -482,7 +482,7 @@ class Document(ObjectBase, metaclass=IndexMeta):
         meta = es.index(
             index=self._get_index(index),
             body=self.to_dict(skip_empty=skip_empty),
-            **doc_meta
+            **doc_meta,
         )
         # update meta information from ES
         for k in META_FIELDS:

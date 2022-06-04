@@ -16,7 +16,6 @@
 #  under the License.
 
 
-
 def create_flat_git_index(client, index):
     # we will use user on several places
     user_mapping = {
