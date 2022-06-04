@@ -53,6 +53,15 @@ def test_merge():
     assert a == {"a": {"b": 123, "c": 47, "d": -12}, "e": [1, 2, 3]}
 
 
+def test_merge_attrdict():
+    a = {"a": {"b": 42, "c": 47}}
+    b = utils.AttrDict({"a": {"b": 123, "d": -12}, "e": [1, 2, 3]})
+
+    utils.merge(a, b)
+
+    assert a == {"a": {"b": 123, "c": 47, "d": -12}, "e": [1, 2, 3]}
+
+
 def test_merge_conflict():
     for d in (
         {"a": 42},
