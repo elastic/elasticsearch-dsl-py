@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -23,7 +22,7 @@ from datetime import datetime
 
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers.test import SkipTest, get_test_client
-from mock import Mock
+from unittest.mock import Mock
 from pytest import fixture, skip
 
 from elasticsearch_dsl.connections import add_connection, connections

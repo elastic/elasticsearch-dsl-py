@@ -79,7 +79,7 @@ class Agg(DslBase):
         return False
 
     def to_dict(self):
-        d = super(Agg, self).to_dict()
+        d = super().to_dict()
         if "meta" in d[self.name]:
             d["meta"] = d[self.name].pop("meta")
         return d
@@ -88,7 +88,7 @@ class Agg(DslBase):
         return AggResponse(self, search, data)
 
 
-class AggBase(object):
+class AggBase:
     _param_defs = {
         "aggs": {"type": "agg", "hash": True},
     }
@@ -139,7 +139,7 @@ class AggBase(object):
 
 class Bucket(AggBase, Agg):
     def __init__(self, **params):
-        super(Bucket, self).__init__(**params)
+        super().__init__(**params)
         # remember self for chaining
         self._base = self
 
@@ -160,10 +160,10 @@ class Filter(Bucket):
     def __init__(self, filter=None, **params):
         if filter is not None:
             params["filter"] = filter
-        super(Filter, self).__init__(**params)
+        super().__init__(**params)
 
     def to_dict(self):
-        d = super(Filter, self).to_dict()
+        d = super().to_dict()
         d[self.name].update(d[self.name].pop("filter", {}))
         return d
 

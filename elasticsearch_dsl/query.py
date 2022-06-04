@@ -254,7 +254,7 @@ class FunctionScore(Query):
             for name in ScoreFunction._classes:
                 if name in kwargs:
                     fns.append({name: kwargs.pop(name)})
-        super(FunctionScore, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 # compound queries

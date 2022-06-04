@@ -21,7 +21,7 @@ from six import string_types
 from .serializer import serializer
 
 
-class Connections(object):
+class Connections:
     """
     Class responsible for holding connections to different clusters. Used as a
     singleton in this module.
@@ -95,7 +95,7 @@ class Connections(object):
         """
         # do not check isinstance(Elasticsearch) so that people can wrap their
         # clients
-        if not isinstance(alias, string_types):
+        if not isinstance(alias, str):
             return alias
 
         # connection already established

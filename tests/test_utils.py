@@ -89,7 +89,7 @@ def test_serializer_deals_with_Attr_versions():
 
 
 def test_serializer_deals_with_objects_with_to_dict():
-    class MyClass(object):
+    class MyClass:
         def to_dict(self):
             return 42
 
