@@ -15,11 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
+import collections.abc
 from fnmatch import fnmatch
 
 from elasticsearch.exceptions import NotFoundError, RequestError
@@ -244,7 +240,7 @@ class Document(ObjectBase, metaclass=IndexMeta):
         es = cls._get_connection(using)
         body = {
             "docs": [
-                doc if isinstance(doc, collections_abc.Mapping) else {"_id": doc}
+                doc if isinstance(doc, collections.abc.Mapping) else {"_id": doc}
                 for doc in docs
             ]
         }

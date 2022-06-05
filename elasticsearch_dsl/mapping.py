@@ -15,11 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
+import collections.abc
 from itertools import chain
 
 from .connections import get_connection
@@ -176,7 +172,7 @@ class Mapping:
         # metadata like _all etc
         for name, value in raw.items():
             if name != "properties":
-                if isinstance(value, collections_abc.Mapping):
+                if isinstance(value, collections.abc.Mapping):
                     self.meta(name, **value)
                 else:
                     self.meta(name, value)

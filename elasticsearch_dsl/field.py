@@ -16,14 +16,9 @@
 #  under the License.
 
 import base64
+import collections.abc
 import copy
 import ipaddress
-
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
 from datetime import date, datetime
 
 from dateutil import parser, tz
@@ -38,7 +33,7 @@ unicode = str
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
-    if isinstance(name_or_field, collections_abc.Mapping):
+    if isinstance(name_or_field, collections.abc.Mapping):
         if params:
             raise ValueError(
                 "construct_field() cannot accept parameters when passing in a dict."
@@ -218,7 +213,7 @@ class Object(Field):
             return None
 
         # somebody assigned raw dict to the field, we should tolerate that
-        if isinstance(data, collections_abc.Mapping):
+        if isinstance(data, collections.abc.Mapping):
             return data
 
         return data.to_dict()
@@ -472,7 +467,7 @@ class RangeField(Field):
     def _serialize(self, data):
         if data is None:
             return None
-        if not isinstance(data, collections_abc.Mapping):
+        if not isinstance(data, collections.abc.Mapping):
             data = data.to_dict()
         return {k: self._core_field.serialize(v) for k, v in data.items()}
 

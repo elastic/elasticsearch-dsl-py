@@ -16,11 +16,7 @@
 #  under the License.
 
 
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
+import collections.abc
 from copy import copy
 
 from .exceptions import UnknownDslObject, ValidationException
@@ -49,7 +45,7 @@ META_FIELDS = frozenset(
 
 
 def _wrap(val, obj_wrapper=None):
-    if isinstance(val, collections_abc.Mapping):
+    if isinstance(val, collections.abc.Mapping):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
         return AttrList(val)
@@ -348,7 +344,7 @@ class DslBase(metaclass=DslMeta):
             )
 
         # wrap nested dicts in AttrDict for convenient access
-        if isinstance(value, collections_abc.Mapping):
+        if isinstance(value, collections.abc.Mapping):
             return AttrDict(value)
         return value
 
@@ -541,8 +537,8 @@ class ObjectBase(AttrDict):
 
 def merge(data, new_data, raise_on_conflict=False):
     if not (
-        isinstance(data, (AttrDict, collections_abc.Mapping))
-        and isinstance(new_data, (AttrDict, collections_abc.Mapping))
+        isinstance(data, (AttrDict, collections.abc.Mapping))
+        and isinstance(new_data, (AttrDict, collections.abc.Mapping))
     ):
         raise ValueError(
             "You can only merge two dicts! Got {!r} and {!r} instead.".format(
@@ -553,8 +549,8 @@ def merge(data, new_data, raise_on_conflict=False):
     for key, value in new_data.items():
         if (
             key in data
-            and isinstance(data[key], (AttrDict, collections_abc.Mapping))
-            and isinstance(value, (AttrDict, collections_abc.Mapping))
+            and isinstance(data[key], (AttrDict, collections.abc.Mapping))
+            and isinstance(value, (AttrDict, collections.abc.Mapping))
         ):
             merge(data[key], value, raise_on_conflict)
         elif key in data and data[key] != value and raise_on_conflict:
@@ -574,6 +570,6 @@ def recursive_to_dict(data):
         data = data.to_dict()
     if isinstance(data, (list, tuple)):
         return type(data)(recursive_to_dict(inner) for inner in data)
-    elif isinstance(data, collections_abc.Mapping):
+    elif isinstance(data, collections.abc.Mapping):
         return {key: recursive_to_dict(val) for key, val in data.items()}
     return data

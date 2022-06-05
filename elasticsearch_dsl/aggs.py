@@ -15,10 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
+import collections.abc
 
 from .response.aggs import AggResponse, BucketData, FieldBucketData, TopHitsData
 from .utils import DslBase
@@ -34,7 +31,7 @@ def A(name_or_agg, filter=None, **params):
         params["filter"] = filter
 
     # {"terms": {"field": "tags"}, "aggs": {...}}
-    if isinstance(name_or_agg, collections_abc.Mapping):
+    if isinstance(name_or_agg, collections.abc.Mapping):
         if params:
             raise ValueError("A() cannot accept parameters when passing in a dict.")
         # copy to avoid modifying in-place

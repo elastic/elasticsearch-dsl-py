@@ -15,11 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
+import collections.abc
 from itertools import chain
 
 # 'SF' looks unused but the test suite assumes it's available
@@ -31,7 +27,7 @@ from .utils import DslBase
 
 def Q(name_or_query="match_all", **params):
     # {"match": {"title": "python"}}
-    if isinstance(name_or_query, collections_abc.Mapping):
+    if isinstance(name_or_query, collections.abc.Mapping):
         if params:
             raise ValueError("Q() cannot accept parameters when passing in a dict.")
         if len(name_or_query) != 1:
