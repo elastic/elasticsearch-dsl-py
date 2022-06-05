@@ -26,7 +26,7 @@ class AnalysisBase:
     def _type_shortcut(cls, name_or_instance, type=None, **kwargs):
         if isinstance(name_or_instance, cls):
             if type or kwargs:
-                raise ValueError("%s() cannot accept parameters." % cls.__name__)
+                raise ValueError(f"{cls.__name__}() cannot accept parameters.")
             return name_or_instance
 
         if not (type or kwargs):

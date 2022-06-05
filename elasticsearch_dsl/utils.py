@@ -151,9 +151,7 @@ class AttrDict:
             return self.__getitem__(attr_name)
         except KeyError:
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, attr_name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
     def __delattr__(self, attr_name):
@@ -161,9 +159,7 @@ class AttrDict:
             del self._d_[attr_name]
         except KeyError:
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, attr_name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
     def __getitem__(self, key):
@@ -224,7 +220,7 @@ class DslMeta(type):
         try:
             return cls._types[name]
         except KeyError:
-            raise UnknownDslObject("DSL type %s does not exist." % name)
+            raise UnknownDslObject(f"DSL type {name} does not exist.")
 
 
 class DslBase(metaclass=DslMeta):
@@ -266,7 +262,7 @@ class DslBase(metaclass=DslMeta):
     def _repr_params(self):
         """Produce a repr of all our parameters to be used in __repr__."""
         return ", ".join(
-            "{}={!r}".format(n.replace(".", "__"), v)
+            f"{n.replace('.', '__')}={v!r}"
             for (n, v) in sorted(self._params.items())
             # make sure we don't include empty typed params
             if "type" not in self._param_defs.get(n, {}) or v
@@ -319,9 +315,7 @@ class DslBase(metaclass=DslMeta):
     def __getattr__(self, name):
         if name.startswith("_"):
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {name!r}"
             )
 
         value = None
@@ -338,9 +332,7 @@ class DslBase(metaclass=DslMeta):
                     value = self._params.setdefault(name, {})
         if value is None:
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {name!r}"
             )
 
         # wrap nested dicts in AttrDict for convenient access
@@ -541,9 +533,7 @@ def merge(data, new_data, raise_on_conflict=False):
         and isinstance(new_data, (AttrDict, collections.abc.Mapping))
     ):
         raise ValueError(
-            "You can only merge two dicts! Got {!r} and {!r} instead.".format(
-                data, new_data
-            )
+            f"You can only merge two dicts! Got {data!r} and {new_data!r} instead."
         )
 
     for key, value in new_data.items():
@@ -554,7 +544,7 @@ def merge(data, new_data, raise_on_conflict=False):
         ):
             merge(data[key], value, raise_on_conflict)
         elif key in data and data[key] != value and raise_on_conflict:
-            raise ValueError("Incompatible data for key %r, cannot be merged." % key)
+            raise ValueError(f"Incompatible data for key {key!r}, cannot be merged.")
         else:
             data[key] = value
 

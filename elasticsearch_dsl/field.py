@@ -265,7 +265,7 @@ class Date(Field):
                 data = parser.parse(data)
             except Exception as e:
                 raise ValidationException(
-                    "Could not parse date from the value (%r)" % data, e
+                    f"Could not parse date from the value ({data!r})", e
                 )
 
         if isinstance(data, datetime):
@@ -278,7 +278,7 @@ class Date(Field):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
 
-        raise ValidationException("Could not parse date from the value (%r)" % data)
+        raise ValidationException(f"Could not parse date from the value ({data!r})")
 
 
 class Text(Field):

@@ -39,7 +39,7 @@ class Range(AttrDict):
 
         for k in data:
             if k not in self.OPS:
-                raise ValueError("Range received an unknown operator %r" % k)
+                raise ValueError(f"Range received an unknown operator {k!r}")
 
         if "gt" in data and "gte" in data:
             raise ValueError("You cannot specify both gt and gte for Range.")
