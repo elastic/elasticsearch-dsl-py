@@ -18,6 +18,8 @@
 
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from elasticsearch import TransportError
 from pytest import raises
 
@@ -169,3 +171,35 @@ def test_raw_subfield_can_be_used_in_aggs(data_client):
     authors = r.aggregations.authors
     assert 1 == len(authors)
     assert {"key": "Honza Král", "doc_count": 52} == authors[0]
+
+
+def test_runtime_field(data_client):
+    current_date = datetime.now()
+
+    s = Search(index="git").filter(Q("exists", field="committed_date"))
+    s = s.runtime_mappings(
+        days_since_commit={
+            "type": "long",
+            "script": {
+                "source": """
+                String currentDateStr = params.get('current_date');
+
+                DateTimeFormatter dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                LocalDateTime committedDate = doc['committed_date'].value.toLocalDateTime();
+                LocalDateTime currentDate = LocalDateTime.parse(currentDateStr, dtf);
+
+                emit(Duration.between(committedDate, currentDate).toDays());
+            """,
+                "params": {
+                    "current_date": current_date.replace(microsecond=0).isoformat()
+                },
+            },
+        }
+    )
+    response = s.execute()
+
+    for commit in response.hits:
+        assert "days_since_commit" in commit
+
+        committed_date = datetime.fromisoformat(commit.committed_date)
+        assert commit.days_since_commit[0] == (current_date - committed_date).days
