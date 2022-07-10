@@ -43,9 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Set up Python 3.8
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install dependencies
@@ -65,24 +65,24 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Setup Elasticsearch
         run: |
           mkdir /tmp/elasticsearch
           wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${{ matrix.es-version }}-linux-x86_64.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
           /tmp/elasticsearch/bin/elasticsearch -d
       - name: Setup Python - ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up Python 3.8 for Nox
         if: matrix.python-version != '3.8'
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3
       - name: Install dependencies
         run: |
-          python3.8 -m pip install nox
+          python3 -m pip install nox
       - name: Run Tests
         run: |
           nox -rs test-${{ matrix.python-version }}

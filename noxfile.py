@@ -46,7 +46,7 @@ def test(session):
 
 @nox.session()
 def format(session):
-    session.install("black", "isort")
+    session.install("black==21.12b0", "click==8.0.4", "isort")
     session.run(
         "black", "--target-version=py27", "--target-version=py37", *SOURCE_FILES
     )
@@ -58,7 +58,7 @@ def format(session):
 
 @nox.session
 def lint(session):
-    session.install("flake8", "black", "isort")
+    session.install("flake8", "black==21.12b0", "click==8.0.4", "isort")
     session.run(
         "black",
         "--check",
