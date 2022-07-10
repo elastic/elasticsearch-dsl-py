@@ -20,6 +20,10 @@ Can be used for building both 'elasticsearch' and 'elasticsearchX' dists.
 Only requires 'name' in 'setup.py' and the directory to be changed.
 """
 
+`dasdaadasdasdsa`
+dasdsadd
+dsadsad
+
 import contextlib
 import os
 import re
