@@ -3,14 +3,6 @@
 Changelog
 =========
 
-8.0.0 (2022-XX-XX)
-------------------
-
-* Dropped support for EOL Python 2.7 and 3.5 (`#1606`_, , contributed by `@hugovk`_)
-
- .. _@hugovk: https://github.com/hugovk
- .. _#1606: https://github.com/elastic/elasticsearch-dsl-py/pull/1606
-
 7.4.0 (2021-07-15)
 ------------------
 
