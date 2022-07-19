@@ -52,7 +52,7 @@ class Person(Document):
     name = Text(fields={"keyword": Keyword()})
     popularity = Long()
 
-    # copletion field with a custom analyzer
+    # completion field with a custom analyzer
     suggest = Completion(analyzer=ascii_fold)
 
     def clean(self):
