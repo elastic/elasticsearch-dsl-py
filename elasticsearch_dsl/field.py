@@ -16,31 +16,24 @@
 #  under the License.
 
 import base64
+import collections.abc
 import copy
 import ipaddress
-
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
 from datetime import date, datetime
 
 from dateutil import parser, tz
-from six import integer_types, iteritems, string_types
-from six.moves import map
 
 from .exceptions import ValidationException
 from .query import Q
 from .utils import AttrDict, AttrList, DslBase
 from .wrappers import Range
 
-unicode = type(u"")
+unicode = str
 
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
-    if isinstance(name_or_field, collections_abc.Mapping):
+    if isinstance(name_or_field, collections.abc.Mapping):
         if params:
             raise ValueError(
                 "construct_field() cannot accept parameters when passing in a dict."
@@ -84,7 +77,7 @@ class Field(DslBase):
         """
         self._multi = multi
         self._required = required
-        super(Field, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __getitem__(self, subfield):
         return self._params.get("fields", {})[subfield]
@@ -124,7 +117,7 @@ class Field(DslBase):
         return data
 
     def to_dict(self):
-        d = super(Field, self).to_dict()
+        d = super().to_dict()
         name, value = d.popitem()
         value["type"] = name
         return value
@@ -138,7 +131,7 @@ class CustomField(Field):
         if isinstance(self.builtin_type, Field):
             return self.builtin_type.to_dict()
 
-        d = super(CustomField, self).to_dict()
+        d = super().to_dict()
         d["type"] = self.builtin_type
         return d
 
@@ -172,13 +165,13 @@ class Object(Field):
 
             # no InnerDoc subclass, creating one instead...
             self._doc_class = type("InnerDoc", (InnerDoc,), {})
-            for name, field in iteritems(properties or {}):
+            for name, field in (properties or {}).items():
                 self._doc_class._doc_type.mapping.field(name, field)
             if dynamic is not None:
                 self._doc_class._doc_type.mapping.meta("dynamic", dynamic)
 
         self._mapping = copy.deepcopy(self._doc_class._doc_type.mapping)
-        super(Object, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def __getitem__(self, name):
         return self._mapping[name]
@@ -199,7 +192,7 @@ class Object(Field):
 
     def to_dict(self):
         d = self._mapping.to_dict()
-        d.update(super(Object, self).to_dict())
+        d.update(super().to_dict())
         return d
 
     def _collect_fields(self):
@@ -220,13 +213,13 @@ class Object(Field):
             return None
 
         # somebody assigned raw dict to the field, we should tolerate that
-        if isinstance(data, collections_abc.Mapping):
+        if isinstance(data, collections.abc.Mapping):
             return data
 
         return data.to_dict()
 
     def clean(self, data):
-        data = super(Object, self).clean(data)
+        data = super().clean(data)
         if data is None:
             return None
         if isinstance(data, (list, AttrList)):
@@ -249,7 +242,7 @@ class Nested(Object):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("multi", True)
-        super(Nested, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class Date(Field):
@@ -262,17 +255,17 @@ class Date(Field):
             May be instance of `datetime.tzinfo` or string containing TZ offset
         """
         self._default_timezone = default_timezone
-        if isinstance(self._default_timezone, string_types):
+        if isinstance(self._default_timezone, str):
             self._default_timezone = tz.gettz(self._default_timezone)
-        super(Date, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _deserialize(self, data):
-        if isinstance(data, string_types):
+        if isinstance(data, str):
             try:
                 data = parser.parse(data)
             except Exception as e:
                 raise ValidationException(
-                    "Could not parse date from the value (%r)" % data, e
+                    f"Could not parse date from the value ({data!r})", e
                 )
 
         if isinstance(data, datetime):
@@ -281,11 +274,11 @@ class Date(Field):
             return data
         if isinstance(data, date):
             return data
-        if isinstance(data, integer_types):
+        if isinstance(data, int):
             # Divide by a float to preserve milliseconds on the datetime.
             return datetime.utcfromtimestamp(data / 1000.0)
 
-        raise ValidationException("Could not parse date from the value (%r)" % data)
+        raise ValidationException(f"Could not parse date from the value ({data!r})")
 
 
 class Text(Field):
@@ -350,7 +343,7 @@ class DenseVector(Float):
 
     def __init__(self, dims, **kwargs):
         kwargs["multi"] = True
-        super(DenseVector, self).__init__(dims=dims, **kwargs)
+        super().__init__(dims=dims, **kwargs)
 
 
 class SparseVector(Field):
@@ -365,9 +358,7 @@ class ScaledFloat(Float):
     name = "scaled_float"
 
     def __init__(self, scaling_factor, *args, **kwargs):
-        super(ScaledFloat, self).__init__(
-            scaling_factor=scaling_factor, *args, **kwargs
-        )
+        super().__init__(scaling_factor=scaling_factor, *args, **kwargs)
 
 
 class Double(Float):
@@ -470,15 +461,15 @@ class RangeField(Field):
     def _deserialize(self, data):
         if isinstance(data, Range):
             return data
-        data = dict((k, self._core_field.deserialize(v)) for k, v in iteritems(data))
+        data = {k: self._core_field.deserialize(v) for k, v in data.items()}
         return Range(data)
 
     def _serialize(self, data):
         if data is None:
             return None
-        if not isinstance(data, collections_abc.Mapping):
+        if not isinstance(data, collections.abc.Mapping):
             data = data.to_dict()
-        return dict((k, self._core_field.serialize(v)) for k, v in iteritems(data))
+        return {k: self._core_field.serialize(v) for k, v in data.items()}
 
 
 class IntegerRange(RangeField):

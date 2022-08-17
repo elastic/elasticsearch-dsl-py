@@ -99,7 +99,7 @@ def repo_search_cls(es_version):
         }
 
         def search(self):
-            s = super(RepoSearch, self).search()
+            s = super().search()
             return s.filter("term", commit_repo="repo")
 
     return RepoSearch

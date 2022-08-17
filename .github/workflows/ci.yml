@@ -60,7 +60,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
+        python-version: [
+          "3.6",
+          "3.7",
+          "3.8",
+          "3.9",
+        ]
         es-version: [7.0.0, 7.10.0]
 
     steps:
