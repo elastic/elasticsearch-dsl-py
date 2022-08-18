@@ -504,9 +504,12 @@ class Index:
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.get_settings`` unchanged.
         """
-        return self._get_connection(using).indices.get_settings(
+        settings = self._get_connection(using).indices.get_settings(
             index=self._name, **kwargs
         )
+        if self._name not in settings:
+            settings[self._name] = list(settings.values())[0]
+        return settings
 
     def put_settings(self, using=None, **kwargs):
         """
