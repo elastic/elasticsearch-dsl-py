@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -26,7 +25,6 @@ value from the ``popularity`` field which is a long.
 To make the suggestions work in different languages we added a custom analyzer
 that does ascii folding.
 """
-from __future__ import print_function, unicode_literals
 
 from itertools import permutations
 

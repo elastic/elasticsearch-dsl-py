@@ -195,7 +195,7 @@ def test_search_index():
     assert s._index == ["i"]
     s = s.index("i2")
     assert s._index == ["i", "i2"]
-    s = s.index(u"i3")
+    s = s.index("i3")
     assert s._index == ["i", "i2", "i3"]
     s = s.index()
     assert s._index is None

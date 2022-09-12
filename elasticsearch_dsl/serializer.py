@@ -26,7 +26,7 @@ class AttrJSONSerializer(JSONSerializer):
             return data._l_
         if hasattr(data, "to_dict"):
             return data.to_dict()
-        return super(AttrJSONSerializer, self).default(data)
+        return super().default(data)
 
 
 serializer = AttrJSONSerializer()

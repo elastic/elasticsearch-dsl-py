@@ -38,7 +38,7 @@ class UpdateByQuery(Request):
         overridden by methods (`using`, `index` and `doc_type` respectively).
 
         """
-        super(UpdateByQuery, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._response_class = UpdateByQueryResponse
         self._script = {}
         self._query_proxy = QueryProxy(self, "query")
@@ -77,7 +77,7 @@ class UpdateByQuery(Request):
         of all the underlying objects. Used internally by most state modifying
         APIs.
         """
-        ubq = super(UpdateByQuery, self)._clone()
+        ubq = super()._clone()
 
         ubq._response_class = self._response_class
         ubq._script = self._script.copy()

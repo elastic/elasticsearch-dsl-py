@@ -15,20 +15,18 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import six
-
 from .connections import get_connection
 from .utils import AttrDict, DslBase, merge
 
 __all__ = ["tokenizer", "analyzer", "char_filter", "token_filter", "normalizer"]
 
 
-class AnalysisBase(object):
+class AnalysisBase:
     @classmethod
     def _type_shortcut(cls, name_or_instance, type=None, **kwargs):
         if isinstance(name_or_instance, cls):
             if type or kwargs:
-                raise ValueError("%s() cannot accept parameters." % cls.__name__)
+                raise ValueError(f"{cls.__name__}() cannot accept parameters.")
             return name_or_instance
 
         if not (type or kwargs):
@@ -39,20 +37,20 @@ class AnalysisBase(object):
         )
 
 
-class CustomAnalysis(object):
+class CustomAnalysis:
     name = "custom"
 
     def __init__(self, filter_name, builtin_type="custom", **kwargs):
         self._builtin_type = builtin_type
         self._name = filter_name
-        super(CustomAnalysis, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_dict(self):
         # only name to present in lists
         return self._name
 
     def get_definition(self):
-        d = super(CustomAnalysis, self).to_dict()
+        d = super().to_dict()
         d = d.pop(self.name)
         d["type"] = self._builtin_type
         return d
@@ -92,12 +90,12 @@ class CustomAnalysisDefinition(CustomAnalysis):
         return out
 
 
-class BuiltinAnalysis(object):
+class BuiltinAnalysis:
     name = "builtin"
 
     def __init__(self, name):
         self._name = name
-        super(BuiltinAnalysis, self).__init__()
+        super().__init__()
 
     def to_dict(self):
         # only name to present in lists
@@ -148,7 +146,7 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
             sec_def = definition.get(section, {})
             sec_names = analyzer_def[section]
 
-            if isinstance(sec_names, six.string_types):
+            if isinstance(sec_names, str):
                 body[section] = sec_def.get(sec_names, sec_names)
             else:
                 body[section] = [
@@ -213,7 +211,7 @@ class MultiplexerTokenFilter(CustomTokenFilter):
         if "filters" in d:
             d["filters"] = [
                 # comma delimited string given by user
-                fs if isinstance(fs, six.string_types) else
+                fs if isinstance(fs, str) else
                 # list of strings or TokenFilter objects
                 ", ".join(f.to_dict() if hasattr(f, "to_dict") else f for f in fs)
                 for fs in self.filters
@@ -227,7 +225,7 @@ class MultiplexerTokenFilter(CustomTokenFilter):
         fs = {}
         d = {"filter": fs}
         for filters in self.filters:
-            if isinstance(filters, six.string_types):
+            if isinstance(filters, str):
                 continue
             fs.update(
                 {

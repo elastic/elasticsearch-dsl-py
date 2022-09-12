@@ -24,7 +24,7 @@ from .update_by_query import UpdateByQuery
 from .utils import merge
 
 
-class IndexTemplate(object):
+class IndexTemplate:
     def __init__(self, name, template, index=None, order=None, **kwargs):
         if index is None:
             self._index = Index(template, **kwargs)
@@ -55,7 +55,7 @@ class IndexTemplate(object):
         return es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 
-class Index(object):
+class Index:
     def __init__(self, name, using="default"):
         """
         :arg name: name of the index
