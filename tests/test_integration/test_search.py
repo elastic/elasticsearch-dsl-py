@@ -110,6 +110,15 @@ def test_scan_iterates_through_all_docs(data_client):
     assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
 
 
+def test_page_iterates_through_all_docs(data_client):
+    s = Search(index="flat-git")
+
+    commits = list(s.page())
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
 def test_response_is_cached(data_client):
     s = Repository.search()
     repos = list(s)

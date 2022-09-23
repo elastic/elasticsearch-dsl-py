@@ -18,7 +18,7 @@
 import collections.abc
 import copy
 
-from elasticsearch.exceptions import TransportError
+from elasticsearch.exceptions import NotFoundError, TransportError
 from elasticsearch.helpers import scan
 
 from .aggs import A, AggBase
@@ -725,6 +725,51 @@ class Search(Request):
 
         for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
             yield self._get_result(hit)
+
+    def page(self):
+        """
+        Turn the search into a paged search utilizing Point in Time (PIT) and search_after.
+        Returns a generator that will iterate over all the documents matching the query.
+        """
+        search = self._clone()
+
+        # A sort is required to page search results. We use the optimized default if sort is None.
+        # https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html
+        if not search._sort:
+            search._sort = ['_shard_doc']
+
+        keep_alive = search._params.pop("keep_alive", "30s")
+        pit = search._using.open_point_in_time(index=search._index, keep_alive=keep_alive)
+        pit_id = pit['id']
+
+        # The index is passed with Point in Time (PIT).
+        search._index = None
+        search._extra.update(pit={"id": pit['id'], "keep_alive": keep_alive})
+
+        es = get_connection(search._using)
+
+        response = es.search(body=search.to_dict(), **search._params)
+        while hits := response["hits"]["hits"]:
+            for hit in hits:
+                yield self._get_result(hit)
+
+            # If we have fewer hits than our batch size, we know there are no more results.
+            if len(hits) < search._params.get('size', 0):
+                break
+
+            last_document = hits[-1]
+            pit_id = response.pit_id
+            search._extra.update(
+                pit={"id": pit_id, "keep_alive": keep_alive}, 
+                search_after=last_document["sort"]
+            )
+            response = es.search(body=search.to_dict(), **search._params)
+
+        # Try to close the PIT unless it is already closed.
+        try:
+            search._using.close_point_in_time(body={"id": pit_id})
+        except NotFoundError:
+            pass
 
     def delete(self):
         """
