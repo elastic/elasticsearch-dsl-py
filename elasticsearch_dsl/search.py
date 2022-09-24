@@ -736,11 +736,11 @@ class Search(Request):
         # A sort is required to page search results. We use the optimized default if sort is None.
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html
         if not search._sort:
-            search._sort = ['_shard_doc']
+            search._sort = ["_shard_doc"]
 
         keep_alive = search._params.pop("keep_alive", "30s")
         pit = search._using.open_point_in_time(index=search._index, keep_alive=keep_alive)
-        pit_id = pit['id']
+        pit_id = pit["id"]
 
         # The index is passed with Point in Time (PIT).
         search._index = None
@@ -754,13 +754,13 @@ class Search(Request):
                 yield self._get_result(hit)
 
             # If we have fewer hits than our batch size, we know there are no more results.
-            if len(hits) < search._params.get('size', 0):
+            if len(hits) < search._params.get("size", 0):
                 break
 
             last_document = hits[-1]
-            pit_id = response.pit_id
+            pit_id = response["pit_id"]
             search._extra.update(
-                pit={"id": pit_id, "keep_alive": keep_alive}, 
+                pit={"id": pit_id, "keep_alive": keep_alive},
                 search_after=last_document["sort"]
             )
             response = es.search(body=search.to_dict(), **search._params)
