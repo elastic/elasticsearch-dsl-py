@@ -739,12 +739,14 @@ class Search(Request):
             search._sort = ["_shard_doc"]
 
         keep_alive = search._params.pop("keep_alive", "30s")
-        pit = search._using.open_point_in_time(index=search._index, keep_alive=keep_alive)
+        pit = search._using.open_point_in_time(
+            index=search._index, keep_alive=keep_alive
+        )
         pit_id = pit["id"]
 
         # The index is passed with Point in Time (PIT).
         search._index = None
-        search._extra.update(pit={"id": pit['id'], "keep_alive": keep_alive})
+        search._extra.update(pit={"id": pit["id"], "keep_alive": keep_alive})
 
         es = get_connection(search._using)
 
@@ -761,7 +763,7 @@ class Search(Request):
             pit_id = response["pit_id"]
             search._extra.update(
                 pit={"id": pit_id, "keep_alive": keep_alive},
-                search_after=last_document["sort"]
+                search_after=last_document["sort"],
             )
             response = es.search(body=search.to_dict(), **search._params)
 
