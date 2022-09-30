@@ -113,7 +113,7 @@ class Post(Document):
         # if there is no date, use now
         if self.created is None:
             self.created = datetime.now()
-        return super(Post, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 class Question(Post):
@@ -168,7 +168,7 @@ class Question(Post):
 
     def save(self, **kwargs):
         self.question_answer = "question"
-        return super(Question, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 class Answer(Post):
@@ -199,7 +199,7 @@ class Answer(Post):
     def save(self, **kwargs):
         # set routing to parents id automatically
         self.meta.routing = self.question_answer.parent
-        return super(Answer, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 def setup():

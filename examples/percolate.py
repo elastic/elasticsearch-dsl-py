@@ -53,7 +53,7 @@ class BlogPost(Document):
 
     def save(self, **kwargs):
         self.add_tags()
-        return super(BlogPost, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 class PercolatorDoc(Document):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -20,7 +19,7 @@ from os.path import dirname, join
 
 from setuptools import find_packages, setup
 
-VERSION = (7, 2, 0)
+VERSION = (8, 0, 0)
 __version__ = VERSION
 __versionstr__ = ".".join(map(str, VERSION))
 
@@ -29,15 +28,11 @@ long_description = f.read().strip()
 f.close()
 
 install_requires = [
-    "six",
     "python-dateutil",
     "elasticsearch>=7.0.0,<8.0.0",
-    # ipaddress is included in stdlib since python 3.3
-    'ipaddress; python_version<"3.3"',
 ]
 
 develop_requires = [
-    "mock",
     "pytest>=3.0.0",
     "pytest-cov",
     "pytest-mock<3.0.0",
@@ -60,18 +55,15 @@ setup(
     maintainer="Seth Michael Larson",
     maintainer_email="seth.larson@elastic.co",
     packages=find_packages(where=".", exclude=("tests*",)),
-    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    python_requires=">=3.6",
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",

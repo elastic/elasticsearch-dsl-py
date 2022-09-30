@@ -15,17 +15,9 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from __future__ import unicode_literals
 
-try:
-    import collections.abc as collections_abc  # only works on python 3.3+
-except ImportError:
-    import collections as collections_abc
-
+import collections.abc
 from copy import copy
-
-from six import add_metaclass, iteritems
-from six.moves import map
 
 from .exceptions import UnknownDslObject, ValidationException
 
@@ -53,14 +45,14 @@ META_FIELDS = frozenset(
 
 
 def _wrap(val, obj_wrapper=None):
-    if isinstance(val, collections_abc.Mapping):
+    if isinstance(val, collections.abc.Mapping):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
         return AttrList(val)
     return val
 
 
-class AttrList(object):
+class AttrList:
     def __init__(self, l, obj_wrapper=None):
         # make iterables into lists
         if not isinstance(l, list):
@@ -110,7 +102,7 @@ class AttrList(object):
         self._l_, self._obj_wrapper = state
 
 
-class AttrDict(object):
+class AttrDict:
     """
     Helper class to provide attribute like access (read and write) to
     dictionaries. Used to provide a convenient way to access both results and
@@ -119,7 +111,7 @@ class AttrDict(object):
 
     def __init__(self, d):
         # assign the inner dict manually to prevent __setattr__ from firing
-        super(AttrDict, self).__setattr__("_d_", d)
+        super().__setattr__("_d_", d)
 
     def __contains__(self, key):
         return key in self._d_
@@ -152,16 +144,14 @@ class AttrDict(object):
         return (self._d_,)
 
     def __setstate__(self, state):
-        super(AttrDict, self).__setattr__("_d_", state[0])
+        super().__setattr__("_d_", state[0])
 
     def __getattr__(self, attr_name):
         try:
             return self.__getitem__(attr_name)
         except KeyError:
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, attr_name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
     def __delattr__(self, attr_name):
@@ -169,9 +159,7 @@ class AttrDict(object):
             del self._d_[attr_name]
         except KeyError:
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, attr_name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
     def __getitem__(self, key):
@@ -188,7 +176,7 @@ class AttrDict(object):
             self._d_[name] = value
         else:
             # there is an attribute on the class (could be property, ..) - don't add it as field
-            super(AttrDict, self).__setattr__(name, value)
+            super().__setattr__(name, value)
 
     def __iter__(self):
         return iter(self._d_)
@@ -213,7 +201,7 @@ class DslMeta(type):
     _types = {}
 
     def __init__(cls, name, bases, attrs):
-        super(DslMeta, cls).__init__(name, bases, attrs)
+        super().__init__(name, bases, attrs)
         # skip for DslBase
         if not hasattr(cls, "_type_shortcut"):
             return
@@ -232,11 +220,10 @@ class DslMeta(type):
         try:
             return cls._types[name]
         except KeyError:
-            raise UnknownDslObject("DSL type %s does not exist." % name)
+            raise UnknownDslObject(f"DSL type {name} does not exist.")
 
 
-@add_metaclass(DslMeta)
-class DslBase(object):
+class DslBase(metaclass=DslMeta):
     """
     Base class for all DSL objects - queries, filters, aggregations etc. Wraps
     a dictionary representing the object's json.
@@ -262,12 +249,12 @@ class DslBase(object):
             if default is not None:
                 return cls._classes[default]
             raise UnknownDslObject(
-                "DSL class `{}` does not exist in {}.".format(name, cls._type_name)
+                f"DSL class `{name}` does not exist in {cls._type_name}."
             )
 
     def __init__(self, _expand__to_dot=EXPAND__TO_DOT, **params):
         self._params = {}
-        for pname, pvalue in iteritems(params):
+        for pname, pvalue in params.items():
             if "__" in pname and _expand__to_dot:
                 pname = pname.replace("__", ".")
             self._setattr(pname, pvalue)
@@ -275,14 +262,14 @@ class DslBase(object):
     def _repr_params(self):
         """Produce a repr of all our parameters to be used in __repr__."""
         return ", ".join(
-            "{}={!r}".format(n.replace(".", "__"), v)
-            for (n, v) in sorted(iteritems(self._params))
+            f"{n.replace('.', '__')}={v!r}"
+            for (n, v) in sorted(self._params.items())
             # make sure we don't include empty typed params
             if "type" not in self._param_defs.get(n, {}) or v
         )
 
     def __repr__(self):
-        return "{}({})".format(self.__class__.__name__, self._repr_params())
+        return f"{self.__class__.__name__}({self._repr_params()})"
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()
@@ -292,7 +279,7 @@ class DslBase(object):
 
     def __setattr__(self, name, value):
         if name.startswith("_"):
-            return super(DslBase, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
         return self._setattr(name, value)
 
     def _setattr(self, name, value):
@@ -309,7 +296,7 @@ class DslBase(object):
                     if not isinstance(value, (tuple, list)):
                         value = (value,)
                     value = list(
-                        {k: shortcut(v) for (k, v) in iteritems(obj)} for obj in value
+                        {k: shortcut(v) for (k, v) in obj.items()} for obj in value
                     )
                 elif pinfo.get("multi"):
                     if not isinstance(value, (tuple, list)):
@@ -318,7 +305,7 @@ class DslBase(object):
 
                 # dict(name -> DslBase), make sure we pickup all the objs
                 elif pinfo.get("hash"):
-                    value = {k: shortcut(v) for (k, v) in iteritems(value)}
+                    value = {k: shortcut(v) for (k, v) in value.items()}
 
                 # single value object, just convert
                 else:
@@ -328,9 +315,7 @@ class DslBase(object):
     def __getattr__(self, name):
         if name.startswith("_"):
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {name!r}"
             )
 
         value = None
@@ -347,13 +332,11 @@ class DslBase(object):
                     value = self._params.setdefault(name, {})
         if value is None:
             raise AttributeError(
-                "{!r} object has no attribute {!r}".format(
-                    self.__class__.__name__, name
-                )
+                f"{self.__class__.__name__!r} object has no attribute {name!r}"
             )
 
         # wrap nested dicts in AttrDict for convenient access
-        if isinstance(value, collections_abc.Mapping):
+        if isinstance(value, collections.abc.Mapping):
             return AttrDict(value)
         return value
 
@@ -362,7 +345,7 @@ class DslBase(object):
         Serialize the DSL object to plain dict
         """
         d = {}
-        for pname, value in iteritems(self._params):
+        for pname, value in self._params.items():
             pinfo = self._param_defs.get(pname)
 
             # typed param
@@ -374,7 +357,7 @@ class DslBase(object):
                 # list of dict(name -> DslBase)
                 if pinfo.get("multi") and pinfo.get("hash"):
                     value = list(
-                        {k: v.to_dict() for k, v in iteritems(obj)} for obj in value
+                        {k: v.to_dict() for k, v in obj.items()} for obj in value
                     )
 
                 # multi-values are serialized as list of dicts
@@ -383,7 +366,7 @@ class DslBase(object):
 
                 # squash all the hash values into one dict
                 elif pinfo.get("hash"):
-                    value = {k: v.to_dict() for k, v in iteritems(value)}
+                    value = {k: v.to_dict() for k, v in value.items()}
 
                 # serialize single values
                 else:
@@ -407,13 +390,13 @@ class HitMeta(AttrDict):
     def __init__(self, document, exclude=("_source", "_fields")):
         d = {
             k[1:] if k.startswith("_") else k: v
-            for (k, v) in iteritems(document)
+            for (k, v) in document.items()
             if k not in exclude
         }
         if "type" in d:
             # make sure we are consistent everywhere in python
             d["doc_type"] = d.pop("type")
-        super(HitMeta, self).__init__(d)
+        super().__init__(d)
 
 
 class ObjectBase(AttrDict):
@@ -425,7 +408,7 @@ class ObjectBase(AttrDict):
 
         super(AttrDict, self).__setattr__("meta", HitMeta(meta))
 
-        super(ObjectBase, self).__init__(kwargs)
+        super().__init__(kwargs)
 
     @classmethod
     def __list_fields(cls):
@@ -469,7 +452,7 @@ class ObjectBase(AttrDict):
         return doc
 
     def _from_dict(self, data):
-        for k, v in iteritems(data):
+        for k, v in data.items():
             f = self.__get_field(k)
             if f and f._coerce:
                 v = f.deserialize(v)
@@ -486,7 +469,7 @@ class ObjectBase(AttrDict):
 
     def __getattr__(self, name):
         try:
-            return super(ObjectBase, self).__getattr__(name)
+            return super().__getattr__(name)
         except AttributeError:
             f = self.__get_field(name)
             if hasattr(f, "empty"):
@@ -499,7 +482,7 @@ class ObjectBase(AttrDict):
 
     def to_dict(self, skip_empty=True):
         out = {}
-        for k, v in iteritems(self._d_):
+        for k, v in self._d_.items():
             # if this is a mapped field,
             f = self.__get_field(k)
             if f and f._coerce:
@@ -546,24 +529,22 @@ class ObjectBase(AttrDict):
 
 def merge(data, new_data, raise_on_conflict=False):
     if not (
-        isinstance(data, (AttrDict, collections_abc.Mapping))
-        and isinstance(new_data, (AttrDict, collections_abc.Mapping))
+        isinstance(data, (AttrDict, collections.abc.Mapping))
+        and isinstance(new_data, (AttrDict, collections.abc.Mapping))
     ):
         raise ValueError(
-            "You can only merge two dicts! Got {!r} and {!r} instead.".format(
-                data, new_data
-            )
+            f"You can only merge two dicts! Got {data!r} and {new_data!r} instead."
         )
 
-    for key, value in iteritems(new_data):
+    for key, value in new_data.items():
         if (
             key in data
-            and isinstance(data[key], (AttrDict, collections_abc.Mapping))
-            and isinstance(value, (AttrDict, collections_abc.Mapping))
+            and isinstance(data[key], (AttrDict, collections.abc.Mapping))
+            and isinstance(value, (AttrDict, collections.abc.Mapping))
         ):
             merge(data[key], value, raise_on_conflict)
         elif key in data and data[key] != value and raise_on_conflict:
-            raise ValueError("Incompatible data for key %r, cannot be merged." % key)
+            raise ValueError(f"Incompatible data for key {key!r}, cannot be merged.")
         else:
             data[key] = value
 
@@ -579,6 +560,6 @@ def recursive_to_dict(data):
         data = data.to_dict()
     if isinstance(data, (list, tuple)):
         return type(data)(recursive_to_dict(inner) for inner in data)
-    elif isinstance(data, collections_abc.Mapping):
+    elif isinstance(data, collections.abc.Mapping):
         return {key: recursive_to_dict(val) for key, val in data.items()}
     return data
