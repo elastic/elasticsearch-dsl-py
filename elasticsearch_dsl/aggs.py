@@ -329,6 +329,10 @@ class GeoBounds(Agg):
     name = "geo_bounds"
 
 
+class GeoLine(Agg):
+    name = "geo_line"
+
+
 class Max(Agg):
     name = "max"
 
