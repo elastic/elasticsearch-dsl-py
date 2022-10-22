@@ -739,8 +739,11 @@ class Search(Request):
             search._sort = ["_shard_doc"]
 
         keep_alive = search._params.pop("keep_alive", "30s")
-        pit = search._using.open_point_in_time(
-            index=search._index, keep_alive=keep_alive
+        es = get_connection(search._using)
+
+        pit = es.open_point_in_time(
+            index=search._index,
+            keep_alive=keep_alive,
         )
         pit_id = pit["id"]
 
