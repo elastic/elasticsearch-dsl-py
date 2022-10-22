@@ -751,8 +751,6 @@ class Search(Request):
         search._index = None
         search._extra.update(pit={"id": pit_id, "keep_alive": keep_alive})
 
-        es = get_connection(search._using)
-
         response = es.search(body=search.to_dict(), **search._params)
         while hits := response["hits"]["hits"]:
             for hit in hits:
@@ -772,7 +770,7 @@ class Search(Request):
 
         # Try to close the PIT unless it is already closed.
         try:
-            search._using.close_point_in_time(body={"id": pit_id})
+            es.close_point_in_time(body={"id": pit_id})
         except NotFoundError:
             pass
 
