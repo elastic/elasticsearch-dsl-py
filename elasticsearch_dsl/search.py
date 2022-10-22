@@ -749,7 +749,7 @@ class Search(Request):
 
         # The index is passed with Point in Time (PIT).
         search._index = None
-        search._extra.update(pit={"id": pit["id"], "keep_alive": keep_alive})
+        search._extra.update(pit={"id": pit_id, "keep_alive": keep_alive})
 
         es = get_connection(search._using)
 
