@@ -27,7 +27,7 @@ from elasticsearch.helpers import scan
 from six import iteritems, string_types
 
 from .aggs import A, AggBase
-from .connections import get_connection
+from .connections import CLIENT_HAS_NAMED_BODY_PARAMS, get_connection
 from .exceptions import IllegalOperation
 from .query import Bool, Q
 from .response import Hit, Response
@@ -711,8 +711,16 @@ class Search(Request):
         if ignore_cache or not hasattr(self, "_response"):
             es = get_connection(self._using)
 
+            if CLIENT_HAS_NAMED_BODY_PARAMS:
+                params = self.to_dict()
+                if "from" in params:
+                    params["from_"] = params.pop("from")
+            else:
+                params = {"body": self.to_dict()}
+            params.update(self._params)
+
             self._response = self._response_class(
-                self, es.search(index=self._index, body=self.to_dict(), **self._params)
+                self, es.search(index=self._index, **params)
             )
         return self._response
 

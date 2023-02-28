@@ -25,7 +25,7 @@ from fnmatch import fnmatch
 from elasticsearch.exceptions import NotFoundError, RequestError
 from six import add_metaclass, iteritems
 
-from .connections import get_connection
+from .connections import CLIENT_HAS_NAMED_BODY_PARAMS, get_connection
 from .exceptions import IllegalOperation, ValidationException
 from .field import Field
 from .index import Index
@@ -416,10 +416,10 @@ class Document(ObjectBase):
             body["doc"] = {k: values.get(k) for k in fields.keys()}
 
         # extract routing etc from meta
-        doc_meta = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
+        params = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
 
         if retry_on_conflict is not None:
-            doc_meta["retry_on_conflict"] = retry_on_conflict
+            params["retry_on_conflict"] = retry_on_conflict
 
         # Optimistic concurrency control
         if (
@@ -427,11 +427,18 @@ class Document(ObjectBase):
             and "seq_no" in self.meta
             and "primary_term" in self.meta
         ):
-            doc_meta["if_seq_no"] = self.meta["seq_no"]
-            doc_meta["if_primary_term"] = self.meta["primary_term"]
+            params["if_seq_no"] = self.meta["seq_no"]
+            params["if_primary_term"] = self.meta["primary_term"]
+
+        params["refresh"] = refresh
+
+        if CLIENT_HAS_NAMED_BODY_PARAMS:
+            params.update(body)
+        else:
+            params["body"] = body
 
         meta = self._get_connection(using).update(
-            index=self._get_index(index), body=body, refresh=refresh, **doc_meta
+            index=self._get_index(index), **params
         )
         # update meta information from ES
         for k in META_FIELDS:
@@ -474,19 +481,20 @@ class Document(ObjectBase):
 
         es = self._get_connection(using)
         # extract routing etc from meta
-        doc_meta = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
+        params = {k: self.meta[k] for k in DOC_META_FIELDS if k in self.meta}
 
         # Optimistic concurrency control
         if "seq_no" in self.meta and "primary_term" in self.meta:
-            doc_meta["if_seq_no"] = self.meta["seq_no"]
-            doc_meta["if_primary_term"] = self.meta["primary_term"]
+            params["if_seq_no"] = self.meta["seq_no"]
+            params["if_primary_term"] = self.meta["primary_term"]
 
-        doc_meta.update(kwargs)
-        meta = es.index(
-            index=self._get_index(index),
-            body=self.to_dict(skip_empty=skip_empty),
-            **doc_meta
-        )
+        if CLIENT_HAS_NAMED_BODY_PARAMS:
+            params["document"] = self.to_dict(skip_empty=skip_empty)
+        else:
+            params["body"] = self.to_dict(skip_empty=skip_empty)
+
+        params.update(kwargs)
+        meta = es.index(index=self._get_index(index), **params)
         # update meta information from ES
         for k in META_FIELDS:
             if "_" + k in meta:

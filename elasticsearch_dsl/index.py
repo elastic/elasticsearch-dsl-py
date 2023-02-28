@@ -16,7 +16,7 @@
 #  under the License.
 
 from . import analysis
-from .connections import get_connection
+from .connections import CLIENT_HAS_NAMED_BODY_PARAMS, get_connection
 from .exceptions import IllegalOperation
 from .mapping import Mapping
 from .search import Search
@@ -276,9 +276,15 @@ class Index(object):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
-        return self._get_connection(using).indices.create(
-            index=self._name, body=self.to_dict(), **kwargs
-        )
+        es = self._get_connection(using)
+
+        if CLIENT_HAS_NAMED_BODY_PARAMS:
+            params = self.to_dict()
+        else:
+            params = {"body": self.to_dict()}
+        params.update(kwargs)
+
+        return es.indices.create(index=self._name, **params)
 
     def is_closed(self, using=None):
         state = self._get_connection(using).cluster.state(
