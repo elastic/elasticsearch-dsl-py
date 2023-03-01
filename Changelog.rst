@@ -3,6 +3,13 @@
 Changelog
 =========
 
+7.4.1 (2023-03-01)
+------------------
+
+* Fixed ``DeprecationWarnings`` that would be emitted from deprecated
+  usages of the ``body`` parameter in the Python Elasticsearch client.
+
+
 7.4.0 (2021-07-15)
 ------------------
 
