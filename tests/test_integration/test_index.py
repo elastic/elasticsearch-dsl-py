@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import warnings
+
 from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analysis
 
 
@@ -65,7 +67,12 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
     i = Index("test-blog", using=write_client)
     i.document(Post)
     i.settings(number_of_replicas=0, number_of_shards=1)
-    i.create()
+
+    with warnings.catch_warnings(record=True) as w:
+        i.create()
+    assert [
+        str(x.message) for x in w if issubclass(x.category, DeprecationWarning)
+    ] == []
 
     assert {
         "test-blog": {

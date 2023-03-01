@@ -20,6 +20,7 @@ from copy import deepcopy
 from pytest import raises
 
 from elasticsearch_dsl import Document, Q, query, search
+from elasticsearch_dsl.connections import CLIENT_HAS_NAMED_BODY_PARAMS
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 
@@ -43,7 +44,10 @@ def test_cache_can_be_ignored(mock_client):
     s._response = r
     s.execute(ignore_cache=True)
 
-    mock_client.search.assert_called_once_with(index=None, body={})
+    if CLIENT_HAS_NAMED_BODY_PARAMS:
+        mock_client.search.assert_called_once_with(index=None)
+    else:
+        mock_client.search.assert_called_once_with(index=None, body={})
 
 
 def test_iter_iterates_over_hits():
@@ -411,7 +415,10 @@ def test_params_being_passed_to_search(mock_client):
     s = s.params(routing="42")
     s.execute()
 
-    mock_client.search.assert_called_once_with(index=None, body={}, routing="42")
+    if CLIENT_HAS_NAMED_BODY_PARAMS:
+        mock_client.search.assert_called_once_with(index=None, routing="42")
+    else:
+        mock_client.search.assert_called_once_with(index=None, body={}, routing="42")
 
 
 def test_source():

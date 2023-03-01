@@ -18,6 +18,8 @@
 
 from __future__ import unicode_literals
 
+import warnings
+
 from elasticsearch import TransportError
 from pytest import raises
 
@@ -169,3 +171,14 @@ def test_raw_subfield_can_be_used_in_aggs(data_client):
     authors = r.aggregations.authors
     assert 1 == len(authors)
     assert {"key": "Honza Král", "doc_count": 52} == authors[0]
+
+
+def test_no_deprecation_warnings(data_client):
+    s = Search(index="git")[0:0]
+    s.aggs.bucket("authors", "terms", field="author.name.raw", size=1)
+
+    with warnings.catch_warnings(record=True) as w:
+        s.execute()
+    assert [
+        str(x.message) for x in w if issubclass(x.category, DeprecationWarning)
+    ] == []

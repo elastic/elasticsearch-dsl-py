@@ -15,6 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import warnings
 from datetime import datetime
 from ipaddress import ip_address
 
@@ -407,7 +408,11 @@ def test_mget_ignores_missing_docs_when_missing_param_is_skip(data_client):
 def test_update_works_from_search_response(data_client):
     elasticsearch_repo = Repository.search().execute()[0]
 
-    elasticsearch_repo.update(owner={"other_name": "elastic"})
+    with warnings.catch_warnings(record=True) as w:
+        elasticsearch_repo.update(owner={"other_name": "elastic"})
+    assert [
+        str(x.message) for x in w if issubclass(x.category, DeprecationWarning)
+    ] == []
     assert "elastic" == elasticsearch_repo.owner.other_name
 
     new_version = Repository.get("elasticsearch-dsl-py")
@@ -442,7 +447,12 @@ def test_save_updates_existing_doc(data_client):
 
     elasticsearch_repo.new_field = "testing-save"
     old_seq_no = elasticsearch_repo.meta.seq_no
-    assert "updated" == elasticsearch_repo.save()
+
+    with warnings.catch_warnings(record=True) as w:
+        assert "updated" == elasticsearch_repo.save()
+    assert [
+        str(x.message) for x in w if issubclass(x.category, DeprecationWarning)
+    ] == []
 
     new_repo = data_client.get(index="git", id="elasticsearch-dsl-py")
     assert "testing-save" == new_repo["_source"]["new_field"]
