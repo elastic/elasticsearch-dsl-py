@@ -21,7 +21,7 @@ from six import string_types
 from .serializer import serializer
 
 # The 'body' parameter was deprecated in favor of named
-# body parameters in 7.15.0 of the client. The relevant APIs
+# body parameters in version 7.15.0 of the client. The relevant APIs
 # affected include 'search', 'index', 'update', and 'indices.create'
 CLIENT_HAS_NAMED_BODY_PARAMS = __version__ >= (7, 15, 0)
 
