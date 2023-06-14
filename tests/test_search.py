@@ -256,6 +256,40 @@ def test_sort_by_score():
         s.sort("-_score")
 
 
+def test_collapse():
+    s = search.Search()
+
+    inner_hits = {"name": "most_recent", "size": 5, "sort": [{"@timestamp": "desc"}]}
+    s = s.collapse(
+        field="user.id", inner_hits=inner_hits, max_concurrent_group_searches=4
+    )
+
+    assert {
+        "field": "user.id",
+        "inner_hits": {
+            "name": "most_recent",
+            "size": 5,
+            "sort": [{"@timestamp": "desc"}],
+        },
+        "max_concurrent_group_searches": 4,
+    } == s._collapse
+    assert {
+        "collapse": {
+            "field": "user.id",
+            "inner_hits": {
+                "name": "most_recent",
+                "size": 5,
+                "sort": [{"@timestamp": "desc"}],
+            },
+            "max_concurrent_group_searches": 4,
+        }
+    } == s.to_dict()
+
+    s = s.collapse()
+    assert {} == s._collapse
+    assert search.Search().to_dict() == s.to_dict()
+
+
 def test_slice():
     s = search.Search()
     assert {"from": 3, "size": 7} == s[3:10].to_dict()
