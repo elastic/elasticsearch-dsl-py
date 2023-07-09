@@ -66,10 +66,11 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
 Data types
 ~~~~~~~~~~
 
-The ``Document`` instances should be using native python types like
-``datetime``. In case of ``Object`` or ``Nested`` fields an instance of the
-``InnerDoc`` subclass should be used just like in the ``add_comment`` method in
-the above example where we are creating an instance of the ``Comment`` class.
+Fields within ``Document``s are declared using attributes with native Python types
+like ``datetime``. In case of ``Object`` or ``Nested`` fields, the subclassed
+``InnerDoc`` is passed in as the field's first argument, just like in the
+``add_comment`` method in the above example where we are creating a field to
+accept data conforming to the ``Comment`` class.
 
 There are some specific types that were created as part of this library to make
 working with specific field types easier, for example the ``Range`` object used
