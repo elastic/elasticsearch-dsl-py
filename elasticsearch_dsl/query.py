@@ -486,6 +486,9 @@ class Term(Query):
 class Terms(Query):
     name = "terms"
 
+    def _setattr(self, name, value):
+        super()._setattr(name, list(value))
+
 
 class TermsSet(Query):
     name = "terms_set"
