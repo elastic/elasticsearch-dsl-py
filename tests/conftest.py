@@ -18,11 +18,14 @@
 
 import os
 import re
+import time
 from datetime import datetime
+from unittest import SkipTest, TestCase
 from unittest.mock import Mock
 
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError
 from elasticsearch.helpers import bulk
-from elasticsearch.helpers.test import SkipTest, get_test_client
 from pytest import fixture, skip
 
 from elasticsearch_dsl.connections import add_connection, connections
@@ -35,6 +38,73 @@ from .test_integration.test_data import (
     create_git_index,
 )
 from .test_integration.test_document import Comment, History, PullRequest, User
+
+if "ELASTICSEARCH_URL" in os.environ:
+    ELASTICSEARCH_URL = os.environ["ELASTICSEARCH_URL"]
+else:
+    ELASTICSEARCH_URL = "https://elastic:changeme@localhost:9200"
+
+
+def get_test_client(nowait=False, **kwargs):
+    # construct kwargs from the environment
+    kw = {"timeout": 30}
+
+    if "PYTHON_CONNECTION_CLASS" in os.environ:
+        from elasticsearch import connection
+
+        kw["connection_class"] = getattr(
+            connection, os.environ["PYTHON_CONNECTION_CLASS"]
+        )
+
+    kw.update(kwargs)
+    client = Elasticsearch(ELASTICSEARCH_URL, **kw)
+
+    # wait for yellow status
+    for _ in range(1 if nowait else 100):
+        try:
+            client.cluster.health(wait_for_status="yellow")
+            return client
+        except ConnectionError:
+            time.sleep(0.1)
+    else:
+        # timeout
+        raise SkipTest("Elasticsearch failed to start.")
+
+
+class ElasticsearchTestCase(TestCase):
+    @staticmethod
+    def _get_client():
+        return get_test_client()
+
+    @classmethod
+    def setup_class(cls):
+        cls.client = cls._get_client()
+
+    def teardown_method(self, _):
+        # Hidden indices expanded in wildcards in ES 7.7
+        expand_wildcards = ["open", "closed"]
+        if self.es_version() >= (7, 7):
+            expand_wildcards.append("hidden")
+
+        self.client.indices.delete_data_stream(
+            name="*", ignore=404, expand_wildcards=expand_wildcards
+        )
+        self.client.indices.delete(
+            index="*", ignore=404, expand_wildcards=expand_wildcards
+        )
+        self.client.indices.delete_template(name="*", ignore=404)
+
+    def es_version(self):
+        if not hasattr(self, "_es_version"):
+            self._es_version = _get_version(client.info()["version"]["number"])
+        return self._es_version
+
+
+def _get_version(version_string):
+    if "." not in version_string:
+        return ()
+    version = version_string.strip().split(".")
+    return tuple(int(v) if v.isdigit() else 999 for v in version)
 
 
 @fixture(scope="session")
