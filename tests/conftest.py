@@ -60,15 +60,16 @@ def get_test_client(wait=True, **kwargs):
     client = Elasticsearch(ELASTICSEARCH_URL, **kw)
 
     # wait for yellow status
-    for _ in range(100 if wait else 1):
+    for tries_left in range(100 if wait else 1, 0, -1):
         try:
             client.cluster.health(wait_for_status="yellow")
             return client
         except ConnectionError:
+            if wait and tries_left == 1:
+                raise
             time.sleep(0.1)
-    else:
-        # timeout
-        raise SkipTest("Elasticsearch failed to start.")
+
+    raise SkipTest("Elasticsearch failed to start.")
 
 
 class ElasticsearchTestCase(TestCase):
