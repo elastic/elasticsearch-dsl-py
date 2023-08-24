@@ -45,7 +45,7 @@ else:
     ELASTICSEARCH_URL = "https://elastic:changeme@localhost:9200"
 
 
-def get_test_client(nowait=False, **kwargs):
+def get_test_client(wait=True, **kwargs):
     # construct kwargs from the environment
     kw = {"timeout": 30}
 
@@ -60,7 +60,7 @@ def get_test_client(nowait=False, **kwargs):
     client = Elasticsearch(ELASTICSEARCH_URL, **kw)
 
     # wait for yellow status
-    for _ in range(1 if nowait else 100):
+    for _ in range(100 if wait else 1):
         try:
             client.cluster.health(wait_for_status="yellow")
             return client
@@ -110,7 +110,7 @@ def _get_version(version_string):
 @fixture(scope="session")
 def client():
     try:
-        connection = get_test_client(nowait="WAIT_FOR_ES" not in os.environ)
+        connection = get_test_client(wait="WAIT_FOR_ES" in os.environ)
         add_connection("default", connection)
         return connection
     except SkipTest:
