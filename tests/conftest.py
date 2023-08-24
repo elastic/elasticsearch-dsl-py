@@ -42,7 +42,7 @@ from .test_integration.test_document import Comment, History, PullRequest, User
 if "ELASTICSEARCH_URL" in os.environ:
     ELASTICSEARCH_URL = os.environ["ELASTICSEARCH_URL"]
 else:
-    ELASTICSEARCH_URL = "https://elastic:changeme@localhost:9200"
+    ELASTICSEARCH_URL = "http://localhost:9200"
 
 
 def get_test_client(wait=True, **kwargs):

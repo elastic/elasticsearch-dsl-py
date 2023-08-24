@@ -92,3 +92,5 @@ jobs:
       - name: Run Tests
         run: |
           nox -rs test-${{ matrix.python-version }}
+        env:
+          WAIT_FOR_ES: "1"
