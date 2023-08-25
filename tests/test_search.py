@@ -307,6 +307,12 @@ def test_complex_example():
         .filter(Q("term", category="meetup") | Q("term", category="conference"))
         .post_filter("terms", tags=["prague", "czech"])
         .script_fields(more_attendees="doc['attendees'].value + 42")
+        .runtime_mappings(
+            http={
+                "type": "composite",
+                "script": 'emit(grok("%{COMMONAPACHELOG}").extract(doc["message"].value))',
+            }
+        )
     )
 
     s.aggs.bucket("per_country", "terms", field="country").metric(
@@ -342,11 +348,18 @@ def test_complex_example():
                 "aggs": {"avg_attendees": {"avg": {"field": "attendees"}}},
             }
         },
+        "fields": ["http"],
         "highlight": {
             "order": "score",
             "fields": {"title": {"fragment_size": 50}, "body": {"fragment_size": 50}},
         },
         "script_fields": {"more_attendees": {"script": "doc['attendees'].value + 42"}},
+        "runtime_mappings": {
+            "http": {
+                "type": "composite",
+                "script": 'emit(grok("%{COMMONAPACHELOG}").extract(doc["message"].value))',
+            }
+        },
     } == s.to_dict()
 
 

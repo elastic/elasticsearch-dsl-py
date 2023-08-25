@@ -328,6 +328,9 @@ class Search(Request):
         self._query_proxy = QueryProxy(self, "query")
         self._post_filter_proxy = QueryProxy(self, "post_filter")
 
+        self._fields = []
+        self._runtime_mappings = {}
+
     def filter(self, *args, **kwargs):
         return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
@@ -411,6 +414,9 @@ class Search(Request):
         s._highlight_opts = self._highlight_opts.copy()
         s._suggest = self._suggest.copy()
         s._script_fields = self._script_fields.copy()
+        s._fields = self._fields
+        s._runtime_mappings = self._runtime_mappings.copy()
+
         for x in ("query", "post_filter"):
             getattr(s, x)._proxied = getattr(self, x)._proxied
 
@@ -459,6 +465,8 @@ class Search(Request):
                     s.setdefault("text", text)
         if "script_fields" in d:
             self._script_fields = d.pop("script_fields")
+        if "runtime_mappings" in d:
+            self._runtime_mappings = d.pop("runtime_mappings")
         self._extra.update(d)
         return self
 
@@ -488,6 +496,48 @@ class Search(Request):
             if isinstance(kwargs[name], str):
                 kwargs[name] = {"script": kwargs[name]}
         s._script_fields.update(kwargs)
+        return s
+
+    def runtime_mappings(self, **kwargs):
+        """
+        Define runtime fields to be calculated at query time. See
+        https://www.elastic.co/guide/en/elasticsearch/reference/current/runtime.html
+        for more details.
+
+        Runtime fields are automatically added to the query response.
+
+        Example::
+
+            s = Search()
+            s = s.runtime_mappings(
+                'client_ip': {
+                    'type': 'ip',
+                    'script': '''
+                        String clientip=grok('%{COMMONAPACHELOG}').extract(doc["message"].value)?.clientip;
+                        if (clientip != null) emit(clientip);
+                    '''
+                }
+            )
+
+        """
+        s = self._clone()
+        s._runtime_mappings.update(kwargs)
+        s.fields(*s._runtime_mappings.keys())
+        return s
+
+    def fields(self, *args):
+        """
+        Runtime fields are not indexed or stored, so they will not appear in the _source block if you run a query, but
+        can easily be added to the response by adding the 'fields' clause to the body of the query.
+
+        Example::
+
+            s = Search()
+            s = s.fields("client_ip")
+
+        """
+        s = self._clone()
+        s._fields.extend(args)
         return s
 
     def source(self, fields=None, **kwargs):
@@ -677,6 +727,12 @@ class Search(Request):
 
             if self._script_fields:
                 d["script_fields"] = self._script_fields
+
+            if self._runtime_mappings:
+                d["runtime_mappings"] = self._runtime_mappings
+
+            if self._fields:
+                d["fields"] = self._fields
 
         d.update(recursive_to_dict(kwargs))
         return d
