@@ -33,11 +33,11 @@ install_requires = [
 ]
 
 develop_requires = [
-    "pytest>=3.0.0",
+    "pytest",
     "pytest-cov",
-    "pytest-mock<3.0.0",
+    "pytest-mock",
     "pytz",
-    "coverage<5.0.0",
+    "coverage",
     "sphinx",
     "sphinx_rtd_theme",
 ]
