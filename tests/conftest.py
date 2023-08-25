@@ -131,8 +131,8 @@ def es_version(client):
 @fixture
 def write_client(client):
     yield client
-    client.indices.delete("test-*", ignore=404)
-    client.indices.delete_template("test-template", ignore=404)
+    client.indices.delete(index="test-*", ignore=404)
+    client.indices.delete_template(name="test-template", ignore=404)
 
 
 @fixture
@@ -154,8 +154,8 @@ def data_client(client):
     bulk(client, DATA, raise_on_error=True, refresh=True)
     bulk(client, FLAT_DATA, raise_on_error=True, refresh=True)
     yield client
-    client.indices.delete("git")
-    client.indices.delete("flat-git")
+    client.indices.delete(index="git")
+    client.indices.delete(index="flat-git")
 
 
 @fixture
