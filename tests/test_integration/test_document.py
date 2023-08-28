@@ -68,7 +68,7 @@ class Repository(Document):
 
     @classmethod
     def search(cls):
-        return super(Repository, cls).search().filter("term", commit_repo="repo")
+        return super().search().filter("term", commit_repo="repo")
 
     class Index:
         name = "git"
@@ -139,7 +139,7 @@ def test_serialization(write_client):
     assert sd.b == [True, False, True, False, None]
     assert sd.d == [0.1, -0.1, None]
     assert sd.bin == [b"Hello World", None]
-    assert sd.ip == [ip_address(u"::1"), ip_address(u"127.0.0.1"), None]
+    assert sd.ip == [ip_address("::1"), ip_address("127.0.0.1"), None]
 
     assert sd.to_dict() == {
         "b": [True, False, True, False, None],
@@ -331,6 +331,14 @@ def test_get(data_client):
     assert isinstance(elasticsearch_repo, Repository)
     assert elasticsearch_repo.owner.name == "elasticsearch"
     assert datetime(2014, 3, 3) == elasticsearch_repo.created_at
+
+
+def test_exists_return_true(data_client):
+    assert Repository.exists("elasticsearch-dsl-py")
+
+
+def test_exists_false(data_client):
+    assert not Repository.exists("elasticsearch-dsl-php")
 
 
 def test_get_with_tz_date(data_client):

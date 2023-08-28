@@ -33,13 +33,14 @@ def test_alias_migration(write_client):
     index_name, _ = indices.popitem()
 
     # which means we can now save a document
-    bp = BlogPost(
-        _id=0,
-        title="Hello World!",
-        tags=["testing", "dummy"],
-        content=open(__file__).read(),
-    )
-    bp.save(refresh=True)
+    with open(__file__) as f:
+        bp = BlogPost(
+            _id=0,
+            title="Hello World!",
+            tags=["testing", "dummy"],
+            content=f.read(),
+        )
+        bp.save(refresh=True)
 
     assert BlogPost.search().count() == 1
 

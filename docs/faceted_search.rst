@@ -83,7 +83,7 @@ of the methods responsible for the class' functions:
   filter for published articles only).
 
 ``query(self, search)``
-  adds the query postion of the search (if search input specified), by default
+  adds the query position of the search (if search input specified), by default
   using ``MultiField`` query. Override this if you want to modify the query type used.
 
 ``highlight(self, search)``

@@ -113,7 +113,7 @@ class Post(Document):
         # if there is no date, use now
         if self.created is None:
             self.created = datetime.now()
-        return super(Post, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 class Question(Post):
@@ -123,7 +123,7 @@ class Question(Post):
 
     @classmethod
     def _matches(cls, hit):
-        """ Use Question class for parent documents """
+        """Use Question class for parent documents"""
         return hit["_source"]["question_answer"] == "question"
 
     @classmethod
@@ -168,7 +168,7 @@ class Question(Post):
 
     def save(self, **kwargs):
         self.question_answer = "question"
-        return super(Question, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 class Answer(Post):
@@ -176,7 +176,7 @@ class Answer(Post):
 
     @classmethod
     def _matches(cls, hit):
-        """ Use Answer class for child documents with child name 'answer' """
+        """Use Answer class for child documents with child name 'answer'"""
         return (
             isinstance(hit["_source"]["question_answer"], dict)
             and hit["_source"]["question_answer"].get("name") == "answer"
@@ -199,11 +199,11 @@ class Answer(Post):
     def save(self, **kwargs):
         # set routing to parents id automatically
         self.meta.routing = self.question_answer.parent
-        return super(Answer, self).save(**kwargs)
+        return super().save(**kwargs)
 
 
 def setup():
-    """ Create an IndexTemplate and save it into elasticsearch. """
+    """Create an IndexTemplate and save it into elasticsearch."""
     index_template = Post._index.as_template("base")
     index_template.save()
 
