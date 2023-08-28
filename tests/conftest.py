@@ -23,6 +23,7 @@ from datetime import datetime
 from unittest import SkipTest, TestCase
 from unittest.mock import Mock
 
+from elastic_transport import ObjectApiResponse
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from elasticsearch.helpers import bulk
@@ -47,7 +48,7 @@ else:
 
 def get_test_client(wait=True, **kwargs):
     # construct kwargs from the environment
-    kw = {"timeout": 30}
+    kw = {"request_timeout": 30}
 
     if "PYTHON_CONNECTION_CLASS" in os.environ:
         from elasticsearch import connection
@@ -131,8 +132,9 @@ def es_version(client):
 @fixture
 def write_client(client):
     yield client
-    client.indices.delete(index="test-*", ignore=404)
-    client.indices.delete_template(name="test-template", ignore=404)
+    for index_name in client.indices.get(index="test-*", expand_wildcards="all"):
+        client.indices.delete(index=index_name)
+    client.options(ignore_status=404).indices.delete_template(name="test-template")
 
 
 @fixture
@@ -160,55 +162,58 @@ def data_client(client):
 
 @fixture
 def dummy_response():
-    return {
-        "_shards": {"failed": 0, "successful": 10, "total": 10},
-        "hits": {
-            "hits": [
-                {
-                    "_index": "test-index",
-                    "_type": "company",
-                    "_id": "elasticsearch",
-                    "_score": 12.0,
-                    "_source": {"city": "Amsterdam", "name": "Elasticsearch"},
-                },
-                {
-                    "_index": "test-index",
-                    "_type": "employee",
-                    "_id": "42",
-                    "_score": 11.123,
-                    "_routing": "elasticsearch",
-                    "_source": {
-                        "name": {"first": "Shay", "last": "Bannon"},
-                        "lang": "java",
-                        "twitter": "kimchy",
+    return ObjectApiResponse(
+        meta=None,
+        body={
+            "_shards": {"failed": 0, "successful": 10, "total": 10},
+            "hits": {
+                "hits": [
+                    {
+                        "_index": "test-index",
+                        "_type": "company",
+                        "_id": "elasticsearch",
+                        "_score": 12.0,
+                        "_source": {"city": "Amsterdam", "name": "Elasticsearch"},
                     },
-                },
-                {
-                    "_index": "test-index",
-                    "_type": "employee",
-                    "_id": "47",
-                    "_score": 1,
-                    "_routing": "elasticsearch",
-                    "_source": {
-                        "name": {"first": "Honza", "last": "Král"},
-                        "lang": "python",
-                        "twitter": "honzakral",
+                    {
+                        "_index": "test-index",
+                        "_type": "employee",
+                        "_id": "42",
+                        "_score": 11.123,
+                        "_routing": "elasticsearch",
+                        "_source": {
+                            "name": {"first": "Shay", "last": "Bannon"},
+                            "lang": "java",
+                            "twitter": "kimchy",
+                        },
                     },
-                },
-                {
-                    "_index": "test-index",
-                    "_type": "employee",
-                    "_id": "53",
-                    "_score": 16.0,
-                    "_routing": "elasticsearch",
-                },
-            ],
-            "max_score": 12.0,
-            "total": 123,
+                    {
+                        "_index": "test-index",
+                        "_type": "employee",
+                        "_id": "47",
+                        "_score": 1,
+                        "_routing": "elasticsearch",
+                        "_source": {
+                            "name": {"first": "Honza", "last": "Král"},
+                            "lang": "python",
+                            "twitter": "honzakral",
+                        },
+                    },
+                    {
+                        "_index": "test-index",
+                        "_type": "employee",
+                        "_id": "53",
+                        "_score": 16.0,
+                        "_routing": "elasticsearch",
+                    },
+                ],
+                "max_score": 12.0,
+                "total": 123,
+            },
+            "timed_out": False,
+            "took": 123,
         },
-        "timed_out": False,
-        "took": 123,
-    }
+    )
 
 
 @fixture

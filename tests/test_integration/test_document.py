@@ -279,7 +279,6 @@ def test_save_and_update_return_doc_meta(write_client):
         "_primary_term",
         "_seq_no",
         "_shards",
-        "_type",
         "_version",
         "result",
     }
@@ -295,7 +294,6 @@ def test_save_and_update_return_doc_meta(write_client):
         "_primary_term",
         "_seq_no",
         "_shards",
-        "_type",
         "_version",
         "result",
     }
@@ -318,11 +316,15 @@ def test_get_raises_404_on_non_existent_id(data_client):
 
 
 def test_get_returns_none_if_404_ignored(data_client):
-    assert None is Repository.get("elasticsearch-dsl-php", ignore=404)
+    assert None is Repository.get(
+        "elasticsearch-dsl-php", using=data_client.options(ignore_status=404)
+    )
 
 
 def test_get_returns_none_if_404_ignored_and_index_doesnt_exist(data_client):
-    assert None is Repository.get("42", index="not-there", ignore=404)
+    assert None is Repository.get(
+        "42", index="not-there", using=data_client.options(ignore_status=404)
+    )
 
 
 def test_get(data_client):
