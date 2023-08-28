@@ -29,7 +29,7 @@ f.close()
 
 install_requires = [
     "python-dateutil",
-    "elasticsearch>=7.0.0,<8.0.0",
+    "elasticsearch>=8.0.0,<9.0.0",
 ]
 
 develop_requires = [
