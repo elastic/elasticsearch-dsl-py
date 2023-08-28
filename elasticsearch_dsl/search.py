@@ -23,7 +23,7 @@ from elasticsearch.helpers import scan
 
 from .aggs import A, AggBase
 from .connections import get_connection
-from .exceptions import IllegalOperation
+from .exceptions import FailedResponseException, IllegalOperation
 from .query import Bool, Q
 from .response import Hit, Response
 from .utils import AttrDict, DslBase, recursive_to_dict
@@ -692,8 +692,12 @@ class Search(Request):
         es = get_connection(self._using)
 
         d = self.to_dict(count=True)
-        # TODO: failed shards detection
-        return es.count(index=self._index, body=d, **self._params)["count"]
+
+        response = es.count(index=self._index, body=d, **self._params)
+        if response.get("_shards", {}).get("failed", 0) > 0:
+            raise FailedResponseException("Response contains failed shards!")
+
+        return response["count"]
 
     def execute(self, ignore_cache=False):
         """

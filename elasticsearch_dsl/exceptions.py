@@ -30,3 +30,7 @@ class ValidationException(ValueError, ElasticsearchDslException):
 
 class IllegalOperation(ElasticsearchDslException):
     pass
+
+
+class FailedResponseException(ElasticsearchDslException):
+    pass
