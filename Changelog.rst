@@ -7,10 +7,10 @@ Changelog
 --------------------
 
 * Added Elasticsearch 8.x support (`#1664`_)
-* Dropped support for Python 2.7 and 3.5 (`#1606`_), contributed by `@hugovk`_
-* Added support for Python 3.10 and 3.11 (`#1608`_), contributed by `@hugovk`_
-* Added the ``MultiTerms`` aggregation (`#1543`_), contributed by `@Telomeraz`_
-* Added the ``CombinedFields`` query (`#1557`_), contributed by `@Telomeraz`_
+* Dropped support for Python 2.7 and 3.5 (`#1606`_, contributed by `@hugovk`_)
+* Added support for Python 3.10 and 3.11 (`#1608`_, contributed by `@hugovk`_)
+* Added the ``MultiTerms`` aggregation (`#1543`_, contributed by `@Telomeraz`_)
+* Added the ``CombinedFields`` query (`#1557`_, contributed by `@Telomeraz`_)
 
 .. _@Telomeraz: https://github.com/Telomeraz
 .. _@hugovk: https://github.com/hugovk
