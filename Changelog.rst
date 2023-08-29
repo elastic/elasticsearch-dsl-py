@@ -3,6 +3,24 @@
 Changelog
 =========
 
+8.9.0a1 (2023-08-29)
+--------------------
+
+* Added Elasticsearch 8.x support (`#1664`_)
+* Dropped support for Python 2.7 and 3.5 (`#1606`_), contributed by `@hugovk`_
+* Added support for Python 3.10 and 3.11 (`#1608`_), contributed by `@hugovk`_
+* Added the ``MultiTerms`` aggregation (`#1543`_), contributed by `@Telomeraz`_
+* Added the ``CombinedFields`` query (`#1557`_), contributed by `@Telomeraz`_
+
+.. _@Telomeraz: https://github.com/Telomeraz
+.. _@hugovk: https://github.com/hugovk
+.. _#1664: https://github.com/elastic/elasticsearch-dsl-py/pull/1664
+.. _#1606: https://github.com/elastic/elasticsearch-dsl-py/pull/1606
+.. _#1608: https://github.com/elastic/elasticsearch-dsl-py/pull/1608
+.. _#1543: https://github.com/elastic/elasticsearch-dsl-py/pull/1543
+.. _#1557: https://github.com/elastic/elasticsearch-dsl-py/pull/1557
+
+
 7.4.1 (2023-03-01)
 ------------------
 
