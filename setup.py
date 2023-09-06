@@ -38,8 +38,9 @@ develop_requires = [
     "pytest-mock",
     "pytz",
     "coverage",
-    "sphinx",
-    "sphinx_rtd_theme",
+    # Override Read the Docs default (sphinx<2 and sphinx-rtd-theme<0.5)
+    "sphinx>2",
+    "sphinx-rtd-theme>0.5",
 ]
 
 setup(
