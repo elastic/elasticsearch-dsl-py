@@ -3,8 +3,8 @@
 Changelog
 =========
 
-8.9.0a1 (2023-08-29)
---------------------
+8.9.0 (2023-09-07)
+------------------
 
 * Added Elasticsearch 8.x support (`#1664`_)
 * Dropped support for Python 2.7 and 3.5 (`#1606`_, contributed by `@hugovk`_)
