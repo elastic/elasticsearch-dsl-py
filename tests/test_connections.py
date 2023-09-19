@@ -21,6 +21,11 @@ from pytest import raises
 from elasticsearch_dsl import connections, serializer
 
 
+class DummyElasticsearch:
+    def __init__(self, *args, hosts, **kwargs):
+        self.hosts = hosts
+
+
 def test_default_connection_is_returned_by_default():
     c = connections.Connections()
 
@@ -33,27 +38,36 @@ def test_default_connection_is_returned_by_default():
 
 
 def test_get_connection_created_connection_if_needed():
-    c = connections.Connections()
-    c.configure(default={"hosts": ["es.com"]}, local={"hosts": ["localhost"]})
+    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
+    c.configure(
+        default={"hosts": ["https://es.com:9200"]},
+        local={"hosts": ["https://localhost:9200"]},
+    )
 
     default = c.get_connection()
     local = c.get_connection("local")
 
-    assert isinstance(default, Elasticsearch)
-    assert isinstance(local, Elasticsearch)
+    assert isinstance(default, DummyElasticsearch)
+    assert isinstance(local, DummyElasticsearch)
 
-    assert [{"host": "es.com"}] == default.transport.hosts
-    assert [{"host": "localhost"}] == local.transport.hosts
+    assert default.hosts == ["https://es.com:9200"]
+    assert local.hosts == ["https://localhost:9200"]
 
 
 def test_configure_preserves_unchanged_connections():
-    c = connections.Connections()
+    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
 
-    c.configure(default={"hosts": ["es.com"]}, local={"hosts": ["localhost"]})
+    c.configure(
+        default={"hosts": ["https://es.com:9200"]},
+        local={"hosts": ["https://localhost:9200"]},
+    )
     default = c.get_connection()
     local = c.get_connection("local")
 
-    c.configure(default={"hosts": ["not-es.com"]}, local={"hosts": ["localhost"]})
+    c.configure(
+        default={"hosts": ["https://not-es.com:9200"]},
+        local={"hosts": ["https://localhost:9200"]},
+    )
     new_default = c.get_connection()
     new_local = c.get_connection("local")
 
@@ -62,9 +76,12 @@ def test_configure_preserves_unchanged_connections():
 
 
 def test_remove_connection_removes_both_conn_and_conf():
-    c = connections.Connections()
+    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
 
-    c.configure(default={"hosts": ["es.com"]}, local={"hosts": ["localhost"]})
+    c.configure(
+        default={"hosts": ["https://es.com:9200"]},
+        local={"hosts": ["https://localhost:9200"]},
+    )
     c.add_connection("local2", object())
 
     c.remove_connection("default")
@@ -77,15 +94,16 @@ def test_remove_connection_removes_both_conn_and_conf():
 
 
 def test_create_connection_constructs_client():
-    c = connections.Connections()
-    c.create_connection("testing", hosts=["es.com"])
+    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
+    c.create_connection("testing", hosts=["https://es.com:9200"])
 
     con = c.get_connection("testing")
-    assert [{"host": "es.com"}] == con.transport.hosts
+    assert con.hosts == ["https://es.com:9200"]
 
 
 def test_create_connection_adds_our_serializer():
-    c = connections.Connections()
-    c.create_connection("testing", hosts=["es.com"])
+    c = connections.Connections(elasticsearch_class=Elasticsearch)
+    c.create_connection("testing", hosts=["https://es.com:9200"])
 
-    assert c.get_connection("testing").transport.serializer is serializer.serializer
+    c_serializers = c.get_connection("testing").transport.serializers
+    assert c_serializers.serializers["application/json"] is serializer.serializer

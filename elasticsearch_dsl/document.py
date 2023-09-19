@@ -244,7 +244,7 @@ class Document(ObjectBase, metaclass=IndexMeta):
                 for doc in docs
             ]
         }
-        results = es.mget(body, index=cls._default_index(index), **kwargs)
+        results = es.mget(index=cls._default_index(index), body=body, **kwargs)
 
         objs, error_docs, missing_docs = [], [], []
         for doc in results["docs"]:

@@ -93,7 +93,7 @@ def test_serializer_deals_with_objects_with_to_dict():
         def to_dict(self):
             return 42
 
-    assert serializer.serializer.dumps(MyClass()) == "42"
+    assert serializer.serializer.dumps(MyClass()) == b"42"
 
 
 def test_recursive_to_dict():

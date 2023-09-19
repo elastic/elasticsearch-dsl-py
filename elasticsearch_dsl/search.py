@@ -18,7 +18,7 @@
 import collections.abc
 import copy
 
-from elasticsearch.exceptions import TransportError
+from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import scan
 
 from .aggs import A, AggBase
@@ -718,7 +718,8 @@ class Search(Request):
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
-        return es.count(index=self._index, body=d, **self._params)["count"]
+        resp = es.count(index=self._index, query=d.get("query", None), **self._params)
+        return resp["count"]
 
     def execute(self, ignore_cache=False):
         """
@@ -732,7 +733,8 @@ class Search(Request):
             es = get_connection(self._using)
 
             self._response = self._response_class(
-                self, es.search(index=self._index, body=self.to_dict(), **self._params)
+                self,
+                es.search(index=self._index, body=self.to_dict(), **self._params).body,
             )
         return self._response
 
@@ -824,7 +826,7 @@ class MultiSearch(Request):
             for s, r in zip(self._searches, responses["responses"]):
                 if r.get("error", False):
                     if raise_on_error:
-                        raise TransportError("N/A", r["error"]["type"], r["error"])
+                        raise ApiError("N/A", meta=responses.meta, body=r)
                     r = None
                 else:
                     r = Response(s, r)

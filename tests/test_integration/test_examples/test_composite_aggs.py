@@ -34,7 +34,10 @@ def test_scan_aggs_with_multiple_aggs(data_client):
         {"files": A("terms", field="files")},
         {
             "months": {
-                "date_histogram": {"field": "committed_date", "interval": "month"}
+                "date_histogram": {
+                    "field": "committed_date",
+                    "calendar_interval": "month",
+                }
             }
         },
     ]
