@@ -451,9 +451,9 @@ To collapse search results use the ``collapse`` method on your ``Search`` object
     s = s.collapse("user_id")
 
 The top hits will only include one result per ``user_id``. You can also expand
-each collapsed top hits with the ``inner_hits`` parameter,
+each collapsed top hit with the ``inner_hits`` parameter,
 ``max_concurrent_group_searches`` being the number of concurrent requests
-allowed to retrieve the inner_hits per group:
+allowed to retrieve the inner hits per group:
 
 .. code:: python
 
