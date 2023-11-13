@@ -4,7 +4,7 @@ Changelog
 =========
 
 8.11.0 (2023-11-13)
-------------------
+-------------------
 
 * Added support for Python 3.12 (`#1680`_)
 * Added support for Search.collase() (`#1649`_, contributed by `@qcoumes`_)
