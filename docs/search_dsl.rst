@@ -18,6 +18,12 @@ The ``Search`` object represents the entire search request:
 
   * pagination
 
+  * highlighting
+
+  * suggestions
+
+  * collapsing
+
   * additional parameters
 
   * associated client
@@ -433,7 +439,26 @@ keyword arguments will be added to the suggest's json as-is which means that it
 should be one of ``term``, ``phrase`` or ``completion`` to indicate which type
 of suggester should be used.
 
+Collapsing
+~~~~~~~~~~
 
+To collapse search results use the ``collapse`` method on your ``Search`` object:
+
+.. code:: python
+
+    s = Search().query("match", message="GET /search")
+    # collapse results by user_id
+    s = s.collapse("user_id")
+
+The top hits will only include one result per ``user_id``. You can also expand
+each collapsed top hit with the ``inner_hits`` parameter,
+``max_concurrent_group_searches`` being the number of concurrent requests
+allowed to retrieve the inner hits per group:
+
+.. code:: python
+
+    inner_hits = {"name": "recent_search", "size": 5, "sort": [{"@timestamp": "desc"}]}
+    s = s.collapse("user_id", inner_hits=inner_hits, max_concurrent_group_searches=4)
 
 More Like This Query
 ~~~~~~~~~~~~~~~~~~~~
