@@ -256,6 +256,38 @@ def test_sort_by_score():
         s.sort("-_score")
 
 
+def test_collapse():
+    s = search.Search()
+
+    inner_hits = {"name": "most_recent", "size": 5, "sort": [{"@timestamp": "desc"}]}
+    s = s.collapse("user.id", inner_hits=inner_hits, max_concurrent_group_searches=4)
+
+    assert {
+        "field": "user.id",
+        "inner_hits": {
+            "name": "most_recent",
+            "size": 5,
+            "sort": [{"@timestamp": "desc"}],
+        },
+        "max_concurrent_group_searches": 4,
+    } == s._collapse
+    assert {
+        "collapse": {
+            "field": "user.id",
+            "inner_hits": {
+                "name": "most_recent",
+                "size": 5,
+                "sort": [{"@timestamp": "desc"}],
+            },
+            "max_concurrent_group_searches": 4,
+        }
+    } == s.to_dict()
+
+    s = s.collapse()
+    assert {} == s._collapse
+    assert search.Search().to_dict() == s.to_dict()
+
+
 def test_slice():
     s = search.Search()
     assert {"from": 3, "size": 7} == s[3:10].to_dict()
@@ -305,6 +337,7 @@ def test_complex_example():
         s.query("match", title="python")
         .query(~Q("match", title="ruby"))
         .filter(Q("term", category="meetup") | Q("term", category="conference"))
+        .collapse("user_id")
         .post_filter("terms", tags=["prague", "czech"])
         .script_fields(more_attendees="doc['attendees'].value + 42")
     )
@@ -342,6 +375,7 @@ def test_complex_example():
                 "aggs": {"avg_attendees": {"avg": {"field": "attendees"}}},
             }
         },
+        "collapse": {"field": "user_id"},
         "highlight": {
             "order": "score",
             "fields": {"title": {"fragment_size": 50}, "body": {"fragment_size": 50}},
