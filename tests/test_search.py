@@ -260,9 +260,7 @@ def test_collapse():
     s = search.Search()
 
     inner_hits = {"name": "most_recent", "size": 5, "sort": [{"@timestamp": "desc"}]}
-    s = s.collapse(
-        field="user.id", inner_hits=inner_hits, max_concurrent_group_searches=4
-    )
+    s = s.collapse("user.id", inner_hits=inner_hits, max_concurrent_group_searches=4)
 
     assert {
         "field": "user.id",
@@ -339,6 +337,7 @@ def test_complex_example():
         s.query("match", title="python")
         .query(~Q("match", title="ruby"))
         .filter(Q("term", category="meetup") | Q("term", category="conference"))
+        .collapse("user_id")
         .post_filter("terms", tags=["prague", "czech"])
         .script_fields(more_attendees="doc['attendees'].value + 42")
     )
@@ -376,6 +375,7 @@ def test_complex_example():
                 "aggs": {"avg_attendees": {"avg": {"field": "attendees"}}},
             }
         },
+        "collapse": {"field": "user_id"},
         "highlight": {
             "order": "score",
             "fields": {"title": {"fragment_size": 50}, "body": {"fragment_size": 50}},

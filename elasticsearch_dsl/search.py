@@ -120,6 +120,7 @@ class Request:
 
         self._doc_type = []
         self._doc_type_map = {}
+        self._collapse = {}
         if isinstance(doc_type, (tuple, list)):
             self._doc_type.extend(doc_type)
         elif isinstance(doc_type, collections.abc.Mapping):
@@ -293,6 +294,7 @@ class Request:
         s = self.__class__(
             using=self._using, index=self._index, doc_type=self._doc_type
         )
+        s._collapse = self._collapse.copy()
         s._doc_type_map = self._doc_type_map.copy()
         s._extra = self._extra.copy()
         s._params = self._params.copy()
