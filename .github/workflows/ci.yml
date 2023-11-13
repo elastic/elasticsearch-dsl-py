@@ -68,7 +68,7 @@ jobs:
           "3.11",
           "3.12",
         ]
-        es-version: [8.0.0, 8.9.0]
+        es-version: [8.0.0, 8.11.0]
 
     steps:
       - name: Checkout Repository
