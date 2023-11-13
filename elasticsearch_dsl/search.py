@@ -120,6 +120,7 @@ class Request:
 
         self._doc_type = []
         self._doc_type_map = {}
+        self._collapse = {}
         if isinstance(doc_type, (tuple, list)):
             self._doc_type.extend(doc_type)
         elif isinstance(doc_type, collections.abc.Mapping):
@@ -293,6 +294,7 @@ class Request:
         s = self.__class__(
             using=self._using, index=self._index, doc_type=self._doc_type
         )
+        s._collapse = self._collapse.copy()
         s._doc_type_map = self._doc_type_map.copy()
         s._extra = self._extra.copy()
         s._params = self._params.copy()
@@ -318,6 +320,7 @@ class Search(Request):
 
         self.aggs = AggsProxy(self)
         self._sort = []
+        self._collapse = {}
         self._source = None
         self._highlight = {}
         self._highlight_opts = {}
@@ -568,6 +571,27 @@ class Search(Request):
             s._sort.append(k)
         return s
 
+    def collapse(self, field=None, inner_hits=None, max_concurrent_group_searches=None):
+        """
+        Add collapsing information to the search request.
+        If called without providing ``field``, it will remove all collapse
+        requirements, otherwise it will replace them with the provided
+        arguments.
+        The API returns a copy of the Search object and can thus be chained.
+        """
+        s = self._clone()
+        s._collapse = {}
+
+        if field is None:
+            return s
+
+        s._collapse["field"] = field
+        if inner_hits:
+            s._collapse["inner_hits"] = inner_hits
+        if max_concurrent_group_searches:
+            s._collapse["max_concurrent_group_searches"] = max_concurrent_group_searches
+        return s
+
     def highlight_options(self, **kwargs):
         """
         Update the global highlighting options used for this request. For
@@ -662,6 +686,9 @@ class Search(Request):
 
             if self._sort:
                 d["sort"] = self._sort
+
+            if self._collapse:
+                d["collapse"] = self._collapse
 
             d.update(recursive_to_dict(self._extra))
 

@@ -35,6 +35,7 @@ SOURCE_FILES = (
         "3.9",
         "3.10",
         "3.11",
+        "3.12",
     ]
 )
 def test(session):
@@ -52,7 +53,7 @@ def test(session):
     session.run("pytest", *argv)
 
 
-@nox.session()
+@nox.session(python="3.12")
 def format(session):
     session.install("black~=23.0", "isort")
     session.run("black", "--target-version=py37", *SOURCE_FILES)
@@ -62,7 +63,7 @@ def format(session):
     lint(session)
 
 
-@nox.session
+@nox.session(python="3.12")
 def lint(session):
     session.install("flake8", "black~=23.0", "isort")
     session.run("black", "--check", "--target-version=py37", *SOURCE_FILES)
