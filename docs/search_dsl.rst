@@ -230,7 +230,7 @@ Filters
 ~~~~~~~
 
 If you want to add a query in a `filter context
-<https://www.elastic.co/guide/en/elasticsearch/reference/2.0/query-filter-context.html>`_
+<https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-filter-context.html>`_
 you can use the ``filter()`` method to make things easier:
 
 .. code:: python
