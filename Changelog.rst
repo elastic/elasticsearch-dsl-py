@@ -7,7 +7,7 @@ Changelog
 -------------------
 
 * Added support for Python 3.12 (`#1680`_)
-* Added support for Search.collase() (`#1649`_, contributed by `@qcoumes`_)
+* Added ``Search.collapse()`` (`#1649`_, contributed by `@qcoumes`_)
 
 .. _@qcoumes: https://github.com/qcoumes
 .. _#1680: https://github.com/elastic/elasticsearch-dsl-py/pull/1680
