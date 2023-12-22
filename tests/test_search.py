@@ -544,10 +544,12 @@ def test_update_from_dict():
     s = search.Search()
     s.update_from_dict({"indices_boost": [{"important-documents": 2}]})
     s.update_from_dict({"_source": ["id", "name"]})
+    s.update_from_dict({"collapse": {"field": "user_id"}})
 
     assert {
         "indices_boost": [{"important-documents": 2}],
         "_source": ["id", "name"],
+        "collapse": {"field": "user_id"},
     } == s.to_dict()
 
 
