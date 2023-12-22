@@ -234,6 +234,58 @@ def test_doc_type_document_class():
     assert s._doc_type_map == {}
 
 
+def test_knn():
+    s = search.Search()
+
+    with raises(TypeError):
+        s.knn()
+    with raises(TypeError):
+        s.knn("field")
+    with raises(TypeError):
+        s.knn("field", 5)
+    with raises(ValueError):
+        s.knn("field", 5, 100)
+    with raises(ValueError):
+        s.knn("field", 5, 100, query_vector=[1, 2, 3], query_vector_builder={})
+
+    s = s.knn("field", 5, 100, query_vector=[1, 2, 3])
+    assert {
+        "knn": {
+            "field": "field",
+            "k": 5,
+            "num_candidates": 100,
+            "query_vector": [1, 2, 3],
+        }
+    } == s.to_dict()
+
+    s = s.knn(
+        k=4,
+        num_candidates=40,
+        field="name",
+        query_vector_builder={
+            "text_embedding": {"model_id": "foo", "model_text": "search text"}
+        },
+    )
+    assert {
+        "knn": [
+            {
+                "field": "field",
+                "k": 5,
+                "num_candidates": 100,
+                "query_vector": [1, 2, 3],
+            },
+            {
+                "field": "name",
+                "k": 4,
+                "num_candidates": 40,
+                "query_vector_builder": {
+                    "text_embedding": {"model_id": "foo", "model_text": "search text"}
+                },
+            },
+        ]
+    } == s.to_dict()
+
+
 def test_sort():
     s = search.Search()
     s = s.sort("fielda", "-fieldb")
