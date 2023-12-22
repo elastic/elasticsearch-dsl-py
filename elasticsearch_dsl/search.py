@@ -120,7 +120,6 @@ class Request:
 
         self._doc_type = []
         self._doc_type_map = {}
-        self._collapse = {}
         if isinstance(doc_type, (tuple, list)):
             self._doc_type.extend(doc_type)
         elif isinstance(doc_type, collections.abc.Mapping):
@@ -294,7 +293,6 @@ class Request:
         s = self.__class__(
             using=self._using, index=self._index, doc_type=self._doc_type
         )
-        s._collapse = self._collapse.copy()
         s._doc_type_map = self._doc_type_map.copy()
         s._extra = self._extra.copy()
         s._params = self._params.copy()
@@ -408,6 +406,7 @@ class Search(Request):
         s = super()._clone()
 
         s._response_class = self._response_class
+        s._collapse = self._collapse.copy()
         s._sort = self._sort[:]
         s._source = copy.copy(self._source) if self._source is not None else None
         s._highlight = self._highlight.copy()
@@ -446,6 +445,8 @@ class Search(Request):
             self.aggs._params = {
                 "aggs": {name: A(value) for (name, value) in aggs.items()}
             }
+        if "collapse" in d:
+            self._collapse = d.pop("collapse")
         if "sort" in d:
             self._sort = d.pop("sort")
         if "_source" in d:
