@@ -14,6 +14,8 @@ The ``Search`` object represents the entire search request:
 
   * aggregations
 
+  * k-nearest neighbor searches
+
   * sort
 
   * pagination
@@ -350,6 +352,31 @@ You can access an existing bucket by its name:
 
 As opposed to other methods on the ``Search`` objects, defining aggregations is
 done in-place (does not return a copy).
+
+
+K-Nearest Neighbor Searches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To issue a kNN search, use the ``.knn()`` method:
+
+.. code:: python
+
+   s = Search()
+   vector = get_embedding("search text")
+
+   s = s.knn(
+       field="embedding",
+       k=5,
+       num_candidates=10,
+       query_vector=vector
+   )
+
+The ``field``, ``k`` and ``num_candidates`` arguments can be given as
+positional or keyword arguments and are required. In addition to these,
+``query_vector`` or ``query_vector_builder`` must be given as well.
+
+The ``.knn()`` method can be invoked multiple times to include multiple kNN
+searches in the request.
 
 
 Sorting

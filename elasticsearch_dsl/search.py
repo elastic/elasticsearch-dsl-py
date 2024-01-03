@@ -24,7 +24,7 @@ from elasticsearch.helpers import scan
 from .aggs import A, AggBase
 from .connections import get_connection
 from .exceptions import IllegalOperation
-from .query import Bool, Q
+from .query import Bool, Q, Query
 from .response import Hit, Response
 from .utils import AttrDict, DslBase, recursive_to_dict
 
@@ -319,6 +319,7 @@ class Search(Request):
         self.aggs = AggsProxy(self)
         self._sort = []
         self._collapse = {}
+        self._knn = []
         self._source = None
         self._highlight = {}
         self._highlight_opts = {}
@@ -406,6 +407,7 @@ class Search(Request):
         s = super()._clone()
 
         s._response_class = self._response_class
+        s._knn = [knn.copy() for knn in self._knn]
         s._collapse = self._collapse.copy()
         s._sort = self._sort[:]
         s._source = copy.copy(self._source) if self._source is not None else None
@@ -445,6 +447,10 @@ class Search(Request):
             self.aggs._params = {
                 "aggs": {name: A(value) for (name, value) in aggs.items()}
             }
+        if "knn" in d:
+            self._knn = d.pop("knn")
+            if isinstance(self._knn, dict):
+                self._knn = [self._knn]
         if "collapse" in d:
             self._collapse = d.pop("collapse")
         if "sort" in d:
@@ -492,6 +498,64 @@ class Search(Request):
             if isinstance(kwargs[name], str):
                 kwargs[name] = {"script": kwargs[name]}
         s._script_fields.update(kwargs)
+        return s
+
+    def knn(
+        self,
+        field,
+        k,
+        num_candidates,
+        query_vector=None,
+        query_vector_builder=None,
+        boost=None,
+        filter=None,
+        similarity=None,
+    ):
+        """
+        Add a k-nearest neighbor (kNN) search.
+
+        :arg field: the name of the vector field to search against
+        :arg k: number of nearest neighbors to return as top hits
+        :arg num_candidates: number of nearest neighbor candidates to consider per shard
+        :arg query_vector: the vector to search for
+        :arg query_vector_builder: A dictionary indicating how to build a query vector
+        :arg boost: A floating-point boost factor for kNN scores
+        :arg filter: query to filter the documents that can match
+        :arg similarity: the minimum similarity required for a document to be considered a match, as a float value
+
+        Example::
+
+            s = Search()
+            s = s.knn(field='embedding', k=5, num_candidates=10, query_vector=vector,
+                      filter=Q('term', category='blog')))
+        """
+        s = self._clone()
+        s._knn.append(
+            {
+                "field": field,
+                "k": k,
+                "num_candidates": num_candidates,
+            }
+        )
+        if query_vector is None and query_vector_builder is None:
+            raise ValueError("one of query_vector and query_vector_builder is required")
+        if query_vector is not None and query_vector_builder is not None:
+            raise ValueError(
+                "only one of query_vector and query_vector_builder must be given"
+            )
+        if query_vector is not None:
+            s._knn[-1]["query_vector"] = query_vector
+        if query_vector_builder is not None:
+            s._knn[-1]["query_vector_builder"] = query_vector_builder
+        if boost is not None:
+            s._knn[-1]["boost"] = boost
+        if filter is not None:
+            if isinstance(filter, Query):
+                s._knn[-1]["filter"] = filter.to_dict()
+            else:
+                s._knn[-1]["filter"] = filter
+        if similarity is not None:
+            s._knn[-1]["similarity"] = similarity
         return s
 
     def source(self, fields=None, **kwargs):
@@ -676,6 +740,12 @@ class Search(Request):
 
         if self.query:
             d["query"] = self.query.to_dict()
+
+        if self._knn:
+            if len(self._knn) == 1:
+                d["knn"] = self._knn[0]
+            else:
+                d["knn"] = self._knn
 
         # count request doesn't care for sorting and other things
         if not count:
