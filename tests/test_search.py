@@ -261,6 +261,7 @@ def test_knn():
     s = s.knn(
         k=4,
         num_candidates=40,
+        boost=0.8,
         field="name",
         query_vector_builder={
             "text_embedding": {"model_id": "foo", "model_text": "search text"}
@@ -281,6 +282,7 @@ def test_knn():
                 "query_vector_builder": {
                     "text_embedding": {"model_id": "foo", "model_text": "search text"}
                 },
+                "boost": 0.8,
             },
         ]
     } == s.to_dict()

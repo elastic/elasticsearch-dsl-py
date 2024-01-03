@@ -507,6 +507,7 @@ class Search(Request):
         num_candidates,
         query_vector=None,
         query_vector_builder=None,
+        boost=None,
         filter=None,
         similarity=None,
     ):
@@ -518,6 +519,7 @@ class Search(Request):
         :arg num_candidates: number of nearest neighbor candidates to consider per shard
         :arg query_vector: the vector to search for
         :arg query_vector_builder: A dictionary indicating how to build a query vector
+        :arg boost: A floating-point boost factor for kNN scores
         :arg filter: query to filter the documents that can match
         :arg similarity: the minimum similarity required for a document to be considered a match, as a float value
 
@@ -545,6 +547,8 @@ class Search(Request):
             s._knn[-1]["query_vector"] = query_vector
         if query_vector_builder is not None:
             s._knn[-1]["query_vector_builder"] = query_vector_builder
+        if boost is not None:
+            s._knn[-1]["boost"] = boost
         if filter is not None:
             if isinstance(filter, Query):
                 s._knn[-1]["filter"] = filter.to_dict()
