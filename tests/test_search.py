@@ -288,6 +288,18 @@ def test_knn():
     } == s.to_dict()
 
 
+def test_rank():
+    s = search.Search()
+    s.rank(rrf=False)
+    assert {} == s.to_dict()
+
+    s = s.rank(rrf=True)
+    assert {"rank": {"rrf": {}}} == s.to_dict()
+
+    s = s.rank(rrf={"window_size": 50, "rank_constant": 20})
+    assert {"rank": {"rrf": {"window_size": 50, "rank_constant": 20}}} == s.to_dict()
+
+
 def test_sort():
     s = search.Search()
     s = s.sort("fielda", "-fieldb")
