@@ -318,8 +318,9 @@ class Search(Request):
 
         self.aggs = AggsProxy(self)
         self._sort = []
-        self._collapse = {}
         self._knn = []
+        self._rank = {}
+        self._collapse = {}
         self._source = None
         self._highlight = {}
         self._highlight_opts = {}
@@ -408,6 +409,7 @@ class Search(Request):
 
         s._response_class = self._response_class
         s._knn = [knn.copy() for knn in self._knn]
+        s._rank = self._rank.copy()
         s._collapse = self._collapse.copy()
         s._sort = self._sort[:]
         s._source = copy.copy(self._source) if self._source is not None else None
@@ -451,6 +453,8 @@ class Search(Request):
             self._knn = d.pop("knn")
             if isinstance(self._knn, dict):
                 self._knn = [self._knn]
+        if "rank" in d:
+            self._rank = d.pop("rank")
         if "collapse" in d:
             self._collapse = d.pop("collapse")
         if "sort" in d:
@@ -556,6 +560,27 @@ class Search(Request):
                 s._knn[-1]["filter"] = filter
         if similarity is not None:
             s._knn[-1]["similarity"] = similarity
+        return s
+
+    def rank(self, rrf=None):
+        """
+        Defines a method for combining and ranking results sets from a combination
+        of searches. Requires a minimum of 2 results sets.
+
+        :arg rrf: Set to ``True`` or an options dictionary to set the rank method to reciprocal rank fusion (RRF).
+
+        Example::
+            s = Search()
+            s = s.query('match', content='search text')
+            s = s.knn(field='embedding', k=5, num_candidates=10, query_vector=vector)
+            s = s.rank(rrf=True)
+
+        Note: This option is in technical preview and may change in the future. The syntax will likely change before GA.
+        """
+        s = self._clone()
+        s._rank = {}
+        if rrf is not None and rrf is not False:
+            s._rank["rrf"] = {} if rrf is True else rrf
         return s
 
     def source(self, fields=None, **kwargs):
@@ -746,6 +771,9 @@ class Search(Request):
                 d["knn"] = self._knn[0]
             else:
                 d["knn"] = self._knn
+
+        if self._rank:
+            d["rank"] = self._rank
 
         # count request doesn't care for sorting and other things
         if not count:
