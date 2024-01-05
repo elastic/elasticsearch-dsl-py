@@ -366,8 +366,11 @@ class Document(ObjectBase, metaclass=IndexMeta):
         :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
+        :arg script: Either the source code of the script or the actual dict
+            assigned to the ``script`` field in the update
         :arg return_doc_meta: set to ``True`` to return all metadata from the
             index API call instead of only the operation result
+        :arg fields: params for the script
 
         :return operation result noop/updated
         """
@@ -381,12 +384,16 @@ class Document(ObjectBase, metaclass=IndexMeta):
             if upsert is not None:
                 body["upsert"] = upsert
 
-            if script:
+            if script is None:
+                script = {}
+            elif isinstance(script, str):
                 script = {"source": script}
-            else:
-                script = {"id": script_id}
 
-            script["params"] = fields
+            if script_id is not None:
+                script["id"] = script_id
+
+            if fields:
+                script["params"] = dict(script.get("params", {}), **fields)
 
             body["script"] = script
             body["scripted_upsert"] = scripted_upsert
