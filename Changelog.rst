@@ -3,6 +3,17 @@
 Changelog
 =========
 
+8.12.0 (2024-01-18)
+-------------------
+
+* Added ``Search.knn()`` method  (`#1691`_)
+* Added ``Search.rank()`` method (undocumented as it still is in technical preview) (`#1692`_)
+* Fixed importing collapse from dictionary (`#1689`_)
+
+.. _#1689: https://github.com/elastic/elasticsearch-dsl-py/pull/1689
+.. _#1691: https://github.com/elastic/elasticsearch-dsl-py/pull/1691
+.. _#1692: https://github.com/elastic/elasticsearch-dsl-py/pull/1692
+
 8.11.0 (2023-11-13)
 -------------------
 
