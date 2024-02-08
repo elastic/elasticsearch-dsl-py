@@ -55,7 +55,7 @@ def test(session):
 
 @nox.session(python="3.12")
 def format(session):
-    session.install("black~=23.0", "isort")
+    session.install("black~=24.0", "isort")
     session.run("black", "--target-version=py37", *SOURCE_FILES)
     session.run("isort", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
@@ -65,7 +65,7 @@ def format(session):
 
 @nox.session(python="3.12")
 def lint(session):
-    session.install("flake8", "black~=23.0", "isort")
+    session.install("flake8", "black~=24.0", "isort")
     session.run("black", "--check", "--target-version=py37", *SOURCE_FILES)
     session.run("isort", "--check", *SOURCE_FILES)
     session.run("flake8", "--ignore=E501,E741,W503", *SOURCE_FILES)
