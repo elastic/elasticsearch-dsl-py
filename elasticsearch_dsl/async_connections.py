@@ -15,5 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .base_search import *
-from elasticsearch_dsl._sync.search import *
+from elasticsearch import AsyncElasticsearch
+
+from elasticsearch_dsl.connections import Connections
+
+connections = Connections(elasticsearch_class=AsyncElasticsearch)
+configure = connections.configure
+add_connection = connections.add_connection
+remove_connection = connections.remove_connection
+create_connection = connections.create_connection
+get_connection = connections.get_connection

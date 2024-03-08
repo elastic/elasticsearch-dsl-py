@@ -33,6 +33,7 @@ install_requires = [
 ]
 
 develop_requires = [
+    "unasync",
     "pytest",
     "pytest-cov",
     "pytest-mock",

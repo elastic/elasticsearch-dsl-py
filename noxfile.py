@@ -54,7 +54,8 @@ def test(session):
 
 @nox.session(python="3.12")
 def format(session):
-    session.install("black~=24.0", "isort")
+    session.install("black~=24.0", "isort", "unasync", "setuptools")
+    session.run("python", "utils/run-unasync.py")
     session.run("black", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
