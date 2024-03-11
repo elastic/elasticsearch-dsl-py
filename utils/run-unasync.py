@@ -16,12 +16,16 @@
 #  under the License.
 
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import unasync
 
 
-def main():
+def main(check=False):
+    output_dir = "_sync" if not check else "_sync_check"
+
     # Unasync all the generated async code
     additional_replacements = {
         "aiter": "iter",
@@ -35,7 +39,7 @@ def main():
     rules = [
         unasync.Rule(
             fromdir="/elasticsearch_dsl/_async/",
-            todir="/elasticsearch_dsl/_sync/",
+            todir=f"/elasticsearch_dsl/{output_dir}/",
             additional_replacements=additional_replacements,
         ),
     ]
@@ -53,6 +57,22 @@ def main():
 
     unasync.unasync_files(filepaths, rules)
 
+    if check:
+        # make sure there are no differences between _sync and _sync_check
+        subprocess.check_call(
+            ["black", "--target-version=py37", "elasticsearch_dsl/_sync_check/"]
+        )
+        subprocess.check_call(
+            [
+                "diff",
+                "-x",
+                "__pycache__",
+                "elasticsearch_dsl/_sync",
+                "elasticsearch_dsl/_sync_check",
+            ]
+        )
+        subprocess.check_call(["rm", "-rf", "elasticsearch_dsl/_sync_check"])
+
 
 if __name__ == "__main__":
-    main()
+    main(check="--check" in sys.argv)
