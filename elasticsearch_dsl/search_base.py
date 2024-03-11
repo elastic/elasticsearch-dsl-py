@@ -18,15 +18,11 @@
 import collections.abc
 import copy
 
-from elasticsearch.exceptions import ApiError
-from elasticsearch.helpers import scan
-
 from .aggs import A, AggBase
-from .connections import get_connection
 from .exceptions import IllegalOperation
 from .query import Bool, Q, Query
 from .response import Hit, Response
-from .utils import AttrDict, DslBase, recursive_to_dict
+from .utils import DslBase, recursive_to_dict
 
 
 class QueryProxy:
@@ -299,7 +295,7 @@ class Request:
         return s
 
 
-class BaseSearch(Request):
+class SearchBase(Request):
     query = ProxyDescriptor("query")
     post_filter = ProxyDescriptor("post_filter")
 
@@ -807,66 +803,8 @@ class BaseSearch(Request):
         d.update(recursive_to_dict(kwargs))
         return d
 
-    def count(self):
-        """
-        Return the number of hits matching the query and filters. Note that
-        only the actual number is returned.
-        """
-        if hasattr(self, "_response") and self._response.hits.total.relation == "eq":
-            return self._response.hits.total.value
 
-        es = get_connection(self._using)
-
-        d = self.to_dict(count=True)
-        # TODO: failed shards detection
-        resp = es.count(index=self._index, query=d.get("query", None), **self._params)
-        return resp["count"]
-
-    def execute(self, ignore_cache=False):
-        """
-        Execute the search and return an instance of ``Response`` wrapping all
-        the data.
-
-        :arg ignore_cache: if set to ``True``, consecutive calls will hit
-            ES, while cached result will be ignored. Defaults to `False`
-        """
-        if ignore_cache or not hasattr(self, "_response"):
-            es = get_connection(self._using)
-
-            self._response = self._response_class(
-                self,
-                es.search(index=self._index, body=self.to_dict(), **self._params).body,
-            )
-        return self._response
-
-    def scan(self):
-        """
-        Turn the search into a scan search and return a generator that will
-        iterate over all the documents matching the query.
-
-        Use ``params`` method to specify any additional arguments you with to
-        pass to the underlying ``scan`` helper from ``elasticsearch-py`` -
-        https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
-
-        """
-        es = get_connection(self._using)
-
-        for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
-            yield self._get_result(hit)
-
-    def delete(self):
-        """
-        delete() executes the query by delegating to delete_by_query()
-        """
-
-        es = get_connection(self._using)
-
-        return AttrDict(
-            es.delete_by_query(index=self._index, body=self.to_dict(), **self._params)
-        )
-
-
-class BaseMultiSearch(Request):
+class MultiSearchBase(Request):
     """
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.
@@ -911,28 +849,3 @@ class BaseMultiSearch(Request):
             out.append(s.to_dict())
 
         return out
-
-    def execute(self, ignore_cache=False, raise_on_error=True):
-        """
-        Execute the multi search request and return a list of search results.
-        """
-        if ignore_cache or not hasattr(self, "_response"):
-            es = get_connection(self._using)
-
-            responses = es.msearch(
-                index=self._index, body=self.to_dict(), **self._params
-            )
-
-            out = []
-            for s, r in zip(self._searches, responses["responses"]):
-                if r.get("error", False):
-                    if raise_on_error:
-                        raise ApiError("N/A", meta=responses.meta, body=r)
-                    r = None
-                else:
-                    r = Response(s, r)
-                out.append(r)
-
-            self._response = out
-
-        return self._response

@@ -19,12 +19,12 @@ from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import async_scan
 
 from ..async_connections import get_connection
-from ..base_search import BaseMultiSearch, BaseSearch
 from ..response import Response
+from ..search_base import MultiSearchBase, SearchBase
 from ..utils import AttrDict
 
 
-class Search(BaseSearch):
+class Search(SearchBase):
     def __aiter__(self):
         """
         Iterate over the hits.
@@ -100,7 +100,7 @@ class Search(BaseSearch):
         )
 
 
-class MultiSearch(BaseMultiSearch):
+class MultiSearch(MultiSearchBase):
     """
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.
