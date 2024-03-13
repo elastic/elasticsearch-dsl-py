@@ -24,12 +24,26 @@ from ..search_base import MultiSearchBase, SearchBase
 from ..utils import AttrDict
 
 
-class Search(SearchBase):
+class AsyncSearch(SearchBase):
     def __aiter__(self):
         """
         Iterate over the hits.
         """
-        return aiter(await self.execute())
+
+        class ResultsIterator:
+            def __init__(self, search):
+                self.search = search
+                self.iterator = None
+
+            async def __anext__(self):
+                if self.iterator is None:
+                    self.iterator = iter(await self.search.execute())
+                try:
+                    return next(self.iterator)
+                except StopIteration:
+                    raise StopAsyncIteration()
+
+        return ResultsIterator(self)
 
     async def count(self):
         """
@@ -100,7 +114,7 @@ class Search(SearchBase):
         )
 
 
-class MultiSearch(MultiSearchBase):
+class AsyncMultiSearch(MultiSearchBase):
     """
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.

@@ -28,13 +28,16 @@ def main(check=False):
 
     # Unasync all the generated async code
     additional_replacements = {
+        "_async": "_sync",
         "aiter": "iter",
+        "anext": "next",
         "AsyncElasticsearch": "Elasticsearch",
         "AsyncSearch": "Search",
+        "AsyncMultiSearch": "MultiSearch",
         "async_connections": "connections",
         "async_scan": "scan",
-        # Handling typing.Awaitable[...] isn't done yet by unasync.
-        "_TYPE_ASYNC_SNIFF_CALLBACK": "_TYPE_SYNC_SNIFF_CALLBACK",
+        "async_mock_client": "mock_client",
+        "assert_awaited_once_with": "assert_called_once_with",
     }
     rules = [
         unasync.Rule(
@@ -43,11 +46,17 @@ def main(check=False):
             additional_replacements=additional_replacements,
         ),
     ]
+    if not check:
+        rules.append(
+            unasync.Rule(
+                fromdir="/tests/_async/",
+                todir="/tests/_sync/",
+                additional_replacements=additional_replacements,
+            )
+        )
 
     filepaths = []
-    for root, _, filenames in os.walk(
-        Path(__file__).absolute().parent.parent / "elasticsearch_dsl/_async"
-    ):
+    for root, _, filenames in os.walk(Path(__file__).absolute().parent.parent):
         for filename in filenames:
             if filename.rpartition(".")[-1] in (
                 "py",

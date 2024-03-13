@@ -333,12 +333,6 @@ class SearchBase(Request):
     def exclude(self, *args, **kwargs):
         return self.query(Bool(filter=[~Q(*args, **kwargs)]))
 
-    def __iter__(self):
-        """
-        Iterate over the hits.
-        """
-        return iter(self.execute())
-
     def __getitem__(self, n):
         """
         Support slicing the `Search` instance for pagination.

@@ -21,14 +21,16 @@ import re
 import time
 from datetime import datetime
 from unittest import SkipTest, TestCase
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 from elastic_transport import ObjectApiResponse
-from elasticsearch import Elasticsearch
+from elasticsearch import AsyncElasticsearch, Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from elasticsearch.helpers import bulk
 from pytest import fixture, skip
 
+from elasticsearch_dsl.async_connections import add_connection as add_async_connection
+from elasticsearch_dsl.async_connections import connections as async_connections
 from elasticsearch_dsl.connections import add_connection, connections
 
 from .test_integration.test_data import (
@@ -46,7 +48,7 @@ else:
     ELASTICSEARCH_URL = "http://localhost:9200"
 
 
-def get_test_client(wait=True, **kwargs):
+def get_test_client(wait=True, _async=False, **kwargs):
     # construct kwargs from the environment
     kw = {"request_timeout": 30}
 
@@ -58,7 +60,11 @@ def get_test_client(wait=True, **kwargs):
         )
 
     kw.update(kwargs)
-    client = Elasticsearch(ELASTICSEARCH_URL, **kw)
+    client = (
+        Elasticsearch(ELASTICSEARCH_URL, **kw)
+        if not _async
+        else AsyncElasticsearch(ELASTICSEARCH_URL, **kw)
+    )
 
     # wait for yellow status
     for tries_left in range(100 if wait else 1, 0, -1):
@@ -120,6 +126,16 @@ def client():
 
 
 @fixture(scope="session")
+def async_client():
+    try:
+        connection = get_test_client(wait="WAIT_FOR_ES" in os.environ, _async=True)
+        add_async_connection("default", connection)
+        return connection
+    except SkipTest:
+        skip()
+
+
+@fixture(scope="session")
 def es_version(client):
     info = client.info()
     print(info)
@@ -142,9 +158,22 @@ def mock_client(dummy_response):
     client = Mock()
     client.search.return_value = dummy_response
     add_connection("mock", client)
+
     yield client
     connections._conn = {}
     connections._kwargs = {}
+
+
+@fixture
+def async_mock_client(dummy_response):
+    client = Mock()
+    client.search = AsyncMock(return_value=dummy_response)
+    client.delete_by_query = AsyncMock()
+    add_async_connection("mock", client)
+
+    yield client
+    async_connections._conn = {}
+    async_connections._kwargs = {}
 
 
 @fixture(scope="session")
@@ -156,6 +185,19 @@ def data_client(client):
     bulk(client, DATA, raise_on_error=True, refresh=True)
     bulk(client, FLAT_DATA, raise_on_error=True, refresh=True)
     yield client
+    client.indices.delete(index="git")
+    client.indices.delete(index="flat-git")
+
+
+@fixture(scope="session")
+def async_data_client(client, async_client):
+    # create mappings
+    create_git_index(client, "git")
+    create_flat_git_index(client, "flat-git")
+    # load data
+    bulk(client, DATA, raise_on_error=True, refresh=True)
+    bulk(client, FLAT_DATA, raise_on_error=True, refresh=True)
+    yield async_client
     client.indices.delete(index="git")
     client.indices.delete(index="flat-git")
 

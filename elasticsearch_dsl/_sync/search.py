@@ -29,7 +29,21 @@ class Search(SearchBase):
         """
         Iterate over the hits.
         """
-        return iter(self.execute())
+
+        class ResultsIterator:
+            def __init__(self, search):
+                self.search = search
+                self.iterator = None
+
+            def __next__(self):
+                if self.iterator is None:
+                    self.iterator = iter(self.search.execute())
+                try:
+                    return next(self.iterator)
+                except StopIteration:
+                    raise StopIteration()
+
+        return ResultsIterator(self)
 
     def count(self):
         """
