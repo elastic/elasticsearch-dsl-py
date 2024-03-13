@@ -34,9 +34,11 @@ def main(check=False):
         "AsyncElasticsearch": "Elasticsearch",
         "AsyncSearch": "Search",
         "AsyncMultiSearch": "MultiSearch",
+        "AsyncDocument": "Document",
         "async_connections": "connections",
         "async_scan": "scan",
         "async_mock_client": "mock_client",
+        "async_data_client": "data_client",
         "assert_awaited_once_with": "assert_called_once_with",
     }
     rules = [
@@ -51,6 +53,13 @@ def main(check=False):
             unasync.Rule(
                 fromdir="/tests/_async/",
                 todir="/tests/_sync/",
+                additional_replacements=additional_replacements,
+            )
+        )
+        rules.append(
+            unasync.Rule(
+                fromdir="/tests/test_integration/_async/",
+                todir="/tests/test_integration/_sync/",
                 additional_replacements=additional_replacements,
             )
         )
