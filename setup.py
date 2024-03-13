@@ -32,7 +32,12 @@ install_requires = [
     "elasticsearch>=8.0.0,<9.0.0",
 ]
 
+async_requires = [
+    "elasticsearch[async]>=8.0.0,<9.0.0",
+]
+
 develop_requires = [
+    "elasticsearch[async]",
     "unasync",
     "pytest",
     "pytest-cov",
@@ -75,5 +80,5 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
     install_requires=install_requires,
-    extras_require={"develop": develop_requires},
+    extras_require={"async": async_requires, "develop": develop_requires},
 )

@@ -19,13 +19,15 @@
 from elasticsearch import ApiError
 from pytest import raises
 
-from elasticsearch_dsl import Date, Document, Keyword, MultiSearch, Q, Search, Text
+from elasticsearch_dsl import Date, Keyword, Q, Text
+from elasticsearch_dsl._async.document import AsyncDocument
+from elasticsearch_dsl._async.search import AsyncMultiSearch, AsyncSearch
 from elasticsearch_dsl.response import aggs
 
-from .test_data import FLAT_DATA
+from ..test_data import FLAT_DATA
 
 
-class Repository(Document):
+class Repository(AsyncDocument):
     created_at = Date()
     description = Text(analyzer="snowball")
     tags = Keyword()
@@ -38,18 +40,19 @@ class Repository(Document):
         name = "git"
 
 
-class Commit(Document):
+class Commit(AsyncDocument):
     class Index:
         name = "flat-git"
 
 
-def test_filters_aggregation_buckets_are_accessible(data_client):
+async def test_filters_aggregation_buckets_are_accessible(async_data_client):
     has_tests_query = Q("term", files="test_elasticsearch_dsl")
     s = Commit.search()[0:0]
     s.aggs.bucket("top_authors", "terms", field="author.name.raw").bucket(
         "has_tests", "filters", filters={"yes": has_tests_query, "no": ~has_tests_query}
     ).metric("lines", "stats", field="stats.lines")
-    response = s.execute()
+
+    response = await s.execute()
 
     assert isinstance(
         response.aggregations.top_authors.buckets[0].has_tests.buckets.yes, aggs.Bucket
@@ -64,12 +67,12 @@ def test_filters_aggregation_buckets_are_accessible(data_client):
     )
 
 
-def test_top_hits_are_wrapped_in_response(data_client):
+async def test_top_hits_are_wrapped_in_response(async_data_client):
     s = Commit.search()[0:0]
     s.aggs.bucket("top_authors", "terms", field="author.name.raw").metric(
         "top_commits", "top_hits", size=5
     )
-    response = s.execute()
+    response = await s.execute()
 
     top_commits = response.aggregations.top_authors.buckets[0].top_commits
     assert isinstance(top_commits, aggs.TopHitsData)
@@ -80,11 +83,11 @@ def test_top_hits_are_wrapped_in_response(data_client):
     assert isinstance(hits[0], Commit)
 
 
-def test_inner_hits_are_wrapped_in_response(data_client):
-    s = Search(index="git")[0:1].query(
+async def test_inner_hits_are_wrapped_in_response(async_data_client):
+    s = AsyncSearch(index="git")[0:1].query(
         "has_parent", parent_type="repo", inner_hits={}, query=Q("match_all")
     )
-    response = s.execute()
+    response = await s.execute()
 
     commit = response.hits[0]
     assert isinstance(commit.meta.inner_hits.repo, response.__class__)
@@ -93,39 +96,39 @@ def test_inner_hits_are_wrapped_in_response(data_client):
     )
 
 
-def test_scan_respects_doc_types(data_client):
-    repos = list(Repository.search().scan())
+async def test_scan_respects_doc_types(async_data_client):
+    repos = [repo async for repo in Repository.search().scan()]
 
     assert 1 == len(repos)
     assert isinstance(repos[0], Repository)
     assert repos[0].organization == "elasticsearch"
 
 
-def test_scan_iterates_through_all_docs(data_client):
-    s = Search(index="flat-git")
+async def test_scan_iterates_through_all_docs(async_data_client):
+    s = AsyncSearch(index="flat-git")
 
-    commits = list(s.scan())
+    commits = [commit async for commit in s.scan()]
 
     assert 52 == len(commits)
     assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
 
 
-def test_response_is_cached(data_client):
+async def test_response_is_cached(async_data_client):
     s = Repository.search()
-    repos = list(s)
+    repos = [repo async for repo in s]
 
     assert hasattr(s, "_response")
     assert s._response.hits == repos
 
 
-def test_multi_search(data_client):
+async def test_multi_search(async_data_client):
     s1 = Repository.search()
-    s2 = Search(index="flat-git")
+    s2 = AsyncSearch(index="flat-git")
 
-    ms = MultiSearch()
+    ms = AsyncMultiSearch()
     ms = ms.add(s1).add(s2)
 
-    r1, r2 = ms.execute()
+    r1, r2 = await ms.execute()
 
     assert 1 == len(r1)
     assert isinstance(r1[0], Repository)
@@ -135,18 +138,18 @@ def test_multi_search(data_client):
     assert r2._search is s2
 
 
-def test_multi_missing(data_client):
+async def test_multi_missing(async_data_client):
     s1 = Repository.search()
-    s2 = Search(index="flat-git")
-    s3 = Search(index="does_not_exist")
+    s2 = AsyncSearch(index="flat-git")
+    s3 = AsyncSearch(index="does_not_exist")
 
-    ms = MultiSearch()
+    ms = AsyncMultiSearch()
     ms = ms.add(s1).add(s2).add(s3)
 
     with raises(ApiError):
-        ms.execute()
+        await ms.execute()
 
-    r1, r2, r3 = ms.execute(raise_on_error=False)
+    r1, r2, r3 = await ms.execute(raise_on_error=False)
 
     assert 1 == len(r1)
     assert isinstance(r1[0], Repository)
@@ -158,11 +161,11 @@ def test_multi_missing(data_client):
     assert r3 is None
 
 
-def test_raw_subfield_can_be_used_in_aggs(data_client):
-    s = Search(index="git")[0:0]
+async def test_raw_subfield_can_be_used_in_aggs(data_client):
+    s = AsyncSearch(index="git")[0:0]
     s.aggs.bucket("authors", "terms", field="author.name.raw", size=1)
 
-    r = s.execute()
+    r = await s.execute()
 
     authors = r.aggregations.authors
     assert 1 == len(authors)
