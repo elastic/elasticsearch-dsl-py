@@ -20,6 +20,7 @@ import collections.abc
 from elasticsearch.exceptions import NotFoundError, RequestError
 
 from ..async_connections import get_connection
+from ..document_base import *  # noqa: F401, F403
 from ..document_base import DocumentBase
 from ..exceptions import IllegalOperation
 from ..utils import DOC_META_FIELDS, META_FIELDS, merge

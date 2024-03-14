@@ -23,16 +23,8 @@ from hashlib import md5
 
 from pytest import raises
 
-from elasticsearch_dsl import (
-    Index,
-    InnerDoc,
-    Mapping,
-    Range,
-    analyzer,
-    document,
-    field,
-    utils,
-)
+from elasticsearch_dsl import Index, InnerDoc, Mapping, Range, analyzer, field, utils
+from elasticsearch_dsl._sync import document
 from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
 
 
