@@ -35,6 +35,7 @@ def main(check=False):
         "AsyncSearch": "Search",
         "AsyncMultiSearch": "MultiSearch",
         "AsyncDocument": "Document",
+        "AsyncIndexMeta": "IndexMeta",
         "AsyncIndexTemplate": "IndexTemplate",
         "AsyncIndex": "Index",
         "async_connections": "connections",

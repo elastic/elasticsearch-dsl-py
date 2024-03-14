@@ -300,7 +300,7 @@ class Index:
         body = self.to_dict()
         settings = body.pop("settings", {})
         analysis = settings.pop("analysis", None)
-        current_settings = self.get_settings(using=using)[self._name]["settings"][
+        current_settings = (self.get_settings(using=using))[self._name]["settings"][
             "index"
         ]
         if analysis:

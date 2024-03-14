@@ -24,7 +24,6 @@ from datetime import datetime
 from unittest import SkipTest, TestCase
 from unittest.mock import AsyncMock, Mock
 
-import pytest
 import pytest_asyncio
 from elastic_transport import ObjectApiResponse
 from elasticsearch import AsyncElasticsearch, Elasticsearch
@@ -103,6 +102,7 @@ async def get_async_test_client(wait=True, **kwargs):
                 raise
             await asyncio.sleep(0.1)
 
+    await client.close()
     raise SkipTest("Elasticsearch failed to start.")
 
 
@@ -152,12 +152,13 @@ def client():
         skip()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def async_client():
     try:
         connection = await get_async_test_client(wait="WAIT_FOR_ES" in os.environ)
         add_async_connection("default", connection)
-        return connection
+        yield connection
+        await connection.close()
     except SkipTest:
         skip()
 
@@ -183,11 +184,11 @@ def write_client(client):
 @pytest_asyncio.fixture
 async def async_write_client(async_client):
     yield async_client
-    async for index_name in async_client.indices.get(
+    for index_name in await async_client.indices.get(
         index="test-*", expand_wildcards="all"
     ):
-        await client.indices.delete(index=index_name)
-    await client.options(ignore_status=404).indices.delete_template(
+        await async_client.indices.delete(index=index_name)
+    await async_client.options(ignore_status=404).indices.delete_template(
         name="test-template"
     )
 
@@ -229,7 +230,7 @@ def data_client(client):
     client.indices.delete(index="flat-git")
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def async_data_client(data_client, async_client):
     yield async_client
 
@@ -443,7 +444,7 @@ def aggs_data():
 
 @fixture
 def pull_request(write_client):
-    async_document.PullRequest.init()
+    sync_document.PullRequest.init()
     pr = sync_document.PullRequest(
         _id=42,
         comments=[
@@ -467,7 +468,7 @@ def pull_request(write_client):
 
 @pytest_asyncio.fixture
 async def async_pull_request(async_write_client):
-    async_document.PullRequest.init()
+    await async_document.PullRequest.init()
     pr = async_document.PullRequest(
         _id=42,
         comments=[
@@ -495,13 +496,3 @@ def setup_ubq_tests(client):
     create_git_index(client, index)
     bulk(client, TEST_GIT_DATA, raise_on_error=True, refresh=True)
     return index
-
-
-def pytest_collection_modifyitems(items):
-    # make sure all async tests are properly marked as such
-    pytest_asyncio_tests = (
-        item for item in items if pytest_asyncio.is_async_test(item)
-    )
-    session_scope_marker = pytest.mark.asyncio(scope="session")
-    for async_test in pytest_asyncio_tests:
-        async_test.add_marker(session_scope_marker, append=False)

@@ -161,7 +161,7 @@ async def test_multi_missing(async_data_client):
     assert r3 is None
 
 
-async def test_raw_subfield_can_be_used_in_aggs(data_client):
+async def test_raw_subfield_can_be_used_in_aggs(async_data_client):
     s = AsyncSearch(index="git")[0:0]
     s.aggs.bucket("authors", "terms", field="author.name.raw", size=1)
 

@@ -19,22 +19,55 @@ import collections.abc
 
 from elasticsearch.exceptions import NotFoundError, RequestError
 
+from .._sync.index import Index
 from ..connections import get_connection
 from ..document_base import *  # noqa: F401, F403
-from ..document_base import DocumentBase
+from ..document_base import DocumentBase, DocumentMeta
 from ..exceptions import IllegalOperation
 from ..utils import DOC_META_FIELDS, META_FIELDS, merge
 from .search import Search
 
 
-class Document(DocumentBase):
+class IndexMeta(DocumentMeta):
+    # global flag to guard us from associating an Index with the base Document
+    # class, only user defined subclasses should have an _index attr
+    _document_initialized = False
+
+    def __new__(cls, name, bases, attrs):
+        new_cls = super().__new__(cls, name, bases, attrs)
+        if cls._document_initialized:
+            index_opts = attrs.pop("Index", None)
+            index = cls.construct_index(index_opts, bases)
+            new_cls._index = index
+            index.document(new_cls)
+        cls._document_initialized = True
+        return new_cls
+
+    @classmethod
+    def construct_index(cls, opts, bases):
+        if opts is None:
+            for b in bases:
+                if hasattr(b, "_index"):
+                    return b._index
+
+            # Set None as Index name so it will set _all while making the query
+            return Index(name=None)
+
+        i = Index(getattr(opts, "name", "*"), using=getattr(opts, "using", "default"))
+        i.settings(**getattr(opts, "settings", {}))
+        i.aliases(**getattr(opts, "aliases", {}))
+        for a in getattr(opts, "analyzers", ()):
+            i.analyzer(a)
+        return i
+
+
+class Document(DocumentBase, metaclass=IndexMeta):
     """
     Model-like class for persisting documents in elasticsearch.
     """
 
     @classmethod
     def _get_connection(cls, using=None):
-        print("***", get_connection.__module__)
         return get_connection(cls._get_using(using))
 
     @classmethod

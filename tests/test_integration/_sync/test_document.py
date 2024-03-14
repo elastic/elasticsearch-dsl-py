@@ -27,14 +27,11 @@ from elasticsearch_dsl import (
     Binary,
     Boolean,
     Date,
-    Document,
     Double,
-    InnerDoc,
     Ip,
     Keyword,
     Long,
     Mapping,
-    MetaField,
     Nested,
     Object,
     Q,
@@ -42,6 +39,7 @@ from elasticsearch_dsl import (
     Text,
     analyzer,
 )
+from elasticsearch_dsl._sync.document import Document, InnerDoc, MetaField
 from elasticsearch_dsl.utils import AttrList
 
 snowball = analyzer("my_snow", tokenizer="standard", filter=["lowercase", "snowball"])
@@ -321,7 +319,9 @@ def test_get_returns_none_if_404_ignored(data_client):
     )
 
 
-def test_get_returns_none_if_404_ignored_and_index_doesnt_exist(data_client):
+def test_get_returns_none_if_404_ignored_and_index_doesnt_exist(
+    data_client,
+):
     assert None is Repository.get(
         "42", index="not-there", using=data_client.options(ignore_status=404)
     )
@@ -407,7 +407,7 @@ def test_mget_ignores_missing_docs_when_missing_param_is_skip(data_client):
 
 
 def test_update_works_from_search_response(data_client):
-    elasticsearch_repo = Repository.search().execute()[0]
+    elasticsearch_repo = (Repository.search().execute())[0]
 
     elasticsearch_repo.update(owner={"other_name": "elastic"})
     assert "elastic" == elasticsearch_repo.owner.other_name
@@ -557,8 +557,8 @@ def test_highlight_in_meta(data_client):
         Commit.search()
         .query("match", description="inverting")
         .highlight("description")
-        .execute()[0]
-    )
+        .execute()
+    )[0]
 
     assert isinstance(commit, Commit)
     assert "description" in commit.meta.highlight

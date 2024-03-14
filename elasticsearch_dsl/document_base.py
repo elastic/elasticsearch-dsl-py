@@ -19,7 +19,6 @@ from fnmatch import fnmatch
 
 from .exceptions import ValidationException
 from .field import Field
-from .index import Index
 from .mapping import Mapping
 from .utils import DOC_META_FIELDS, ObjectBase
 
@@ -34,39 +33,6 @@ class DocumentMeta(type):
         # DocumentMeta filters attrs in place
         attrs["_doc_type"] = DocumentOptions(name, bases, attrs)
         return super().__new__(cls, name, bases, attrs)
-
-
-class IndexMeta(DocumentMeta):
-    # global flag to guard us from associating an Index with the base Document
-    # class, only user defined subclasses should have an _index attr
-    _document_initialized = False
-
-    def __new__(cls, name, bases, attrs):
-        new_cls = super().__new__(cls, name, bases, attrs)
-        if cls._document_initialized:
-            index_opts = attrs.pop("Index", None)
-            index = cls.construct_index(index_opts, bases)
-            new_cls._index = index
-            index.document(new_cls)
-        cls._document_initialized = True
-        return new_cls
-
-    @classmethod
-    def construct_index(cls, opts, bases):
-        if opts is None:
-            for b in bases:
-                if hasattr(b, "_index"):
-                    return b._index
-
-            # Set None as Index name so it will set _all while making the query
-            return Index(name=None)
-
-        i = Index(getattr(opts, "name", "*"), using=getattr(opts, "using", "default"))
-        i.settings(**getattr(opts, "settings", {}))
-        i.aliases(**getattr(opts, "aliases", {}))
-        for a in getattr(opts, "analyzers", ()):
-            i.analyzer(a)
-        return i
 
 
 class DocumentOptions:
@@ -110,7 +76,7 @@ class InnerDoc(ObjectBase, metaclass=DocumentMeta):
         return super().from_es(data)
 
 
-class DocumentBase(ObjectBase, metaclass=IndexMeta):
+class DocumentBase(ObjectBase):
     """
     Model-like class for persisting documents in elasticsearch.
     """
