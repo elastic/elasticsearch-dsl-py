@@ -34,6 +34,7 @@ class Document(DocumentBase):
 
     @classmethod
     def _get_connection(cls, using=None):
+        print("***", get_connection.__module__)
         return get_connection(cls._get_using(using))
 
     @classmethod

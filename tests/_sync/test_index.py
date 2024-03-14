@@ -20,7 +20,9 @@ from random import choice
 
 from pytest import raises
 
-from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analyzer
+from elasticsearch_dsl import Date, Text, analyzer
+from elasticsearch_dsl._sync.document import Document
+from elasticsearch_dsl._sync.index import Index, IndexTemplate
 
 
 class Post(Document):
@@ -68,7 +70,7 @@ def test_cloned_index_has_copied_settings_and_using():
 
 def test_cloned_index_has_analysis_attribute():
     """
-    Regression test for Issue #582 in which `Index.clone()` was not copying
+    Regression test for Issue #582 in which `AsyncIndex.clone()` was not copying
     over the `_analysis` attribute.
     """
     client = object()

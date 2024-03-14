@@ -36,6 +36,8 @@ from elasticsearch_dsl.async_connections import add_connection as add_async_conn
 from elasticsearch_dsl.async_connections import connections as async_connections
 from elasticsearch_dsl.connections import add_connection, connections
 
+from .test_integration._async import test_document as async_document
+from .test_integration._sync import test_document as sync_document
 from .test_integration.test_data import (
     DATA,
     FLAT_DATA,
@@ -43,7 +45,6 @@ from .test_integration.test_data import (
     create_flat_git_index,
     create_git_index,
 )
-from .test_integration.test_document import Comment, History, PullRequest, User
 
 if "ELASTICSEARCH_URL" in os.environ:
     ELASTICSEARCH_URL = os.environ["ELASTICSEARCH_URL"]
@@ -153,9 +154,6 @@ def client():
 
 @pytest_asyncio.fixture(scope="session")
 async def async_client():
-    import asyncio
-
-    print("***", id(asyncio.get_event_loop()))
     try:
         connection = await get_async_test_client(wait="WAIT_FOR_ES" in os.environ)
         add_async_connection("default", connection)
@@ -182,6 +180,18 @@ def write_client(client):
     client.options(ignore_status=404).indices.delete_template(name="test-template")
 
 
+@pytest_asyncio.fixture
+async def async_write_client(async_client):
+    yield async_client
+    async for index_name in async_client.indices.get(
+        index="test-*", expand_wildcards="all"
+    ):
+        await client.indices.delete(index=index_name)
+    await client.options(ignore_status=404).indices.delete_template(
+        name="test-template"
+    )
+
+
 @fixture
 def mock_client(dummy_response):
     client = Mock()
@@ -193,10 +203,11 @@ def mock_client(dummy_response):
     connections._kwargs = {}
 
 
-@pytest_asyncio.fixture
+@fixture
 def async_mock_client(dummy_response):
     client = Mock()
     client.search = AsyncMock(return_value=dummy_response)
+    client.indices = AsyncMock()
     client.delete_by_query = AsyncMock()
     add_async_connection("mock", client)
 
@@ -432,16 +443,16 @@ def aggs_data():
 
 @fixture
 def pull_request(write_client):
-    PullRequest.init()
-    pr = PullRequest(
+    async_document.PullRequest.init()
+    pr = sync_document.PullRequest(
         _id=42,
         comments=[
-            Comment(
+            sync_document.Comment(
                 content="Hello World!",
-                author=User(name="honzakral"),
+                author=sync_document.User(name="honzakral"),
                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184),
                 history=[
-                    History(
+                    sync_document.History(
                         timestamp=datetime(2012, 1, 1),
                         diff="-Ahoj Svete!\n+Hello World!",
                     )
@@ -451,6 +462,30 @@ def pull_request(write_client):
         created_at=datetime(2018, 1, 9, 9, 17, 3, 21184),
     )
     pr.save(refresh=True)
+    return pr
+
+
+@pytest_asyncio.fixture
+async def async_pull_request(async_write_client):
+    async_document.PullRequest.init()
+    pr = async_document.PullRequest(
+        _id=42,
+        comments=[
+            async_document.Comment(
+                content="Hello World!",
+                author=async_document.User(name="honzakral"),
+                created_at=datetime(2018, 1, 9, 10, 17, 3, 21184),
+                history=[
+                    async_document.History(
+                        timestamp=datetime(2012, 1, 1),
+                        diff="-Ahoj Svete!\n+Hello World!",
+                    )
+                ],
+            ),
+        ],
+        created_at=datetime(2018, 1, 9, 9, 17, 3, 21184),
+    )
+    await pr.save(refresh=True)
     return pr
 
 

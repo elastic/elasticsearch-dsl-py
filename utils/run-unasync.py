@@ -35,10 +35,14 @@ def main(check=False):
         "AsyncSearch": "Search",
         "AsyncMultiSearch": "MultiSearch",
         "AsyncDocument": "Document",
+        "AsyncIndexTemplate": "IndexTemplate",
+        "AsyncIndex": "Index",
         "async_connections": "connections",
         "async_scan": "scan",
         "async_mock_client": "mock_client",
         "async_data_client": "data_client",
+        "async_write_client": "write_client",
+        "async_pull_request": "pull_request",
         "assert_awaited_once_with": "assert_called_once_with",
     }
     rules = [
