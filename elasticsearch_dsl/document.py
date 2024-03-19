@@ -15,6 +15,4 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl._sync.document import *  # noqa: F401, F403
-
-from .document_base import *  # noqa: F401, F403
+from elasticsearch_dsl._sync.document import Document, InnerDoc, MetaField  # noqa: F401
