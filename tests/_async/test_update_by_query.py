@@ -17,18 +17,19 @@
 
 from copy import deepcopy
 
-from elasticsearch_dsl import Q, UpdateByQuery
+from elasticsearch_dsl import Q
+from elasticsearch_dsl._async.update_by_query import AsyncUpdateByQuery
 from elasticsearch_dsl.response import UpdateByQueryResponse
 
 
 def test_ubq_starts_with_no_query():
-    ubq = UpdateByQuery()
+    ubq = AsyncUpdateByQuery()
 
     assert ubq.query._proxied is None
 
 
 def test_ubq_to_dict():
-    ubq = UpdateByQuery()
+    ubq = AsyncUpdateByQuery()
     assert {} == ubq.to_dict()
 
     ubq = ubq.query("match", f=42)
@@ -36,15 +37,15 @@ def test_ubq_to_dict():
 
     assert {"query": {"match": {"f": 42}}, "size": 10} == ubq.to_dict(size=10)
 
-    ubq = UpdateByQuery(extra={"size": 5})
+    ubq = AsyncUpdateByQuery(extra={"size": 5})
     assert {"size": 5} == ubq.to_dict()
 
-    ubq = UpdateByQuery(extra={"extra_q": Q("term", category="conference")})
+    ubq = AsyncUpdateByQuery(extra={"extra_q": Q("term", category="conference")})
     assert {"extra_q": {"term": {"category": "conference"}}} == ubq.to_dict()
 
 
 def test_complex_example():
-    ubq = UpdateByQuery()
+    ubq = AsyncUpdateByQuery()
     ubq = (
         ubq.query("match", title="python")
         .query(~Q("match", title="ruby"))
@@ -82,7 +83,7 @@ def test_complex_example():
 
 
 def test_exclude():
-    ubq = UpdateByQuery()
+    ubq = AsyncUpdateByQuery()
     ubq = ubq.exclude("match", title="python")
 
     assert {
@@ -124,28 +125,28 @@ def test_reverse():
 
     d2 = deepcopy(d)
 
-    ubq = UpdateByQuery.from_dict(d)
+    ubq = AsyncUpdateByQuery.from_dict(d)
 
     assert d == d2
     assert d == ubq.to_dict()
 
 
 def test_from_dict_doesnt_need_query():
-    ubq = UpdateByQuery.from_dict({"script": {"source": "test"}})
+    ubq = AsyncUpdateByQuery.from_dict({"script": {"source": "test"}})
 
     assert {"script": {"source": "test"}} == ubq.to_dict()
 
 
-def test_params_being_passed_to_search(mock_client):
-    ubq = UpdateByQuery(using="mock")
+async def test_params_being_passed_to_search(async_mock_client):
+    ubq = AsyncUpdateByQuery(using="mock")
     ubq = ubq.params(routing="42")
-    ubq.execute()
+    await ubq.execute()
 
-    mock_client.update_by_query.assert_called_once_with(index=None, routing="42")
+    async_mock_client.update_by_query.assert_called_once_with(index=None, routing="42")
 
 
 def test_overwrite_script():
-    ubq = UpdateByQuery()
+    ubq = AsyncUpdateByQuery()
     ubq = ubq.script(
         source="ctx._source.likes += params.f", lang="painless", params={"f": 3}
     )

@@ -15,4 +15,22 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync.update_by_query import UpdateByQuery  # noqa: F401
+from ..async_connections import get_connection
+from ..update_by_query_base import UpdateByQueryBase
+
+
+class AsyncUpdateByQuery(UpdateByQueryBase):
+    async def execute(self):
+        """
+        Execute the search and return an instance of ``Response`` wrapping all
+        the data.
+        """
+        es = get_connection(self._using)
+
+        self._response = self._response_class(
+            self,
+            await es.update_by_query(
+                index=self._index, **self.to_dict(), **self._params
+            ),
+        )
+        return self._response

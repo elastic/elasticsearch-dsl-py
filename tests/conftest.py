@@ -209,6 +209,7 @@ def async_mock_client(dummy_response):
     client = Mock()
     client.search = AsyncMock(return_value=dummy_response)
     client.indices = AsyncMock()
+    client.update_by_query = AsyncMock()
     client.delete_by_query = AsyncMock()
     add_async_connection("mock", client)
 

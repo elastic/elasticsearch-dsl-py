@@ -38,6 +38,7 @@ def main(check=False):
         "AsyncIndexMeta": "IndexMeta",
         "AsyncIndexTemplate": "IndexTemplate",
         "AsyncIndex": "Index",
+        "AsyncUpdateByQuery": "UpdateByQuery",
         "async_connections": "connections",
         "async_scan": "scan",
         "async_mock_client": "mock_client",
