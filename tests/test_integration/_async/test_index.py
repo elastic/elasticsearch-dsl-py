@@ -15,22 +15,24 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analysis
+from elasticsearch_dsl import Date, Text, analysis
+from elasticsearch_dsl._async.document import AsyncDocument
+from elasticsearch_dsl._async.index import AsyncIndex, AsyncIndexTemplate
 
 
-class Post(Document):
+class Post(AsyncDocument):
     title = Text(analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword"))
     published_from = Date()
 
 
-def test_index_template_works(write_client):
-    it = IndexTemplate("test-template", "test-*")
+async def test_index_template_works(async_write_client):
+    it = AsyncIndexTemplate("test-template", "test-*")
     it.document(Post)
     it.settings(number_of_replicas=0, number_of_shards=1)
-    it.save()
+    await it.save()
 
-    i = Index("test-blog")
-    i.create()
+    i = AsyncIndex("test-blog")
+    await i.create()
 
     assert {
         "test-blog": {
@@ -41,31 +43,34 @@ def test_index_template_works(write_client):
                 }
             }
         }
-    } == write_client.indices.get_mapping(index="test-blog")
+    } == await async_write_client.indices.get_mapping(index="test-blog")
 
 
-def test_index_can_be_saved_even_with_settings(write_client):
-    i = Index("test-blog", using=write_client)
+async def test_index_can_be_saved_even_with_settings(async_write_client):
+    i = AsyncIndex("test-blog", using=async_write_client)
     i.settings(number_of_shards=3, number_of_replicas=0)
-    i.save()
+    await i.save()
     i.settings(number_of_replicas=1)
-    i.save()
+    await i.save()
 
     assert (
-        "1" == i.get_settings()["test-blog"]["settings"]["index"]["number_of_replicas"]
+        "1"
+        == (await i.get_settings())["test-blog"]["settings"]["index"][
+            "number_of_replicas"
+        ]
     )
 
 
-def test_index_exists(data_client):
-    assert Index("git").exists()
-    assert not Index("not-there").exists()
+async def test_index_exists(async_data_client):
+    assert await AsyncIndex("git").exists()
+    assert not await AsyncIndex("not-there").exists()
 
 
-def test_index_can_be_created_with_settings_and_mappings(write_client):
-    i = Index("test-blog", using=write_client)
+async def test_index_can_be_created_with_settings_and_mappings(async_write_client):
+    i = AsyncIndex("test-blog", using=async_write_client)
     i.document(Post)
     i.settings(number_of_replicas=0, number_of_shards=1)
-    i.create()
+    await i.create()
 
     assert {
         "test-blog": {
@@ -76,9 +81,9 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
                 }
             }
         }
-    } == write_client.indices.get_mapping(index="test-blog")
+    } == await async_write_client.indices.get_mapping(index="test-blog")
 
-    settings = write_client.indices.get_settings(index="test-blog")
+    settings = await async_write_client.indices.get_settings(index="test-blog")
     assert settings["test-blog"]["settings"]["index"]["number_of_replicas"] == "0"
     assert settings["test-blog"]["settings"]["index"]["number_of_shards"] == "1"
     assert settings["test-blog"]["settings"]["index"]["analysis"] == {
@@ -86,27 +91,27 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
     }
 
 
-def test_delete(write_client):
-    write_client.indices.create(
+async def test_delete(async_write_client):
+    await async_write_client.indices.create(
         index="test-index",
         body={"settings": {"number_of_replicas": 0, "number_of_shards": 1}},
     )
 
-    i = Index("test-index", using=write_client)
-    i.delete()
-    assert not write_client.indices.exists(index="test-index")
+    i = AsyncIndex("test-index", using=async_write_client)
+    await i.delete()
+    assert not await async_write_client.indices.exists(index="test-index")
 
 
-def test_multiple_indices_with_same_doc_type_work(write_client):
-    i1 = Index("test-index-1", using=write_client)
-    i2 = Index("test-index-2", using=write_client)
+async def test_multiple_indices_with_same_doc_type_work(async_write_client):
+    i1 = AsyncIndex("test-index-1", using=async_write_client)
+    i2 = AsyncIndex("test-index-2", using=async_write_client)
 
     for i in (i1, i2):
         i.document(Post)
-        i.create()
+        await i.create()
 
     for i in ("test-index-1", "test-index-2"):
-        settings = write_client.indices.get_settings(index=i)
+        settings = await async_write_client.indices.get_settings(index=i)
         assert settings[i]["settings"]["index"]["analysis"] == {
             "analyzer": {"my_analyzer": {"type": "custom", "tokenizer": "keyword"}}
         }

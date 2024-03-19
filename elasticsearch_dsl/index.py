@@ -15,4 +15,4 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._sync.index import *  # noqa: F401, F403
+from ._sync.index import Index, IndexTemplate  # noqa: F401

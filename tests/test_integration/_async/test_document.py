@@ -549,7 +549,7 @@ async def test_refresh_mapping(async_data_client):
         class Index:
             name = "git"
 
-    Commit._index.load_mappings()
+    await Commit._index.load_mappings()
 
     assert "stats" in Commit._index._mapping
     assert "committer" in Commit._index._mapping

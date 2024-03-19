@@ -15,13 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .. import analysis
 from ..async_connections import get_connection
 from ..exceptions import IllegalOperation
-from ..mapping import Mapping
-from ..update_by_query import UpdateByQuery
-from ..utils import merge
+from ..index_base import IndexBase
+from .mapping import AsyncMapping
 from .search import AsyncSearch
+from .update_by_query import AsyncUpdateByQuery
 
 
 class AsyncIndexTemplate:
@@ -56,23 +55,17 @@ class AsyncIndexTemplate:
         )
 
 
-class AsyncIndex:
-    def __init__(self, name, using="default"):
-        """
-        :arg name: name of the index
-        :arg using: connection alias to use, defaults to ``'default'``
-        """
-        self._name = name
-        self._doc_types = []
-        self._using = using
-        self._settings = {}
-        self._aliases = {}
-        self._analysis = {}
-        self._mapping = None
+class AsyncIndex(IndexBase):
+    def _get_connection(self, using=None):
+        if self._name is None:
+            raise ValueError("You cannot perform API calls on the default index.")
+        return get_connection(using or self._using)
+
+    connection = property(_get_connection)
 
     def get_or_create_mapping(self):
         if self._mapping is None:
-            self._mapping = Mapping()
+            self._mapping = AsyncMapping()
         return self._mapping
 
     def as_template(self, template_name, pattern=None, order=None):
@@ -83,26 +76,8 @@ class AsyncIndex:
             template_name, pattern or self._name, index=self, order=order
         )
 
-    def resolve_nested(self, field_path):
-        for doc in self._doc_types:
-            nested, field = doc._doc_type.mapping.resolve_nested(field_path)
-            if field is not None:
-                return nested, field
-        if self._mapping:
-            return self._mapping.resolve_nested(field_path)
-        return (), None
-
-    def resolve_field(self, field_path):
-        for doc in self._doc_types:
-            field = doc._doc_type.mapping.resolve_field(field_path)
-            if field is not None:
-                return field
-        if self._mapping:
-            return self._mapping.resolve_field(field_path)
-        return None
-
-    def load_mappings(self, using=None):
-        self.get_or_create_mapping().update_from_es(
+    async def load_mappings(self, using=None):
+        await self.get_or_create_mapping().update_from_es(
             self._name, using=using or self._using
         )
 
@@ -130,122 +105,6 @@ class AsyncIndex:
             i._mapping = self._mapping._clone()
         return i
 
-    def _get_connection(self, using=None):
-        if self._name is None:
-            raise ValueError("You cannot perform API calls on the default index.")
-        return get_connection(using or self._using)
-
-    connection = property(_get_connection)
-
-    def mapping(self, mapping):
-        """
-        Associate a mapping (an instance of
-        :class:`~elasticsearch_dsl.Mapping`) with this index.
-        This means that, when this index is created, it will contain the
-        mappings for the document type defined by those mappings.
-        """
-        self.get_or_create_mapping().update(mapping)
-
-    def document(self, document):
-        """
-        Associate a :class:`~elasticsearch_dsl.Document` subclass with an index.
-        This means that, when this index is created, it will contain the
-        mappings for the ``Document``. If the ``Document`` class doesn't have a
-        default index yet (by defining ``class Index``), this instance will be
-        used. Can be used as a decorator::
-
-            i = Index('blog')
-
-            @i.document
-            class Post(Document):
-                title = Text()
-
-            # create the index, including Post mappings
-            i.create()
-
-            # .search() will now return a Search object that will return
-            # properly deserialized Post instances
-            s = i.search()
-        """
-        self._doc_types.append(document)
-
-        # If the document index does not have any name, that means the user
-        # did not set any index already to the document.
-        # So set this index as document index
-        if document._index._name is None:
-            document._index = self
-
-        return document
-
-    def settings(self, **kwargs):
-        """
-        Add settings to the index::
-
-            i = Index('i')
-            i.settings(number_of_shards=1, number_of_replicas=0)
-
-        Multiple calls to ``settings`` will merge the keys, later overriding
-        the earlier.
-        """
-        self._settings.update(kwargs)
-        return self
-
-    def aliases(self, **kwargs):
-        """
-        Add aliases to the index definition::
-
-            i = Index('blog-v2')
-            i.aliases(blog={}, published={'filter': Q('term', published=True)})
-        """
-        self._aliases.update(kwargs)
-        return self
-
-    def analyzer(self, *args, **kwargs):
-        """
-        Explicitly add an analyzer to an index. Note that all custom analyzers
-        defined in mappings will also be created. This is useful for search analyzers.
-
-        Example::
-
-            from elasticsearch_dsl import analyzer, tokenizer
-
-            my_analyzer = analyzer('my_analyzer',
-                tokenizer=tokenizer('trigram', 'nGram', min_gram=3, max_gram=3),
-                filter=['lowercase']
-            )
-
-            i = Index('blog')
-            i.analyzer(my_analyzer)
-
-        """
-        analyzer = analysis.analyzer(*args, **kwargs)
-        d = analyzer.get_analysis_definition()
-        # empty custom analyzer, probably already defined out of our control
-        if not d:
-            return
-
-        # merge the definition
-        merge(self._analysis, d, True)
-
-    def to_dict(self):
-        out = {}
-        if self._settings:
-            out["settings"] = self._settings
-        if self._aliases:
-            out["aliases"] = self._aliases
-        mappings = self._mapping.to_dict() if self._mapping else {}
-        analysis = self._mapping._collect_analysis() if self._mapping else {}
-        for d in self._doc_types:
-            mapping = d._doc_type.mapping
-            merge(mappings, mapping.to_dict(), True)
-            merge(analysis, mapping._collect_analysis(), True)
-        if mappings:
-            out["mappings"] = mappings
-        if analysis or self._analysis:
-            merge(analysis, self._analysis)
-            out.setdefault("settings", {})["analysis"] = analysis
-        return out
-
     def search(self, using=None):
         """
         Return a :class:`~elasticsearch_dsl.Search` object searching over the
@@ -265,7 +124,7 @@ class AsyncIndex:
         For more information, see here:
         https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html
         """
-        return UpdateByQuery(
+        return AsyncUpdateByQuery(
             using=using or self._using,
             index=self._name,
         )
