@@ -45,7 +45,6 @@ develop_requires = [
     "pytest-asyncio",
     "pytz",
     "coverage",
-    "mock",  # needed to have AsyncMock in Python <= 3.7
     # Override Read the Docs default (sphinx<2 and sphinx-rtd-theme<0.5)
     "sphinx>2",
     "sphinx-rtd-theme>0.5",
