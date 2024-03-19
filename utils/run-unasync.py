@@ -39,6 +39,7 @@ def main(check=False):
         "AsyncIndexTemplate": "IndexTemplate",
         "AsyncIndex": "Index",
         "AsyncUpdateByQuery": "UpdateByQuery",
+        "AsyncMapping": "Mapping",
         "async_connections": "connections",
         "async_scan": "scan",
         "async_mock_client": "mock_client",

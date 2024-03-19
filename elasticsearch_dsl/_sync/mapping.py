@@ -15,4 +15,26 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl._sync.mapping import Mapping  # noqa: F401
+from ..connections import get_connection
+from ..mapping_base import MappingBase
+
+
+class Mapping(MappingBase):
+    @classmethod
+    def from_es(cls, index, using="default"):
+        m = cls()
+        m.update_from_es(index, using)
+        return m
+
+    def update_from_es(self, index, using="default"):
+        es = get_connection(using)
+        raw = es.indices.get_mapping(index=index)
+        _, raw = raw.popitem()
+        self._update_from_dict(raw["mappings"])
+
+    def save(self, index, using="default"):
+        from .index import Index
+
+        index = Index(index, using=using)
+        index.mapping(self)
+        return index.save()
