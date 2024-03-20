@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .connections import get_connection
+from . import async_connections, connections
 from .utils import AttrDict, DslBase, merge
 
 __all__ = ["tokenizer", "analyzer", "char_filter", "token_filter", "normalizer"]
@@ -119,20 +119,7 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         "tokenizer": {"type": "tokenizer"},
     }
 
-    def simulate(self, text, using="default", explain=False, attributes=None):
-        """
-        Use the Analyze API of elasticsearch to test the outcome of this analyzer.
-
-        :arg text: Text to be analyzed
-        :arg using: connection alias to use, defaults to ``'default'``
-        :arg explain: will output all token attributes for each token. You can
-            filter token attributes you want to output by setting ``attributes``
-            option.
-        :arg attributes: if ``explain`` is specified, filter the token
-            attributes to return.
-        """
-        es = get_connection(using)
-
+    def _get_body(self, text, explain, attributes):
         body = {"text": text, "explain": explain}
         if attributes:
             body["attributes"] = attributes
@@ -156,7 +143,43 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         if self._builtin_type != "custom":
             body["analyzer"] = self._builtin_type
 
-        return AttrDict(es.indices.analyze(body=body))
+        return body
+
+    def simulate(self, text, using="default", explain=False, attributes=None):
+        """
+        Use the Analyze API of elasticsearch to test the outcome of this analyzer.
+
+        :arg text: Text to be analyzed
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg explain: will output all token attributes for each token. You can
+            filter token attributes you want to output by setting ``attributes``
+            option.
+        :arg attributes: if ``explain`` is specified, filter the token
+            attributes to return.
+        """
+        es = connections.get_connection(using)
+        return AttrDict(
+            es.indices.analyze(body=self._get_body(text, explain, attributes))
+        )
+
+    async def async_simulate(
+        self, text, using="default", explain=False, attributes=None
+    ):
+        """
+        Use the Analyze API of elasticsearch to test the outcome of this analyzer.
+
+        :arg text: Text to be analyzed
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg explain: will output all token attributes for each token. You can
+            filter token attributes you want to output by setting ``attributes``
+            option.
+        :arg attributes: if ``explain`` is specified, filter the token
+            attributes to return.
+        """
+        es = async_connections.get_connection(using)
+        return AttrDict(
+            await es.indices.analyze(body=self._get_body(text, explain, attributes))
+        )
 
 
 class Normalizer(AnalysisBase, DslBase):

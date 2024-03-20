@@ -20,7 +20,7 @@ from elasticsearch_dsl import analyzer, token_filter, tokenizer
 
 def test_simulate_with_just__builtin_tokenizer(client):
     a = analyzer("my-analyzer", tokenizer="keyword")
-    tokens = a.simulate("Hello World!", using=client).tokens
+    tokens = (a.simulate("Hello World!", using=client)).tokens
 
     assert len(tokens) == 1
     assert tokens[0].token == "Hello World!"
@@ -33,7 +33,7 @@ def test_simulate_complex(client):
         filter=["lowercase", token_filter("no-ifs", "stop", stopwords=["if"])],
     )
 
-    tokens = a.simulate("if:this:works", using=client).tokens
+    tokens = (a.simulate("if:this:works", using=client)).tokens
 
     assert len(tokens) == 2
     assert ["this", "works"] == [t.token for t in tokens]
@@ -41,6 +41,6 @@ def test_simulate_complex(client):
 
 def test_simulate_builtin(client):
     a = analyzer("my-analyzer", "english")
-    tokens = a.simulate("fixes running").tokens
+    tokens = (a.simulate("fixes running")).tokens
 
     assert ["fix", "run"] == [t.token for t in tokens]
