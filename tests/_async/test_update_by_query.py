@@ -17,8 +17,7 @@
 
 from copy import deepcopy
 
-from elasticsearch_dsl import Q
-from elasticsearch_dsl._async.update_by_query import AsyncUpdateByQuery
+from elasticsearch_dsl import AsyncUpdateByQuery, Q
 from elasticsearch_dsl.response import UpdateByQueryResponse
 
 

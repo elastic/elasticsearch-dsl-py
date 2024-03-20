@@ -23,8 +23,17 @@ from hashlib import md5
 
 from pytest import raises
 
-from elasticsearch_dsl import Index, InnerDoc, Mapping, Range, analyzer, field, utils
-from elasticsearch_dsl._sync import document
+from elasticsearch_dsl import (
+    Document,
+    Index,
+    InnerDoc,
+    Mapping,
+    MetaField,
+    Range,
+    analyzer,
+    field,
+    utils,
+)
 from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
 
 
@@ -32,7 +41,7 @@ class MyInner(InnerDoc):
     old_field = field.Text()
 
 
-class MyDoc(document.Document):
+class MyDoc(Document):
     title = field.Keyword()
     name = field.Text()
     created_at = field.Date()
@@ -46,7 +55,7 @@ class MySubDoc(MyDoc):
         name = "default-index"
 
 
-class MyDoc2(document.Document):
+class MyDoc2(Document):
     extra = field.Long()
 
 
@@ -54,19 +63,19 @@ class MyMultiSubDoc(MyDoc2, MySubDoc):
     pass
 
 
-class Comment(document.InnerDoc):
+class Comment(InnerDoc):
     title = field.Text()
     tags = field.Keyword(multi=True)
 
 
-class DocWithNested(document.Document):
+class DocWithNested(Document):
     comments = field.Nested(Comment)
 
     class Index:
         name = "test-doc-with-nested"
 
 
-class SimpleCommit(document.Document):
+class SimpleCommit(Document):
     files = field.Text(multi=True)
 
     class Index:
@@ -89,28 +98,28 @@ class SecretField(field.CustomField):
         return Secret(codecs.decode(data, "rot_13"))
 
 
-class SecretDoc(document.Document):
+class SecretDoc(Document):
     title = SecretField(index="no")
 
     class Index:
         name = "test-secret-doc"
 
 
-class NestedSecret(document.Document):
+class NestedSecret(Document):
     secrets = field.Nested(SecretDoc)
 
     class Index:
         name = "test-nested-secret"
 
 
-class OptionalObjectWithRequiredField(document.Document):
+class OptionalObjectWithRequiredField(Document):
     comments = field.Nested(properties={"title": field.Keyword(required=True)})
 
     class Index:
         name = "test-required"
 
 
-class Host(document.Document):
+class Host(Document):
     ip = field.Ip()
 
     class Index:
@@ -118,7 +127,7 @@ class Host(document.Document):
 
 
 def test_range_serializes_properly():
-    class D(document.Document):
+    class D(Document):
         lr = field.LongRange()
 
     d = D(lr=Range(lt=42))
@@ -131,7 +140,7 @@ def test_range_serializes_properly():
 
 
 def test_range_deserializes_properly():
-    class D(document.InnerDoc):
+    class D(InnerDoc):
         lr = field.LongRange()
 
     d = D.from_es({"lr": {"lt": 42}}, True)
@@ -147,10 +156,10 @@ def test_resolve_nested():
 
 
 def test_conflicting_mapping_raises_error_in_index_to_dict():
-    class A(document.Document):
+    class A(Document):
         name = field.Text()
 
-    class B(document.Document):
+    class B(Document):
         name = field.Keyword()
 
     i = Index("i")
@@ -173,7 +182,7 @@ def test_matches_uses_index():
 
 
 def test_matches_with_no_name_always_matches():
-    class D(document.Document):
+    class D(Document):
         pass
 
     assert D._matches({})
@@ -181,7 +190,7 @@ def test_matches_with_no_name_always_matches():
 
 
 def test_matches_accepts_wildcards():
-    class MyDoc(document.Document):
+    class MyDoc(Document):
         class Index:
             name = "my-*"
 
@@ -339,14 +348,14 @@ def test_meta_is_accessible_even_on_empty_doc():
 
 
 def test_meta_field_mapping():
-    class User(document.Document):
+    class User(Document):
         username = field.Text()
 
         class Meta:
-            all = document.MetaField(enabled=False)
-            _index = document.MetaField(enabled=True)
-            dynamic = document.MetaField("strict")
-            dynamic_templates = document.MetaField([42])
+            all = MetaField(enabled=False)
+            _index = MetaField(enabled=True)
+            dynamic = MetaField("strict")
+            dynamic_templates = MetaField([42])
 
     assert {
         "properties": {"username": {"type": "text"}},
@@ -358,7 +367,7 @@ def test_meta_field_mapping():
 
 
 def test_multi_value_fields():
-    class Blog(document.Document):
+    class Blog(Document):
         tags = field.Keyword(multi=True)
 
     b = Blog()
@@ -369,7 +378,7 @@ def test_multi_value_fields():
 
 
 def test_docs_with_properties():
-    class User(document.Document):
+    class User(Document):
         pwd_hash = field.Text()
 
         def check_password(self, pwd):
@@ -441,7 +450,7 @@ def test_to_dict_ignores_empty_collections():
 
 
 def test_declarative_mapping_definition():
-    assert issubclass(MyDoc, document.Document)
+    assert issubclass(MyDoc, Document)
     assert hasattr(MyDoc, "_doc_type")
     assert {
         "properties": {
@@ -454,7 +463,7 @@ def test_declarative_mapping_definition():
 
 
 def test_you_can_supply_own_mapping_instance():
-    class MyD(document.Document):
+    class MyD(Document):
         title = field.Text()
 
         class Meta:
@@ -497,7 +506,7 @@ def test_invalid_date_will_raise_exception():
 
 def test_document_inheritance():
     assert issubclass(MySubDoc, MyDoc)
-    assert issubclass(MySubDoc, document.Document)
+    assert issubclass(MySubDoc, Document)
     assert hasattr(MySubDoc, "_doc_type")
     assert {
         "properties": {
@@ -510,7 +519,7 @@ def test_document_inheritance():
 
 
 def test_child_class_can_override_parent():
-    class A(document.Document):
+    class A(Document):
         o = field.Object(dynamic=False, properties={"a": field.Text()})
 
     class B(A):
@@ -540,7 +549,7 @@ def test_meta_fields_are_stored_in_meta_and_ignored_by_to_dict():
 def test_index_inheritance():
     assert issubclass(MyMultiSubDoc, MySubDoc)
     assert issubclass(MyMultiSubDoc, MyDoc2)
-    assert issubclass(MyMultiSubDoc, document.Document)
+    assert issubclass(MyMultiSubDoc, Document)
     assert hasattr(MyMultiSubDoc, "_doc_type")
     assert hasattr(MyMultiSubDoc, "_index")
     assert {
@@ -601,7 +610,7 @@ def test_from_es_respects_underscored_non_meta_fields():
         },
     }
 
-    class Company(document.Document):
+    class Company(Document):
         class Index:
             name = "test-company"
 

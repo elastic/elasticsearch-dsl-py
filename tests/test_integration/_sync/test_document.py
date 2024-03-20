@@ -27,11 +27,14 @@ from elasticsearch_dsl import (
     Binary,
     Boolean,
     Date,
+    Document,
     Double,
+    InnerDoc,
     Ip,
     Keyword,
     Long,
     Mapping,
+    MetaField,
     Nested,
     Object,
     Q,
@@ -39,7 +42,6 @@ from elasticsearch_dsl import (
     Text,
     analyzer,
 )
-from elasticsearch_dsl._sync.document import Document, InnerDoc, MetaField
 from elasticsearch_dsl.utils import AttrList
 
 snowball = analyzer("my_snow", tokenizer="standard", filter=["lowercase", "snowball"])

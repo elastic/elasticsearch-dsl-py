@@ -24,14 +24,17 @@ from pytest import raises
 from pytz import timezone
 
 from elasticsearch_dsl import (
+    AsyncDocument,
     Binary,
     Boolean,
     Date,
     Double,
+    InnerDoc,
     Ip,
     Keyword,
     Long,
     Mapping,
+    MetaField,
     Nested,
     Object,
     Q,
@@ -39,7 +42,6 @@ from elasticsearch_dsl import (
     Text,
     analyzer,
 )
-from elasticsearch_dsl._async.document import AsyncDocument, InnerDoc, MetaField
 from elasticsearch_dsl.utils import AttrList
 
 snowball = analyzer("my_snow", tokenizer="standard", filter=["lowercase", "snowball"])

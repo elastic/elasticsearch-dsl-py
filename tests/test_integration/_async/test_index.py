@@ -15,9 +15,14 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl import Date, Text, analysis
-from elasticsearch_dsl._async.document import AsyncDocument
-from elasticsearch_dsl._async.index import AsyncIndex, AsyncIndexTemplate
+from elasticsearch_dsl import (
+    AsyncDocument,
+    AsyncIndex,
+    AsyncIndexTemplate,
+    Date,
+    Text,
+    analysis,
+)
 
 
 class Post(AsyncDocument):

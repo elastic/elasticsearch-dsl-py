@@ -21,7 +21,6 @@ from elasticsearch.exceptions import NotFoundError, RequestError
 
 from .._async.index import AsyncIndex
 from ..async_connections import get_connection
-from ..document_base import *  # noqa: F401, F403
 from ..document_base import DocumentBase, DocumentMeta
 from ..exceptions import IllegalOperation
 from ..utils import DOC_META_FIELDS, META_FIELDS, merge

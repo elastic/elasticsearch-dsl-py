@@ -15,4 +15,5 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from elasticsearch_dsl._async.mapping import AsyncMapping  # noqa: F401
 from elasticsearch_dsl._sync.mapping import Mapping  # noqa: F401

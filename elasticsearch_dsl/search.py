@@ -15,5 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from elasticsearch_dsl._async.search import AsyncMultiSearch, AsyncSearch  # noqa: F401
 from elasticsearch_dsl._sync.search import MultiSearch, Search  # noqa: F401
 from elasticsearch_dsl.search_base import Q  # noqa: F401

@@ -15,4 +15,5 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from ._async.update_by_query import AsyncUpdateByQuery  # noqa: F401
 from ._sync.update_by_query import UpdateByQuery  # noqa: F401
