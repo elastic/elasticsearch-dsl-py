@@ -40,6 +40,7 @@ def main(check=False):
         "AsyncIndex": "Index",
         "AsyncUpdateByQuery": "UpdateByQuery",
         "AsyncMapping": "Mapping",
+        "AsyncFacetedSearch": "FacetedSearch",
         "async_connections": "connections",
         "async_scan": "scan",
         "async_mock_client": "mock_client",

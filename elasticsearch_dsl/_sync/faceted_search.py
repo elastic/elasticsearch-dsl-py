@@ -15,14 +15,26 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl._async.faceted_search import AsyncFacetedSearch  # noqa: F401
-from elasticsearch_dsl._sync.faceted_search import FacetedSearch  # noqa: F401
-from elasticsearch_dsl.faceted_search_base import (  # noqa: F401
-    DateHistogramFacet,
-    Facet,
-    FacetedResponse,
-    HistogramFacet,
-    NestedFacet,
-    RangeFacet,
-    TermsFacet,
-)
+from elasticsearch_dsl.faceted_search_base import FacetedResponse, FacetedSearchBase
+
+from .search import Search
+
+
+class FacetedSearch(FacetedSearchBase):
+    def search(self):
+        """
+        Returns the base Search object to which the facets are added.
+
+        You can customize the query by overriding this method and returning a
+        modified search object.
+        """
+        s = Search(doc_type=self.doc_types, index=self.index, using=self.using)
+        return s.response_class(FacetedResponse)
+
+    def execute(self):
+        """
+        Execute the search and return the response.
+        """
+        r = self._s.execute()
+        r._faceted_search = self
+        return r

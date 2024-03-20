@@ -28,7 +28,7 @@ from elasticsearch_dsl.faceted_search import (
     TermsFacet,
 )
 
-from ._sync.test_document import PullRequest
+from .test_document import PullRequest
 
 
 class Repos(Document):
