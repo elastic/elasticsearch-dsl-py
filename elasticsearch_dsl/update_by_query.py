@@ -154,6 +154,6 @@ class UpdateByQuery(Request):
 
         self._response = self._response_class(
             self,
-            es.update_by_query(index=self._index, body=self.to_dict(), **self._params),
+            es.update_by_query(index=self._index, **self.to_dict(), **self._params),
         )
         return self._response

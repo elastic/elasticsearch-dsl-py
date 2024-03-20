@@ -14,9 +14,17 @@ The ``Search`` object represents the entire search request:
 
   * aggregations
 
+  * k-nearest neighbor searches
+
   * sort
 
   * pagination
+
+  * highlighting
+
+  * suggestions
+
+  * collapsing
 
   * additional parameters
 
@@ -346,6 +354,31 @@ As opposed to other methods on the ``Search`` objects, defining aggregations is
 done in-place (does not return a copy).
 
 
+K-Nearest Neighbor Searches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To issue a kNN search, use the ``.knn()`` method:
+
+.. code:: python
+
+   s = Search()
+   vector = get_embedding("search text")
+
+   s = s.knn(
+       field="embedding",
+       k=5,
+       num_candidates=10,
+       query_vector=vector
+   )
+
+The ``field``, ``k`` and ``num_candidates`` arguments can be given as
+positional or keyword arguments and are required. In addition to these,
+``query_vector`` or ``query_vector_builder`` must be given as well.
+
+The ``.knn()`` method can be invoked multiple times to include multiple kNN
+searches in the request.
+
+
 Sorting
 ~~~~~~~
 
@@ -433,7 +466,26 @@ keyword arguments will be added to the suggest's json as-is which means that it
 should be one of ``term``, ``phrase`` or ``completion`` to indicate which type
 of suggester should be used.
 
+Collapsing
+~~~~~~~~~~
 
+To collapse search results use the ``collapse`` method on your ``Search`` object:
+
+.. code:: python
+
+    s = Search().query("match", message="GET /search")
+    # collapse results by user_id
+    s = s.collapse("user_id")
+
+The top hits will only include one result per ``user_id``. You can also expand
+each collapsed top hit with the ``inner_hits`` parameter,
+``max_concurrent_group_searches`` being the number of concurrent requests
+allowed to retrieve the inner hits per group:
+
+.. code:: python
+
+    inner_hits = {"name": "recent_search", "size": 5, "sort": [{"@timestamp": "desc"}]}
+    s = s.collapse("user_id", inner_hits=inner_hits, max_concurrent_group_searches=4)
 
 More Like This Query
 ~~~~~~~~~~~~~~~~~~~~

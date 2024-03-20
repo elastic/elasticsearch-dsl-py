@@ -16,7 +16,7 @@
 #  under the License.
 
 
-from elasticsearch import TransportError
+from elasticsearch import ApiError
 from pytest import raises
 
 from elasticsearch_dsl import Date, Document, Keyword, MultiSearch, Q, Search, Text
@@ -152,7 +152,7 @@ def test_multi_missing(data_client):
     ms = MultiSearch()
     ms = ms.add(s1).add(s2).add(s3)
 
-    with raises(TransportError):
+    with raises(ApiError):
         ms.execute()
 
     r1, r2, r3 = ms.execute(raise_on_error=False)

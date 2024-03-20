@@ -35,6 +35,7 @@ SOURCE_FILES = (
         "3.9",
         "3.10",
         "3.11",
+        "3.12",
     ]
 )
 def test(session):
@@ -52,9 +53,9 @@ def test(session):
     session.run("pytest", *argv)
 
 
-@nox.session()
+@nox.session(python="3.12")
 def format(session):
-    session.install("black~=23.0", "isort")
+    session.install("black~=24.0", "isort")
     session.run("black", "--target-version=py37", *SOURCE_FILES)
     session.run("isort", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
@@ -62,9 +63,9 @@ def format(session):
     lint(session)
 
 
-@nox.session
+@nox.session(python="3.12")
 def lint(session):
-    session.install("flake8", "black~=23.0", "isort")
+    session.install("flake8", "black~=24.0", "isort")
     session.run("black", "--check", "--target-version=py37", *SOURCE_FILES)
     session.run("isort", "--check", *SOURCE_FILES)
     session.run("flake8", "--ignore=E501,E741,W503", *SOURCE_FILES)
@@ -73,6 +74,6 @@ def lint(session):
 
 @nox.session()
 def docs(session):
-    session.install(".[develop]", "sphinx-rtd-theme")
+    session.install(".[develop]")
 
-    session.run("sphinx-build", "docs/", "docs/_build", "-b", "html")
+    session.run("sphinx-build", "docs/", "docs/_build", "-b", "html", "-W")

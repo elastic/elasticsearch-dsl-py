@@ -40,7 +40,7 @@ def test_agg_response_is_pickleable(agg_response):
 
 
 def test_response_is_pickleable(dummy_response):
-    res = response.Response(Search(), dummy_response)
+    res = response.Response(Search(), dummy_response.body)
     res.hits
     r = pickle.loads(pickle.dumps(res))
 

@@ -211,9 +211,13 @@ class MultiplexerTokenFilter(CustomTokenFilter):
         if "filters" in d:
             d["filters"] = [
                 # comma delimited string given by user
-                fs if isinstance(fs, str) else
-                # list of strings or TokenFilter objects
-                ", ".join(f.to_dict() if hasattr(f, "to_dict") else f for f in fs)
+                (
+                    fs
+                    if isinstance(fs, str)
+                    else
+                    # list of strings or TokenFilter objects
+                    ", ".join(f.to_dict() if hasattr(f, "to_dict") else f for f in fs)
+                )
                 for fs in self.filters
             ]
         return d

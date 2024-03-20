@@ -26,9 +26,10 @@ class Connections:
     singleton in this module.
     """
 
-    def __init__(self):
+    def __init__(self, *, elasticsearch_class=Elasticsearch):
         self._kwargs = {}
         self._conns = {}
+        self.elasticsearch_class = elasticsearch_class
 
     def configure(self, **kwargs):
         """
@@ -80,7 +81,7 @@ class Connections:
         it under given alias.
         """
         kwargs.setdefault("serializer", serializer)
-        conn = self._conns[alias] = Elasticsearch(**kwargs)
+        conn = self._conns[alias] = self.elasticsearch_class(**kwargs)
         return conn
 
     def get_connection(self, alias="default"):

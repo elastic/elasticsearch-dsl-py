@@ -3,6 +3,45 @@
 Changelog
 =========
 
+8.12.0 (2024-01-18)
+-------------------
+
+* Added ``Search.knn()`` method  (`#1691`_)
+* Added ``Search.rank()`` method (undocumented as it still is in technical preview) (`#1692`_)
+* Fixed importing collapse from dictionary (`#1689`_)
+
+.. _#1689: https://github.com/elastic/elasticsearch-dsl-py/pull/1689
+.. _#1691: https://github.com/elastic/elasticsearch-dsl-py/pull/1691
+.. _#1692: https://github.com/elastic/elasticsearch-dsl-py/pull/1692
+
+8.11.0 (2023-11-13)
+-------------------
+
+* Added support for Python 3.12 (`#1680`_)
+* Added ``Search.collapse()`` (`#1649`_, contributed by `@qcoumes`_)
+
+.. _@qcoumes: https://github.com/qcoumes
+.. _#1680: https://github.com/elastic/elasticsearch-dsl-py/pull/1680
+.. _#1649: https://github.com/elastic/elasticsearch-dsl-py/pull/1649
+
+8.9.0 (2023-09-07)
+------------------
+
+* Added Elasticsearch 8.x support (`#1664`_)
+* Dropped support for Python 2.7 and 3.5 (`#1606`_, contributed by `@hugovk`_)
+* Added support for Python 3.10 and 3.11 (`#1608`_, contributed by `@hugovk`_)
+* Added the ``MultiTerms`` aggregation (`#1543`_, contributed by `@Telomeraz`_)
+* Added the ``CombinedFields`` query (`#1557`_, contributed by `@Telomeraz`_)
+
+.. _@Telomeraz: https://github.com/Telomeraz
+.. _@hugovk: https://github.com/hugovk
+.. _#1664: https://github.com/elastic/elasticsearch-dsl-py/pull/1664
+.. _#1606: https://github.com/elastic/elasticsearch-dsl-py/pull/1606
+.. _#1608: https://github.com/elastic/elasticsearch-dsl-py/pull/1608
+.. _#1543: https://github.com/elastic/elasticsearch-dsl-py/pull/1543
+.. _#1557: https://github.com/elastic/elasticsearch-dsl-py/pull/1557
+
+
 7.4.1 (2023-03-01)
 ------------------
 

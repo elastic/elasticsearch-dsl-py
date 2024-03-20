@@ -18,13 +18,13 @@
 import collections.abc
 import copy
 
-from elasticsearch.exceptions import NotFoundError, TransportError
+from elasticsearch.exceptions import ApiError, NotFoundError
 from elasticsearch.helpers import scan
 
 from .aggs import A, AggBase
 from .connections import get_connection
 from .exceptions import IllegalOperation
-from .query import Bool, Q
+from .query import Bool, Q, Query
 from .response import Hit, Response
 from .utils import AttrDict, DslBase, recursive_to_dict
 
@@ -318,6 +318,9 @@ class Search(Request):
 
         self.aggs = AggsProxy(self)
         self._sort = []
+        self._knn = []
+        self._rank = {}
+        self._collapse = {}
         self._source = None
         self._highlight = {}
         self._highlight_opts = {}
@@ -405,6 +408,9 @@ class Search(Request):
         s = super()._clone()
 
         s._response_class = self._response_class
+        s._knn = [knn.copy() for knn in self._knn]
+        s._rank = self._rank.copy()
+        s._collapse = self._collapse.copy()
         s._sort = self._sort[:]
         s._source = copy.copy(self._source) if self._source is not None else None
         s._highlight = self._highlight.copy()
@@ -443,6 +449,14 @@ class Search(Request):
             self.aggs._params = {
                 "aggs": {name: A(value) for (name, value) in aggs.items()}
             }
+        if "knn" in d:
+            self._knn = d.pop("knn")
+            if isinstance(self._knn, dict):
+                self._knn = [self._knn]
+        if "rank" in d:
+            self._rank = d.pop("rank")
+        if "collapse" in d:
+            self._collapse = d.pop("collapse")
         if "sort" in d:
             self._sort = d.pop("sort")
         if "_source" in d:
@@ -488,6 +502,85 @@ class Search(Request):
             if isinstance(kwargs[name], str):
                 kwargs[name] = {"script": kwargs[name]}
         s._script_fields.update(kwargs)
+        return s
+
+    def knn(
+        self,
+        field,
+        k,
+        num_candidates,
+        query_vector=None,
+        query_vector_builder=None,
+        boost=None,
+        filter=None,
+        similarity=None,
+    ):
+        """
+        Add a k-nearest neighbor (kNN) search.
+
+        :arg field: the name of the vector field to search against
+        :arg k: number of nearest neighbors to return as top hits
+        :arg num_candidates: number of nearest neighbor candidates to consider per shard
+        :arg query_vector: the vector to search for
+        :arg query_vector_builder: A dictionary indicating how to build a query vector
+        :arg boost: A floating-point boost factor for kNN scores
+        :arg filter: query to filter the documents that can match
+        :arg similarity: the minimum similarity required for a document to be considered a match, as a float value
+
+        Example::
+
+            s = Search()
+            s = s.knn(field='embedding', k=5, num_candidates=10, query_vector=vector,
+                      filter=Q('term', category='blog')))
+        """
+        s = self._clone()
+        s._knn.append(
+            {
+                "field": field,
+                "k": k,
+                "num_candidates": num_candidates,
+            }
+        )
+        if query_vector is None and query_vector_builder is None:
+            raise ValueError("one of query_vector and query_vector_builder is required")
+        if query_vector is not None and query_vector_builder is not None:
+            raise ValueError(
+                "only one of query_vector and query_vector_builder must be given"
+            )
+        if query_vector is not None:
+            s._knn[-1]["query_vector"] = query_vector
+        if query_vector_builder is not None:
+            s._knn[-1]["query_vector_builder"] = query_vector_builder
+        if boost is not None:
+            s._knn[-1]["boost"] = boost
+        if filter is not None:
+            if isinstance(filter, Query):
+                s._knn[-1]["filter"] = filter.to_dict()
+            else:
+                s._knn[-1]["filter"] = filter
+        if similarity is not None:
+            s._knn[-1]["similarity"] = similarity
+        return s
+
+    def rank(self, rrf=None):
+        """
+        Defines a method for combining and ranking results sets from a combination
+        of searches. Requires a minimum of 2 results sets.
+
+        :arg rrf: Set to ``True`` or an options dictionary to set the rank method to reciprocal rank fusion (RRF).
+
+        Example::
+            s = Search()
+            s = s.query('match', content='search text')
+            s = s.knn(field='embedding', k=5, num_candidates=10, query_vector=vector)
+            s = s.rank(rrf=True)
+
+        Note: This option is in technical preview and may change in the future. The syntax will likely change before GA.
+        """
+        s = self._clone()
+        s._rank = {}
+        if rrf is not None and rrf is not False:
+            s._rank["rrf"] = {} if rrf is True else rrf
         return s
 
     def source(self, fields=None, **kwargs):
@@ -566,6 +659,27 @@ class Search(Request):
                     raise IllegalOperation("Sorting by `-_score` is not allowed.")
                 k = {k[1:]: {"order": "desc"}}
             s._sort.append(k)
+        return s
+
+    def collapse(self, field=None, inner_hits=None, max_concurrent_group_searches=None):
+        """
+        Add collapsing information to the search request.
+        If called without providing ``field``, it will remove all collapse
+        requirements, otherwise it will replace them with the provided
+        arguments.
+        The API returns a copy of the Search object and can thus be chained.
+        """
+        s = self._clone()
+        s._collapse = {}
+
+        if field is None:
+            return s
+
+        s._collapse["field"] = field
+        if inner_hits:
+            s._collapse["inner_hits"] = inner_hits
+        if max_concurrent_group_searches:
+            s._collapse["max_concurrent_group_searches"] = max_concurrent_group_searches
         return s
 
     def highlight_options(self, **kwargs):
@@ -652,6 +766,15 @@ class Search(Request):
         if self.query:
             d["query"] = self.query.to_dict()
 
+        if self._knn:
+            if len(self._knn) == 1:
+                d["knn"] = self._knn[0]
+            else:
+                d["knn"] = self._knn
+
+        if self._rank:
+            d["rank"] = self._rank
+
         # count request doesn't care for sorting and other things
         if not count:
             if self.post_filter:
@@ -662,6 +785,9 @@ class Search(Request):
 
             if self._sort:
                 d["sort"] = self._sort
+
+            if self._collapse:
+                d["collapse"] = self._collapse
 
             d.update(recursive_to_dict(self._extra))
 
@@ -693,7 +819,8 @@ class Search(Request):
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
-        return es.count(index=self._index, body=d, **self._params)["count"]
+        resp = es.count(index=self._index, query=d.get("query", None), **self._params)
+        return resp["count"]
 
     def execute(self, ignore_cache=False):
         """
@@ -707,7 +834,8 @@ class Search(Request):
             es = get_connection(self._using)
 
             self._response = self._response_class(
-                self, es.search(index=self._index, body=self.to_dict(), **self._params)
+                self,
+                es.search(index=self._index, body=self.to_dict(), **self._params).body,
             )
         return self._response
 
@@ -847,7 +975,7 @@ class MultiSearch(Request):
             for s, r in zip(self._searches, responses["responses"]):
                 if r.get("error", False):
                     if raise_on_error:
-                        raise TransportError("N/A", r["error"]["type"], r["error"])
+                        raise ApiError("N/A", meta=responses.meta, body=r)
                     r = None
                 else:
                     r = Response(s, r)

@@ -234,6 +234,72 @@ def test_doc_type_document_class():
     assert s._doc_type_map == {}
 
 
+def test_knn():
+    s = search.Search()
+
+    with raises(TypeError):
+        s.knn()
+    with raises(TypeError):
+        s.knn("field")
+    with raises(TypeError):
+        s.knn("field", 5)
+    with raises(ValueError):
+        s.knn("field", 5, 100)
+    with raises(ValueError):
+        s.knn("field", 5, 100, query_vector=[1, 2, 3], query_vector_builder={})
+
+    s = s.knn("field", 5, 100, query_vector=[1, 2, 3])
+    assert {
+        "knn": {
+            "field": "field",
+            "k": 5,
+            "num_candidates": 100,
+            "query_vector": [1, 2, 3],
+        }
+    } == s.to_dict()
+
+    s = s.knn(
+        k=4,
+        num_candidates=40,
+        boost=0.8,
+        field="name",
+        query_vector_builder={
+            "text_embedding": {"model_id": "foo", "model_text": "search text"}
+        },
+    )
+    assert {
+        "knn": [
+            {
+                "field": "field",
+                "k": 5,
+                "num_candidates": 100,
+                "query_vector": [1, 2, 3],
+            },
+            {
+                "field": "name",
+                "k": 4,
+                "num_candidates": 40,
+                "query_vector_builder": {
+                    "text_embedding": {"model_id": "foo", "model_text": "search text"}
+                },
+                "boost": 0.8,
+            },
+        ]
+    } == s.to_dict()
+
+
+def test_rank():
+    s = search.Search()
+    s.rank(rrf=False)
+    assert {} == s.to_dict()
+
+    s = s.rank(rrf=True)
+    assert {"rank": {"rrf": {}}} == s.to_dict()
+
+    s = s.rank(rrf={"window_size": 50, "rank_constant": 20})
+    assert {"rank": {"rrf": {"window_size": 50, "rank_constant": 20}}} == s.to_dict()
+
+
 def test_sort():
     s = search.Search()
     s = s.sort("fielda", "-fieldb")
@@ -254,6 +320,38 @@ def test_sort_by_score():
     s = search.Search()
     with raises(IllegalOperation):
         s.sort("-_score")
+
+
+def test_collapse():
+    s = search.Search()
+
+    inner_hits = {"name": "most_recent", "size": 5, "sort": [{"@timestamp": "desc"}]}
+    s = s.collapse("user.id", inner_hits=inner_hits, max_concurrent_group_searches=4)
+
+    assert {
+        "field": "user.id",
+        "inner_hits": {
+            "name": "most_recent",
+            "size": 5,
+            "sort": [{"@timestamp": "desc"}],
+        },
+        "max_concurrent_group_searches": 4,
+    } == s._collapse
+    assert {
+        "collapse": {
+            "field": "user.id",
+            "inner_hits": {
+                "name": "most_recent",
+                "size": 5,
+                "sort": [{"@timestamp": "desc"}],
+            },
+            "max_concurrent_group_searches": 4,
+        }
+    } == s.to_dict()
+
+    s = s.collapse()
+    assert {} == s._collapse
+    assert search.Search().to_dict() == s.to_dict()
 
 
 def test_slice():
@@ -305,6 +403,7 @@ def test_complex_example():
         s.query("match", title="python")
         .query(~Q("match", title="ruby"))
         .filter(Q("term", category="meetup") | Q("term", category="conference"))
+        .collapse("user_id")
         .post_filter("terms", tags=["prague", "czech"])
         .script_fields(more_attendees="doc['attendees'].value + 42")
     )
@@ -342,6 +441,7 @@ def test_complex_example():
                 "aggs": {"avg_attendees": {"avg": {"field": "attendees"}}},
             }
         },
+        "collapse": {"field": "user_id"},
         "highlight": {
             "order": "score",
             "fields": {"title": {"fragment_size": 50}, "body": {"fragment_size": 50}},
@@ -510,10 +610,12 @@ def test_update_from_dict():
     s = search.Search()
     s.update_from_dict({"indices_boost": [{"important-documents": 2}]})
     s.update_from_dict({"_source": ["id", "name"]})
+    s.update_from_dict({"collapse": {"field": "user_id"}})
 
     assert {
         "indices_boost": [{"important-documents": 2}],
         "_source": ["id", "name"],
+        "collapse": {"field": "user_id"},
     } == s.to_dict()
 
 

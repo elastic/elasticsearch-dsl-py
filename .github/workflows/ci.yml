@@ -12,7 +12,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python3 -m pip install setuptools wheel twine
@@ -32,7 +32,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python3 -m pip install nox
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python3 -m pip install nox
@@ -66,8 +66,9 @@ jobs:
           "3.9",
           "3.10",
           "3.11",
+          "3.12",
         ]
-        es-version: [7.0.0, 7.10.0]
+        es-version: [8.0.0, 8.11.0]
 
     steps:
       - name: Checkout Repository
@@ -76,13 +77,13 @@ jobs:
         run: |
           mkdir /tmp/elasticsearch
           wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${{ matrix.es-version }}-linux-x86_64.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
-          /tmp/elasticsearch/bin/elasticsearch -d
+          /tmp/elasticsearch/bin/elasticsearch -E xpack.security.enabled=false -E discovery.type=single-node -d
       - name: Setup Python - ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up Python for Nox
-        if: matrix.python-version != '3.11'
+        if: matrix.python-version != '3.12'
         uses: actions/setup-python@v4
         with:
           python-version: 3
@@ -92,3 +93,5 @@ jobs:
       - name: Run Tests
         run: |
           nox -rs test-${{ matrix.python-version }}
+        env:
+          WAIT_FOR_ES: "1"

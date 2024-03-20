@@ -19,7 +19,7 @@ from os.path import dirname, join
 
 from setuptools import find_packages, setup
 
-VERSION = (8, 0, 0)
+VERSION = (8, 12, 0)
 __version__ = VERSION
 __versionstr__ = ".".join(map(str, VERSION))
 
@@ -29,17 +29,18 @@ f.close()
 
 install_requires = [
     "python-dateutil",
-    "elasticsearch>=7.0.0,<8.0.0",
+    "elasticsearch>=8.0.0,<9.0.0",
 ]
 
 develop_requires = [
-    "pytest>=3.0.0",
+    "pytest",
     "pytest-cov",
-    "pytest-mock<3.0.0",
+    "pytest-mock",
     "pytz",
-    "coverage<5.0.0",
-    "sphinx",
-    "sphinx_rtd_theme",
+    "coverage",
+    # Override Read the Docs default (sphinx<2 and sphinx-rtd-theme<0.5)
+    "sphinx>2",
+    "sphinx-rtd-theme>0.5",
 ]
 
 setup(
@@ -67,6 +68,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
