@@ -299,6 +299,25 @@ class Request:
         return s
 
 
+
+
+def _reverse_sort_entry(sort_entry):
+    # "field"
+    if isinstance(sort_entry, string_types):
+        if sort_entry == '_score':
+            return {'_score': 'asc'}
+        return {sort_entry: 'desc'}
+
+    f, sort_entry = sort_entry.copy().popitem()
+    # {"field": "asc/desc"}
+    if isinstance(sort_entry, string_types):
+        return {f: 'asc' if sort_entry == 'desc' else 'desc'}
+
+    # {"field": {"order": "asc/desc"}}
+    sort_entry = sort_entry.copy()
+    sort_entry['order'] = 'asc' if sort_entry['order'] == 'desc' else 'desc'
+    return {f: sort_entry}
+
 class Search(Request):
     query = ProxyDescriptor("query")
     post_filter = ProxyDescriptor("post_filter")
@@ -376,6 +395,56 @@ class Search(Request):
             s._extra["from"] = n
             s._extra["size"] = 1
             return s
+
+    def get_page_count(self, size=None):
+        size = size if size is not None else self._extra.get("size", 10)
+        if size == 0:
+            return 0
+        pages, docs_left = divmod(self.count(), size)
+        if docs_left:
+            pages += 1
+        return pages
+
+    def get_page(self, page_no, size=None):
+        if page_no == 0:
+            raise ValueError("Search pagination is 1-based.")
+        size = size if size is not None else self._extra.get("size", 10)
+        s = self._clone()
+        s._extra["from"] = size * (abs(page_no) - 1)
+        s._extra["size"] = size
+
+        # reverse the sort order when pagination from back
+        if page_no < 0:
+            s._sort = [_reverse_sort_entry(se) for se in self._sort]
+
+        resp = s.execute()
+
+        # reverse the hits in the page when pagination from back
+        if page_no < 0:
+            resp['hits']['hits'] = resp.to_dict()['hits']['hits'][::-1]
+
+        return resp
+
+    def get_next_page(self, last_hit, size=None):
+        size = size if size is not None else self._extra.get("size", 10)
+        s = self._clone()
+        s._extra["from"] = 0
+        s._extra["size"] = size
+        s._extra["search_after"] = list(last_hit)
+        return s.execute()
+
+    def get_previous_page(self, first_hit, size=None):
+        size = size if size is not None else self._extra.get("size", 10)
+        s = self._clone()
+        s._extra["from"] = 0
+        s._extra["size"] = size
+        s._extra["search_after"] = list(first_hit)
+        # reverse the sort order
+        s._sort = [_reverse_sort_entry(se) for se in self._sort]
+        resp = s.execute()
+        # reverse the hits in the page
+        resp['hits']['hits'] = resp.to_dict()['hits']['hits'][::-1]
+        return resp
 
     @classmethod
     def from_dict(cls, d):
