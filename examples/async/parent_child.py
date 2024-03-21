@@ -39,13 +39,14 @@ It is used to showcase several key features of elasticsearch-dsl:
           particular parent
 
 """
+import asyncio
 import os
 from datetime import datetime
 
 from elasticsearch_dsl import (
+    AsyncDocument,
     Boolean,
     Date,
-    Document,
     InnerDoc,
     Join,
     Keyword,
@@ -53,7 +54,7 @@ from elasticsearch_dsl import (
     Nested,
     Object,
     Text,
-    connections,
+    async_connections,
 )
 
 
@@ -79,7 +80,7 @@ class Comment(InnerDoc):
     content = Text(required=True)
 
 
-class Post(Document):
+class Post(AsyncDocument):
     """
     Base class for Question and Answer containing the common fields.
     """
@@ -103,18 +104,18 @@ class Post(Document):
             "number_of_replicas": 0,
         }
 
-    def add_comment(self, user, content, created=None, commit=True):
+    async def add_comment(self, user, content, created=None, commit=True):
         c = Comment(author=user, content=content, created=created or datetime.now())
         self.comments.append(c)
         if commit:
-            self.save()
+            await self.save()
         return c
 
-    def save(self, **kwargs):
+    async def save(self, **kwargs):
         # if there is no date, use now
         if self.created is None:
             self.created = datetime.now()
-        return super().save(**kwargs)
+        return await super().save(**kwargs)
 
 
 class Question(Post):
@@ -131,7 +132,7 @@ class Question(Post):
     def search(cls, **kwargs):
         return cls._index.search(**kwargs).filter("term", question_answer="question")
 
-    def add_answer(self, user, body, created=None, accepted=False, commit=True):
+    async def add_answer(self, user, body, created=None, accepted=False, commit=True):
         answer = Answer(
             # required make sure the answer is stored in the same shard
             _routing=self.meta.id,
@@ -146,7 +147,7 @@ class Question(Post):
             accepted=accepted,
         )
         if commit:
-            answer.save()
+            await answer.save()
         return answer
 
     def search_answers(self):
@@ -167,9 +168,9 @@ class Question(Post):
             return self.meta.inner_hits.answer.hits
         return list(self.search_answers())
 
-    def save(self, **kwargs):
+    async def save(self, **kwargs):
         self.question_answer = "question"
-        return super().save(**kwargs)
+        return await super().save(**kwargs)
 
 
 class Answer(Post):
@@ -188,33 +189,33 @@ class Answer(Post):
         return cls._index.search(**kwargs).exclude("term", question_answer="question")
 
     @property
-    def question(self):
+    async def question(self):
         # cache question in self.meta
         # any attributes set on self would be interpretted as fields
         if "question" not in self.meta:
-            self.meta.question = Question.get(
+            self.meta.question = await Question.get(
                 id=self.question_answer.parent, index=self.meta.index
             )
         return self.meta.question
 
-    def save(self, **kwargs):
+    async def save(self, **kwargs):
         # set routing to parents id automatically
         self.meta.routing = self.question_answer.parent
-        return super().save(**kwargs)
+        return await super().save(**kwargs)
 
 
-def setup():
+async def setup():
     """Create an IndexTemplate and save it into elasticsearch."""
     index_template = Post._index.as_template("base")
-    index_template.save()
+    await index_template.save()
 
 
-if __name__ == "__main__":
+async def main():
     # initiate the default connection to elasticsearch
-    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create index
-    setup()
+    await setup()
 
     # user objects to use
     nick = User(
@@ -242,5 +243,14 @@ if __name__ == "__main__":
         I want to use elasticsearch, how do I do it from Python?
         """,
     )
-    question.save()
-    answer = question.add_answer(honza, "Just use `elasticsearch-py`!")
+    await question.save()
+    answer = await question.add_answer(honza, "Just use `elasticsearch-py`!")
+
+    # close the connection
+    await async_connections.get_connection().close()
+
+    return answer
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

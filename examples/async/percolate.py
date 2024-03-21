@@ -15,20 +15,21 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import asyncio
 import os
 
 from elasticsearch_dsl import (
-    Document,
+    AsyncDocument,
     Keyword,
     Percolator,
     Q,
     Search,
     Text,
-    connections,
+    async_connections,
 )
 
 
-class BlogPost(Document):
+class BlogPost(AsyncDocument):
     """
     Blog posts that will be automatically tagged based on percolation queries.
     """
@@ -53,12 +54,12 @@ class BlogPost(Document):
         # make sure tags are unique
         self.tags = list(set(self.tags))
 
-    def save(self, **kwargs):
+    async def save(self, **kwargs):
         self.add_tags()
-        return super().save(**kwargs)
+        return await super().save(**kwargs)
 
 
-class PercolatorDoc(Document):
+class PercolatorDoc(AsyncDocument):
     """
     Document class used for storing the percolation queries.
     """
@@ -78,21 +79,28 @@ class PercolatorDoc(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-def setup():
+async def setup():
     # create the percolator index if it doesn't exist
-    if not PercolatorDoc._index.exists():
+    if not await PercolatorDoc._index.exists():
         PercolatorDoc.init()
 
     # register a percolation query looking for documents about python
-    PercolatorDoc(
+    await PercolatorDoc(
         _id="python",
         tags=["programming", "development", "python"],
         query=Q("match", content="python"),
     ).save(refresh=True)
 
 
-if __name__ == "__main__":
+async def main():
     # initiate the default connection to elasticsearch
-    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
-    setup()
+    await setup()
+
+    # close the connection
+    await async_connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

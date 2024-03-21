@@ -35,17 +35,17 @@ Key concepts:
       will have index set to the concrete index whereas the class refers to the
       alias.
 """
-import os
+import asyncio
 from datetime import datetime
 from fnmatch import fnmatch
 
-from elasticsearch_dsl import Date, Document, Keyword, Text, connections
+from elasticsearch_dsl import AsyncDocument, Date, Keyword, Text, async_connections
 
 ALIAS = "test-blog"
 PATTERN = ALIAS + "-*"
 
 
-class BlogPost(Document):
+class BlogPost(AsyncDocument):
     title = Text()
     published = Date()
     tags = Keyword(multi=True)
@@ -68,7 +68,7 @@ class BlogPost(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-def setup():
+async def setup():
     """
     Create the index template in elasticsearch specifying the mappings and any
     settings to be used. This can be run at any time, ideally at every new code
@@ -78,14 +78,14 @@ def setup():
     index_template = BlogPost._index.as_template(ALIAS, PATTERN)
     # upload the template into elasticsearch
     # potentially overriding the one already there
-    index_template.save()
+    await index_template.save()
 
     # create the first index if it doesn't exist
-    if not BlogPost._index.exists():
-        migrate(move_data=False)
+    if not await BlogPost._index.exists():
+        await migrate(move_data=False)
 
 
-def migrate(move_data=True, update_alias=True):
+async def migrate(move_data=True, update_alias=True):
     """
     Upgrade function that creates a new index for the data. Optionally it also can
     (and by default will) reindex previous copy of the data into the new index
@@ -100,22 +100,22 @@ def migrate(move_data=True, update_alias=True):
     next_index = PATTERN.replace("*", datetime.now().strftime("%Y%m%d%H%M%S%f"))
 
     # get the low level connection
-    es = connections.get_connection()
+    es = async_connections.get_connection()
 
     # create new index, it will use the settings from the template
-    es.indices.create(index=next_index)
+    await es.indices.create(index=next_index)
 
     if move_data:
         # move data from current alias to the new index
-        es.options(request_timeout=3600).reindex(
+        await es.options(request_timeout=3600).reindex(
             body={"source": {"index": ALIAS}, "dest": {"index": next_index}}
         )
         # refresh the index to make the changes visible
-        es.indices.refresh(index=next_index)
+        await es.indices.refresh(index=next_index)
 
     if update_alias:
         # repoint the alias to point to the newly created index
-        es.indices.update_aliases(
+        await es.indices.update_aliases(
             body={
                 "actions": [
                     {"remove": {"alias": ALIAS, "index": PATTERN}},
@@ -125,12 +125,12 @@ def migrate(move_data=True, update_alias=True):
         )
 
 
-if __name__ == "__main__":
+async def main():
     # initiate the default connection to elasticsearch
-    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    async_connections.create_connection(hosts=["http://localhost:9200"])
 
     # create the empty index
-    setup()
+    await setup()
 
     # create a new document
     bp = BlogPost(
@@ -139,7 +139,14 @@ if __name__ == "__main__":
         tags=["testing", "dummy"],
         content=open(__file__).read(),
     )
-    bp.save(refresh=True)
+    await bp.save(refresh=True)
 
     # create new index
-    migrate()
+    await migrate()
+
+    # close the connection
+    await async_connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -25,13 +25,14 @@ within the input.
 To custom analyzer with ascii folding allow search to work in different languages.
 """
 
+import asyncio
 import os
 
 from elasticsearch_dsl import (
-    Document,
+    AsyncDocument,
     SearchAsYouType,
     analyzer,
-    connections,
+    async_connections,
     token_filter,
 )
 from elasticsearch_dsl.query import MultiMatch
@@ -45,7 +46,7 @@ ascii_fold = analyzer(
 )
 
 
-class Person(Document):
+class Person(AsyncDocument):
     name = SearchAsYouType(max_shingle_size=3)
 
     class Index:
@@ -53,12 +54,12 @@ class Person(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-if __name__ == "__main__":
+async def main():
     # initiate the default connection to elasticsearch
-    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create the empty index
-    Person.init()
+    await Person.init()
 
     import pprint
 
@@ -72,10 +73,10 @@ if __name__ == "__main__":
         "Jára Cimrman",
     ]
     for id, name in enumerate(names):
-        Person(_id=id, name=name).save()
+        await Person(_id=id, name=name).save()
 
     # refresh index manually to make changes live
-    Person._index.refresh()
+    await Person._index.refresh()
 
     # run some suggestions
     for text in ("já", "Cimr", "toulouse", "Henri Tou", "a"):
@@ -87,8 +88,15 @@ if __name__ == "__main__":
             fields=["name", "name._2gram", "name._3gram"],
         )
 
-        response = s.execute()
+        response = await s.execute()
 
         # print out all the options we got
         for h in response:
             print("%15s: %25s" % (text, h.name))
+
+    # close the connection
+    await async_connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

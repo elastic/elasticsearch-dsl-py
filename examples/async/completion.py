@@ -26,17 +26,18 @@ To make the suggestions work in different languages we added a custom analyzer
 that does ascii folding.
 """
 
+import asyncio
 import os
 from itertools import permutations
 
 from elasticsearch_dsl import (
+    AsyncDocument,
     Completion,
-    Document,
     Keyword,
     Long,
     Text,
     analyzer,
-    connections,
+    async_connections,
     token_filter,
 )
 
@@ -49,7 +50,7 @@ ascii_fold = analyzer(
 )
 
 
-class Person(Document):
+class Person(AsyncDocument):
     name = Text(fields={"keyword": Keyword()})
     popularity = Long()
 
@@ -72,28 +73,35 @@ class Person(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-if __name__ == "__main__":
+async def main():
     # initiate the default connection to elasticsearch
-    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create the empty index
-    Person.init()
+    await Person.init()
 
     # index some sample data
     for id, (name, popularity) in enumerate(
         [("Henri de Toulouse-Lautrec", 42), ("Jára Cimrman", 124)]
     ):
-        Person(_id=id, name=name, popularity=popularity).save()
+        await Person(_id=id, name=name, popularity=popularity).save()
 
     # refresh index manually to make changes live
-    Person._index.refresh()
+    await Person._index.refresh()
 
     # run some suggestions
     for text in ("já", "Jara Cimr", "tou", "de hen"):
         s = Person.search()
         s = s.suggest("auto_complete", text, completion={"field": "suggest"})
-        response = s.execute()
+        response = await s.execute()
 
         # print out all the options we got
         for option in response.suggest.auto_complete[0].options:
             print("%10s: %25s (%d)" % (text, option._source.name, option._score))
+
+    # close the connection
+    await async_connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
