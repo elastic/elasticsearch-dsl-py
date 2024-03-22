@@ -45,7 +45,7 @@ def test_alias_migration(write_client):
     assert BlogPost.search().count() == 1
 
     # _matches work which means we get BlogPost instance
-    bp = BlogPost.search().execute()[0]
+    bp = (BlogPost.search().execute())[0]
     assert isinstance(bp, BlogPost)
     assert not bp.is_published()
     assert "0" == bp.meta.id
@@ -63,6 +63,6 @@ def test_alias_migration(write_client):
     assert BlogPost.search().count() == 1
 
     # _matches work which means we get BlogPost instance
-    bp = BlogPost.search().execute()[0]
+    bp = (BlogPost.search().execute())[0]
     assert isinstance(bp, BlogPost)
     assert "0" == bp.meta.id

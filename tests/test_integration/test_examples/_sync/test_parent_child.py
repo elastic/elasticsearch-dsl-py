@@ -101,5 +101,5 @@ def test_question_answer(write_client, question):
 
     a = q.meta.inner_hits.answer.hits[0]
     assert isinstance(a, Answer)
-    assert isinstance(a.question, Question)
-    assert a.question.meta.id == "1"
+    assert isinstance(a.get_question(), Question)
+    assert (a.get_question()).meta.id == "1"

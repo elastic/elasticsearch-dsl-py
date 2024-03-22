@@ -20,10 +20,10 @@ import os
 
 from elasticsearch_dsl import (
     AsyncDocument,
+    AsyncSearch,
     Keyword,
     Percolator,
     Q,
-    Search,
     Text,
     async_connections,
 )
@@ -40,22 +40,22 @@ class BlogPost(AsyncDocument):
     class Index:
         name = "test-blogpost"
 
-    def add_tags(self):
+    async def add_tags(self):
         # run a percolation to automatically tag the blog post.
-        s = Search(index="test-percolator")
+        s = AsyncSearch(index="test-percolator")
         s = s.query(
             "percolate", field="query", index=self._get_index(), document=self.to_dict()
         )
 
         # collect all the tags from matched percolators
-        for percolator in s:
+        async for percolator in s:
             self.tags.extend(percolator.tags)
 
         # make sure tags are unique
         self.tags = list(set(self.tags))
 
     async def save(self, **kwargs):
-        self.add_tags()
+        await self.add_tags()
         return await super().save(**kwargs)
 
 
@@ -82,7 +82,7 @@ class PercolatorDoc(AsyncDocument):
 async def setup():
     # create the percolator index if it doesn't exist
     if not await PercolatorDoc._index.exists():
-        PercolatorDoc.init()
+        await PercolatorDoc.init()
 
     # register a percolation query looking for documents about python
     await PercolatorDoc(

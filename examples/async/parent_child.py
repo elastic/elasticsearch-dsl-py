@@ -159,14 +159,14 @@ class Question(Post):
         s = s.params(routing=self.meta.id)
         return s
 
-    def get_answers(self):
+    async def get_answers(self):
         """
         Get answers either from inner_hits already present or by searching
         elasticsearch.
         """
         if "inner_hits" in self.meta and "answer" in self.meta.inner_hits:
             return self.meta.inner_hits.answer.hits
-        return list(self.search_answers())
+        return [a async for a in self.search_answers()]
 
     async def save(self, **kwargs):
         self.question_answer = "question"
@@ -188,8 +188,7 @@ class Answer(Post):
     def search(cls, **kwargs):
         return cls._index.search(**kwargs).exclude("term", question_answer="question")
 
-    @property
-    async def question(self):
+    async def get_question(self):
         # cache question in self.meta
         # any attributes set on self would be interpretted as fields
         if "question" not in self.meta:

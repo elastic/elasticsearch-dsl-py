@@ -24,6 +24,12 @@ import unasync
 
 
 def main(check=False):
+    source_dirs = [
+        "elasticsearch_dsl",
+        "tests",
+        "tests/test_integration",
+        "tests/test_integration/test_examples",
+    ]
     output_dir = "_sync" if not check else "_sync_check"
 
     # Unasync all the generated async code
@@ -53,26 +59,12 @@ def main(check=False):
     }
     rules = [
         unasync.Rule(
-            fromdir="/elasticsearch_dsl/_async/",
-            todir=f"/elasticsearch_dsl/{output_dir}/",
+            fromdir=f"{source_dir}/_async/",
+            todir=f"{source_dir}/{output_dir}/",
             additional_replacements=additional_replacements,
-        ),
+        )
+        for source_dir in source_dirs
     ]
-    if not check:
-        rules.append(
-            unasync.Rule(
-                fromdir="/tests/_async/",
-                todir="/tests/_sync/",
-                additional_replacements=additional_replacements,
-            )
-        )
-        rules.append(
-            unasync.Rule(
-                fromdir="/tests/test_integration/_async/",
-                todir="/tests/test_integration/_sync/",
-                additional_replacements=additional_replacements,
-            )
-        )
 
     filepaths = []
     for root, _, filenames in os.walk(Path(__file__).absolute().parent.parent):
@@ -87,19 +79,21 @@ def main(check=False):
 
     if check:
         # make sure there are no differences between _sync and _sync_check
-        subprocess.check_call(
-            ["black", "--target-version=py37", "elasticsearch_dsl/_sync_check/"]
-        )
-        subprocess.check_call(
-            [
-                "diff",
-                "-x",
-                "__pycache__",
-                "elasticsearch_dsl/_sync",
-                "elasticsearch_dsl/_sync_check",
-            ]
-        )
-        subprocess.check_call(["rm", "-rf", "elasticsearch_dsl/_sync_check"])
+        for source_dir in source_dirs:
+            subprocess.check_call(
+                ["black", "--target-version=py38", f"{source_dir}/_sync_check/"]
+            )
+            subprocess.check_call(["isort", f"{source_dir}/_sync_check/"])
+            subprocess.check_call(
+                [
+                    "diff",
+                    "-x",
+                    "__pycache__",
+                    f"{source_dir}/_sync",
+                    f"{source_dir}/_sync_check",
+                ]
+            )
+            subprocess.check_call(["rm", "-rf", f"{source_dir}/_sync_check"])
 
 
 if __name__ == "__main__":

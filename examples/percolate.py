@@ -15,6 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import asyncio
 import os
 
 from elasticsearch_dsl import (
@@ -91,8 +92,15 @@ def setup():
     ).save(refresh=True)
 
 
-if __name__ == "__main__":
+def main():
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     setup()
+
+    # close the connection
+    connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
