@@ -351,6 +351,7 @@ Contents
    persistence
    faceted_search
    update_by_query
+   asyncio
    api
    CONTRIBUTING
    Changelog
