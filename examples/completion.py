@@ -26,7 +26,6 @@ To make the suggestions work in different languages we added a custom analyzer
 that does ascii folding.
 """
 
-import asyncio
 import os
 from itertools import permutations
 
@@ -73,7 +72,7 @@ class Person(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-def main():
+if __name__ == "__main__":
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -98,10 +97,3 @@ def main():
         # print out all the options we got
         for option in response.suggest.auto_complete[0].options:
             print("%10s: %25s (%d)" % (text, option._source.name, option._score))
-
-    # close the connection
-    connections.get_connection().close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

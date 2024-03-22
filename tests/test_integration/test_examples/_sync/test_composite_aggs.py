@@ -17,7 +17,7 @@
 
 from elasticsearch_dsl import A, Search
 
-from .composite_agg import scan_aggs
+from ..examples.composite_agg import scan_aggs
 
 
 def test_scan_aggs_exhausts_all_files(data_client):

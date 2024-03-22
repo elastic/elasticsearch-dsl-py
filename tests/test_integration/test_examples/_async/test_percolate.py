@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from .percolate import BlogPost, setup
+from ..async_examples.percolate import BlogPost, setup
 
 
 async def test_post_gets_tagged_automatically(async_write_client):

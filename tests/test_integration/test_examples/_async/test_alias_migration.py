@@ -15,8 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from . import alias_migration
-from .alias_migration import ALIAS, PATTERN, BlogPost, migrate
+from ..async_examples import alias_migration
+from ..async_examples.alias_migration import ALIAS, PATTERN, BlogPost, migrate
 
 
 async def test_alias_migration(async_write_client):

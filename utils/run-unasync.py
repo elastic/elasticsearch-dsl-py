@@ -55,6 +55,7 @@ def main(check=False):
         "async_data_client": "data_client",
         "async_write_client": "write_client",
         "async_pull_request": "pull_request",
+        "async_examples": "examples",
         "assert_awaited_once_with": "assert_called_once_with",
     }
     rules = [

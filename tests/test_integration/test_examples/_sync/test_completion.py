@@ -16,7 +16,7 @@
 #  under the License.
 
 
-from .completion import Person
+from ..examples.completion import Person
 
 
 def test_person_suggests_on_all_variants_of_name(write_client):

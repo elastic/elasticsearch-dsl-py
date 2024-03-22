@@ -21,7 +21,7 @@ from pytest import fixture
 
 from elasticsearch_dsl import Q
 
-from .parent_child import Answer, Comment, Question, User, setup
+from ..examples.parent_child import Answer, Comment, Question, User, setup
 
 honza = User(
     id=42,

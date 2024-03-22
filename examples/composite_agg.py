@@ -15,7 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import asyncio
 import os
 
 from elasticsearch_dsl import A, Search, connections
@@ -37,8 +36,7 @@ def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
 
     response = run_search()
     while response.aggregations.comp.buckets:
-        for b in response.aggregations.comp.buckets:
-            yield b
+        yield from response.aggregations.comp.buckets
         if "after_key" in response.aggregations.comp:
             after = response.aggregations.comp.after_key
         else:
@@ -46,7 +44,7 @@ def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
         response = run_search(after=after)
 
 
-def main():
+if __name__ == "__main__":
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -59,10 +57,3 @@ def main():
             "File %s has been modified %d times, first seen at %s."
             % (b.key.files, b.doc_count, b.first_seen.value_as_string)
         )
-
-    # close the connection
-    connections.get_connection().close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

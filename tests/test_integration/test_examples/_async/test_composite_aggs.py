@@ -17,7 +17,7 @@
 
 from elasticsearch_dsl import A, AsyncSearch
 
-from .composite_agg import scan_aggs
+from ..async_examples.composite_agg import scan_aggs
 
 
 async def test_scan_aggs_exhausts_all_files(async_data_client):

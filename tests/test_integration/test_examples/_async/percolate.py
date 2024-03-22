@@ -1,1 +1,0 @@
-../../../../examples/async/percolate.py

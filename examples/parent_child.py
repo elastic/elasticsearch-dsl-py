@@ -39,7 +39,6 @@ It is used to showcase several key features of elasticsearch-dsl:
           particular parent
 
 """
-import asyncio
 import os
 from datetime import datetime
 
@@ -166,7 +165,7 @@ class Question(Post):
         """
         if "inner_hits" in self.meta and "answer" in self.meta.inner_hits:
             return self.meta.inner_hits.answer.hits
-        return [a for a in self.search_answers()]
+        return list(self.search_answers())
 
     def save(self, **kwargs):
         self.question_answer = "question"
@@ -209,7 +208,7 @@ def setup():
     index_template.save()
 
 
-def main():
+if __name__ == "__main__":
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -244,12 +243,3 @@ def main():
     )
     question.save()
     answer = question.add_answer(honza, "Just use `elasticsearch-py`!")
-
-    # close the connection
-    connections.get_connection().close()
-
-    return answer
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

@@ -16,7 +16,7 @@
 #  under the License.
 
 
-from .completion import Person
+from ..async_examples.completion import Person
 
 
 async def test_person_suggests_on_all_variants_of_name(async_write_client):
