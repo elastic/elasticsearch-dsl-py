@@ -232,6 +232,10 @@ class IPRange(Bucket):
     name = "ip_range"
 
 
+class IPPrefix(Bucket):
+    name = "ip_prefix"
+
+
 class Missing(Bucket):
     name = "missing"
 
