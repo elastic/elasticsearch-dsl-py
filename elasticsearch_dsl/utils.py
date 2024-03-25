@@ -252,7 +252,9 @@ class DslBase(metaclass=DslMeta):
                 f"DSL class `{name}` does not exist in {cls._type_name}."
             )
 
-    def __init__(self, _expand__to_dot=EXPAND__TO_DOT, **params):
+    def __init__(self, _expand__to_dot=None, **params):
+        if _expand__to_dot is None:
+            _expand__to_dot = EXPAND__TO_DOT
         self._params = {}
         for pname, pvalue in params.items():
             if "__" in pname and _expand__to_dot:
