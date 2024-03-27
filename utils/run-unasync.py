@@ -35,8 +35,6 @@ def main(check=False):
     # Unasync all the generated async code
     additional_replacements = {
         "_async": "_sync",
-        "aiter": "iter",
-        "anext": "next",
         "AsyncElasticsearch": "Elasticsearch",
         "AsyncSearch": "Search",
         "AsyncMultiSearch": "MultiSearch",

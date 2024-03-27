@@ -27,9 +27,10 @@ The process for contributing to any of the Elasticsearch repositories is similar
 
 2. Many classes included in this library are offered in two versions, for
    asynchronous and synchronous Python. When working with these classes, you only
-   need to make changes to the asynchronous code, located in the *_async*
-   subdirectory of the source tree. Once you've made your changes, run the
-   following command to automatically generate the corresponding synchronous code:
+   need to make changes to the asynchronous code, located in *_async*
+   subdirectories in the source and tests trees. Once you've made your changes,
+   run the following command to automatically generate the corresponding
+   synchronous code:
 
     .. code:: bash
 

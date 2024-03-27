@@ -182,15 +182,8 @@ def write_client(client):
 
 
 @pytest_asyncio.fixture
-async def async_write_client(async_client):
+async def async_write_client(write_client, async_client):
     yield async_client
-    for index_name in await async_client.indices.get(
-        index="test-*", expand_wildcards="all"
-    ):
-        await async_client.indices.delete(index=index_name)
-    await async_client.options(ignore_status=404).indices.delete_template(
-        name="test-template"
-    )
 
 
 @fixture
@@ -443,18 +436,16 @@ def aggs_data():
     }
 
 
-@fixture
-def pull_request(write_client):
-    sync_document.PullRequest.init()
-    pr = sync_document.PullRequest(
+def make_pr(pr_module):
+    return pr_module.PullRequest(
         _id=42,
         comments=[
-            sync_document.Comment(
+            pr_module.Comment(
                 content="Hello World!",
-                author=sync_document.User(name="honzakral"),
+                author=pr_module.User(name="honzakral"),
                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184),
                 history=[
-                    sync_document.History(
+                    pr_module.History(
                         timestamp=datetime(2012, 1, 1),
                         diff="-Ahoj Svete!\n+Hello World!",
                     )
@@ -463,6 +454,12 @@ def pull_request(write_client):
         ],
         created_at=datetime(2018, 1, 9, 9, 17, 3, 21184),
     )
+
+
+@fixture
+def pull_request(write_client):
+    sync_document.PullRequest.init()
+    pr = make_pr(sync_document)
     pr.save(refresh=True)
     return pr
 
@@ -470,23 +467,7 @@ def pull_request(write_client):
 @pytest_asyncio.fixture
 async def async_pull_request(async_write_client):
     await async_document.PullRequest.init()
-    pr = async_document.PullRequest(
-        _id=42,
-        comments=[
-            async_document.Comment(
-                content="Hello World!",
-                author=async_document.User(name="honzakral"),
-                created_at=datetime(2018, 1, 9, 10, 17, 3, 21184),
-                history=[
-                    async_document.History(
-                        timestamp=datetime(2012, 1, 1),
-                        diff="-Ahoj Svete!\n+Hello World!",
-                    )
-                ],
-            ),
-        ],
-        created_at=datetime(2018, 1, 9, 9, 17, 3, 21184),
-    )
+    pr = make_pr(async_document)
     await pr.save(refresh=True)
     return pr
 
