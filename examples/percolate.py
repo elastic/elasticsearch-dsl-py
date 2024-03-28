@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import os
+
 from elasticsearch_dsl import (
     Document,
     Keyword,
@@ -91,6 +93,6 @@ def setup():
 
 if __name__ == "__main__":
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     setup()

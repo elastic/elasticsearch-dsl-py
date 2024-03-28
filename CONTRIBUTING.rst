@@ -25,22 +25,34 @@ The process for contributing to any of the Elasticsearch repositories is similar
    assure our users of the origin and continuing existence of the code. You only
    need to sign the CLA once.
 
-2. Run the test suite to ensure your changes do not break existing code:
+2. Many classes included in this library are offered in two versions, for
+   asynchronous and synchronous Python. When working with these classes, you only
+   need to make changes to the asynchronous code, located in *_async*
+   subdirectories in the source and tests trees. Once you've made your changes,
+   run the following command to automatically generate the corresponding
+   synchronous code:
+
+    .. code:: bash
+
+        $ nox -rs format
+   
+3. Run the test suite to ensure your changes do not break existing code:
 
     .. code:: bash
 
         $ nox -rs lint test
 
-3. Rebase your changes.
+4. Rebase your changes.
    Update your local repository with the most recent code from the main
    elasticsearch-dsl-py repository, and rebase your branch on top of the latest master
    branch. We prefer your changes to be squashed into a single commit.
 
-4. Submit a pull request. Push your local changes to your forked copy of the
+5. Submit a pull request. Push your local changes to your forked copy of the
    repository and submit a pull request. In the pull request, describe what your
    changes do and mention the number of the issue where discussion has taken
    place, eg “Closes #123″.  Please consider adding or modifying tests related to
-   your changes.
+   your changes. Include any generated files in the *_sync* subdirectory in your
+   pull request.
 
 Then sit back and wait. There will probably be discussion about the pull
 request and, if any changes are needed, we would love to work with you to get

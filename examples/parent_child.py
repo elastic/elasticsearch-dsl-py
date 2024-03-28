@@ -39,6 +39,7 @@ It is used to showcase several key features of elasticsearch-dsl:
           particular parent
 
 """
+import os
 from datetime import datetime
 
 from elasticsearch_dsl import (
@@ -186,8 +187,7 @@ class Answer(Post):
     def search(cls, **kwargs):
         return cls._index.search(**kwargs).exclude("term", question_answer="question")
 
-    @property
-    def question(self):
+    def get_question(self):
         # cache question in self.meta
         # any attributes set on self would be interpretted as fields
         if "question" not in self.meta:
@@ -210,7 +210,7 @@ def setup():
 
 if __name__ == "__main__":
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create index
     setup()

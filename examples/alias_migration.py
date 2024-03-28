@@ -35,6 +35,7 @@ Key concepts:
       will have index set to the concrete index whereas the class refers to the
       alias.
 """
+import os
 from datetime import datetime
 from fnmatch import fnmatch
 
@@ -126,7 +127,7 @@ def migrate(move_data=True, update_alias=True):
 
 if __name__ == "__main__":
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create the empty index
     setup()

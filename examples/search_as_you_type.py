@@ -25,6 +25,8 @@ within the input.
 To custom analyzer with ascii folding allow search to work in different languages.
 """
 
+import os
+
 from elasticsearch_dsl import (
     Document,
     SearchAsYouType,
@@ -53,7 +55,7 @@ class Person(Document):
 
 if __name__ == "__main__":
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create the empty index
     Person.init()

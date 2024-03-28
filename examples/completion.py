@@ -26,6 +26,7 @@ To make the suggestions work in different languages we added a custom analyzer
 that does ascii folding.
 """
 
+import os
 from itertools import permutations
 
 from elasticsearch_dsl import (
@@ -73,7 +74,7 @@ class Person(Document):
 
 if __name__ == "__main__":
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create the empty index
     Person.init()

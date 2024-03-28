@@ -15,6 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import os
 
 from elasticsearch_dsl import A, Search, connections
 
@@ -45,7 +46,7 @@ def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
 
 if __name__ == "__main__":
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     for b in scan_aggs(
         Search(index="git"),
