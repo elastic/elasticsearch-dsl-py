@@ -17,12 +17,11 @@
 
 from pytest import raises
 
-from elasticsearch_dsl import analysis, exceptions
-from elasticsearch_dsl._sync import mapping
+from elasticsearch_dsl import Mapping, analysis, exceptions
 
 
 def test_mapping_saved_into_es(write_client):
-    m = mapping.Mapping()
+    m = Mapping()
     m.field(
         "name", "text", analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword")
     )
@@ -44,7 +43,7 @@ def test_mapping_saved_into_es(write_client):
 def test_mapping_saved_into_es_when_index_already_exists_closed(
     write_client,
 ):
-    m = mapping.Mapping()
+    m = Mapping()
     m.field(
         "name", "text", analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword")
     )
@@ -69,7 +68,7 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(
 def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
     write_client,
 ):
-    m = mapping.Mapping()
+    m = Mapping()
     analyzer = analysis.analyzer("my_analyzer", tokenizer="keyword")
     m.field("name", "text", analyzer=analyzer)
 
@@ -127,7 +126,7 @@ def test_mapping_gets_updated_from_es(write_client):
         },
     )
 
-    m = mapping.Mapping.from_es("test-mapping", using=write_client)
+    m = Mapping.from_es("test-mapping", using=write_client)
 
     assert ["comments", "created_at", "title"] == list(
         sorted(m.properties.properties._d_.keys())
@@ -158,5 +157,5 @@ def test_mapping_gets_updated_from_es(write_client):
     # test same with alias
     write_client.indices.put_alias(index="test-mapping", name="test-alias")
 
-    m2 = mapping.Mapping.from_es("test-alias", using=write_client)
+    m2 = Mapping.from_es("test-alias", using=write_client)
     assert m2.to_dict() == m.to_dict()

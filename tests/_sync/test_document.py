@@ -588,7 +588,7 @@ def test_update_no_fields():
         md.update()
 
 
-def test_search_with_custom_alias_and_index(mock_client):
+def test_search_with_custom_alias_and_index():
     search_object = MyDoc.search(
         using="staging", index=["custom_index1", "custom_index2"]
     )

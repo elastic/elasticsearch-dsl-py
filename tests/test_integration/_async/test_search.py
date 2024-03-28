@@ -19,9 +19,15 @@
 from elasticsearch import ApiError
 from pytest import raises
 
-from elasticsearch_dsl import Date, Keyword, Q, Text
-from elasticsearch_dsl._async.document import AsyncDocument
-from elasticsearch_dsl._async.search import AsyncMultiSearch, AsyncSearch
+from elasticsearch_dsl import (
+    AsyncDocument,
+    AsyncMultiSearch,
+    AsyncSearch,
+    Date,
+    Keyword,
+    Q,
+    Text,
+)
 from elasticsearch_dsl.response import aggs
 
 from ..test_data import FLAT_DATA

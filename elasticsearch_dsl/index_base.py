@@ -20,7 +20,7 @@ from .utils import merge
 
 
 class IndexBase:
-    def __init__(self, name, using="default"):
+    def __init__(self, name, mapping_class, using="default"):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
@@ -31,6 +31,7 @@ class IndexBase:
         self._settings = {}
         self._aliases = {}
         self._analysis = {}
+        self._mapping_class = mapping_class
         self._mapping = None
 
     def resolve_nested(self, field_path):
@@ -50,6 +51,11 @@ class IndexBase:
         if self._mapping:
             return self._mapping.resolve_field(field_path)
         return None
+
+    def get_or_create_mapping(self):
+        if self._mapping is None:
+            self._mapping = self._mapping_class()
+        return self._mapping
 
     def mapping(self, mapping):
         """

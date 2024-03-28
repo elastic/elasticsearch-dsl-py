@@ -56,17 +56,19 @@ class AsyncIndexTemplate:
 
 
 class AsyncIndex(IndexBase):
+    def __init__(self, name, using="default"):
+        """
+        :arg name: name of the index
+        :arg using: connection alias to use, defaults to ``'default'``
+        """
+        super().__init__(name, AsyncMapping, using=using)
+
     def _get_connection(self, using=None):
         if self._name is None:
             raise ValueError("You cannot perform API calls on the default index.")
         return get_connection(using or self._using)
 
     connection = property(_get_connection)
-
-    def get_or_create_mapping(self):
-        if self._mapping is None:
-            self._mapping = AsyncMapping()
-        return self._mapping
 
     def as_template(self, template_name, pattern=None, order=None):
         # TODO: should we allow pattern to be a top-level arg?

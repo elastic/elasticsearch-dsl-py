@@ -588,7 +588,7 @@ async def test_update_no_fields():
         await md.update()
 
 
-async def test_search_with_custom_alias_and_index(async_mock_client):
+def test_search_with_custom_alias_and_index():
     search_object = MyDoc.search(
         using="staging", index=["custom_index1", "custom_index2"]
     )

@@ -17,12 +17,11 @@
 
 import json
 
-from elasticsearch_dsl import Keyword, Nested, Text, analysis
-from elasticsearch_dsl._sync import mapping
+from elasticsearch_dsl import Keyword, Mapping, Nested, Text, analysis
 
 
 def test_mapping_can_has_fields():
-    m = mapping.Mapping()
+    m = Mapping()
     m.field("name", "text").field("tags", "keyword")
 
     assert {
@@ -31,14 +30,14 @@ def test_mapping_can_has_fields():
 
 
 def test_mapping_update_is_recursive():
-    m1 = mapping.Mapping()
+    m1 = Mapping()
     m1.field("title", "text")
     m1.field("author", "object")
     m1.field("author", "object", properties={"name": {"type": "text"}})
     m1.meta("_all", enabled=False)
     m1.meta("dynamic", False)
 
-    m2 = mapping.Mapping()
+    m2 = Mapping()
     m2.field("published_from", "date")
     m2.field("author", "object", properties={"email": {"type": "text"}})
     m2.field("title", "text")
@@ -64,7 +63,7 @@ def test_mapping_update_is_recursive():
 
 
 def test_properties_can_iterate_over_all_the_fields():
-    m = mapping.Mapping()
+    m = Mapping()
     m.field("f1", "text", test_attr="f1", fields={"f2": Keyword(test_attr="f2")})
     m.field("f3", Nested(test_attr="f3", properties={"f4": Text(test_attr="f4")}))
 
@@ -101,7 +100,7 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
     )
     n3 = analysis.normalizer("unknown_custom")
 
-    m = mapping.Mapping()
+    m = Mapping()
     m.field(
         "title",
         "text",
@@ -160,7 +159,7 @@ def test_mapping_can_collect_multiple_analyzers():
         tokenizer=analysis.tokenizer("trigram", "nGram", min_gram=3, max_gram=3),
         filter=[analysis.token_filter("my_filter2", "stop", stopwords=["c", "d"])],
     )
-    m = mapping.Mapping()
+    m = Mapping()
     m.field("title", "text", analyzer=a1, search_analyzer=a2)
     m.field(
         "text",
@@ -194,7 +193,7 @@ def test_mapping_can_collect_multiple_analyzers():
 
 def test_even_non_custom_analyzers_can_have_params():
     a1 = analysis.analyzer("whitespace", type="pattern", pattern=r"\\s+")
-    m = mapping.Mapping()
+    m = Mapping()
     m.field("title", "text", analyzer=a1)
 
     assert {
@@ -203,14 +202,14 @@ def test_even_non_custom_analyzers_can_have_params():
 
 
 def test_resolve_field_can_resolve_multifields():
-    m = mapping.Mapping()
+    m = Mapping()
     m.field("title", "text", fields={"keyword": Keyword()})
 
     assert isinstance(m.resolve_field("title.keyword"), Keyword)
 
 
 def test_resolve_nested():
-    m = mapping.Mapping()
+    m = Mapping()
     m.field("n1", "nested", properties={"n2": Nested(properties={"k1": Keyword()})})
     m.field("k2", "keyword")
 

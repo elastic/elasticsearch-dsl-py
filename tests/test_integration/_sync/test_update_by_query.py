@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from elasticsearch_dsl._sync.update_by_query import UpdateByQuery
+from elasticsearch_dsl import UpdateByQuery
 from elasticsearch_dsl.search import Q
 
 
