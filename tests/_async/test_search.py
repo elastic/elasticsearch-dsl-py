@@ -50,10 +50,7 @@ async def test_iter_iterates_over_hits():
     s = AsyncSearch()
     s._response = [1, 2, 3]
 
-    r = []
-    async for hit in s:
-        r.append(hit)
-    assert [1, 2, 3] == r
+    assert [1, 2, 3] == [hit async for hit in s]
 
 
 def test_cache_isnt_cloned():

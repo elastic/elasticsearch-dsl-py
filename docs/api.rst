@@ -4,6 +4,7 @@ API Documentation
 =================
 
 Below please find the documentation for the public classes and functions of ``elasticsearch_dsl``.
+The :ref:`Asynchronous API <async_api>` classes are documented separately.
 
 .. py:module:: elasticsearch_dsl
 
@@ -11,70 +12,39 @@ Search
 ------
 
 .. autoclass:: Search
-   :inherited-members:
    :members:
 
 .. autoclass:: MultiSearch
-   :inherited-members:
-   :members:
-
-.. autoclass:: AsyncSearch
-   :inherited-members:
-   :members:
-
-.. autoclass:: AsyncMultiSearch
-   :inherited-members:
    :members:
 
 Document
 --------
 
 .. autoclass:: Document
-   :inherited-members:
-   :members:
-
-.. autoclass:: AsyncDocument
-   :inherited-members:
    :members:
 
 Index
 -----
 
 .. autoclass:: Index
-   :inherited-members:
-   :members:
-
-.. autoclass:: AsyncIndex
-   :inherited-members:
    :members:
 
 Faceted Search
 --------------
 
 .. autoclass:: FacetedSearch
-   :inherited-members:
-   :members:
-
-.. autoclass:: AsyncFacetedSearch
-   :inherited-members:
    :members:
 
 Update By Query 
 ----------------
-
 .. autoclass:: UpdateByQuery
-   :inherited-members:
-   :members:
-
-.. autoclass:: AsyncUpdateByQuery
-   :inherited-members:
-   :members:
+  :members:
 
 Mappings
 --------
 
-If you wish to create mappings manually you can use the ``Mapping`` or ``AsyncMapping``
-classes, for more advanced use cases, however, we recommend you use the :ref:`doc_type`
+If you wish to create mappings manually you can use the ``Mapping`` class, for
+more advanced use cases, however, we recommend you use the :ref:`doc_type`
 abstraction in combination with :ref:`index` (or :ref:`index-template`) to define
 index-level settings and properties. The mapping definition follows a similar
 pattern to the query dsl:
@@ -139,5 +109,3 @@ Common field options:
 
 ``required``
   Indicates if a field requires a value for the document to be valid.
-
-

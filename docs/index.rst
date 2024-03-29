@@ -353,5 +353,6 @@ Contents
    update_by_query
    asyncio
    api
+   async_api
    CONTRIBUTING
    Changelog

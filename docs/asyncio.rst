@@ -1,9 +1,9 @@
 .. _asyncio:
 
-Using Asyncio with Elasticsearch DSL
+Using asyncio with Elasticsearch DSL
 ====================================
 
-The ``elasticsearch-dsl`` package supports async/await with `Asyncio <https://docs.python.org/3/library/asyncio.html>`__.
+The ``elasticsearch-dsl`` package supports async/await with `asyncio <https://docs.python.org/3/library/asyncio.html>`__.
 To ensure that you have all the required dependencies, install the ``[async]`` extra:
 
    .. code:: bash
@@ -88,5 +88,7 @@ synchronous versions, but any methods that perform I/O are defined as coroutines
 Auxiliary classes that do not perform I/O do not have asynchronous versions. The
 same classes can be used in synchronous and asynchronous applications.
 
-You can consult the :ref:`api` section for details about each specific
-method.
+When using a :ref:`custom analyzer <Analysis>` in an asynchronous application, use
+the ``async_simulate()`` method to invoke the Analyze API on it.
+
+Consult the :ref:`api` section for details about each specific method.

@@ -159,7 +159,7 @@ class Request:
         """
         Set the index for the search. If called empty it will remove all information.
 
-        Example:
+        Example::
 
             s = Search()
             s = s.index('twitter-2015.01.01', 'twitter-2015.01.02')
@@ -560,6 +560,7 @@ class SearchBase(Request):
         :arg rrf: Set to ``True`` or an options dictionary to set the rank method to reciprocal rank fusion (RRF).
 
         Example::
+
             s = Search()
             s = s.query('match', content='search text')
             s = s.knn(field='embedding', k=5, num_candidates=10, query_vector=vector)
