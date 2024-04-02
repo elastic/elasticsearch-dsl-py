@@ -165,7 +165,7 @@ class Question(Post):
         """
         if "inner_hits" in self.meta and "answer" in self.meta.inner_hits:
             return self.meta.inner_hits.answer.hits
-        return list(self.search_answers())
+        return [a for a in self.search_answers()]
 
     def save(self, **kwargs):
         self.question_answer = "question"
@@ -208,7 +208,7 @@ def setup():
     index_template.save()
 
 
-if __name__ == "__main__":
+def main():
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -243,3 +243,12 @@ if __name__ == "__main__":
     )
     question.save()
     answer = question.add_answer(honza, "Just use `elasticsearch-py`!")
+
+    # close the connection
+    connections.get_connection().close()
+
+    return answer
+
+
+if __name__ == "__main__":
+    main()

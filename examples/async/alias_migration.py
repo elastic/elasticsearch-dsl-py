@@ -36,6 +36,7 @@ Key concepts:
       alias.
 """
 import asyncio
+import os
 from datetime import datetime
 from fnmatch import fnmatch
 
@@ -127,7 +128,7 @@ async def migrate(move_data=True, update_alias=True):
 
 async def main():
     # initiate the default connection to elasticsearch
-    async_connections.create_connection(hosts=["http://localhost:9200"])
+    async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create the empty index
     await setup()

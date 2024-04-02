@@ -53,7 +53,7 @@ class Person(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-if __name__ == "__main__":
+def main():
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -92,3 +92,10 @@ if __name__ == "__main__":
         # print out all the options we got
         for h in response:
             print("%15s: %25s" % (text, h.name))
+
+    # close the connection
+    connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    main()

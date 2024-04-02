@@ -18,19 +18,33 @@
 import os
 import subprocess
 import sys
+from glob import glob
 from pathlib import Path
 
 import unasync
 
 
 def main(check=False):
+    # the list of directories that need to be processed with unasync
+    # each entry has two paths:
+    #   - the source path with the async sources
+    #   - the destination path where the sync sources should be written
     source_dirs = [
-        "elasticsearch_dsl",
-        "tests",
-        "tests/test_integration",
-        "tests/test_integration/test_examples",
+        (
+            "elasticsearch_dsl/_async/",
+            "elasticsearch_dsl/_sync/",
+        ),
+        ("tests/_async/", "tests/_sync/"),
+        (
+            "tests/test_integration/_async/",
+            "tests/test_integration/_sync/",
+        ),
+        (
+            "tests/test_integration/test_examples/_async",
+            "tests/test_integration/test_examples/_sync/",
+        ),
+        ("examples/async/", "examples/"),
     ]
-    output_dir = "_sync" if not check else "_sync_check"
 
     # Unasync all the generated async code
     additional_replacements = {
@@ -58,11 +72,11 @@ def main(check=False):
     }
     rules = [
         unasync.Rule(
-            fromdir=f"{source_dir}/_async/",
-            todir=f"{source_dir}/{output_dir}/",
+            fromdir=dir[0],
+            todir=f"{dir[0]}_sync_check/" if check else dir[1],
             additional_replacements=additional_replacements,
         )
-        for source_dir in source_dirs
+        for dir in source_dirs
     ]
 
     filepaths = []
@@ -75,24 +89,37 @@ def main(check=False):
                 filepaths.append(os.path.join(root, filename))
 
     unasync.unasync_files(filepaths, rules)
-
-    if check:
-        # make sure there are no differences between _sync and _sync_check
-        for source_dir in source_dirs:
+    for dir in source_dirs:
+        output_dir = f"{dir[0]}_sync_check/" if check else dir[1]
+        subprocess.check_call(["black", "--target-version=py38", output_dir])
+        subprocess.check_call(["isort", output_dir])
+        for file in glob("*.py", root_dir=dir[0]):
+            # remove asyncio from sync files
             subprocess.check_call(
-                ["black", "--target-version=py38", f"{source_dir}/_sync_check/"]
+                ["sed", "-i.bak", "/^import asyncio$/d", f"{output_dir}{file}"]
             )
-            subprocess.check_call(["isort", f"{source_dir}/_sync_check/"])
             subprocess.check_call(
                 [
-                    "diff",
-                    "-x",
-                    "__pycache__",
-                    f"{source_dir}/_sync",
-                    f"{source_dir}/_sync_check",
+                    "sed",
+                    "-i.bak",
+                    "s/asyncio\\.run(main())/main()/",
+                    f"{output_dir}{file}",
                 ]
             )
-            subprocess.check_call(["rm", "-rf", f"{source_dir}/_sync_check"])
+            subprocess.check_call(["rm", f"{output_dir}{file}.bak"])
+
+            if check:
+                # make sure there are no differences between _sync and _sync_check
+                subprocess.check_call(
+                    [
+                        "diff",
+                        f"{dir[1]}{file}",
+                        f"{output_dir}{file}",
+                    ]
+                )
+
+        if check:
+            subprocess.check_call(["rm", "-rf", output_dir])
 
 
 if __name__ == "__main__":

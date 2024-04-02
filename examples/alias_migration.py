@@ -125,7 +125,7 @@ def migrate(move_data=True, update_alias=True):
         )
 
 
-if __name__ == "__main__":
+def main():
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -143,3 +143,10 @@ if __name__ == "__main__":
 
     # create new index
     migrate()
+
+    # close the connection
+    connections.get_connection().close()
+
+
+if __name__ == "__main__":
+    main()
