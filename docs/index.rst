@@ -6,10 +6,31 @@ running queries against Elasticsearch. It is built on top of the official
 low-level client (`elasticsearch-py <https://github.com/elastic/elasticsearch-py>`_).
 
 It provides a more convenient and idiomatic way to write and manipulate
-queries using synchronous or asynchronous Python. It stays close to the
-Elasticsearch JSON DSL, mirroring its terminology and structure. It exposes the
-whole range of the DSL from Python either directly using defined classes or a
-queryset-like expressions.
+queries. It stays close to the Elasticsearch JSON DSL, mirroring its
+terminology and structure. It exposes the whole range of the DSL from Python
+either directly using defined classes or a queryset-like expressions. Here is
+an example::
+
+    from elasticsearch_dsl import Search
+
+    s = Search(index="my-index") \
+        .filter("term", category="search") \
+        .query("match", title="python")   \
+        .exclude("match", description="beta")
+    for hit in s:
+        print(hit.title)
+
+Or with asynchronous Python::
+
+    from elasticsearch_dsl import AsyncSearch
+
+    async def run_query():
+        s = AsyncSearch(index="my-index") \
+            .filter("term", category="search") \
+            .query("match", title="python")   \
+            .exclude("match", description="beta")
+        async for hit in s:
+            print(hit.title)
 
 It also provides an optional wrapper for working with documents as Python
 objects: defining mappings, retrieving and saving documents, wrapping the
@@ -101,12 +122,38 @@ Contents
 --------
 
 .. toctree::
+   :caption: About
    :maxdepth: 2
 
    self
    configuration
+
+.. toctree::
+   :caption: Tutorials
+   :maxdepth: 2
+
    tutorials
-   howtos
-   reference
+
+.. toctree::
+   :caption: How-To Guides
+   :maxdepth: 2
+
+   search_dsl
+   persistence
+   faceted_search
+   update_by_query
+   asyncio
+
+.. toctree::
+   :caption: Reference
+   :maxdepth: 2
+
+   api
+   async_api
+
+.. toctree::
+   :caption: Community
+   :maxdepth: 2
+
    CONTRIBUTING
    Changelog
