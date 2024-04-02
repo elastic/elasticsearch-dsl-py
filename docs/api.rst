@@ -8,35 +8,21 @@ The :ref:`Asynchronous API <async_api>` classes are documented separately.
 
 .. py:module:: elasticsearch_dsl
 
-Search
-------
-
 .. autoclass:: Search
    :members:
 
 .. autoclass:: MultiSearch
    :members:
 
-Document
---------
-
 .. autoclass:: Document
    :members:
-
-Index
------
 
 .. autoclass:: Index
    :members:
 
-Faceted Search
---------------
-
 .. autoclass:: FacetedSearch
    :members:
 
-Update By Query 
-----------------
 .. autoclass:: UpdateByQuery
   :members:
 
