@@ -39,6 +39,7 @@ It is used to showcase several key features of elasticsearch-dsl:
           particular parent
 
 """
+import os
 from datetime import datetime
 
 from elasticsearch_dsl import (
@@ -164,7 +165,7 @@ class Question(Post):
         """
         if "inner_hits" in self.meta and "answer" in self.meta.inner_hits:
             return self.meta.inner_hits.answer.hits
-        return list(self.search_answers())
+        return [a for a in self.search_answers()]
 
     def save(self, **kwargs):
         self.question_answer = "question"
@@ -186,8 +187,7 @@ class Answer(Post):
     def search(cls, **kwargs):
         return cls._index.search(**kwargs).exclude("term", question_answer="question")
 
-    @property
-    def question(self):
+    def get_question(self):
         # cache question in self.meta
         # any attributes set on self would be interpretted as fields
         if "question" not in self.meta:
@@ -208,9 +208,9 @@ def setup():
     index_template.save()
 
 
-if __name__ == "__main__":
+def main():
     # initiate the default connection to elasticsearch
-    connections.create_connection()
+    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
     # create index
     setup()
@@ -243,3 +243,12 @@ if __name__ == "__main__":
     )
     question.save()
     answer = question.add_answer(honza, "Just use `elasticsearch-py`!")
+
+    # close the connection
+    connections.get_connection().close()
+
+    return answer
+
+
+if __name__ == "__main__":
+    main()

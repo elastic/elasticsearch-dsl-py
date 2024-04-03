@@ -16,21 +16,27 @@
 #  under the License.
 
 
+import asyncio
 import os
 import re
 import time
 from datetime import datetime
 from unittest import SkipTest, TestCase
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
+import pytest_asyncio
 from elastic_transport import ObjectApiResponse
-from elasticsearch import Elasticsearch
+from elasticsearch import AsyncElasticsearch, Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from elasticsearch.helpers import bulk
 from pytest import fixture, skip
 
+from elasticsearch_dsl.async_connections import add_connection as add_async_connection
+from elasticsearch_dsl.async_connections import connections as async_connections
 from elasticsearch_dsl.connections import add_connection, connections
 
+from .test_integration._async import test_document as async_document
+from .test_integration._sync import test_document as sync_document
 from .test_integration.test_data import (
     DATA,
     FLAT_DATA,
@@ -38,7 +44,6 @@ from .test_integration.test_data import (
     create_flat_git_index,
     create_git_index,
 )
-from .test_integration.test_document import Comment, History, PullRequest, User
 
 if "ELASTICSEARCH_URL" in os.environ:
     ELASTICSEARCH_URL = os.environ["ELASTICSEARCH_URL"]
@@ -70,6 +75,34 @@ def get_test_client(wait=True, **kwargs):
                 raise
             time.sleep(0.1)
 
+    raise SkipTest("Elasticsearch failed to start.")
+
+
+async def get_async_test_client(wait=True, **kwargs):
+    # construct kwargs from the environment
+    kw = {"request_timeout": 30}
+
+    if "PYTHON_CONNECTION_CLASS" in os.environ:
+        from elasticsearch import connection
+
+        kw["connection_class"] = getattr(
+            connection, os.environ["PYTHON_CONNECTION_CLASS"]
+        )
+
+    kw.update(kwargs)
+    client = AsyncElasticsearch(ELASTICSEARCH_URL, **kw)
+
+    # wait for yellow status
+    for tries_left in range(100 if wait else 1, 0, -1):
+        try:
+            await client.cluster.health(wait_for_status="yellow")
+            return client
+        except ConnectionError:
+            if wait and tries_left == 1:
+                raise
+            await asyncio.sleep(0.1)
+
+    await client.close()
     raise SkipTest("Elasticsearch failed to start.")
 
 
@@ -119,6 +152,17 @@ def client():
         skip()
 
 
+@pytest_asyncio.fixture
+async def async_client():
+    try:
+        connection = await get_async_test_client(wait="WAIT_FOR_ES" in os.environ)
+        add_async_connection("default", connection)
+        yield connection
+        await connection.close()
+    except SkipTest:
+        skip()
+
+
 @fixture(scope="session")
 def es_version(client):
     info = client.info()
@@ -137,14 +181,34 @@ def write_client(client):
     client.options(ignore_status=404).indices.delete_template(name="test-template")
 
 
+@pytest_asyncio.fixture
+async def async_write_client(write_client, async_client):
+    yield async_client
+
+
 @fixture
 def mock_client(dummy_response):
     client = Mock()
     client.search.return_value = dummy_response
     add_connection("mock", client)
+
     yield client
     connections._conn = {}
     connections._kwargs = {}
+
+
+@fixture
+def async_mock_client(dummy_response):
+    client = Mock()
+    client.search = AsyncMock(return_value=dummy_response)
+    client.indices = AsyncMock()
+    client.update_by_query = AsyncMock()
+    client.delete_by_query = AsyncMock()
+    add_async_connection("mock", client)
+
+    yield client
+    async_connections._conn = {}
+    async_connections._kwargs = {}
 
 
 @fixture(scope="session")
@@ -158,6 +222,11 @@ def data_client(client):
     yield client
     client.indices.delete(index="git")
     client.indices.delete(index="flat-git")
+
+
+@pytest_asyncio.fixture
+async def async_data_client(data_client, async_client):
+    yield async_client
 
 
 @fixture
@@ -367,18 +436,16 @@ def aggs_data():
     }
 
 
-@fixture
-def pull_request(write_client):
-    PullRequest.init()
-    pr = PullRequest(
+def make_pr(pr_module):
+    return pr_module.PullRequest(
         _id=42,
         comments=[
-            Comment(
+            pr_module.Comment(
                 content="Hello World!",
-                author=User(name="honzakral"),
+                author=pr_module.User(name="honzakral"),
                 created_at=datetime(2018, 1, 9, 10, 17, 3, 21184),
                 history=[
-                    History(
+                    pr_module.History(
                         timestamp=datetime(2012, 1, 1),
                         diff="-Ahoj Svete!\n+Hello World!",
                     )
@@ -387,7 +454,21 @@ def pull_request(write_client):
         ],
         created_at=datetime(2018, 1, 9, 9, 17, 3, 21184),
     )
+
+
+@fixture
+def pull_request(write_client):
+    sync_document.PullRequest.init()
+    pr = make_pr(sync_document)
     pr.save(refresh=True)
+    return pr
+
+
+@pytest_asyncio.fixture
+async def async_pull_request(async_write_client):
+    await async_document.PullRequest.init()
+    pr = make_pr(async_document)
+    await pr.save(refresh=True)
     return pr
 
 
