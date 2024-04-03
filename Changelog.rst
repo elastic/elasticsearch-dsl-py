@@ -3,6 +3,17 @@
 Changelog
 =========
 
+8.13.0 (2024-04-03)
+-------------------
+
+* Added ``asyncio`` support (`#1714`_)
+* Dropped support for Python 3.7 (`#1717`_)
+* Stopped mixing body and parameters in ``UpdateByQuery`` (`#1702`_)
+
+.. _#1714: https://github.com/elastic/elasticsearch-dsl-py/pull/1714
+.. _#1717: https://github.com/elastic/elasticsearch-dsl-py/pull/1717
+.. _#1702: https://github.com/elastic/elasticsearch-dsl-py/pull/1702
+
 8.12.0 (2024-01-18)
 -------------------
 
