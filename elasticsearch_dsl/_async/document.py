@@ -255,7 +255,7 @@ class AsyncDocument(DocumentBase, metaclass=AsyncIndexMeta):
         :arg return_doc_meta: set to ``True`` to return all metadata from the
             index API call instead of only the operation result
 
-        :return operation result noop/updated
+        :return: operation result noop/updated
         """
         body = {
             "doc_as_upsert": doc_as_upsert,
@@ -346,7 +346,7 @@ class AsyncDocument(DocumentBase, metaclass=AsyncIndexMeta):
         Any additional keyword arguments will be passed to
         ``Elasticsearch.index`` unchanged.
 
-        :return operation result created/updated
+        :return: operation result created/updated
         """
         if validate:
             self.full_clean()
