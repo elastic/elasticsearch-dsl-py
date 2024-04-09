@@ -352,20 +352,27 @@ class SearchBase(Request):
             # If negative slicing, abort.
             if n.start and n.start < 0 or n.stop and n.stop < 0:
                 raise ValueError("Search does not support negative slicing.")
-            # Elasticsearch won't get all results so we default to size: 10 if
-            # stop not given.
-            s._extra["from"] = n.start or 0
-            s._extra["size"] = max(
-                0, n.stop - (n.start or 0) if n.stop is not None else 10
-            )
-            return s
+            slice_start = n.start
+            slice_stop = n.stop
         else:  # This is an index lookup, equivalent to slicing by [n:n+1].
             # If negative index, abort.
             if n < 0:
                 raise ValueError("Search does not support negative indexing.")
-            s._extra["from"] = n
-            s._extra["size"] = 1
-            return s
+            slice_start = n
+            slice_stop = n + 1
+        # Elasticsearch won't get all results so we default to size: 10 if
+        # stop not given.
+        old_from = s._extra.get("from", 0)
+        old_to = old_from + s._extra.get(
+            "size", slice_stop or (slice_start or old_from) + 10
+        )
+        new_from = old_from + (slice_start or 0)
+        new_to = (
+            min(old_to, old_from + slice_stop) if slice_stop is not None else old_to
+        )
+        s._extra["from"] = new_from
+        s._extra["size"] = max(0, new_to - new_from)
+        return s
 
     @classmethod
     def from_dict(cls, d):
