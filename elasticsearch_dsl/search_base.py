@@ -360,25 +360,25 @@ class SearchBase(Request):
                 raise ValueError("Search does not support negative indexing.")
             slice_start = n
             slice_stop = n + 1
-        old_from = s._extra.get("from", 0)
-        if "size" in s._extra:
-            old_to = old_from + s._extra["size"]
-        elif slice_stop is not None:
-            # inherit a size from the given slice
-            old_to = old_from + slice_stop
-        elif slice_start is not None:
-            # assume a default size of 10 from the given slice start
-            old_to = old_from + slice_start + 10
+
+        old_from = s._extra.get("from")
+        old_to = (old_from or 0) + s._extra["size"] if "size" in s._extra else None
+
+        if slice_start is not None:
+            new_from = (old_from or 0) + slice_start
         else:
-            # with no other information, the default size is 10
-            old_to = old_from + 10
-        new_from = old_from + (slice_start or 0)
+            new_from = old_from
         if slice_stop is not None:
-            new_to = min(old_to, old_from + slice_stop)
+            new_to = (old_from or 0) + slice_stop
+            if old_to is not None and old_to < new_to:
+                new_to = old_to
         else:
             new_to = old_to
-        s._extra["from"] = new_from
-        s._extra["size"] = max(0, new_to - new_from)
+
+        if new_from is not None:
+            s._extra["from"] = new_from
+        if new_to is not None:
+            s._extra["size"] = max(0, new_to - (new_from or 0))
         return s
 
     @classmethod
