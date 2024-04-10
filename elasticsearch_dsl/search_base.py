@@ -360,8 +360,6 @@ class SearchBase(Request):
                 raise ValueError("Search does not support negative indexing.")
             slice_start = n
             slice_stop = n + 1
-        # Elasticsearch won't get all results so we default to size: 10 if
-        # stop not given.
         old_from = s._extra.get("from", 0)
         if "size" in s._extra:
             old_to = old_from + s._extra["size"]
