@@ -47,6 +47,9 @@ def test(session):
             "-vvv",
             "--cov=elasticsearch_dsl",
             "--cov=tests.test_integration.test_examples",
+            "--cov-report=term-missing",
+            "--cov-branch",
+            "--cov-report=html",
             "tests/",
         )
     session.run("pytest", *argv)
