@@ -371,6 +371,12 @@ def test_slice():
     assert {"from": 10, "size": 0} == s[:5][10:].to_dict()
     assert {"from": 12, "size": 0} == s[:5][10:][2:].to_dict()
     assert {"from": 15, "size": 0} == s[10:][:5][5:].to_dict()
+    with raises(ValueError):
+        s[-1:]
+    with raises(ValueError):
+        s[4:-1]
+    with raises(ValueError):
+        s[-3:-2]
 
 
 def test_index():
@@ -379,6 +385,8 @@ def test_index():
     assert {"from": 3, "size": 1} == s[3][0].to_dict()
     assert {"from": 8, "size": 0} == s[3][5].to_dict()
     assert {"from": 4, "size": 1} == s[3:10][1].to_dict()
+    with raises(ValueError):
+        s[-3]
 
 
 def test_search_to_dict():
