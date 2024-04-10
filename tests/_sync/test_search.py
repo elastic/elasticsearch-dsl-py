@@ -369,8 +369,12 @@ def test_slice():
     assert {"from": 20, "size": 0} == s[20:0].to_dict()
     assert {"from": 10, "size": 5} == s[10:][:5].to_dict()
     assert {"from": 10, "size": 0} == s[:5][10:].to_dict()
+    assert {"from": 0, "size": 10} == s[:10][:40].to_dict()
+    assert {"from": 0, "size": 10} == s[:40][:10].to_dict()
+    assert {"from": 0, "size": 40} == s[:40][:80].to_dict()
     assert {"from": 12, "size": 0} == s[:5][10:][2:].to_dict()
     assert {"from": 15, "size": 0} == s[10:][:5][5:].to_dict()
+    assert {"from": 0, "size": 10} == s[:].to_dict()
     with raises(ValueError):
         s[-1:]
     with raises(ValueError):
