@@ -34,11 +34,6 @@ declaring a ``FacetedSearch`` subclass:
   values should be instances of any ``Facet`` subclass, for example: ``{'tags':
   TermsFacet(field='tags')}``
 
-``sort``
-  tuple or list of fields on which the results should be sorted. The format of
-  the individual fields are to be the same as those passed to
-  :meth:`~elasticsearch_dsl.Search.sort`.
-
 
 Facets
 ~~~~~~
@@ -95,7 +90,7 @@ Usage
 -----
 
 The custom subclass can be instantiated empty to provide an empty search
-(matching everything) or with ``query`` and ``filters``.
+(matching everything) or with ``query``, ``filters`` and ``sort``.
 
 ``query``
   is used to pass in the text of the query to be performed. If ``None`` is
@@ -106,6 +101,12 @@ The custom subclass can be instantiated empty to provide an empty search
   is a dictionary containing all the facet filters that you wish to apply. Use
   the name of the facet (from ``.facets`` attribute) as the key and one of the
   possible values as value. For example ``{'tags': 'python'}``.
+
+``sort``
+  is a tuple or list of fields on which the results should be sorted. The format
+  of the individual fields are to be the same as those passed to
+  :meth:`~elasticsearch_dsl.Search.sort`.
+
 
 Response
 ~~~~~~~~
