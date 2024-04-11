@@ -362,18 +362,18 @@ class SearchBase(Request):
             slice_stop = n + 1
 
         old_from = s._extra.get("from")
-        old_to = (old_from or 0) + s._extra["size"] if "size" in s._extra else None
+        old_to = None
+        if "size" in s._extra:
+            old_to = (old_from or 0) + s._extra["size"]
 
+        new_from = old_from
         if slice_start is not None:
             new_from = (old_from or 0) + slice_start
-        else:
-            new_from = old_from
+        new_to = old_to
         if slice_stop is not None:
             new_to = (old_from or 0) + slice_stop
             if old_to is not None and old_to < new_to:
                 new_to = old_to
-        else:
-            new_to = old_to
 
         if new_from is not None:
             s._extra["from"] = new_from
