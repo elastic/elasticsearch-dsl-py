@@ -15,10 +15,11 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from datetime import date, datetime
 from fnmatch import fnmatch
 
 from .exceptions import ValidationException
-from .field import Field
+from .field import Field, Integer, Float, Boolean, Text, Binary, Date
 from .mapping import Mapping
 from .utils import DOC_META_FIELDS, ObjectBase
 
@@ -36,11 +37,29 @@ class DocumentMeta(type):
 
 
 class DocumentOptions:
+    type_annotation_map = {
+        int: (Integer, {}),
+        float: (Float, {}),
+        bool: (Boolean, {}),
+        str: (Text, {}),
+        bytes: (Binary, {}),
+        datetime: (Date, {}),
+        date: (Date, {"format": "yyyy-MM-dd"}),
+    }
+
     def __init__(self, name, bases, attrs):
         meta = attrs.pop("Meta", None)
 
         # create the mapping instance
         self.mapping = getattr(meta, "mapping", Mapping())
+
+        for name, type_ in attrs.get('__annotations__', {}).items():
+            if name not in attrs:
+                if type_ in self.type_annotation_map:
+                    field, field_args = self.type_annotation_map[type_]
+                    self.mapping.field(name, field(**field_args))
+                elif issubclass(type_, Field):
+                    self.mapping.field(name, type_())
 
         # register all declared fields into the mapping
         for name, value in list(attrs.items()):
