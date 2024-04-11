@@ -585,8 +585,8 @@ def test_script_score():
 
 def test_expand_double_underscore_to_dot_setting():
     q = query.Term(comment__count=2)
-    assert q.to_dict() == {'term': {'comment.count': 2}}
+    assert q.to_dict() == {"term": {"comment.count": 2}}
     utils.EXPAND__TO_DOT = False
     q = query.Term(comment__count=2)
-    assert q.to_dict() == {'term': {'comment__count': 2}}
+    assert q.to_dict() == {"term": {"comment__count": 2}}
     utils.EXPAND__TO_DOT = True
