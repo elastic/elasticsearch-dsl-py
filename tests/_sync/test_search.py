@@ -266,6 +266,7 @@ def test_knn():
         query_vector_builder={
             "text_embedding": {"model_id": "foo", "model_text": "search text"}
         },
+        inner_hits={"size": 1},
     )
     assert {
         "knn": [
@@ -283,6 +284,7 @@ def test_knn():
                     "text_embedding": {"model_id": "foo", "model_text": "search text"}
                 },
                 "boost": 0.8,
+                "inner_hits": {"size": 1},
             },
         ]
     } == s.to_dict()
