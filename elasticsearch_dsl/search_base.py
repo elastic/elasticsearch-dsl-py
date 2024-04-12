@@ -17,6 +17,7 @@
 
 import collections.abc
 import copy
+import warnings
 
 from .aggs import A, AggBase
 from .exceptions import IllegalOperation
@@ -347,6 +348,15 @@ class SearchBase(Request):
 
         """
         s = self._clone()
+
+        if "from" in s._extra or "size" in s._extra:
+            warnings.warn(
+                "Slicing multiple times currently has no effect but will be supported "
+                "in a future release. See https://github.com/elastic/elasticsearch-dsl-py/pull/1771 "
+                "for more details",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         if isinstance(n, slice):
             # If negative slicing, abort.

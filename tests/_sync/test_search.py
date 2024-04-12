@@ -17,7 +17,7 @@
 
 from copy import deepcopy
 
-from pytest import raises
+from pytest import raises, warns
 
 from elasticsearch_dsl import Document, Q, Search, query
 from elasticsearch_dsl.exceptions import IllegalOperation
@@ -361,6 +361,12 @@ def test_slice():
     assert {"from": 3, "size": 10} == s[3:].to_dict()
     assert {"from": 0, "size": 0} == s[0:0].to_dict()
     assert {"from": 20, "size": 0} == s[20:0].to_dict()
+
+
+def test_slice_twice():
+    with warns(DeprecationWarning, match="Slicing multiple times .*"):
+        s = Search()
+        s[10:20][2:]
 
 
 def test_index():
