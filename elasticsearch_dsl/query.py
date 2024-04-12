@@ -208,8 +208,13 @@ class Bool(Query):
                 del q._params["minimum_should_match"]
 
             for qx in (self, other):
-                # TODO: percentages will fail here
                 min_should_match = qx._min_should_match
+                # TODO: percentages or negative numbers will fail here
+                # for now we report an error
+                if not isinstance(min_should_match, int) or min_should_match < 0:
+                    raise ValueError(
+                        "Can only combine queries with positive integer values for minimum_should_match"
+                    )
                 # all subqueries are required
                 if len(qx.should) <= min_should_match:
                     q.must.extend(qx.should)
