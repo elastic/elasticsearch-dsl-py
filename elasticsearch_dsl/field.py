@@ -341,9 +341,9 @@ class Float(Field):
 class DenseVector(Float):
     name = "dense_vector"
 
-    def __init__(self, dims, **kwargs):
+    def __init__(self, **kwargs):
         kwargs["multi"] = True
-        super().__init__(dims=dims, **kwargs)
+        super().__init__(**kwargs)
 
 
 class SparseVector(Field):
