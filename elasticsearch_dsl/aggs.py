@@ -309,6 +309,10 @@ class MultiTerms(Bucket):
     name = "multi_terms"
 
 
+class CategorizeText(Bucket):
+    name = "categorize_text"
+
+
 # metric aggregations
 class TopHits(Agg):
     name = "top_hits"
