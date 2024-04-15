@@ -190,7 +190,7 @@ class Answer(Post):
 
     async def get_question(self):
         # cache question in self.meta
-        # any attributes set on self would be interpretted as fields
+        # any attributes set on self would be interpreted as fields
         if "question" not in self.meta:
             self.meta.question = await Question.get(
                 id=self.question_answer.parent, index=self.meta.index
