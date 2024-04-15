@@ -19,7 +19,7 @@ from copy import deepcopy
 
 from pytest import raises
 
-from elasticsearch_dsl import AsyncSearch, Document, Q, query
+from elasticsearch_dsl import A, AsyncEmptySearch, AsyncSearch, Document, Q, query
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 
@@ -681,3 +681,14 @@ def test_rescore_query_to_dict():
             },
         },
     }
+
+
+async def test_empty_search():
+    s = AsyncEmptySearch(index="index-name")
+    s = s.query("match", lang="java")
+    s.aggs.bucket("versions", A("terms", field="version"))
+
+    assert await s.count() == 0
+    assert [hit async for hit in s] == []
+    assert [hit async for hit in s.scan()] == []
+    await s.delete()  # should not error
