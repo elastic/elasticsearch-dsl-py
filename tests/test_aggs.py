@@ -342,6 +342,23 @@ def test_multi_terms_aggregation():
     } == a.to_dict()
 
 
+def test_categorize_text_aggregation():
+    a = aggs.CategorizeText(
+        field="tags",
+        categorization_filters=["\\w+\\_\\d{3}"],
+        max_matched_tokens=2,
+        similarity_threshold=30,
+    )
+    assert {
+        "categorize_text": {
+            "field": "tags",
+            "categorization_filters": ["\\w+\\_\\d{3}"],
+            "max_matched_tokens": 2,
+            "similarity_threshold": 30,
+        }
+    } == a.to_dict()
+
+
 def test_median_absolute_deviation_aggregation():
     a = aggs.MedianAbsoluteDeviation(field="rating")
 
