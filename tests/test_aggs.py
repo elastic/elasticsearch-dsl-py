@@ -383,3 +383,22 @@ def test_normalize_aggregation():
     assert {
         "normalize": {"buckets_path": "normalized", "method": "percent_of_sum"}
     } == a.to_dict()
+
+
+def test_random_sampler_aggregation():
+    a = aggs.RandomSampler(probability=0.1).metric(
+        "price_percentiles",
+        "percentiles",
+        field="price",
+    )
+
+    assert {
+        "random_sampler": {
+            "probability": 0.1,
+        },
+        "aggs": {
+            "price_percentiles": {
+                "percentiles": {"field": "price"},
+            },
+        },
+    } == a.to_dict()

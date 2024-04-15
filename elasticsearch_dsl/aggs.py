@@ -278,6 +278,10 @@ class DiversifiedSampler(Bucket):
     name = "diversified_sampler"
 
 
+class RandomSampler(Bucket):
+    name = "random_sampler"
+
+
 class Composite(Bucket):
     name = "composite"
     _param_defs = {
