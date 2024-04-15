@@ -309,7 +309,7 @@ class TopChildren(Query):
     _param_defs = {"query": {"type": "query"}}
 
 
-# compount span queries
+# compound span queries
 class SpanFirst(Query):
     name = "span_first"
     _param_defs = {"match": {"type": "query"}}
