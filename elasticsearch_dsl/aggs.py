@@ -333,6 +333,10 @@ class Max(Agg):
     name = "max"
 
 
+class MatrixStats(Agg):
+    name = "matrix_stats"
+
+
 class MedianAbsoluteDeviation(Agg):
     name = "median_absolute_deviation"
 
