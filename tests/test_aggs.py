@@ -334,6 +334,17 @@ def test_t_test_aggregation():
     } == a.to_dict()
 
 
+def test_geo_line_aggregation():
+    a = aggs.GeoLine(point={"field": "centroid"}, sort={"field": "date"})
+
+    assert {
+        "geo_line": {
+            "point": {"field": "centroid"},
+            "sort": {"field": "date"},
+        },
+    } == a.to_dict()
+
+
 def test_inference_aggregation():
     a = aggs.Inference(model_id="model-id", buckets_path={"agg_name": "agg_name"})
     assert {
