@@ -19,7 +19,7 @@ from copy import deepcopy
 
 from pytest import raises, warns
 
-from elasticsearch_dsl import Document, Q, Search, query
+from elasticsearch_dsl import A, Document, EmptySearch, Q, Search, query
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 
@@ -685,3 +685,14 @@ def test_rescore_query_to_dict():
             },
         },
     }
+
+
+def test_empty_search():
+    s = EmptySearch(index="index-name")
+    s = s.query("match", lang="java")
+    s.aggs.bucket("versions", A("terms", field="version"))
+
+    assert s.count() == 0
+    assert [hit for hit in s] == []
+    assert [hit for hit in s.scan()] == []
+    s.delete()  # should not error
