@@ -17,6 +17,7 @@
 
 import collections.abc
 import copy
+import warnings
 
 from .aggs import A, AggBase
 from .exceptions import IllegalOperation
@@ -348,6 +349,15 @@ class SearchBase(Request):
         """
         s = self._clone()
 
+        if "from" in s._extra or "size" in s._extra:
+            warnings.warn(
+                "Slicing multiple times currently has no effect but will be supported "
+                "in a future release. See https://github.com/elastic/elasticsearch-dsl-py/pull/1771 "
+                "for more details",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         if isinstance(n, slice):
             # If negative slicing, abort.
             if n.start and n.start < 0 or n.stop and n.stop < 0:
@@ -504,6 +514,7 @@ class SearchBase(Request):
         boost=None,
         filter=None,
         similarity=None,
+        inner_hits=None,
     ):
         """
         Add a k-nearest neighbor (kNN) search.
@@ -516,6 +527,7 @@ class SearchBase(Request):
         :arg boost: A floating-point boost factor for kNN scores
         :arg filter: query to filter the documents that can match
         :arg similarity: the minimum similarity required for a document to be considered a match, as a float value
+        :arg inner_hits: retrieve hits from nested field
 
         Example::
 
@@ -550,6 +562,8 @@ class SearchBase(Request):
                 s._knn[-1]["filter"] = filter
         if similarity is not None:
             s._knn[-1]["similarity"] = similarity
+        if inner_hits is not None:
+            s._knn[-1]["inner_hits"] = inner_hits
         return s
 
     def rank(self, rrf=None):

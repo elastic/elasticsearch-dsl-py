@@ -209,6 +209,10 @@ class GeohashGrid(Bucket):
     name = "geohash_grid"
 
 
+class GeohexGrid(Bucket):
+    name = "geohex_grid"
+
+
 class GeotileGrid(Bucket):
     name = "geotile_grid"
 
@@ -230,6 +234,10 @@ class Histogram(Bucket):
 
 class IPRange(Bucket):
     name = "ip_range"
+
+
+class IPPrefix(Bucket):
+    name = "ip_prefix"
 
 
 class Missing(Bucket):
@@ -278,6 +286,10 @@ class DiversifiedSampler(Bucket):
     name = "diversified_sampler"
 
 
+class RandomSampler(Bucket):
+    name = "random_sampler"
+
+
 class Composite(Bucket):
     name = "composite"
     _param_defs = {
@@ -295,6 +307,10 @@ class VariableWidthHistogram(Bucket):
 
 class MultiTerms(Bucket):
     name = "multi_terms"
+
+
+class CategorizeText(Bucket):
+    name = "categorize_text"
 
 
 # metric aggregations
@@ -329,8 +345,16 @@ class GeoBounds(Agg):
     name = "geo_bounds"
 
 
+class GeoLine(Agg):
+    name = "geo_line"
+
+
 class Max(Agg):
     name = "max"
+
+
+class MatrixStats(Agg):
+    name = "matrix_stats"
 
 
 class MedianAbsoluteDeviation(Agg):

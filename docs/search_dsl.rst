@@ -666,3 +666,10 @@ If you need to execute multiple searches at the same time you can use the
         print("Results for query %r." % response.search.query)
         for hit in response:
             print(hit.title)
+
+
+``EmptySearch``
+---------------
+
+The ``EmptySearch`` class can be used as a fully compatible version of ``Search``
+that will return no results, regardless of any queries configured.

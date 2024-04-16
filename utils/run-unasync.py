@@ -52,6 +52,7 @@ def main(check=False):
         "AsyncElasticsearch": "Elasticsearch",
         "AsyncSearch": "Search",
         "AsyncMultiSearch": "MultiSearch",
+        "AsyncEmptySearch": "EmptySearch",
         "AsyncDocument": "Document",
         "AsyncIndexMeta": "IndexMeta",
         "AsyncIndexTemplate": "IndexTemplate",

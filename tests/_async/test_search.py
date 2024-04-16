@@ -17,9 +17,9 @@
 
 from copy import deepcopy
 
-from pytest import raises
+from pytest import raises, warns
 
-from elasticsearch_dsl import AsyncSearch, Document, Q, query
+from elasticsearch_dsl import A, AsyncEmptySearch, AsyncSearch, Document, Q, query
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 
@@ -266,6 +266,7 @@ def test_knn():
         query_vector_builder={
             "text_embedding": {"model_id": "foo", "model_text": "search text"}
         },
+        inner_hits={"size": 1},
     )
     assert {
         "knn": [
@@ -283,6 +284,7 @@ def test_knn():
                     "text_embedding": {"model_id": "foo", "model_text": "search text"}
                 },
                 "boost": 0.8,
+                "inner_hits": {"size": 1},
             },
         ]
     } == s.to_dict()
@@ -361,6 +363,12 @@ def test_slice():
     assert {"from": 3, "size": 10} == s[3:].to_dict()
     assert {"from": 0, "size": 0} == s[0:0].to_dict()
     assert {"from": 20, "size": 0} == s[20:0].to_dict()
+
+
+def test_slice_twice():
+    with warns(DeprecationWarning, match="Slicing multiple times .*"):
+        s = AsyncSearch()
+        s[10:20][2:]
 
 
 def test_index():
@@ -679,3 +687,14 @@ def test_rescore_query_to_dict():
             },
         },
     }
+
+
+async def test_empty_search():
+    s = AsyncEmptySearch(index="index-name")
+    s = s.query("match", lang="java")
+    s.aggs.bucket("versions", A("terms", field="version"))
+
+    assert await s.count() == 0
+    assert [hit async for hit in s] == []
+    assert [hit async for hit in s.scan()] == []
+    await s.delete()  # should not error

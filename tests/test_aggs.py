@@ -262,6 +262,12 @@ def test_geohash_grid_aggregation():
     assert {"geohash_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
 
 
+def test_geohex_grid_aggregation():
+    a = aggs.GeohexGrid(**{"field": "centroid", "precision": 3})
+
+    assert {"geohex_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
+
+
 def test_geotile_grid_aggregation():
     a = aggs.GeotileGrid(**{"field": "centroid", "precision": 3})
 
@@ -300,6 +306,30 @@ def test_variable_width_histogram_aggregation():
     assert {"variable_width_histogram": {"buckets": 2, "field": "price"}} == a.to_dict()
 
 
+def test_ip_prefix_aggregation():
+    a = aggs.IPPrefix(**{"field": "ipv4", "prefix_length": 24})
+
+    assert {"ip_prefix": {"field": "ipv4", "prefix_length": 24}} == a.to_dict()
+
+
+def test_ip_prefix_aggregation_extra():
+    a = aggs.IPPrefix(
+        **{
+            "field": "ipv6",
+            "prefix_length": 64,
+            "is_ipv6": True,
+        }
+    )
+
+    assert {
+        "ip_prefix": {
+            "field": "ipv6",
+            "prefix_length": 64,
+            "is_ipv6": True,
+        },
+    } == a.to_dict()
+
+
 def test_multi_terms_aggregation():
     a = aggs.MultiTerms(terms=[{"field": "tags"}, {"field": "author.row"}])
     assert {
@@ -308,6 +338,23 @@ def test_multi_terms_aggregation():
                 {"field": "tags"},
                 {"field": "author.row"},
             ]
+        }
+    } == a.to_dict()
+
+
+def test_categorize_text_aggregation():
+    a = aggs.CategorizeText(
+        field="tags",
+        categorization_filters=["\\w+\\_\\d{3}"],
+        max_matched_tokens=2,
+        similarity_threshold=30,
+    )
+    assert {
+        "categorize_text": {
+            "field": "tags",
+            "categorization_filters": ["\\w+\\_\\d{3}"],
+            "max_matched_tokens": 2,
+            "similarity_threshold": 30,
         }
     } == a.to_dict()
 
@@ -334,11 +381,28 @@ def test_t_test_aggregation():
     } == a.to_dict()
 
 
+def test_geo_line_aggregation():
+    a = aggs.GeoLine(point={"field": "centroid"}, sort={"field": "date"})
+
+    assert {
+        "geo_line": {
+            "point": {"field": "centroid"},
+            "sort": {"field": "date"},
+        },
+    } == a.to_dict()
+
+
 def test_inference_aggregation():
     a = aggs.Inference(model_id="model-id", buckets_path={"agg_name": "agg_name"})
     assert {
         "inference": {"buckets_path": {"agg_name": "agg_name"}, "model_id": "model-id"}
     } == a.to_dict()
+
+
+def test_matrix_stats_aggregation():
+    a = aggs.MatrixStats(fields=["poverty", "income"])
+
+    assert {"matrix_stats": {"fields": ["poverty", "income"]}} == a.to_dict()
 
 
 def test_moving_percentiles_aggregation():
@@ -365,4 +429,23 @@ def test_normalize_aggregation():
     a = aggs.Normalize(buckets_path="normalized", method="percent_of_sum")
     assert {
         "normalize": {"buckets_path": "normalized", "method": "percent_of_sum"}
+    } == a.to_dict()
+
+
+def test_random_sampler_aggregation():
+    a = aggs.RandomSampler(probability=0.1).metric(
+        "price_percentiles",
+        "percentiles",
+        field="price",
+    )
+
+    assert {
+        "random_sampler": {
+            "probability": 0.1,
+        },
+        "aggs": {
+            "price_percentiles": {
+                "percentiles": {"field": "price"},
+            },
+        },
     } == a.to_dict()

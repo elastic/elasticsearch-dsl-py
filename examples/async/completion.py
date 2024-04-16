@@ -54,13 +54,13 @@ class Person(AsyncDocument):
     name = Text(fields={"keyword": Keyword()})
     popularity = Long()
 
-    # copletion field with a custom analyzer
+    # completion field with a custom analyzer
     suggest = Completion(analyzer=ascii_fold)
 
     def clean(self):
         """
         Automatically construct the suggestion input and weight by taking all
-        possible permutation of Person's name as ``input`` and taking their
+        possible permutations of Person's name as ``input`` and taking their
         popularity as ``weight``.
         """
         self.suggest = {
