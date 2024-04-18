@@ -20,21 +20,27 @@
 
 Requirements:
 
-$ pip install nltk sentence_transformers tqdm elasticsearch_dsl
+$ pip install nltk sentence_transformers tqdm elasticsearch-dsl[async]
 
 To run the example:
 
 $ python vectors.py "text to search"
 
-The index will be created automatically if it does not exist. Add `--create` to
-regenerate it.
+The index will be created automatically if it does not exist. Add
+`--recreate-index` to regenerate it.
 
-The example dataset includes a selection of workplace documentation. The
-following are good example queries to try out:
+The example dataset includes a selection of workplace documents. The
+following are good example queries to try out with this dataset:
 
 $ python vectors.py "work from home"
 $ python vectors.py "vacation time"
-$ python vectors.py "bring a bird to work"
+$ python vectors.py "can I bring a bird to work?"
+
+When the index is created, the documents are split into short passages, and for
+each passage an embedding is generated using the open source
+"all-MiniLM-L6-v2" model. The documents that are returned as search results are
+those that have the highest scored passages. Add `--show-inner-hits` to the
+command to see individual passage results as well.
 """
 
 import argparse
@@ -128,24 +134,24 @@ async def create():
 
 async def search(query):
     model = WorkplaceDoc.get_embedding_model()
-    search = WorkplaceDoc.search().knn(
+    return WorkplaceDoc.search().knn(
         field="passages.embedding",
         k=5,
         num_candidates=50,
         query_vector=list(model.encode(query)),
-        inner_hits={"size": 3},
+        inner_hits={"size": 2},
     )
-    async for hit in search:
-        print(f"Document: {hit.name} (Category: {hit.category}")
-        for passage in hit.meta.inner_hits.passages:
-            print(f"  - [Score: {passage.meta.score}] {passage.content!r}")
-        print("")
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Vector database with Elasticsearch")
     parser.add_argument(
-        "--create", action="store_true", help="Create and populate a new index"
+        "--recreate-index", action="store_true", help="Recreate and populate the index"
+    )
+    parser.add_argument(
+        "--show-inner-hits",
+        action="store_true",
+        help="Show results for individual passages",
     )
     parser.add_argument("query", action="store", help="The search query")
     return parser.parse_args()
@@ -157,10 +163,20 @@ async def main():
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
-    if args.create or not await WorkplaceDoc._index.exists():
+    if args.recreate_index or not await WorkplaceDoc._index.exists():
         await create()
 
-    await search(args.query)
+    results = await search(args.query)
+
+    async for hit in results:
+        print(
+            f"Document: {hit.name} [Category: {hit.category}] [Score: {hit.meta.score}]"
+        )
+        print(f"Summary: {hit.summary}")
+        if args.show_inner_hits:
+            for passage in hit.meta.inner_hits.passages:
+                print(f"  - [Score: {passage.meta.score}] {passage.content!r}")
+        print("")
 
     # close the connection
     await async_connections.get_connection().close()
