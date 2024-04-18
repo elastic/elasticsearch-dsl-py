@@ -21,7 +21,7 @@ from ..examples import alias_migration
 from ..examples.alias_migration import ALIAS, PATTERN, BlogPost, migrate
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_alias_migration(write_client):
     # create the index
     alias_migration.setup()

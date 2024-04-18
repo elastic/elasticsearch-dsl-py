@@ -20,7 +20,7 @@ import pytest
 from ..examples.percolate import BlogPost, setup
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_post_gets_tagged_automatically(write_client):
     setup()
 

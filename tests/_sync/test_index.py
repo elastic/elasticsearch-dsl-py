@@ -182,7 +182,7 @@ def test_index_template_can_have_order():
     assert {"index_patterns": ["i-*"], "order": 2} == it.to_dict()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_index_template_save_result(mock_client):
     it = IndexTemplate("test-template", "test-*")
 

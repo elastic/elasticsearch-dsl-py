@@ -138,7 +138,7 @@ def test_from_dict_doesnt_need_query():
     assert {"script": {"source": "test"}} == ubq.to_dict()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_params_being_passed_to_search(mock_client):
     ubq = UpdateByQuery(using="mock")
     ubq = ubq.params(routing="42")

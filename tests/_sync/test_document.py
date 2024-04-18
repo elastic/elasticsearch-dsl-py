@@ -571,21 +571,21 @@ def test_meta_fields_can_be_set_directly_in_init():
     assert md.meta.id is p
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_save_no_index(mock_client):
     md = MyDoc()
     with raises(ValidationException):
         md.save(using="mock")
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_delete_no_index(mock_client):
     md = MyDoc()
     with raises(ValidationException):
         md.delete(using="mock")
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_update_no_fields():
     md = MyDoc()
     with raises(IllegalOperation):

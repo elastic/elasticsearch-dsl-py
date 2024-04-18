@@ -25,7 +25,7 @@ class Post(Document):
     published_from = Date()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_index_template_works(write_client):
     it = IndexTemplate("test-template", "test-*")
     it.document(Post)
@@ -47,7 +47,7 @@ def test_index_template_works(write_client):
     } == write_client.indices.get_mapping(index="test-blog")
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_index_can_be_saved_even_with_settings(write_client):
     i = Index("test-blog", using=write_client)
     i.settings(number_of_shards=3, number_of_replicas=0)
@@ -61,13 +61,13 @@ def test_index_can_be_saved_even_with_settings(write_client):
     )
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_index_exists(data_client):
     assert Index("git").exists()
     assert not Index("not-there").exists()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_index_can_be_created_with_settings_and_mappings(write_client):
     i = Index("test-blog", using=write_client)
     i.document(Post)
@@ -93,7 +93,7 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
     }
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_delete(write_client):
     write_client.indices.create(
         index="test-index",
@@ -105,7 +105,7 @@ def test_delete(write_client):
     assert not write_client.indices.exists(index="test-index")
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_multiple_indices_with_same_doc_type_work(write_client):
     i1 = Index("test-index-1", using=write_client)
     i2 = Index("test-index-2", using=write_client)

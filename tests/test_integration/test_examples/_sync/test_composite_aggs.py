@@ -22,7 +22,7 @@ from elasticsearch_dsl import A, Search
 from ..examples.composite_agg import scan_aggs
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_scan_aggs_exhausts_all_files(data_client):
     s = Search(index="flat-git")
     key_aggs = {"files": A("terms", field="files")}
@@ -31,7 +31,7 @@ def test_scan_aggs_exhausts_all_files(data_client):
     assert len(file_list) == 26
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_scan_aggs_with_multiple_aggs(data_client):
     s = Search(index="flat-git")
     key_aggs = [

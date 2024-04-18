@@ -30,7 +30,7 @@ def test_expand__to_dot_is_respected():
     assert {"query": {"match": {"a__b": 42}}} == s.to_dict()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_execute_uses_cache():
     s = Search()
     r = object()
@@ -39,7 +39,7 @@ def test_execute_uses_cache():
     assert r is s.execute()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_cache_can_be_ignored(mock_client):
     s = Search(using="mock")
     r = object()
@@ -49,7 +49,7 @@ def test_cache_can_be_ignored(mock_client):
     mock_client.search.assert_called_once_with(index=None, body={})
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_iter_iterates_over_hits():
     s = Search()
     s._response = [1, 2, 3]
@@ -518,7 +518,7 @@ def test_from_dict_doesnt_need_query():
     assert {"size": 5} == s.to_dict()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_params_being_passed_to_search(mock_client):
     s = Search(using="mock")
     s = s.params(routing="42")
@@ -608,7 +608,7 @@ def test_exclude():
     } == s.to_dict()
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_delete_by_query(mock_client):
     s = Search(using="mock").query("match", lang="java")
     s.delete()
@@ -693,7 +693,7 @@ def test_rescore_query_to_dict():
     }
 
 
-@pytest.mark.syncio
+@pytest.mark.sync
 def test_empty_search():
     s = EmptySearch(index="index-name")
     s = s.query("match", lang="java")

@@ -120,7 +120,7 @@ def main(check=False):
                 [
                     "sed",
                     "-i.bak",
-                    "s/pytest.mark.asyncio/pytest.mark.syncio/",
+                    "s/pytest.mark.asyncio/pytest.mark.sync/",
                     f"{output_dir}{file}",
                 ]
             )
