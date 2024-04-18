@@ -70,6 +70,7 @@ def main(check=False):
         "async_pull_request": "pull_request",
         "async_examples": "examples",
         "assert_awaited_once_with": "assert_called_once_with",
+        "pytest_asyncio": "pytest",
     }
     rules = [
         unasync.Rule(
@@ -112,6 +113,14 @@ def main(check=False):
                     "sed",
                     "-i.bak",
                     "s/elasticsearch-dsl\\[async\\]/elasticsearch-dsl/",
+                    f"{output_dir}{file}",
+                ]
+            )
+            subprocess.check_call(
+                [
+                    "sed",
+                    "-i.bak",
+                    "s/pytest.mark.asyncio/pytest.mark.syncio/",
                     f"{output_dir}{file}",
                 ]
             )

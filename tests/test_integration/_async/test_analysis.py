@@ -15,9 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from elasticsearch_dsl import analyzer, token_filter, tokenizer
 
 
+@pytest.mark.asyncio
 async def test_simulate_with_just__builtin_tokenizer(async_client):
     a = analyzer("my-analyzer", tokenizer="keyword")
     tokens = (await a.async_simulate("Hello World!", using=async_client)).tokens
@@ -26,6 +29,7 @@ async def test_simulate_with_just__builtin_tokenizer(async_client):
     assert tokens[0].token == "Hello World!"
 
 
+@pytest.mark.asyncio
 async def test_simulate_complex(async_client):
     a = analyzer(
         "my-analyzer",
@@ -39,6 +43,7 @@ async def test_simulate_complex(async_client):
     assert ["this", "works"] == [t.token for t in tokens]
 
 
+@pytest.mark.asyncio
 async def test_simulate_builtin(async_client):
     a = analyzer("my-analyzer", "english")
     tokens = (await a.async_simulate("fixes running")).tokens

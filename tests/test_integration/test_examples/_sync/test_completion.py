@@ -15,10 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
 
 from ..examples.completion import Person
 
 
+@pytest.mark.syncio
 def test_person_suggests_on_all_variants_of_name(write_client):
     Person.init(using=write_client)
 

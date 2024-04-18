@@ -17,7 +17,8 @@
 
 from datetime import datetime
 
-from pytest import fixture
+import pytest
+from pytest_asyncio import fixture
 
 from elasticsearch_dsl import Q
 
@@ -59,6 +60,7 @@ async def question(async_write_client):
     return q
 
 
+@pytest.mark.asyncio
 async def test_comment(async_write_client, question):
     await question.add_comment(nick, "Just use elasticsearch-py")
 
@@ -71,6 +73,7 @@ async def test_comment(async_write_client, question):
     assert c.author.username == "fxdgear"
 
 
+@pytest.mark.asyncio
 async def test_question_answer(async_write_client, question):
     a = await question.add_answer(honza, "Just use `elasticsearch-py`!")
 

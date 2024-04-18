@@ -18,6 +18,7 @@
 import string
 from random import choice
 
+import pytest
 from pytest import raises
 
 from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analyzer
@@ -181,6 +182,7 @@ def test_index_template_can_have_order():
     assert {"index_patterns": ["i-*"], "order": 2} == it.to_dict()
 
 
+@pytest.mark.syncio
 def test_index_template_save_result(mock_client):
     it = IndexTemplate("test-template", "test-*")
 

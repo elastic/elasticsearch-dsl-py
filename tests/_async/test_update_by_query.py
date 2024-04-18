@@ -17,6 +17,8 @@
 
 from copy import deepcopy
 
+import pytest
+
 from elasticsearch_dsl import AsyncUpdateByQuery, Q
 from elasticsearch_dsl.response import UpdateByQueryResponse
 
@@ -136,6 +138,7 @@ def test_from_dict_doesnt_need_query():
     assert {"script": {"source": "test"}} == ubq.to_dict()
 
 
+@pytest.mark.asyncio
 async def test_params_being_passed_to_search(async_mock_client):
     ubq = AsyncUpdateByQuery(using="mock")
     ubq = ubq.params(routing="42")
