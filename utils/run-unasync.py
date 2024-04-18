@@ -107,6 +107,14 @@ def main(check=False):
                     f"{output_dir}{file}",
                 ]
             )
+            subprocess.check_call(
+                [
+                    "sed",
+                    "-i.bak",
+                    "s/elasticsearch-dsl\\[async\\]/elasticsearch-dsl/",
+                    f"{output_dir}{file}",
+                ]
+            )
             subprocess.check_call(["rm", f"{output_dir}{file}.bak"])
 
             if check:
