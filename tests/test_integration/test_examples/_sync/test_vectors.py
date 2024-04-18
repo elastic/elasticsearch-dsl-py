@@ -15,11 +15,17 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from unittest import SkipTest
 
 from ..examples.vectors import create, search
 
 
-def test_vector_search(write_client):
+def test_vector_search(write_client, es_version):
+    # this test only runs on Elasticsearch >= 8.11 because the example uses
+    # a dense vector without giving them an explicit size
+    if es_version < (8, 11):
+        raise SkipTest("This test requires Elasticsearch 8.11 or newer")
+
     create()
     results = (search("work from home")).execute()
     assert results[0].name == "Work From Home Policy"
