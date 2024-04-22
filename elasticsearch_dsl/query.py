@@ -416,6 +416,10 @@ class Intervals(Query):
     name = "intervals"
 
 
+class Knn(Query):
+    name = "knn"
+
+
 class Limit(Query):
     name = "limit"
 

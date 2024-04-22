@@ -612,3 +612,14 @@ def test_expand_double_underscore_to_dot_setting():
     q = query.Term(comment__count=2)
     assert q.to_dict() == {"term": {"comment__count": 2}}
     utils.EXPAND__TO_DOT = True
+
+
+def test_knn_query():
+    q = query.Knn(field="image-vector", query_vector=[-5, 9, -12], num_candidates=10)
+    assert q.to_dict() == {
+        "knn": {
+            "field": "image-vector",
+            "query_vector": [-5, 9, -12],
+            "num_candidates": 10,
+        }
+    }
