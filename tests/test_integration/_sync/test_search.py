@@ -16,6 +16,7 @@
 #  under the License.
 
 
+import pytest
 from elasticsearch import ApiError
 from pytest import raises
 
@@ -43,6 +44,7 @@ class Commit(Document):
         name = "flat-git"
 
 
+@pytest.mark.sync
 def test_filters_aggregation_buckets_are_accessible(data_client):
     has_tests_query = Q("term", files="test_elasticsearch_dsl")
     s = Commit.search()[0:0]
@@ -65,6 +67,7 @@ def test_filters_aggregation_buckets_are_accessible(data_client):
     )
 
 
+@pytest.mark.sync
 def test_top_hits_are_wrapped_in_response(data_client):
     s = Commit.search()[0:0]
     s.aggs.bucket("top_authors", "terms", field="author.name.raw").metric(
@@ -81,6 +84,7 @@ def test_top_hits_are_wrapped_in_response(data_client):
     assert isinstance(hits[0], Commit)
 
 
+@pytest.mark.sync
 def test_inner_hits_are_wrapped_in_response(data_client):
     s = Search(index="git")[0:1].query(
         "has_parent", parent_type="repo", inner_hits={}, query=Q("match_all")
@@ -94,6 +98,7 @@ def test_inner_hits_are_wrapped_in_response(data_client):
     )
 
 
+@pytest.mark.sync
 def test_scan_respects_doc_types(data_client):
     repos = [repo for repo in Repository.search().scan()]
 
@@ -102,6 +107,7 @@ def test_scan_respects_doc_types(data_client):
     assert repos[0].organization == "elasticsearch"
 
 
+@pytest.mark.sync
 def test_scan_iterates_through_all_docs(data_client):
     s = Search(index="flat-git")
 
@@ -111,6 +117,7 @@ def test_scan_iterates_through_all_docs(data_client):
     assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
 
 
+@pytest.mark.sync
 def test_response_is_cached(data_client):
     s = Repository.search()
     repos = [repo for repo in s]
@@ -119,6 +126,7 @@ def test_response_is_cached(data_client):
     assert s._response.hits == repos
 
 
+@pytest.mark.sync
 def test_multi_search(data_client):
     s1 = Repository.search()
     s2 = Search(index="flat-git")
@@ -136,6 +144,7 @@ def test_multi_search(data_client):
     assert r2._search is s2
 
 
+@pytest.mark.sync
 def test_multi_missing(data_client):
     s1 = Repository.search()
     s2 = Search(index="flat-git")
@@ -159,6 +168,7 @@ def test_multi_missing(data_client):
     assert r3 is None
 
 
+@pytest.mark.sync
 def test_raw_subfield_can_be_used_in_aggs(data_client):
     s = Search(index="git")[0:0]
     s.aggs.bucket("authors", "terms", field="author.name.raw", size=1)

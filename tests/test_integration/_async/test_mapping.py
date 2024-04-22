@@ -15,11 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
 from pytest import raises
 
 from elasticsearch_dsl import AsyncMapping, analysis, exceptions
 
 
+@pytest.mark.asyncio
 async def test_mapping_saved_into_es(async_write_client):
     m = AsyncMapping()
     m.field(
@@ -40,6 +42,7 @@ async def test_mapping_saved_into_es(async_write_client):
     } == await async_write_client.indices.get_mapping(index="test-mapping")
 
 
+@pytest.mark.asyncio
 async def test_mapping_saved_into_es_when_index_already_exists_closed(
     async_write_client,
 ):
@@ -67,6 +70,7 @@ async def test_mapping_saved_into_es_when_index_already_exists_closed(
     } == await async_write_client.indices.get_mapping(index="test-mapping")
 
 
+@pytest.mark.asyncio
 async def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
     async_write_client,
 ):
@@ -98,6 +102,7 @@ async def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
     } == await async_write_client.indices.get_mapping(index="test-mapping")
 
 
+@pytest.mark.asyncio
 async def test_mapping_gets_updated_from_es(async_write_client):
     await async_write_client.indices.create(
         index="test-mapping",

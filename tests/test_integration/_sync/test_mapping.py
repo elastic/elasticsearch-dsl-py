@@ -15,11 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
 from pytest import raises
 
 from elasticsearch_dsl import Mapping, analysis, exceptions
 
 
+@pytest.mark.sync
 def test_mapping_saved_into_es(write_client):
     m = Mapping()
     m.field(
@@ -40,6 +42,7 @@ def test_mapping_saved_into_es(write_client):
     } == write_client.indices.get_mapping(index="test-mapping")
 
 
+@pytest.mark.sync
 def test_mapping_saved_into_es_when_index_already_exists_closed(
     write_client,
 ):
@@ -65,6 +68,7 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(
     } == write_client.indices.get_mapping(index="test-mapping")
 
 
+@pytest.mark.sync
 def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
     write_client,
 ):
@@ -96,6 +100,7 @@ def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
     } == write_client.indices.get_mapping(index="test-mapping")
 
 
+@pytest.mark.sync
 def test_mapping_gets_updated_from_es(write_client):
     write_client.indices.create(
         index="test-mapping",

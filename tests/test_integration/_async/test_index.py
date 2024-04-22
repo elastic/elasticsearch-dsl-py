@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from elasticsearch_dsl import (
     AsyncDocument,
     AsyncIndex,
@@ -30,6 +32,7 @@ class Post(AsyncDocument):
     published_from = Date()
 
 
+@pytest.mark.asyncio
 async def test_index_template_works(async_write_client):
     it = AsyncIndexTemplate("test-template", "test-*")
     it.document(Post)
@@ -51,6 +54,7 @@ async def test_index_template_works(async_write_client):
     } == await async_write_client.indices.get_mapping(index="test-blog")
 
 
+@pytest.mark.asyncio
 async def test_index_can_be_saved_even_with_settings(async_write_client):
     i = AsyncIndex("test-blog", using=async_write_client)
     i.settings(number_of_shards=3, number_of_replicas=0)
@@ -66,11 +70,13 @@ async def test_index_can_be_saved_even_with_settings(async_write_client):
     )
 
 
+@pytest.mark.asyncio
 async def test_index_exists(async_data_client):
     assert await AsyncIndex("git").exists()
     assert not await AsyncIndex("not-there").exists()
 
 
+@pytest.mark.asyncio
 async def test_index_can_be_created_with_settings_and_mappings(async_write_client):
     i = AsyncIndex("test-blog", using=async_write_client)
     i.document(Post)
@@ -96,6 +102,7 @@ async def test_index_can_be_created_with_settings_and_mappings(async_write_clien
     }
 
 
+@pytest.mark.asyncio
 async def test_delete(async_write_client):
     await async_write_client.indices.create(
         index="test-index",
@@ -107,6 +114,7 @@ async def test_delete(async_write_client):
     assert not await async_write_client.indices.exists(index="test-index")
 
 
+@pytest.mark.asyncio
 async def test_multiple_indices_with_same_doc_type_work(async_write_client):
     i1 = AsyncIndex("test-index-1", using=async_write_client)
     i2 = AsyncIndex("test-index-2", using=async_write_client)

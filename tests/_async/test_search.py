@@ -17,6 +17,7 @@
 
 from copy import deepcopy
 
+import pytest
 from pytest import raises
 
 from elasticsearch_dsl import A, AsyncEmptySearch, AsyncSearch, Document, Q, query
@@ -29,6 +30,7 @@ def test_expand__to_dot_is_respected():
     assert {"query": {"match": {"a__b": 42}}} == s.to_dict()
 
 
+@pytest.mark.asyncio
 async def test_execute_uses_cache():
     s = AsyncSearch()
     r = object()
@@ -37,6 +39,7 @@ async def test_execute_uses_cache():
     assert r is await s.execute()
 
 
+@pytest.mark.asyncio
 async def test_cache_can_be_ignored(async_mock_client):
     s = AsyncSearch(using="mock")
     r = object()
@@ -46,6 +49,7 @@ async def test_cache_can_be_ignored(async_mock_client):
     async_mock_client.search.assert_awaited_once_with(index=None, body={})
 
 
+@pytest.mark.asyncio
 async def test_iter_iterates_over_hits():
     s = AsyncSearch()
     s._response = [1, 2, 3]
@@ -508,6 +512,7 @@ def test_from_dict_doesnt_need_query():
     assert {"size": 5} == s.to_dict()
 
 
+@pytest.mark.asyncio
 async def test_params_being_passed_to_search(async_mock_client):
     s = AsyncSearch(using="mock")
     s = s.params(routing="42")
@@ -599,6 +604,7 @@ def test_exclude():
     } == s.to_dict()
 
 
+@pytest.mark.asyncio
 async def test_delete_by_query(async_mock_client):
     s = AsyncSearch(using="mock").query("match", lang="java")
     await s.delete()
@@ -683,6 +689,7 @@ def test_rescore_query_to_dict():
     }
 
 
+@pytest.mark.asyncio
 async def test_empty_search():
     s = AsyncEmptySearch(index="index-name")
     s = s.query("match", lang="java")

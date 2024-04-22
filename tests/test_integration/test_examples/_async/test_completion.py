@@ -15,10 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
 
 from ..async_examples.completion import Person
 
 
+@pytest.mark.asyncio
 async def test_person_suggests_on_all_variants_of_name(async_write_client):
     await Person.init(using=async_write_client)
 
