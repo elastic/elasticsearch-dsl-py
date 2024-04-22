@@ -15,10 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from elasticsearch_dsl import AsyncUpdateByQuery
 from elasticsearch_dsl.search import Q
 
 
+@pytest.mark.asyncio
 async def test_update_by_query_no_script(async_write_client, setup_ubq_tests):
     index = setup_ubq_tests
 
@@ -38,6 +41,7 @@ async def test_update_by_query_no_script(async_write_client, setup_ubq_tests):
     assert response.success()
 
 
+@pytest.mark.asyncio
 async def test_update_by_query_with_script(async_write_client, setup_ubq_tests):
     index = setup_ubq_tests
 
@@ -55,6 +59,7 @@ async def test_update_by_query_with_script(async_write_client, setup_ubq_tests):
     assert response.version_conflicts == 0
 
 
+@pytest.mark.asyncio
 async def test_delete_by_query_with_script(async_write_client, setup_ubq_tests):
     index = setup_ubq_tests
 

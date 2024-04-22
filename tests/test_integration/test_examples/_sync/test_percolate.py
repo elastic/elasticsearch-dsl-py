@@ -15,9 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from ..examples.percolate import BlogPost, setup
 
 
+@pytest.mark.sync
 def test_post_gets_tagged_automatically(write_client):
     setup()
 

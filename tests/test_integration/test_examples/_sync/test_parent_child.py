@@ -17,6 +17,7 @@
 
 from datetime import datetime
 
+import pytest
 from pytest import fixture
 
 from elasticsearch_dsl import Q
@@ -59,6 +60,7 @@ def question(write_client):
     return q
 
 
+@pytest.mark.sync
 def test_comment(write_client, question):
     question.add_comment(nick, "Just use elasticsearch-py")
 
@@ -71,6 +73,7 @@ def test_comment(write_client, question):
     assert c.author.username == "fxdgear"
 
 
+@pytest.mark.sync
 def test_question_answer(write_client, question):
     a = question.add_answer(honza, "Just use `elasticsearch-py`!")
 

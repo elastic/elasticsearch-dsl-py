@@ -124,6 +124,7 @@ def pr_search_cls(es_version):
     return PRSearch
 
 
+@pytest.mark.sync
 def test_facet_with_custom_metric(data_client):
     ms = MetricSearch()
     r = ms.execute()
@@ -133,6 +134,7 @@ def test_facet_with_custom_metric(data_client):
     assert dates[0] == 1399038439000
 
 
+@pytest.mark.sync
 def test_nested_facet(pull_request, pr_search_cls):
     prs = pr_search_cls()
     r = prs.execute()
@@ -141,6 +143,7 @@ def test_nested_facet(pull_request, pr_search_cls):
     assert [(datetime(2018, 1, 1, 0, 0), 1, False)] == r.facets.comments
 
 
+@pytest.mark.sync
 def test_nested_facet_with_filter(pull_request, pr_search_cls):
     prs = pr_search_cls(filters={"comments": datetime(2018, 1, 1, 0, 0)})
     r = prs.execute()
@@ -153,6 +156,7 @@ def test_nested_facet_with_filter(pull_request, pr_search_cls):
     assert not r.hits
 
 
+@pytest.mark.sync
 def test_datehistogram_facet(data_client, repo_search_cls):
     rs = repo_search_cls()
     r = rs.execute()
@@ -161,6 +165,7 @@ def test_datehistogram_facet(data_client, repo_search_cls):
     assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 
+@pytest.mark.sync
 def test_boolean_facet(data_client, repo_search_cls):
     rs = repo_search_cls()
     r = rs.execute()
@@ -171,6 +176,7 @@ def test_boolean_facet(data_client, repo_search_cls):
     assert value is True
 
 
+@pytest.mark.sync
 def test_empty_search_finds_everything(data_client, es_version, commit_search_cls):
     cs = commit_search_cls()
     r = cs.execute()
@@ -216,6 +222,7 @@ def test_empty_search_finds_everything(data_client, es_version, commit_search_cl
     ] == r.facets.deletions
 
 
+@pytest.mark.sync
 def test_term_filters_are_shown_as_selected_and_data_is_filtered(
     data_client, commit_search_cls
 ):
@@ -262,6 +269,7 @@ def test_term_filters_are_shown_as_selected_and_data_is_filtered(
     ] == r.facets.deletions
 
 
+@pytest.mark.sync
 def test_range_filters_are_shown_as_selected_and_data_is_filtered(
     data_client, commit_search_cls
 ):
@@ -272,6 +280,7 @@ def test_range_filters_are_shown_as_selected_and_data_is_filtered(
     assert 19 == r.hits.total.value
 
 
+@pytest.mark.sync
 def test_pagination(data_client, commit_search_cls):
     cs = commit_search_cls()
     cs = cs[0:20]

@@ -15,10 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from ..async_examples import alias_migration
 from ..async_examples.alias_migration import ALIAS, PATTERN, BlogPost, migrate
 
 
+@pytest.mark.asyncio
 async def test_alias_migration(async_write_client):
     # create the index
     await alias_migration.setup()
