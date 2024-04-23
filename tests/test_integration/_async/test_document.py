@@ -219,7 +219,7 @@ async def test_update_object_field(async_write_client):
     )
     await w.save()
 
-    assert "updated" == await w.update(owner=[{"name": "Honza"}, {"name": "Nick"}])
+    assert "updated" == await w.update(owner=[{"name": "Honza"}, User(name="Nick")])
     assert w.owner[0].name == "Honza"
     assert w.owner[1].name == "Nick"
 

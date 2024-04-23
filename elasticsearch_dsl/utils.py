@@ -187,6 +187,12 @@ class AttrDict:
     def to_dict(self):
         return self._d_
 
+    def keys(self):
+        return self._d_.keys()
+
+    def items(self):
+        return self._d_.items()
+
 
 class DslMeta(type):
     """
