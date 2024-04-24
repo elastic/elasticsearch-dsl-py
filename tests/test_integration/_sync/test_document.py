@@ -242,6 +242,24 @@ def test_update_script(write_client):
 
 
 @pytest.mark.sync
+def test_update_script_with_dict(write_client):
+    Wiki.init()
+    w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
+    w.save()
+
+    w.update(
+        script={
+            "source": "ctx._source.views += params.inc1 + params.inc2",
+            "params": {"inc1": 2},
+            "lang": "painless",
+        },
+        inc2=3,
+    )
+    w = Wiki.get(id="elasticsearch-py")
+    assert w.views == 47
+
+
+@pytest.mark.sync
 def test_update_retry_on_conflict(write_client):
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
