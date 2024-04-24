@@ -101,6 +101,9 @@ class AttrList:
     def __setstate__(self, state):
         self._l_, self._obj_wrapper = state
 
+    def to_list(self):
+        return self._l_
+
 
 class AttrDict:
     """
