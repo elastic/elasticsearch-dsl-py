@@ -252,6 +252,8 @@ class AsyncDocument(DocumentBase, metaclass=AsyncIndexMeta):
         :arg doc_as_upsert:  Instead of sending a partial doc plus an upsert
             doc, setting doc_as_upsert to true will use the contents of doc as
             the upsert value
+        :arg script: the source code of the script as a string, or a dictionary
+            with script attributes to update.
         :arg return_doc_meta: set to ``True`` to return all metadata from the
             index API call instead of only the operation result
 
@@ -268,11 +270,15 @@ class AsyncDocument(DocumentBase, metaclass=AsyncIndexMeta):
                 body["upsert"] = upsert
 
             if script:
-                script = {"source": script}
+                if isinstance(script, str):
+                    script = {"source": script}
             else:
                 script = {"id": script_id}
 
-            script["params"] = fields
+            if "params" not in script:
+                script["params"] = fields
+            else:
+                script["params"].update(fields)
 
             body["script"] = script
             body["scripted_upsert"] = scripted_upsert
