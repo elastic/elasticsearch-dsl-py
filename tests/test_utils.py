@@ -44,6 +44,12 @@ def test_attrlist_slice():
     assert isinstance(l[:][0], MyAttrDict)
 
 
+def test_attrdict_keys_items():
+    a = utils.AttrDict({"a": {"b": 42, "c": 47}, "d": "e"})
+    assert list(a.keys()) == ["a", "d"]
+    assert list(a.items()) == [("a", {"b": 42, "c": 47}), ("d", "e")]
+
+
 def test_merge():
     a = utils.AttrDict({"a": {"b": 42, "c": 47}})
     b = {"a": {"b": 123, "d": -12}, "e": [1, 2, 3]}
