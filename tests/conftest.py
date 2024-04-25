@@ -189,6 +189,7 @@ async def async_write_client(write_client, async_client):
 @fixture
 def mock_client(dummy_response):
     client = Mock()
+    client.options.return_value = client
     client.search.return_value = dummy_response
     add_connection("mock", client)
 
@@ -200,6 +201,7 @@ def mock_client(dummy_response):
 @fixture
 def async_mock_client(dummy_response):
     client = Mock()
+    client.options.return_value = client
     client.search = AsyncMock(return_value=dummy_response)
     client.indices = AsyncMock()
     client.update_by_query = AsyncMock()

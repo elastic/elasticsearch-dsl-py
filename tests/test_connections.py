@@ -25,6 +25,9 @@ class DummyElasticsearch:
     def __init__(self, *args, hosts, **kwargs):
         self.hosts = hosts
 
+    def options(self, **kwargs):
+        return self
+
 
 def test_default_connection_is_returned_by_default():
     c = connections.Connections()

@@ -58,7 +58,7 @@ class Connections:
         """
         Add a connection object, it will be passed through as-is.
         """
-        self._conns[alias] = conn
+        self._conns[alias] = self._with_user_agent(conn)
 
     def remove_connection(self, alias):
         """
@@ -82,7 +82,7 @@ class Connections:
         """
         kwargs.setdefault("serializer", serializer)
         conn = self._conns[alias] = self.elasticsearch_class(**kwargs)
-        return conn
+        return self._with_user_agent(conn)
 
     def get_connection(self, alias="default"):
         """
@@ -96,7 +96,7 @@ class Connections:
         # do not check isinstance(Elasticsearch) so that people can wrap their
         # clients
         if not isinstance(alias, str):
-            return alias
+            return self._with_user_agent(alias)
 
         # connection already established
         try:
@@ -110,6 +110,16 @@ class Connections:
         except KeyError:
             # no connection and no kwargs to set one up
             raise KeyError(f"There is no connection with alias {alias!r}.")
+
+    def _with_user_agent(self, conn):
+        from . import __versionstr__  # this is here to avoid circular imports
+
+        # try to inject our user agent
+        if hasattr(conn, "options"):
+            conn = conn.options(
+                headers={"user-agent": f"elasticsearch-dsl-py/{__versionstr__}"}
+            )
+        return conn
 
 
 connections = Connections()
