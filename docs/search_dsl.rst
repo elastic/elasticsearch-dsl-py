@@ -663,7 +663,7 @@ If you need to execute multiple searches at the same time you can use the
     responses = ms.execute()
 
     for response in responses:
-        print("Results for query %r." % response.search.query)
+        print("Results for query %r." % response._search.query)
         for hit in response:
             print(hit.title)
 
