@@ -15,6 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from elasticsearch_dsl.connections import get_connection
 from elasticsearch_dsl.search import Q, Search
 
 
@@ -24,16 +25,17 @@ def test_count_all(data_client):
 
 
 def test_count_prefetch(data_client, mocker):
-    mocker.spy(data_client, "count")
+    client = get_connection()
+    mocker.spy(client, "count")
 
-    search = Search(using=data_client).index("git")
+    search = Search().index("git")
     search.execute()
     assert search.count() == 53
-    assert data_client.count.call_count == 0
+    assert client.count.call_count == 0
 
     search._response.hits.total.relation = "gte"
     assert search.count() == 53
-    assert data_client.count.call_count == 1
+    assert client.count.call_count == 1
 
 
 def test_count_filter(data_client):
