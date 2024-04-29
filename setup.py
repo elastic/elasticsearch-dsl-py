@@ -45,6 +45,10 @@ develop_requires = [
     "pytest-asyncio",
     "pytz",
     "coverage",
+    # the following three are used by the vectors example and its tests
+    "nltk",
+    "sentence_transformers",
+    "tqdm",
     # Override Read the Docs default (sphinx<2 and sphinx-rtd-theme<0.5)
     "sphinx>2",
     "sphinx-rtd-theme>0.5",
