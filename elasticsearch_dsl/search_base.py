@@ -143,7 +143,7 @@ class Request:
         """
         Specify query params to be used when executing the search. All the
         keyword arguments will override the current values. See
-        https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.search
+        https://elasticsearch-py.readthedocs.io/en/latest/api/elasticsearch.html#elasticsearch.Elasticsearch.search
         for all available parameters.
 
         Example::

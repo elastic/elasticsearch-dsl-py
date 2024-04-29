@@ -9,22 +9,28 @@ The :ref:`Asynchronous API <async_api>` classes are documented separately.
 .. py:module:: elasticsearch_dsl
 
 .. autoclass:: Search
+   :inherited-members:
    :members:
 
 .. autoclass:: MultiSearch
+   :inherited-members:
    :members:
 
 .. autoclass:: Document
+   :inherited-members:
    :members:
 
 .. autoclass:: Index
+   :inherited-members:
    :members:
 
 .. autoclass:: FacetedSearch
+   :inherited-members:
    :members:
 
 .. autoclass:: UpdateByQuery
-  :members:
+   :inherited-members:
+   :members:
 
 Mappings
 --------
