@@ -17,7 +17,7 @@
 
 from pytest import raises
 
-from elasticsearch_dsl import function, query
+from elasticsearch_dsl import function, query, utils
 
 
 def test_empty_Q_is_match_all():
@@ -581,3 +581,12 @@ def test_script_score():
     assert isinstance(q.query, query.MatchAll)
     assert q.script == {"source": "...", "params": {}}
     assert q.to_dict() == d
+
+
+def test_expand_double_underscore_to_dot_setting():
+    q = query.Term(comment__count=2)
+    assert q.to_dict() == {"term": {"comment.count": 2}}
+    utils.EXPAND__TO_DOT = False
+    q = query.Term(comment__count=2)
+    assert q.to_dict() == {"term": {"comment__count": 2}}
+    utils.EXPAND__TO_DOT = True
