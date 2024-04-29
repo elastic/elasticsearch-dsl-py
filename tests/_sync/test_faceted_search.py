@@ -192,3 +192,10 @@ def test_date_histogram_no_interval_keyerror():
     with pytest.raises(KeyError) as e:
         dhf.get_value_filter(datetime.now())
     assert str(e.value) == "'interval'"
+
+
+def test_params_added_to_search():
+    bs = BlogSearch("python search")
+    assert bs._s._params == {}
+    bs.params(routing="42")
+    assert bs._s._params == {"routing": "42"}

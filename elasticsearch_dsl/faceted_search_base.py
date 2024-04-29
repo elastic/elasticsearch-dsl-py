@@ -425,6 +425,15 @@ class FacetedSearchBase:
             search = search.sort(*self._sort)
         return search
 
+    def params(self, **kwargs):
+        """
+        Specify query params to be used when executing the search. All the
+        keyword arguments will override the current values. See
+        https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.search
+        for all available parameters.
+        """
+        self._s = self._s.params(**kwargs)
+
     def build_search(self):
         """
         Construct the ``Search`` object.
