@@ -341,6 +341,12 @@ def test_inference_aggregation():
     } == a.to_dict()
 
 
+def test_matrix_stats_aggregation():
+    a = aggs.MatrixStats(fields=["poverty", "income"])
+
+    assert {"matrix_stats": {"fields": ["poverty", "income"]}} == a.to_dict()
+
+
 def test_moving_percentiles_aggregation():
     a = aggs.DateHistogram()
     a.bucket("the_percentile", "percentiles", field="price", percents=[1.0, 99.0])
