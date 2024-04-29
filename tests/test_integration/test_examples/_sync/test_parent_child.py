@@ -18,7 +18,6 @@
 from datetime import datetime
 
 import pytest
-from pytest import fixture
 
 from elasticsearch_dsl import Q
 
@@ -41,7 +40,7 @@ nick = User(
 )
 
 
-@fixture
+@pytest.fixture
 def question(write_client):
     setup()
     assert write_client.indices.exists_template(name="base")
