@@ -17,9 +17,12 @@
 
 from unittest import SkipTest
 
+import pytest
+
 from ..examples.vectors import create, search
 
 
+@pytest.mark.sync
 def test_vector_search(write_client, es_version):
     # this test only runs on Elasticsearch >= 8.11 because the example uses
     # a dense vector without giving them an explicit size

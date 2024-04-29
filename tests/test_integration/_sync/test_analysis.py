@@ -15,9 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from elasticsearch_dsl import analyzer, token_filter, tokenizer
 
 
+@pytest.mark.sync
 def test_simulate_with_just__builtin_tokenizer(client):
     a = analyzer("my-analyzer", tokenizer="keyword")
     tokens = (a.simulate("Hello World!", using=client)).tokens
@@ -26,6 +29,7 @@ def test_simulate_with_just__builtin_tokenizer(client):
     assert tokens[0].token == "Hello World!"
 
 
+@pytest.mark.sync
 def test_simulate_complex(client):
     a = analyzer(
         "my-analyzer",
@@ -39,6 +43,7 @@ def test_simulate_complex(client):
     assert ["this", "works"] == [t.token for t in tokens]
 
 
+@pytest.mark.sync
 def test_simulate_builtin(client):
     a = analyzer("my-analyzer", "english")
     tokens = (a.simulate("fixes running")).tokens

@@ -15,11 +15,14 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import pytest
+
 from elasticsearch_dsl import A, AsyncSearch
 
 from ..async_examples.composite_agg import scan_aggs
 
 
+@pytest.mark.asyncio
 async def test_scan_aggs_exhausts_all_files(async_data_client):
     s = AsyncSearch(index="flat-git")
     key_aggs = {"files": A("terms", field="files")}
@@ -28,6 +31,7 @@ async def test_scan_aggs_exhausts_all_files(async_data_client):
     assert len(file_list) == 26
 
 
+@pytest.mark.asyncio
 async def test_scan_aggs_with_multiple_aggs(async_data_client):
     s = AsyncSearch(index="flat-git")
     key_aggs = [

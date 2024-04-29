@@ -18,6 +18,7 @@
 import string
 from random import choice
 
+import pytest
 from pytest import raises
 
 from elasticsearch_dsl import (
@@ -188,6 +189,7 @@ def test_index_template_can_have_order():
     assert {"index_patterns": ["i-*"], "order": 2} == it.to_dict()
 
 
+@pytest.mark.asyncio
 async def test_index_template_save_result(async_mock_client):
     it = AsyncIndexTemplate("test-template", "test-*")
 

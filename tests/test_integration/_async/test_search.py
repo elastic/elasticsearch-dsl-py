@@ -16,6 +16,7 @@
 #  under the License.
 
 
+import pytest
 from elasticsearch import ApiError
 from pytest import raises
 
@@ -51,6 +52,7 @@ class Commit(AsyncDocument):
         name = "flat-git"
 
 
+@pytest.mark.asyncio
 async def test_filters_aggregation_buckets_are_accessible(async_data_client):
     has_tests_query = Q("term", files="test_elasticsearch_dsl")
     s = Commit.search()[0:0]
@@ -73,6 +75,7 @@ async def test_filters_aggregation_buckets_are_accessible(async_data_client):
     )
 
 
+@pytest.mark.asyncio
 async def test_top_hits_are_wrapped_in_response(async_data_client):
     s = Commit.search()[0:0]
     s.aggs.bucket("top_authors", "terms", field="author.name.raw").metric(
@@ -89,6 +92,7 @@ async def test_top_hits_are_wrapped_in_response(async_data_client):
     assert isinstance(hits[0], Commit)
 
 
+@pytest.mark.asyncio
 async def test_inner_hits_are_wrapped_in_response(async_data_client):
     s = AsyncSearch(index="git")[0:1].query(
         "has_parent", parent_type="repo", inner_hits={}, query=Q("match_all")
@@ -102,6 +106,7 @@ async def test_inner_hits_are_wrapped_in_response(async_data_client):
     )
 
 
+@pytest.mark.asyncio
 async def test_scan_respects_doc_types(async_data_client):
     repos = [repo async for repo in Repository.search().scan()]
 
@@ -110,6 +115,7 @@ async def test_scan_respects_doc_types(async_data_client):
     assert repos[0].organization == "elasticsearch"
 
 
+@pytest.mark.asyncio
 async def test_scan_iterates_through_all_docs(async_data_client):
     s = AsyncSearch(index="flat-git")
 
@@ -119,6 +125,7 @@ async def test_scan_iterates_through_all_docs(async_data_client):
     assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
 
 
+@pytest.mark.asyncio
 async def test_response_is_cached(async_data_client):
     s = Repository.search()
     repos = [repo async for repo in s]
@@ -127,6 +134,7 @@ async def test_response_is_cached(async_data_client):
     assert s._response.hits == repos
 
 
+@pytest.mark.asyncio
 async def test_multi_search(async_data_client):
     s1 = Repository.search()
     s2 = AsyncSearch(index="flat-git")
@@ -144,6 +152,7 @@ async def test_multi_search(async_data_client):
     assert r2._search is s2
 
 
+@pytest.mark.asyncio
 async def test_multi_missing(async_data_client):
     s1 = Repository.search()
     s2 = AsyncSearch(index="flat-git")
@@ -167,6 +176,7 @@ async def test_multi_missing(async_data_client):
     assert r3 is None
 
 
+@pytest.mark.asyncio
 async def test_raw_subfield_can_be_used_in_aggs(async_data_client):
     s = AsyncSearch(index="git")[0:0]
     s.aggs.bucket("authors", "terms", field="author.name.raw", size=1)
