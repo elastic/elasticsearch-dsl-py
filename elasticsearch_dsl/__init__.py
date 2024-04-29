@@ -81,7 +81,14 @@ from .function import SF
 from .index import AsyncIndex, AsyncIndexTemplate, Index, IndexTemplate
 from .mapping import AsyncMapping, Mapping
 from .query import Q
-from .search import AsyncMultiSearch, AsyncSearch, MultiSearch, Search
+from .search import (
+    AsyncEmptySearch,
+    AsyncMultiSearch,
+    AsyncSearch,
+    EmptySearch,
+    MultiSearch,
+    Search,
+)
 from .update_by_query import AsyncUpdateByQuery, UpdateByQuery
 from .utils import AttrDict, AttrList, DslBase
 from .wrappers import Range
@@ -92,6 +99,7 @@ __versionstr__ = ".".join(map(str, VERSION))
 __all__ = [
     "A",
     "AsyncDocument",
+    "AsyncEmptySearch",
     "AsyncFacetedSearch",
     "AsyncIndex",
     "AsyncIndexTemplate",
@@ -115,6 +123,7 @@ __all__ = [
     "DoubleRange",
     "DslBase",
     "ElasticsearchDslException",
+    "EmptySearch",
     "Facet",
     "FacetedResponse",
     "FacetedSearch",

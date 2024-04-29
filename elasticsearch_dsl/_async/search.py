@@ -144,3 +144,18 @@ class AsyncMultiSearch(MultiSearchBase):
             self._response = out
 
         return self._response
+
+
+class AsyncEmptySearch(AsyncSearch):
+    async def count(self):
+        return 0
+
+    async def execute(self, ignore_cache=False):
+        return self._response_class(self, {"hits": {"total": 0, "hits": []}})
+
+    async def scan(self):
+        return
+        yield  # a bit strange, but this forces an empty generator function
+
+    async def delete(self):
+        return AttrDict({})
