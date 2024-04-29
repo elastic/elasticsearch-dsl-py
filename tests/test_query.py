@@ -278,6 +278,28 @@ def test_bool_and_bool_with_min_should_match():
     assert query.Q("bool", must=[qt1, qt2]) == q1 & q2
 
 
+def test_negative_min_should_match():
+    qt1, qt2 = query.Match(f=1), query.Match(f=2)
+    q1 = query.Q("bool", minimum_should_match=-2, should=[qt1])
+    q2 = query.Q("bool", minimum_should_match=1, should=[qt2])
+
+    with raises(ValueError):
+        q1 & q2
+    with raises(ValueError):
+        q2 & q1
+
+
+def test_percentage_min_should_match():
+    qt1, qt2 = query.Match(f=1), query.Match(f=2)
+    q1 = query.Q("bool", minimum_should_match="50%", should=[qt1])
+    q2 = query.Q("bool", minimum_should_match=1, should=[qt2])
+
+    with raises(ValueError):
+        q1 & q2
+    with raises(ValueError):
+        q2 & q1
+
+
 def test_inverted_query_becomes_bool_with_must_not():
     q = query.Match(f=42)
 
