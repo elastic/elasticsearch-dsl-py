@@ -214,7 +214,7 @@ def test_update_object_field(write_client):
     )
     w.save()
 
-    assert "updated" == w.update(owner=[{"name": "Honza"}, {"name": "Nick"}])
+    assert "updated" == w.update(owner=[{"name": "Honza"}, User(name="Nick")])
     assert w.owner[0].name == "Honza"
     assert w.owner[1].name == "Nick"
 
