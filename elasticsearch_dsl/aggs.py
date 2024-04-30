@@ -197,6 +197,10 @@ class AutoDateHistogram(DateHistogram):
     name = "auto_date_histogram"
 
 
+class AdjacencyMatrix(Bucket):
+    name = "adjacency_matrix"
+
+
 class DateRange(Bucket):
     name = "date_range"
 
@@ -383,6 +387,10 @@ class Stats(Agg):
 
 class Sum(Agg):
     name = "sum"
+
+
+class TopMetrics(Agg):
+    name = "top_metrics"
 
 
 class TTest(Agg):
