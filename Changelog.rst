@@ -3,6 +3,58 @@
 Changelog
 =========
 
+8.13.1 (2024-04-30)
+-------------------
+
+* Added support for ``knn`` as a query option (`#1770`_)
+* Made the ``dims`` attribute of the dense vector type optional (`#1776`_)
+* Added missing ``inner_hits`` option to ``search.knn()`` method (`#1777`_)
+* Added support for detecting document updates in ``InnerDoc`` attributes (`#1535`_)
+* Changed ``_expand__to_dot`` setting to resolve at runtime (`#1633`_)
+* Added explicit error message when unsupported ``minimum_should_match`` values are used (`#1774`_)
+* Added the ``EmptySearch`` class (`#1780`_)
+* Added several missing aggregations:
+   * ``AdjacencyMatrix`` (`#1553`_)
+   * ``CategorizeText`` (`#1588`_)
+   * ``GeohexGrid`` (`#1590`_)
+   * ``IPPrefix`` (`#1592`_)
+   * ``RandomSampler`` (`#1594`_)
+   * ``GeoLine`` (`#1628`_)
+   * ``MatrixStats`` (`#1630`_)
+   * ``TopMetrics`` (`#1706`_)
+* Added ``params`` option to the ``FacetedSearch`` object (`#1500`_)
+* Added support for passing a dictionary in the ``script`` option for a document update (`#1560`_)
+* Added ``keys()`` and ``items()`` methods to ``AttrDict`` class (`#1784`_)
+* Added a ``to_list()`` method to the ``AttrList`` class (`#1584`_)
+* Fixed various documentation issues and typos (`#1769`_, `#1615`_, `#1585`_, `#1318`_, `#1223`_)
+* Added a vector search example (`#1778`_)
+
+.. _#1770: https://github.com/elastic/elasticsearch-dsl-py/pull/1770
+.. _#1776: https://github.com/elastic/elasticsearch-dsl-py/pull/1776
+.. _#1777: https://github.com/elastic/elasticsearch-dsl-py/pull/1777
+.. _#1535: https://github.com/elastic/elasticsearch-dsl-py/pull/1535
+.. _#1633: https://github.com/elastic/elasticsearch-dsl-py/pull/1633
+.. _#1774: https://github.com/elastic/elasticsearch-dsl-py/pull/1774
+.. _#1780: https://github.com/elastic/elasticsearch-dsl-py/pull/1780
+.. _#1553: https://github.com/elastic/elasticsearch-dsl-py/pull/1553
+.. _#1588: https://github.com/elastic/elasticsearch-dsl-py/pull/1588
+.. _#1590: https://github.com/elastic/elasticsearch-dsl-py/pull/1590
+.. _#1592: https://github.com/elastic/elasticsearch-dsl-py/pull/1592
+.. _#1594: https://github.com/elastic/elasticsearch-dsl-py/pull/1594
+.. _#1628: https://github.com/elastic/elasticsearch-dsl-py/pull/1628
+.. _#1630: https://github.com/elastic/elasticsearch-dsl-py/pull/1630
+.. _#1706: https://github.com/elastic/elasticsearch-dsl-py/pull/1706
+.. _#1500: https://github.com/elastic/elasticsearch-dsl-py/pull/1500
+.. _#1560: https://github.com/elastic/elasticsearch-dsl-py/pull/1560
+.. _#1784: https://github.com/elastic/elasticsearch-dsl-py/pull/1784
+.. _#1584: https://github.com/elastic/elasticsearch-dsl-py/pull/1584
+.. _#1769: https://github.com/elastic/elasticsearch-dsl-py/pull/1769
+.. _#1615: https://github.com/elastic/elasticsearch-dsl-py/pull/1615
+.. _#1585: https://github.com/elastic/elasticsearch-dsl-py/pull/1585
+.. _#1318: https://github.com/elastic/elasticsearch-dsl-py/pull/1318
+.. _#1223: https://github.com/elastic/elasticsearch-dsl-py/pull/1223
+.. _#1778: https://github.com/elastic/elasticsearch-dsl-py/pull/1778
+
 8.13.0 (2024-04-03)
 -------------------
 
