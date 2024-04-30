@@ -107,3 +107,29 @@ def test_create_connection_adds_our_serializer():
 
     c_serializers = c.get_connection("testing").transport.serializers
     assert c_serializers.serializers["application/json"] is serializer.serializer
+
+
+def test_connection_has_correct_user_agent():
+    c = connections.Connections(elasticsearch_class=Elasticsearch)
+
+    c.create_connection("testing", hosts=["https://es.com:9200"])
+    assert (
+        c.get_connection("testing")
+        ._headers["user-agent"]
+        .startswith("elasticsearch-dsl-py/")
+    )
+
+    my_client = Elasticsearch(hosts=["http://localhost:9200"])
+    my_client = my_client.options(headers={"user-agent": "my-user-agent/1.0"})
+    c.add_connection("default", my_client)
+    assert c.get_connection()._headers["user-agent"].startswith("elasticsearch-dsl-py/")
+
+    my_client = Elasticsearch(hosts=["http://localhost:9200"])
+    assert (
+        c.get_connection(my_client)
+        ._headers["user-agent"]
+        .startswith("elasticsearch-dsl-py/")
+    )
+
+    not_a_client = object()
+    assert c.get_connection(not_a_client) == not_a_client
