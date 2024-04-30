@@ -449,3 +449,30 @@ def test_random_sampler_aggregation():
             },
         },
     } == a.to_dict()
+
+
+def test_adjancecy_matrix_aggregation():
+    a = aggs.AdjacencyMatrix(
+        filters={
+            "grpA": {"terms": {"accounts": ["hillary", "sidney"]}},
+            "grpB": {"terms": {"accounts": ["donald", "mitt"]}},
+            "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}},
+        }
+    )
+    assert {
+        "adjacency_matrix": {
+            "filters": {
+                "grpA": {"terms": {"accounts": ["hillary", "sidney"]}},
+                "grpB": {"terms": {"accounts": ["donald", "mitt"]}},
+                "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}},
+            }
+        }
+    } == a.to_dict()
+
+
+def test_top_metrics_aggregation():
+    a = aggs.TopMetrics(metrics={"field": "m"}, sort={"s": "desc"})
+
+    assert {
+        "top_metrics": {"metrics": {"field": "m"}, "sort": {"s": "desc"}}
+    } == a.to_dict()
