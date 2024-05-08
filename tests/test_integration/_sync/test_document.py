@@ -120,6 +120,13 @@ class SerializationDoc(Document):
         name = "test-serialization"
 
 
+class Tags(Document):
+    tags = Keyword(multi=True)
+
+    class Index:
+        name = "tags"
+
+
 @pytest.mark.sync
 def test_serialization(write_client):
     SerializationDoc.init()
@@ -496,6 +503,26 @@ def test_save_updates_existing_doc(data_client):
     assert "testing-save" == new_repo["_source"]["new_field"]
     assert new_repo["_seq_no"] != old_seq_no
     assert new_repo["_seq_no"] == elasticsearch_repo.meta.seq_no
+
+
+@pytest.mark.sync
+def test_update_empty_field(client):
+    Tags._index.delete(ignore_unavailable=True)
+    Tags.init()
+    d = Tags(id="123", tags=["a", "b"])
+    d.save(wait_for_active_shards=1)
+    d.update(tags=[])
+    assert d.tags == []
+
+    while True:
+        try:
+            r = Tags.search().execute()
+            d = r.hits[0]
+        except IndexError:
+            continue
+        else:
+            break
+    assert d.tags == []
 
 
 @pytest.mark.sync
