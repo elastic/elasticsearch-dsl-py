@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import subprocess
+
 import nox
 
 SOURCE_FILES = (
@@ -26,6 +28,8 @@ SOURCE_FILES = (
     "tests/",
     "utils/",
 )
+
+TYPED_FILES = ("elasticsearch_dsl/query.py",)
 
 
 @nox.session(
@@ -72,8 +76,33 @@ def lint(session):
     session.run("black", "--check", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", "--check", *SOURCE_FILES)
     session.run("python", "utils/run-unasync.py", "--check")
-    session.run("flake8", "--ignore=E501,E741,W503", *SOURCE_FILES)
+    session.run("flake8", "--ignore=E501,E741,W503,E704", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
+
+
+@nox.session(python="3.12")
+def type_check(session):
+    session.install("mypy", ".[develop]")
+    errors = []
+    popen = subprocess.Popen(
+        "mypy --strict elasticsearch_dsl",
+        env=session.env,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    mypy_output = ""
+    while popen.poll() is None:
+        mypy_output += popen.stdout.read(8192).decode()
+    mypy_output += popen.stdout.read().decode()
+
+    for line in mypy_output.split("\n"):
+        filepath = line.partition(":")[0]
+        if filepath in TYPED_FILES:
+            errors.append(line)
+    if errors:
+        session.error("\n" + "\n".join(sorted(set(errors))))
 
 
 @nox.session()
