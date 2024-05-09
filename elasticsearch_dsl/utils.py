@@ -18,7 +18,9 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, Optional, Self
+from typing import Any, Optional, Type
+
+from typing_extensions import Self
 
 from .exceptions import UnknownDslObject, ValidationException
 
@@ -253,8 +255,8 @@ class DslBase(metaclass=DslMeta):
 
     @classmethod
     def get_dsl_class(
-        cls: type[Self], name: str, default: Optional[str] = None
-    ) -> type[Self]:
+        cls: Type[Self], name: str, default: Optional[str] = None
+    ) -> Type[Self]:
         try:
             return cls._classes[name]
         except KeyError:

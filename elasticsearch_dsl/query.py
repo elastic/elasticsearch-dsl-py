@@ -18,7 +18,18 @@
 import collections.abc
 from copy import deepcopy
 from itertools import chain
-from typing import Any, Callable, ClassVar, Optional, Protocol, TypeVar, Union, overload
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Protocol,
+    TypeVar,
+    Union,
+    overload,
+)
 
 # 'SF' looks unused but the test suite assumes it's available
 # from this module so others are liable to do so as well.
@@ -27,7 +38,7 @@ from .function import ScoreFunction
 from .utils import DslBase
 
 _T = TypeVar("_T")
-_M = TypeVar("_M", bound=collections.abc.Mapping[str, Any])
+_M = TypeVar("_M", bound=Mapping[str, Any])
 
 
 class QProxiedProtocol(Protocol[_T]):
@@ -35,7 +46,7 @@ class QProxiedProtocol(Protocol[_T]):
 
 
 @overload
-def Q(name_or_query: collections.abc.MutableMapping[str, _M]) -> "Query": ...
+def Q(name_or_query: MutableMapping[str, _M]) -> "Query": ...
 
 
 @overload
@@ -55,7 +66,7 @@ def Q(
         str,
         "Query",
         QProxiedProtocol[_T],
-        collections.abc.MutableMapping[str, _M],
+        MutableMapping[str, _M],
     ] = "match_all",
     **params: Any,
 ) -> Union["Query", _T]:
