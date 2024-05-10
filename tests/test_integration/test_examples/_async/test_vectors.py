@@ -15,20 +15,38 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from hashlib import md5
 from unittest import SkipTest
 
 import pytest
 
-from ..async_examples.vectors import create, search
+from tests.async_sleep import sleep
+
+from ..async_examples import vectors
 
 
 @pytest.mark.asyncio
-async def test_vector_search(async_write_client, es_version):
+async def test_vector_search(async_write_client, es_version, mocker):
     # this test only runs on Elasticsearch >= 8.11 because the example uses
-    # a dense vector without giving them an explicit size
+    # a dense vector without specifying an explicit size
     if es_version < (8, 11):
         raise SkipTest("This test requires Elasticsearch 8.11 or newer")
 
-    await create()
-    results = await (await search("work from home")).execute()
-    assert results[0].name == "Work From Home Policy"
+    class MockModel:
+        def __init__(self, model):
+            pass
+
+        def encode(self, text):
+            vector = [int(ch) for ch in md5(text.encode()).digest()]
+            total = sum(vector)
+            return [float(v) / total for v in vector]
+
+    mocker.patch.object(vectors, "SentenceTransformer", new=MockModel)
+
+    await vectors.create()
+    for i in range(10):
+        results = await (await vectors.search("Welcome to our team!")).execute()
+        if len(results.hits) > 0:
+            break
+        await sleep(0.1)
+    assert results[0].name == "New Employee Onboarding Guide"
