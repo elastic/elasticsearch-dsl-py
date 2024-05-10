@@ -15,20 +15,38 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from hashlib import md5
 from unittest import SkipTest
 
 import pytest
 
-from ..examples.vectors import create, search
+from tests.sleep import sleep
+
+from ..examples import vectors
 
 
 @pytest.mark.sync
-def test_vector_search(write_client, es_version):
+def test_vector_search(write_client, es_version, mocker):
     # this test only runs on Elasticsearch >= 8.11 because the example uses
-    # a dense vector without giving them an explicit size
+    # a dense vector without specifying an explicit size
     if es_version < (8, 11):
         raise SkipTest("This test requires Elasticsearch 8.11 or newer")
 
-    create()
-    results = (search("work from home")).execute()
-    assert results[0].name == "Work From Home Policy"
+    class MockModel:
+        def __init__(self, model):
+            pass
+
+        def encode(self, text):
+            vector = [int(ch) for ch in md5(text.encode()).digest()]
+            total = sum(vector)
+            return [float(v) / total for v in vector]
+
+    mocker.patch.object(vectors, "SentenceTransformer", new=MockModel)
+
+    vectors.create()
+    for i in range(10):
+        results = (vectors.search("Welcome to our team!")).execute()
+        if len(results.hits) > 0:
+            break
+        sleep(0.1)
+    assert results[0].name == "New Employee Onboarding Guide"
