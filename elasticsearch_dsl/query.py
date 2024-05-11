@@ -28,6 +28,7 @@ from typing import (
     Protocol,
     TypeVar,
     Union,
+    cast,
     overload,
 )
 
@@ -58,7 +59,7 @@ def Q(name_or_query: QProxiedProtocol[_T]) -> _T: ...
 
 
 @overload
-def Q(name_or_query: str, **params: Any) -> "Query": ...
+def Q(name_or_query: str = "match_all", **params: Any) -> "Query": ...
 
 
 def Q(
@@ -92,7 +93,7 @@ def Q(
 
     # s.query = Q('filtered', query=s.query)
     if hasattr(name_or_query, "_proxied"):
-        return name_or_query._proxied
+        return cast(QProxiedProtocol[_T], name_or_query)._proxied
 
     # "match", title="python"
     return Query.get_dsl_class(name_or_query)(**params)

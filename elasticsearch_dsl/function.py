@@ -16,11 +16,13 @@
 #  under the License.
 
 import collections.abc
+from typing import Dict
 
 from .utils import DslBase
 
 
-def SF(name_or_sf, **params):
+# Incomplete annotation to not break query.py tests
+def SF(name_or_sf, **params) -> "ScoreFunction":
     # {"script_score": {"script": "_score"}, "filter": {}}
     if isinstance(name_or_sf, collections.abc.Mapping):
         if params:
@@ -86,7 +88,7 @@ class ScriptScore(ScoreFunction):
 class BoostFactor(ScoreFunction):
     name = "boost_factor"
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, int]:
         d = super().to_dict()
         if "value" in d[self.name]:
             d[self.name] = d[self.name].pop("value")

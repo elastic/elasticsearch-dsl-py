@@ -18,7 +18,7 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, Optional, Type
+from typing import Any, Dict, Optional, Type
 
 from typing_extensions import Self
 
@@ -356,7 +356,8 @@ class DslBase(metaclass=DslMeta):
             return AttrDict(value)
         return value
 
-    def to_dict(self):
+    # TODO: This type annotation can probably be made tighter
+    def to_dict(self) -> Dict[str, Dict[str, Any]]:
         """
         Serialize the DSL object to plain dict
         """

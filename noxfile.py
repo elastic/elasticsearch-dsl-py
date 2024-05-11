@@ -29,7 +29,10 @@ SOURCE_FILES = (
     "utils/",
 )
 
-TYPED_FILES = ("elasticsearch_dsl/query.py",)
+TYPED_FILES = (
+    "elasticsearch_dsl/query.py",
+    "tests/test_query.py",
+)
 
 
 @nox.session(
@@ -85,7 +88,7 @@ def type_check(session):
     session.install("mypy", ".[develop]")
     errors = []
     popen = subprocess.Popen(
-        "mypy --strict elasticsearch_dsl",
+        "mypy --strict elasticsearch_dsl tests",
         env=session.env,
         shell=True,
         stdout=subprocess.PIPE,
