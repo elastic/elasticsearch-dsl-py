@@ -22,6 +22,7 @@ from typing import (
     Any,
     Callable,
     ClassVar,
+    List,
     Mapping,
     MutableMapping,
     Optional,
@@ -231,7 +232,7 @@ class Bool(Query):
         if not any(chain(self.must, self.filter, self.should, self.must_not)):
             return MatchNone()
 
-        negations: list[Query] = []
+        negations: List[Query] = []
         for q in chain(self.must, self.filter):
             negations.append(~q)
 

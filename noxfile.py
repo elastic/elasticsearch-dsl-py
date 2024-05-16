@@ -83,7 +83,7 @@ def lint(session):
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
 
 
-@nox.session(python="3.12")
+@nox.session(python="3.8")
 def type_check(session):
     session.install("mypy", ".[develop]")
     errors = []
