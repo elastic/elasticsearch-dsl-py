@@ -18,6 +18,9 @@
 
 import collections.abc
 from copy import copy
+from typing import Any, Dict, Optional, Type
+
+from typing_extensions import Self
 
 from .exceptions import UnknownDslObject, ValidationException
 
@@ -251,7 +254,9 @@ class DslBase(metaclass=DslMeta):
     _param_defs = {}
 
     @classmethod
-    def get_dsl_class(cls, name, default=None):
+    def get_dsl_class(
+        cls: Type[Self], name: str, default: Optional[str] = None
+    ) -> Type[Self]:
         try:
             return cls._classes[name]
         except KeyError:
@@ -261,7 +266,7 @@ class DslBase(metaclass=DslMeta):
                 f"DSL class `{name}` does not exist in {cls._type_name}."
             )
 
-    def __init__(self, _expand__to_dot=None, **params):
+    def __init__(self, _expand__to_dot: Optional[bool] = None, **params: Any) -> None:
         if _expand__to_dot is None:
             _expand__to_dot = EXPAND__TO_DOT
         self._params = {}
@@ -351,7 +356,8 @@ class DslBase(metaclass=DslMeta):
             return AttrDict(value)
         return value
 
-    def to_dict(self):
+    # TODO: This type annotation can probably be made tighter
+    def to_dict(self) -> Dict[str, Dict[str, Any]]:
         """
         Serialize the DSL object to plain dict
         """
@@ -390,7 +396,7 @@ class DslBase(metaclass=DslMeta):
             d[pname] = value
         return {self.name: d}
 
-    def _clone(self):
+    def _clone(self) -> Self:
         c = self.__class__()
         for attr in self._params:
             c._params[attr] = copy(self._params[attr])

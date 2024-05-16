@@ -16,7 +16,22 @@
 #  under the License.
 
 import collections.abc
+from copy import deepcopy
 from itertools import chain
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Protocol,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 # 'SF' looks unused but the test suite assumes it's available
 # from this module so others are liable to do so as well.
@@ -24,10 +39,41 @@ from .function import SF  # noqa: F401
 from .function import ScoreFunction
 from .utils import DslBase
 
+_T = TypeVar("_T")
+_M = TypeVar("_M", bound=Mapping[str, Any])
 
-def Q(name_or_query="match_all", **params):
+
+class QProxiedProtocol(Protocol[_T]):
+    _proxied: _T
+
+
+@overload
+def Q(name_or_query: MutableMapping[str, _M]) -> "Query": ...
+
+
+@overload
+def Q(name_or_query: "Query") -> "Query": ...
+
+
+@overload
+def Q(name_or_query: QProxiedProtocol[_T]) -> _T: ...
+
+
+@overload
+def Q(name_or_query: str = "match_all", **params: Any) -> "Query": ...
+
+
+def Q(
+    name_or_query: Union[
+        str,
+        "Query",
+        QProxiedProtocol[_T],
+        MutableMapping[str, _M],
+    ] = "match_all",
+    **params: Any,
+) -> Union["Query", _T]:
     # {"match": {"title": "python"}}
-    if isinstance(name_or_query, collections.abc.Mapping):
+    if isinstance(name_or_query, collections.abc.MutableMapping):
         if params:
             raise ValueError("Q() cannot accept parameters when passing in a dict.")
         if len(name_or_query) != 1:
@@ -35,8 +81,8 @@ def Q(name_or_query="match_all", **params):
                 'Q() can only accept dict with a single query ({"match": {...}}). '
                 "Instead it got (%r)" % name_or_query
             )
-        name, params = name_or_query.copy().popitem()
-        return Query.get_dsl_class(name)(_expand__to_dot=False, **params)
+        name, q_params = deepcopy(name_or_query).popitem()
+        return Query.get_dsl_class(name)(_expand__to_dot=False, **q_params)
 
     # MatchAll()
     if isinstance(name_or_query, Query):
@@ -48,7 +94,7 @@ def Q(name_or_query="match_all", **params):
 
     # s.query = Q('filtered', query=s.query)
     if hasattr(name_or_query, "_proxied"):
-        return name_or_query._proxied
+        return cast(QProxiedProtocol[_T], name_or_query)._proxied
 
     # "match", title="python"
     return Query.get_dsl_class(name_or_query)(**params)
@@ -57,26 +103,31 @@ def Q(name_or_query="match_all", **params):
 class Query(DslBase):
     _type_name = "query"
     _type_shortcut = staticmethod(Q)
-    name = None
+    name: ClassVar[Optional[str]] = None
 
-    def __add__(self, other):
+    # Add type annotations for methods not defined in every subclass
+    __ror__: ClassVar[Callable[["Query", "Query"], "Query"]]
+    __radd__: ClassVar[Callable[["Query", "Query"], "Query"]]
+    __rand__: ClassVar[Callable[["Query", "Query"], "Query"]]
+
+    def __add__(self, other: "Query") -> "Query":
         # make sure we give queries that know how to combine themselves
         # preference
         if hasattr(other, "__radd__"):
             return other.__radd__(self)
         return Bool(must=[self, other])
 
-    def __invert__(self):
+    def __invert__(self) -> "Query":
         return Bool(must_not=[self])
 
-    def __or__(self, other):
+    def __or__(self, other: "Query") -> "Query":
         # make sure we give queries that know how to combine themselves
         # preference
         if hasattr(other, "__ror__"):
             return other.__ror__(self)
         return Bool(should=[self, other])
 
-    def __and__(self, other):
+    def __and__(self, other: "Query") -> "Query":
         # make sure we give queries that know how to combine themselves
         # preference
         if hasattr(other, "__rand__"):
@@ -87,17 +138,17 @@ class Query(DslBase):
 class MatchAll(Query):
     name = "match_all"
 
-    def __add__(self, other):
+    def __add__(self, other: "Query") -> "Query":
         return other._clone()
 
     __and__ = __rand__ = __radd__ = __add__
 
-    def __or__(self, other):
+    def __or__(self, other: "Query") -> "MatchAll":
         return self
 
     __ror__ = __or__
 
-    def __invert__(self):
+    def __invert__(self) -> "MatchNone":
         return MatchNone()
 
 
@@ -107,17 +158,17 @@ EMPTY_QUERY = MatchAll()
 class MatchNone(Query):
     name = "match_none"
 
-    def __add__(self, other):
+    def __add__(self, other: "Query") -> "MatchNone":
         return self
 
     __and__ = __rand__ = __radd__ = __add__
 
-    def __or__(self, other):
+    def __or__(self, other: "Query") -> "Query":
         return other._clone()
 
     __ror__ = __or__
 
-    def __invert__(self):
+    def __invert__(self) -> MatchAll:
         return MatchAll()
 
 
@@ -130,7 +181,7 @@ class Bool(Query):
         "filter": {"type": "query", "multi": True},
     }
 
-    def __add__(self, other):
+    def __add__(self, other: Query) -> "Bool":
         q = self._clone()
         if isinstance(other, Bool):
             q.must += other.must
@@ -143,7 +194,7 @@ class Bool(Query):
 
     __radd__ = __add__
 
-    def __or__(self, other):
+    def __or__(self, other: Query) -> Query:
         for q in (self, other):
             if isinstance(q, Bool) and not any(
                 (q.must, q.must_not, q.filter, getattr(q, "minimum_should_match", None))
@@ -168,20 +219,20 @@ class Bool(Query):
     __ror__ = __or__
 
     @property
-    def _min_should_match(self):
+    def _min_should_match(self) -> int:
         return getattr(
             self,
             "minimum_should_match",
             0 if not self.should or (self.must or self.filter) else 1,
         )
 
-    def __invert__(self):
+    def __invert__(self) -> Query:
         # Because an empty Bool query is treated like
         # MatchAll the inverse should be MatchNone
         if not any(chain(self.must, self.filter, self.should, self.must_not)):
             return MatchNone()
 
-        negations = []
+        negations: List[Query] = []
         for q in chain(self.must, self.filter):
             negations.append(~q)
 
@@ -195,7 +246,7 @@ class Bool(Query):
             return negations[0]
         return Bool(should=negations)
 
-    def __and__(self, other):
+    def __and__(self, other: Query) -> Query:
         q = self._clone()
         if isinstance(other, Bool):
             q.must += other.must
@@ -247,7 +298,7 @@ class FunctionScore(Query):
         "functions": {"type": "score_function", "multi": True},
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         if "functions" in kwargs:
             pass
         else:
