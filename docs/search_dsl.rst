@@ -410,16 +410,25 @@ To specify the from/size parameters, use the Python slicing API:
 
 .. code:: python
 
-  s = s[10:20]
-  # {"from": 10, "size": 10}
+   s = s[10:20]
+   # {"from": 10, "size": 10}
+
+   s = s[:20]
+   # {"size": 20}
+
+   s = s[10:]
+   # {"from": 10}
+
+   s = s[10:20][2:]
+   # {"from": 12, "size": 8}
 
 If you want to access all the documents matched by your query you can use the
 ``scan`` method which uses the scan/scroll elasticsearch API:
 
 .. code:: python
 
-  for hit in s.scan():
-      print(hit.title)
+   for hit in s.scan():
+       print(hit.title)
 
 Note that in this case the results won't be sorted.
 

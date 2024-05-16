@@ -363,15 +363,34 @@ def test_collapse():
 def test_slice():
     s = Search()
     assert {"from": 3, "size": 7} == s[3:10].to_dict()
-    assert {"from": 0, "size": 5} == s[:5].to_dict()
-    assert {"from": 3, "size": 10} == s[3:].to_dict()
+    assert {"size": 5} == s[:5].to_dict()
+    assert {"from": 3} == s[3:].to_dict()
     assert {"from": 0, "size": 0} == s[0:0].to_dict()
     assert {"from": 20, "size": 0} == s[20:0].to_dict()
+    assert {"from": 10, "size": 5} == s[10:][:5].to_dict()
+    assert {"from": 10, "size": 0} == s[:5][10:].to_dict()
+    assert {"size": 10} == s[:10][:40].to_dict()
+    assert {"size": 10} == s[:40][:10].to_dict()
+    assert {"size": 40} == s[:40][:80].to_dict()
+    assert {"from": 12, "size": 0} == s[:5][10:][2:].to_dict()
+    assert {"from": 15, "size": 0} == s[10:][:5][5:].to_dict()
+    assert {} == s[:].to_dict()
+    with raises(ValueError):
+        s[-1:]
+    with raises(ValueError):
+        s[4:-1]
+    with raises(ValueError):
+        s[-3:-2]
 
 
 def test_index():
     s = Search()
     assert {"from": 3, "size": 1} == s[3].to_dict()
+    assert {"from": 3, "size": 1} == s[3][0].to_dict()
+    assert {"from": 8, "size": 0} == s[3][5].to_dict()
+    assert {"from": 4, "size": 1} == s[3:10][1].to_dict()
+    with raises(ValueError):
+        s[-3]
 
 
 def test_search_to_dict():
