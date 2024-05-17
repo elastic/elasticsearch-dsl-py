@@ -510,19 +510,12 @@ def test_update_empty_field(client):
     Tags._index.delete(ignore_unavailable=True)
     Tags.init()
     d = Tags(id="123", tags=["a", "b"])
-    d.save(wait_for_active_shards=1)
-    d.update(tags=[])
+    d.save(refresh=True)
+    d.update(tags=[], refresh=True)
     assert d.tags == []
 
-    while True:
-        try:
-            r = Tags.search().execute()
-            d = r.hits[0]
-        except IndexError:
-            continue
-        else:
-            break
-    assert d.tags == []
+    r = Tags.search().execute()
+    assert r.hits[0].tags == []
 
 
 @pytest.mark.sync

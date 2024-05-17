@@ -516,19 +516,12 @@ async def test_update_empty_field(async_client):
     await Tags._index.delete(ignore_unavailable=True)
     await Tags.init()
     d = Tags(id="123", tags=["a", "b"])
-    await d.save(wait_for_active_shards=1)
-    await d.update(tags=[])
+    await d.save(refresh=True)
+    await d.update(tags=[], refresh=True)
     assert d.tags == []
 
-    while True:
-        try:
-            r = await Tags.search().execute()
-            d = r.hits[0]
-        except IndexError:
-            continue
-        else:
-            break
-    assert d.tags == []
+    r = await Tags.search().execute()
+    assert r.hits[0].tags == []
 
 
 @pytest.mark.asyncio
