@@ -17,12 +17,27 @@
 
 import collections.abc
 from copy import deepcopy
-from typing import Dict, Optional, ClassVar, Union, MutableMapping, Any
+from typing import Any, ClassVar, Dict, MutableMapping, Optional, Union, overload
 
 from .utils import DslBase, _JSONSafeTypes
 
 
-def SF(name_or_sf: Union[str, "ScoreFunction", MutableMapping[str, Any]], **params: Any) -> "ScoreFunction":
+@overload
+def SF(name_or_sf: MutableMapping[str, Any]) -> "ScoreFunction": ...
+
+
+@overload
+def SF(name_or_sf: "ScoreFunction") -> "ScoreFunction": ...
+
+
+@overload
+def SF(name_or_sf: str, **params: Any) -> "ScoreFunction": ...
+
+
+def SF(
+    name_or_sf: Union[str, "ScoreFunction", MutableMapping[str, Any]],
+    **params: Any,
+) -> "ScoreFunction":
     # {"script_score": {"script": "_score"}, "filter": {}}
     if isinstance(name_or_sf, collections.abc.MutableMapping):
         if params:

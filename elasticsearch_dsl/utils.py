@@ -18,13 +18,15 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, Dict, Optional, Type, ClassVar, Union, List
+from typing import Any, ClassVar, Dict, List, Optional, Type, Union
 
 from typing_extensions import Self
 
 from .exceptions import UnknownDslObject, ValidationException
 
-_JSONSafeTypes = Union[int, bool, str, float, List["_JSONSafeTypes"], Dict[str, "_JSONSafeTypes"]]
+_JSONSafeTypes = Union[
+    int, bool, str, float, List["_JSONSafeTypes"], Dict[str, "_JSONSafeTypes"]
+]
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
@@ -212,7 +214,7 @@ class DslMeta(type):
     For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
     """
 
-    _types: ClassVar[Dict[str, type["DslBase"]]] = {}
+    _types: ClassVar[Dict[str, Type["DslBase"]]] = {}
 
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
