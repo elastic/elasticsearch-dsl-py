@@ -16,7 +16,7 @@
 #  under the License.
 
 import collections.abc
-from typing import Dict
+from typing import Dict, Optional, ClassVar
 
 from .utils import DslBase
 
@@ -70,7 +70,7 @@ class ScoreFunction(DslBase):
         "filter": {"type": "query"},
         "weight": {},
     }
-    name = None
+    name: ClassVar[Optional[str]] = None
 
     def to_dict(self):
         d = super().to_dict()

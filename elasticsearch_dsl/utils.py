@@ -18,7 +18,7 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, ClassVar, Union
 
 from typing_extensions import Self
 
@@ -210,7 +210,7 @@ class DslMeta(type):
     For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
     """
 
-    _types = {}
+    _types: ClassVar[Dict[str, type["DslBase"]]] = {}
 
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
@@ -251,7 +251,7 @@ class DslBase(metaclass=DslMeta):
           all values in the `must` attribute into Query objects)
     """
 
-    _param_defs = {}
+    _param_defs: ClassVar[Dict[str, Dict[str, Union[str, bool]]]] = {}
 
     @classmethod
     def get_dsl_class(
