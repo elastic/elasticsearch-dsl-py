@@ -253,6 +253,7 @@ class DslBase(metaclass=DslMeta):
           all values in the `must` attribute into Query objects)
     """
 
+    _type_name: ClassVar[str]
     _param_defs: ClassVar[Dict[str, Dict[str, Union[str, bool]]]] = {}
 
     @classmethod
