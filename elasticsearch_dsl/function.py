@@ -18,7 +18,7 @@
 import collections.abc
 from typing import Dict, Optional, ClassVar
 
-from .utils import DslBase
+from .utils import DslBase, _JSONSafeTypes
 
 
 # Incomplete annotation to not break query.py tests
@@ -72,12 +72,14 @@ class ScoreFunction(DslBase):
     }
     name: ClassVar[Optional[str]] = None
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, _JSONSafeTypes]:
         d = super().to_dict()
         # filter and query dicts should be at the same level as us
         for k in self._param_defs:
-            if k in d[self.name]:
-                d[k] = d[self.name].pop(k)
+            if self.name is not None:
+                val = d[self.name]
+                if isinstance(val, dict) and k in val:
+                    d[k] = val.pop(k)
         return d
 
 
@@ -88,12 +90,15 @@ class ScriptScore(ScoreFunction):
 class BoostFactor(ScoreFunction):
     name = "boost_factor"
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> Dict[str, _JSONSafeTypes]:
         d = super().to_dict()
-        if "value" in d[self.name]:
-            d[self.name] = d[self.name].pop("value")
-        else:
-            del d[self.name]
+        if self.name is not None:
+            val = d[self.name]
+            if isinstance(val, dict):
+                if "value" in val:
+                    d[self.name] = val.pop("value")
+                else:
+                    del d[self.name]
         return d
 
 

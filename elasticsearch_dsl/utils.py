@@ -18,11 +18,13 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, Dict, Optional, Type, ClassVar, Union
+from typing import Any, Dict, Optional, Type, ClassVar, Union, List
 
 from typing_extensions import Self
 
 from .exceptions import UnknownDslObject, ValidationException
+
+_JSONSafeTypes = Union[int, bool, str, float, List["_JSONSafeTypes"], Dict[str, "_JSONSafeTypes"]]
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
@@ -356,8 +358,7 @@ class DslBase(metaclass=DslMeta):
             return AttrDict(value)
         return value
 
-    # TODO: This type annotation can probably be made tighter
-    def to_dict(self) -> Dict[str, Dict[str, Any]]:
+    def to_dict(self) -> Dict[str, _JSONSafeTypes]:
         """
         Serialize the DSL object to plain dict
         """
