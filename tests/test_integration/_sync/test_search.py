@@ -118,6 +118,52 @@ def test_scan_iterates_through_all_docs(data_client):
 
 
 @pytest.mark.sync
+def test_search_after(data_client):
+    page_size = 7
+    s = Search(index="flat-git")[:page_size].sort("authored_date")
+    commits = []
+    while True:
+        r = s.execute()
+        commits += r.hits
+        if len(r.hits) < page_size:
+            break
+        s = r.search_after()
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
+@pytest.mark.sync
+def test_search_after_no_search(data_client):
+    s = Search(index="flat-git")
+    with raises(ValueError):
+        s.search_after()
+    s.count()
+    with raises(ValueError):
+        s.search_after()
+
+
+@pytest.mark.sync
+def test_search_after_no_sort(data_client):
+    s = Search(index="flat-git")
+    r = s.execute()
+    with raises(ValueError):
+        r.search_after()
+
+
+@pytest.mark.sync
+def test_search_after_no_results(data_client):
+    s = Search(index="flat-git")[:100].sort("authored_date")
+    r = s.execute()
+    assert 52 == len(r.hits)
+    s = r.search_after()
+    r = s.execute()
+    assert 0 == len(r.hits)
+    with raises(ValueError):
+        r.search_after()
+
+
+@pytest.mark.sync
 def test_response_is_cached(data_client):
     s = Repository.search()
     repos = [repo for repo in s]

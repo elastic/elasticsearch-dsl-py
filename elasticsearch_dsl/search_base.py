@@ -760,6 +760,36 @@ class SearchBase(Request):
         s._suggest[name].update(kwargs)
         return s
 
+    def search_after(self):
+        """
+        Return a ``Search`` instance that retrieves the next page of results.
+
+        This method provides an easy way to paginate a long list of results using
+        the ``search_after`` option. For example::
+
+            page_size = 20
+            s = Search()[:page_size].sort("date")
+
+            while True:
+                # get a page of results
+                r = await s.execute()
+
+                # do something with this page of results
+
+                # exit the loop if we reached the end
+                if len(r.hits) < page_size:
+                    break
+
+                # get a search object with the next page of results
+                s = s.search_after()
+
+        Note that the ``search_after`` option requires the search to have an
+        explicit ``sort`` order.
+        """
+        if not hasattr(self, "_response"):
+            raise ValueError("A search must be executed before using search_after")
+        return self._response.search_after()
+
     def to_dict(self, count=False, **kwargs):
         """
         Serialize the search into the dictionary that will be sent over as the

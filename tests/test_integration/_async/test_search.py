@@ -126,6 +126,52 @@ async def test_scan_iterates_through_all_docs(async_data_client):
 
 
 @pytest.mark.asyncio
+async def test_search_after(async_data_client):
+    page_size = 7
+    s = AsyncSearch(index="flat-git")[:page_size].sort("authored_date")
+    commits = []
+    while True:
+        r = await s.execute()
+        commits += r.hits
+        if len(r.hits) < page_size:
+            break
+        s = r.search_after()
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
+@pytest.mark.asyncio
+async def test_search_after_no_search(async_data_client):
+    s = AsyncSearch(index="flat-git")
+    with raises(ValueError):
+        await s.search_after()
+    await s.count()
+    with raises(ValueError):
+        await s.search_after()
+
+
+@pytest.mark.asyncio
+async def test_search_after_no_sort(async_data_client):
+    s = AsyncSearch(index="flat-git")
+    r = await s.execute()
+    with raises(ValueError):
+        await r.search_after()
+
+
+@pytest.mark.asyncio
+async def test_search_after_no_results(async_data_client):
+    s = AsyncSearch(index="flat-git")[:100].sort("authored_date")
+    r = await s.execute()
+    assert 52 == len(r.hits)
+    s = r.search_after()
+    r = await s.execute()
+    assert 0 == len(r.hits)
+    with raises(ValueError):
+        await r.search_after()
+
+
+@pytest.mark.asyncio
 async def test_response_is_cached(async_data_client):
     s = Repository.search()
     repos = [repo async for repo in s]
