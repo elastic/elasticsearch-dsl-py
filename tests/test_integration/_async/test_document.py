@@ -120,6 +120,13 @@ class SerializationDoc(AsyncDocument):
         name = "test-serialization"
 
 
+class Tags(AsyncDocument):
+    tags = Keyword(multi=True)
+
+    class Index:
+        name = "tags"
+
+
 @pytest.mark.asyncio
 async def test_serialization(async_write_client):
     await SerializationDoc.init()
@@ -502,6 +509,19 @@ async def test_save_updates_existing_doc(async_data_client):
     assert "testing-save" == new_repo["_source"]["new_field"]
     assert new_repo["_seq_no"] != old_seq_no
     assert new_repo["_seq_no"] == elasticsearch_repo.meta.seq_no
+
+
+@pytest.mark.asyncio
+async def test_update_empty_field(async_client):
+    await Tags._index.delete(ignore_unavailable=True)
+    await Tags.init()
+    d = Tags(id="123", tags=["a", "b"])
+    await d.save(refresh=True)
+    await d.update(tags=[], refresh=True)
+    assert d.tags == []
+
+    r = await Tags.search().execute()
+    assert r.hits[0].tags == []
 
 
 @pytest.mark.asyncio

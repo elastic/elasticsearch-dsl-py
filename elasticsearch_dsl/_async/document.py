@@ -295,7 +295,7 @@ class AsyncDocument(DocumentBase, metaclass=AsyncIndexMeta):
             merge(self, fields)
 
             # prepare data for ES
-            values = self.to_dict()
+            values = self.to_dict(skip_empty=False)
 
             # if fields were given: partial update
             body["doc"] = {k: values.get(k) for k in fields.keys()}
