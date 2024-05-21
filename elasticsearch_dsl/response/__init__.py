@@ -117,7 +117,7 @@ class Response(AttrDict):
         explicit ``sort`` order.
         """
         if len(self.hits) == 0:
-            raise ValueError("Cannot use search_after when there are no search_results")
+            raise ValueError("Cannot use search_after when there are no search results")
         if not hasattr(self.hits[-1].meta, "sort"):
             raise ValueError("Cannot use search_after when results are not sorted")
         return self._search.extra(search_after=self.hits[-1].meta.sort)

@@ -144,10 +144,14 @@ async def test_search_after(async_data_client):
 @pytest.mark.asyncio
 async def test_search_after_no_search(async_data_client):
     s = AsyncSearch(index="flat-git")
-    with raises(ValueError):
+    with raises(
+        ValueError, match="A search must be executed before using search_after"
+    ):
         await s.search_after()
     await s.count()
-    with raises(ValueError):
+    with raises(
+        ValueError, match="A search must be executed before using search_after"
+    ):
         await s.search_after()
 
 
@@ -155,7 +159,9 @@ async def test_search_after_no_search(async_data_client):
 async def test_search_after_no_sort(async_data_client):
     s = AsyncSearch(index="flat-git")
     r = await s.execute()
-    with raises(ValueError):
+    with raises(
+        ValueError, match="Cannot use search_after when results are not sorted"
+    ):
         await r.search_after()
 
 
@@ -167,7 +173,9 @@ async def test_search_after_no_results(async_data_client):
     s = r.search_after()
     r = await s.execute()
     assert 0 == len(r.hits)
-    with raises(ValueError):
+    with raises(
+        ValueError, match="Cannot use search_after when there are no search results"
+    ):
         await r.search_after()
 
 

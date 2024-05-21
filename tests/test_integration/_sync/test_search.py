@@ -136,10 +136,14 @@ def test_search_after(data_client):
 @pytest.mark.sync
 def test_search_after_no_search(data_client):
     s = Search(index="flat-git")
-    with raises(ValueError):
+    with raises(
+        ValueError, match="A search must be executed before using search_after"
+    ):
         s.search_after()
     s.count()
-    with raises(ValueError):
+    with raises(
+        ValueError, match="A search must be executed before using search_after"
+    ):
         s.search_after()
 
 
@@ -147,7 +151,9 @@ def test_search_after_no_search(data_client):
 def test_search_after_no_sort(data_client):
     s = Search(index="flat-git")
     r = s.execute()
-    with raises(ValueError):
+    with raises(
+        ValueError, match="Cannot use search_after when results are not sorted"
+    ):
         r.search_after()
 
 
@@ -159,7 +165,9 @@ def test_search_after_no_results(data_client):
     s = r.search_after()
     r = s.execute()
     assert 0 == len(r.hits)
-    with raises(ValueError):
+    with raises(
+        ValueError, match="Cannot use search_after when there are no search results"
+    ):
         r.search_after()
 
 
