@@ -90,6 +90,38 @@ class Response(AttrDict):
             super(AttrDict, self).__setattr__("_aggs", aggs)
         return self._aggs
 
+    def search_after(self):
+        """
+        Return a ``Search`` instance that retrieves the next page of results.
+
+        This method provides an easy way to paginate a long list of results using
+        the ``search_after`` option. For example::
+
+            page_size = 20
+            s = Search()[:page_size].sort("date")
+
+            while True:
+                # get a page of results
+                r = await s.execute()
+
+                # do something with this page of results
+
+                # exit the loop if we reached the end
+                if len(r.hits) < page_size:
+                    break
+
+                # get a search object with the next page of results
+                s = r.search_after()
+
+        Note that the ``search_after`` option requires the search to have an
+        explicit ``sort`` order.
+        """
+        if len(self.hits) == 0:
+            raise ValueError("Cannot use search_after when there are no search results")
+        if not hasattr(self.hits[-1].meta, "sort"):
+            raise ValueError("Cannot use search_after when results are not sorted")
+        return self._search.extra(search_after=self.hits[-1].meta.sort)
+
 
 class AggResponse(AttrDict):
     def __init__(self, aggs, search, data):
