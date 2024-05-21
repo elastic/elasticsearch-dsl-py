@@ -24,9 +24,7 @@ from typing_extensions import Self
 
 from .exceptions import UnknownDslObject, ValidationException
 
-JSONType = Union[
-    int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
-]
+JSONType = Union[int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]]
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
