@@ -19,7 +19,7 @@ import collections.abc
 from copy import deepcopy
 from typing import Any, ClassVar, Dict, MutableMapping, Optional, Union, overload
 
-from .utils import DslBase, _JSONSafeTypes
+from .utils import DslBase, JSONType
 
 
 @overload
@@ -89,7 +89,7 @@ class ScoreFunction(DslBase):
     }
     name: ClassVar[Optional[str]] = None
 
-    def to_dict(self) -> Dict[str, _JSONSafeTypes]:
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
         # filter and query dicts should be at the same level as us
         for k in self._param_defs:
@@ -107,7 +107,7 @@ class ScriptScore(ScoreFunction):
 class BoostFactor(ScoreFunction):
     name = "boost_factor"
 
-    def to_dict(self) -> Dict[str, _JSONSafeTypes]:
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
         if self.name is not None:
             val = d[self.name]

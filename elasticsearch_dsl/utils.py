@@ -24,8 +24,8 @@ from typing_extensions import Self
 
 from .exceptions import UnknownDslObject, ValidationException
 
-_JSONSafeTypes = Union[
-    int, bool, str, float, List["_JSONSafeTypes"], Dict[str, "_JSONSafeTypes"]
+JSONType = Union[
+    int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
 ]
 
 SKIP_VALUES = ("", None)
@@ -361,7 +361,7 @@ class DslBase(metaclass=DslMeta):
             return AttrDict(value)
         return value
 
-    def to_dict(self) -> Dict[str, _JSONSafeTypes]:
+    def to_dict(self) -> Dict[str, JSONType]:
         """
         Serialize the DSL object to plain dict
         """
