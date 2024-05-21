@@ -16,38 +16,55 @@
 #  under the License.
 
 import collections.abc
-from typing import Dict
+from copy import deepcopy
+from typing import Any, ClassVar, Dict, MutableMapping, Optional, Union, overload
 
-from .utils import DslBase
+from .utils import DslBase, JSONType
 
 
-# Incomplete annotation to not break query.py tests
-def SF(name_or_sf, **params) -> "ScoreFunction":
+@overload
+def SF(name_or_sf: MutableMapping[str, Any]) -> "ScoreFunction": ...
+
+
+@overload
+def SF(name_or_sf: "ScoreFunction") -> "ScoreFunction": ...
+
+
+@overload
+def SF(name_or_sf: str, **params: Any) -> "ScoreFunction": ...
+
+
+def SF(
+    name_or_sf: Union[str, "ScoreFunction", MutableMapping[str, Any]],
+    **params: Any,
+) -> "ScoreFunction":
     # {"script_score": {"script": "_score"}, "filter": {}}
-    if isinstance(name_or_sf, collections.abc.Mapping):
+    if isinstance(name_or_sf, collections.abc.MutableMapping):
         if params:
             raise ValueError("SF() cannot accept parameters when passing in a dict.")
-        kwargs = {}
-        sf = name_or_sf.copy()
+
+        kwargs: Dict[str, Any] = {}
+        sf = deepcopy(name_or_sf)
         for k in ScoreFunction._param_defs:
             if k in name_or_sf:
                 kwargs[k] = sf.pop(k)
 
         # not sf, so just filter+weight, which used to be boost factor
+        sf_params = params
         if not sf:
             name = "boost_factor"
         # {'FUNCTION': {...}}
         elif len(sf) == 1:
-            name, params = sf.popitem()
+            name, sf_params = sf.popitem()
         else:
             raise ValueError(f"SF() got an unexpected fields in the dictionary: {sf!r}")
 
         # boost factor special case, see elasticsearch #6343
-        if not isinstance(params, collections.abc.Mapping):
-            params = {"value": params}
+        if not isinstance(sf_params, collections.abc.Mapping):
+            sf_params = {"value": sf_params}
 
         # mix known params (from _param_defs) and from inside the function
-        kwargs.update(params)
+        kwargs.update(sf_params)
         return ScoreFunction.get_dsl_class(name)(**kwargs)
 
     # ScriptScore(script="_score", filter=Q())
@@ -70,14 +87,16 @@ class ScoreFunction(DslBase):
         "filter": {"type": "query"},
         "weight": {},
     }
-    name = None
+    name: ClassVar[Optional[str]] = None
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
         # filter and query dicts should be at the same level as us
         for k in self._param_defs:
-            if k in d[self.name]:
-                d[k] = d[self.name].pop(k)
+            if self.name is not None:
+                val = d[self.name]
+                if isinstance(val, dict) and k in val:
+                    d[k] = val.pop(k)
         return d
 
 
@@ -88,12 +107,15 @@ class ScriptScore(ScoreFunction):
 class BoostFactor(ScoreFunction):
     name = "boost_factor"
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
-        if "value" in d[self.name]:
-            d[self.name] = d[self.name].pop("value")
-        else:
-            del d[self.name]
+        if self.name is not None:
+            val = d[self.name]
+            if isinstance(val, dict):
+                if "value" in val:
+                    d[self.name] = val.pop("value")
+                else:
+                    del d[self.name]
         return d
 
 
