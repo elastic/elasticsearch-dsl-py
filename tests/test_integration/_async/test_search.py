@@ -180,6 +180,37 @@ async def test_search_after_no_results(async_data_client):
 
 
 @pytest.mark.asyncio
+async def test_point_in_time(async_data_client):
+    page_size = 7
+    commits = []
+    async with AsyncSearch(index="flat-git")[:page_size].point_in_time(
+        keep_alive="30s"
+    ) as s:
+        pit_id = s._extra["pit"]["id"]
+        while True:
+            r = await s.execute()
+            commits += r.hits
+            if len(r.hits) < page_size:
+                break
+            s = r.search_after()
+            assert pit_id == s._extra["pit"]["id"]
+            assert "30s" == s._extra["pit"]["keep_alive"]
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
+@pytest.mark.asyncio
+async def test_iterate(async_data_client):
+    s = AsyncSearch(index="flat-git")
+
+    commits = [commit async for commit in s.iterate()]
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
+@pytest.mark.asyncio
 async def test_response_is_cached(async_data_client):
     s = Repository.search()
     repos = [repo async for repo in s]

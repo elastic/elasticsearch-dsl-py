@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import contextlib
+
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import async_scan
 
@@ -92,6 +94,8 @@ class AsyncSearch(SearchBase):
         pass to the underlying ``scan`` helper from ``elasticsearch-py`` -
         https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
 
+        The ``iterate()`` method should be preferred, as it provides similar
+        functionality using a point in time.
         """
         es = get_connection(self._using)
 
@@ -112,6 +116,57 @@ class AsyncSearch(SearchBase):
                 index=self._index, body=self.to_dict(), **self._params
             )
         )
+
+    @contextlib.asynccontextmanager
+    async def point_in_time(self, keep_alive="1m"):
+        """
+        Open a point in time (pit) that can be used across several searches.
+
+        This method implements a context manager that returns a search object
+        configured to operate within the created pit.
+
+        :arg keep_alive: the time to live for the point in time, renewed with each search request
+
+        The following example shows how to paginate through all the documents of an index::
+
+            page_size = 10
+            with Search(index="my-index")[:page_size].point_in_time() as s:
+                while True:
+                    r = s.execute()  # get a page of results
+                    // ... do something with r.hits
+
+                    if len(r.hits) < page_size:
+                        break  # we reached the end
+                    s = r.search_after()
+        """
+        es = get_connection(self._using)
+
+        pit = await es.open_point_in_time(
+            index=self._index or "*", keep_alive=keep_alive
+        )
+        search = self.index().extra(pit={"id": pit["id"], "keep_alive": keep_alive})
+        if not search._sort:
+            search = search.sort("_shard_doc")
+        yield search
+        await es.close_point_in_time(id=pit["id"])
+
+    async def iterate(self, keep_alive="1m"):
+        """
+        Return a generator that iterates over all the documents matching the query.
+
+        This method uses a point in time to provide consistent results even when
+        the index is changing. It should be preferred over ``scan()``.
+
+        :arg keep_alive: the time to live for the point in time, renewed with each new search request
+        """
+        async with self.point_in_time(keep_alive=keep_alive) as s:
+            while True:
+                r = await s.execute()
+                for hit in r:
+                    yield hit
+                if len(r.hits) == 0:
+                    break
+                s = r.search_after()
 
 
 class AsyncMultiSearch(MultiSearchBase):
