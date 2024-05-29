@@ -95,7 +95,7 @@ class AsyncSearch(SearchBase):
         https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
 
         The ``iterate()`` method should be preferred, as it provides similar
-        functionality using a point in time.
+        functionality using an Elasticsearch point in time.
         """
         es = get_connection(self._using)
 
