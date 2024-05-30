@@ -172,6 +172,35 @@ def test_search_after_no_results(data_client):
 
 
 @pytest.mark.sync
+def test_point_in_time(data_client):
+    page_size = 7
+    commits = []
+    with Search(index="flat-git")[:page_size].point_in_time(keep_alive="30s") as s:
+        pit_id = s._extra["pit"]["id"]
+        while True:
+            r = s.execute()
+            commits += r.hits
+            if len(r.hits) < page_size:
+                break
+            s = r.search_after()
+            assert pit_id == s._extra["pit"]["id"]
+            assert "30s" == s._extra["pit"]["keep_alive"]
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
+@pytest.mark.sync
+def test_iterate(data_client):
+    s = Search(index="flat-git")
+
+    commits = [commit for commit in s.iterate()]
+
+    assert 52 == len(commits)
+    assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
+
+
+@pytest.mark.sync
 def test_response_is_cached(data_client):
     s = Repository.search()
     repos = [repo for repo in s]
