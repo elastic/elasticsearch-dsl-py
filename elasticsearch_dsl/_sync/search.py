@@ -91,7 +91,7 @@ class Search(SearchBase):
         https://elasticsearch-py.readthedocs.io/en/master/helpers.html#elasticsearch.helpers.scan
 
         The ``iterate()`` method should be preferred, as it provides similar
-        functionality using a point in time.
+        functionality using an Elasticsearch point in time.
         """
         es = get_connection(self._using)
 
@@ -118,18 +118,6 @@ class Search(SearchBase):
         configured to operate within the created pit.
 
         :arg keep_alive: the time to live for the point in time, renewed with each search request
-
-        The following example shows how to paginate through all the documents of an index::
-
-            page_size = 10
-            with Search(index="my-index")[:page_size].point_in_time() as s:
-                while True:
-                    r = s.execute()  # get a page of results
-                    // ... do something with r.hits
-
-                    if len(r.hits) < page_size:
-                        break  # we reached the end
-                    s = r.search_after()
         """
         es = get_connection(self._using)
 
