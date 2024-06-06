@@ -32,9 +32,7 @@ SOURCE_FILES = (
 TYPED_FILES = (
     "elasticsearch_dsl/function.py",
     "elasticsearch_dsl/query.py",
-    "elasticsearch_dsl/wrappers.py",
     "tests/test_query.py",
-    "tests/test_wrappers.py",
 )
 
 
