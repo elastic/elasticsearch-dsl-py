@@ -18,13 +18,25 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, ClassVar, Dict, List, Optional, Type, Union
+from typing import Any, ClassVar, Dict, Generic, List, Optional, Type, TypeVar, Union
 
-from typing_extensions import Self
+from typing_extensions import Self, TypeAlias
 
 from .exceptions import UnknownDslObject, ValidationException
 
-JSONType = Union[int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]]
+# Usefull types
+
+JSONType: TypeAlias = Union[
+    int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
+]
+
+
+# Type variables for internals
+
+_KeyT = TypeVar("_KeyT")
+_ValT = TypeVar("_ValT")
+
+# Constants
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
@@ -110,18 +122,20 @@ class AttrList:
         return self._l_
 
 
-class AttrDict:
+class AttrDict(Generic[_KeyT, _ValT]):
     """
     Helper class to provide attribute like access (read and write) to
     dictionaries. Used to provide a convenient way to access both results and
     nested dsl dicts.
     """
 
-    def __init__(self, d):
+    _d_: Dict[_KeyT, _ValT]
+
+    def __init__(self, d: Dict[_KeyT, _ValT]):
         # assign the inner dict manually to prevent __setattr__ from firing
         super().__setattr__("_d_", d)
 
-    def __contains__(self, key):
+    def __contains__(self, key: object) -> bool:
         return key in self._d_
 
     def __nonzero__(self):

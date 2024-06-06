@@ -16,26 +16,78 @@
 #  under the License.
 
 import operator
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Literal,
+    Mapping,
+    Optional,
+    Protocol,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
+
+from typing_extensions import TypeAlias
 
 from .utils import AttrDict
 
-__all__ = ["Range"]
+
+class SupportsDunderLT(Protocol):
+    def __lt__(self, other: Any, /) -> Any: ...
 
 
-class Range(AttrDict):
-    OPS = {
+class SupportsDunderGT(Protocol):
+    def __gt__(self, other: Any, /) -> Any: ...
+
+
+class SupportsDunderLE(Protocol):
+    def __le__(self, other: Any, /) -> Any: ...
+
+
+class SupportsDunderGE(Protocol):
+    def __ge__(self, other: Any, /) -> Any: ...
+
+
+SupportsComparison: TypeAlias = Union[
+    SupportsDunderLE, SupportsDunderGE, SupportsDunderGT, SupportsDunderLT
+]
+
+ComparisonOperators: TypeAlias = Literal["lt", "lte", "gt", "gte"]
+RangeValT = TypeVar("RangeValT", bound=SupportsComparison)
+
+__all__ = ["Range", "SupportsComparison"]
+
+
+class Range(AttrDict[ComparisonOperators, RangeValT]):
+    OPS: ClassVar[
+        Mapping[
+            ComparisonOperators,
+            Callable[[SupportsComparison, SupportsComparison], bool],
+        ]
+    ] = {
         "lt": operator.lt,
         "lte": operator.le,
         "gt": operator.gt,
         "gte": operator.ge,
     }
 
-    def __init__(self, *args, **kwargs):
-        if args and (len(args) > 1 or kwargs or not isinstance(args[0], dict)):
+    def __init__(
+        self,
+        d: Optional[Dict[ComparisonOperators, RangeValT]] = None,
+        /,
+        **kwargs: RangeValT,
+    ):
+        if d is not None and (kwargs or not isinstance(d, dict)):
             raise ValueError(
                 "Range accepts a single dictionary or a set of keyword arguments."
             )
-        data = args[0] if args else kwargs
+
+        # Cast here since mypy is inferring d as an `object` type for some reason
+        data = cast(Dict[str, RangeValT], d) if d is not None else kwargs
 
         for k in data:
             if k not in self.OPS:
@@ -47,14 +99,24 @@ class Range(AttrDict):
         if "lt" in data and "lte" in data:
             raise ValueError("You cannot specify both lt and lte for Range.")
 
-        super().__init__(args[0] if args else kwargs)
+        # Here we use cast() since we now the keys are in the allowed values, but mypy does
+        # not infer it.
+        super().__init__(cast(Dict[ComparisonOperators, RangeValT], data))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Range(%s)" % ", ".join("%s=%r" % op for op in self._d_.items())
 
-    def __contains__(self, item):
+    def __contains__(self, item: object) -> bool:
         if isinstance(item, str):
             return super().__contains__(item)
+
+        item_supports_comp = any(hasattr(item, f"__{op}__") for op in self.OPS)
+        if not item_supports_comp:
+            return False
+
+        # Cast to tell mypy whe have checked it and its ok to use the comparison methods
+        # on `item`
+        item = cast(SupportsComparison, item)
 
         for op in self.OPS:
             if op in self._d_ and not self.OPS[op](item, self._d_[op]):
@@ -62,7 +124,7 @@ class Range(AttrDict):
         return True
 
     @property
-    def upper(self):
+    def upper(self) -> Union[Tuple[RangeValT, bool], Tuple[None, Literal[False]]]:
         if "lt" in self._d_:
             return self._d_["lt"], False
         if "lte" in self._d_:
@@ -70,7 +132,7 @@ class Range(AttrDict):
         return None, False
 
     @property
-    def lower(self):
+    def lower(self) -> Union[Tuple[RangeValT, bool], Tuple[None, Literal[False]]]:
         if "gt" in self._d_:
             return self._d_["gt"], False
         if "gte" in self._d_:
