@@ -551,6 +551,10 @@ class TermsSet(Query):
     name = "terms_set"
 
 
+class TextExpansion(Query):
+    name = "text_expansion"
+
+
 class Wildcard(Query):
     name = "wildcard"
 
