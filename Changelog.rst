@@ -3,6 +3,217 @@
 Changelog
 =========
 
+8.13.1 (2024-04-30)
+-------------------
+
+* Added support for ``knn`` as a query option (`#1770`_)
+* Made the ``dims`` attribute of the dense vector type optional (`#1776`_)
+* Added missing ``inner_hits`` option to ``search.knn()`` method (`#1777`_)
+* Added support for detecting document updates in ``InnerDoc`` attributes (`#1535`_)
+* Changed ``_expand__to_dot`` setting to resolve at runtime (`#1633`_)
+* Added explicit error message when unsupported ``minimum_should_match`` values are used (`#1774`_)
+* Added the ``EmptySearch`` class (`#1780`_)
+* Added several missing aggregations:
+   * ``AdjacencyMatrix`` (`#1553`_)
+   * ``CategorizeText`` (`#1588`_)
+   * ``GeohexGrid`` (`#1590`_)
+   * ``IPPrefix`` (`#1592`_)
+   * ``RandomSampler`` (`#1594`_)
+   * ``GeoLine`` (`#1628`_)
+   * ``MatrixStats`` (`#1630`_)
+   * ``TopMetrics`` (`#1706`_)
+* Added ``params`` option to the ``FacetedSearch`` object (`#1500`_)
+* Added support for passing a dictionary in the ``script`` option for a document update (`#1560`_)
+* Added ``keys()`` and ``items()`` methods to ``AttrDict`` class (`#1784`_)
+* Added a ``to_list()`` method to the ``AttrList`` class (`#1584`_)
+* Fixed various documentation issues and typos (`#1769`_, `#1615`_, `#1585`_, `#1318`_, `#1223`_)
+* Added a vector search example (`#1778`_)
+
+.. _#1770: https://github.com/elastic/elasticsearch-dsl-py/pull/1770
+.. _#1776: https://github.com/elastic/elasticsearch-dsl-py/pull/1776
+.. _#1777: https://github.com/elastic/elasticsearch-dsl-py/pull/1777
+.. _#1535: https://github.com/elastic/elasticsearch-dsl-py/pull/1535
+.. _#1633: https://github.com/elastic/elasticsearch-dsl-py/pull/1633
+.. _#1774: https://github.com/elastic/elasticsearch-dsl-py/pull/1774
+.. _#1780: https://github.com/elastic/elasticsearch-dsl-py/pull/1780
+.. _#1553: https://github.com/elastic/elasticsearch-dsl-py/pull/1553
+.. _#1588: https://github.com/elastic/elasticsearch-dsl-py/pull/1588
+.. _#1590: https://github.com/elastic/elasticsearch-dsl-py/pull/1590
+.. _#1592: https://github.com/elastic/elasticsearch-dsl-py/pull/1592
+.. _#1594: https://github.com/elastic/elasticsearch-dsl-py/pull/1594
+.. _#1628: https://github.com/elastic/elasticsearch-dsl-py/pull/1628
+.. _#1630: https://github.com/elastic/elasticsearch-dsl-py/pull/1630
+.. _#1706: https://github.com/elastic/elasticsearch-dsl-py/pull/1706
+.. _#1500: https://github.com/elastic/elasticsearch-dsl-py/pull/1500
+.. _#1560: https://github.com/elastic/elasticsearch-dsl-py/pull/1560
+.. _#1784: https://github.com/elastic/elasticsearch-dsl-py/pull/1784
+.. _#1584: https://github.com/elastic/elasticsearch-dsl-py/pull/1584
+.. _#1769: https://github.com/elastic/elasticsearch-dsl-py/pull/1769
+.. _#1615: https://github.com/elastic/elasticsearch-dsl-py/pull/1615
+.. _#1585: https://github.com/elastic/elasticsearch-dsl-py/pull/1585
+.. _#1318: https://github.com/elastic/elasticsearch-dsl-py/pull/1318
+.. _#1223: https://github.com/elastic/elasticsearch-dsl-py/pull/1223
+.. _#1778: https://github.com/elastic/elasticsearch-dsl-py/pull/1778
+
+8.13.0 (2024-04-03)
+-------------------
+
+* Added ``asyncio`` support (`#1714`_)
+* Dropped support for Python 3.7 (`#1717`_)
+* Stopped mixing body and parameters in ``UpdateByQuery`` (`#1702`_)
+
+.. _#1714: https://github.com/elastic/elasticsearch-dsl-py/pull/1714
+.. _#1717: https://github.com/elastic/elasticsearch-dsl-py/pull/1717
+.. _#1702: https://github.com/elastic/elasticsearch-dsl-py/pull/1702
+
+8.12.0 (2024-01-18)
+-------------------
+
+* Added ``Search.knn()`` method  (`#1691`_)
+* Added ``Search.rank()`` method (undocumented as it still is in technical preview) (`#1692`_)
+* Fixed importing collapse from dictionary (`#1689`_)
+
+.. _#1689: https://github.com/elastic/elasticsearch-dsl-py/pull/1689
+.. _#1691: https://github.com/elastic/elasticsearch-dsl-py/pull/1691
+.. _#1692: https://github.com/elastic/elasticsearch-dsl-py/pull/1692
+
+8.11.0 (2023-11-13)
+-------------------
+
+* Added support for Python 3.12 (`#1680`_)
+* Added ``Search.collapse()`` (`#1649`_, contributed by `@qcoumes`_)
+
+.. _@qcoumes: https://github.com/qcoumes
+.. _#1680: https://github.com/elastic/elasticsearch-dsl-py/pull/1680
+.. _#1649: https://github.com/elastic/elasticsearch-dsl-py/pull/1649
+
+8.9.0 (2023-09-07)
+------------------
+
+* Added Elasticsearch 8.x support (`#1664`_)
+* Dropped support for Python 2.7 and 3.5 (`#1606`_, contributed by `@hugovk`_)
+* Added support for Python 3.10 and 3.11 (`#1608`_, contributed by `@hugovk`_)
+* Added the ``MultiTerms`` aggregation (`#1543`_, contributed by `@Telomeraz`_)
+* Added the ``CombinedFields`` query (`#1557`_, contributed by `@Telomeraz`_)
+
+.. _@Telomeraz: https://github.com/Telomeraz
+.. _@hugovk: https://github.com/hugovk
+.. _#1664: https://github.com/elastic/elasticsearch-dsl-py/pull/1664
+.. _#1606: https://github.com/elastic/elasticsearch-dsl-py/pull/1606
+.. _#1608: https://github.com/elastic/elasticsearch-dsl-py/pull/1608
+.. _#1543: https://github.com/elastic/elasticsearch-dsl-py/pull/1543
+.. _#1557: https://github.com/elastic/elasticsearch-dsl-py/pull/1557
+
+
+7.4.1 (2023-03-01)
+------------------
+
+* Fixed ``DeprecationWarnings`` that would be emitted from deprecated
+  usages of the ``body`` parameter in the Python Elasticsearch client.
+
+
+7.4.0 (2021-07-15)
+------------------
+
+* Added the ``ConstantKeyword``, ``RankFeatures`` field types (`#1456`_, `#1465`_)
+* Added the ``ScriptScore`` query type (`#1464`_)
+* Added ``UpdateByQueryResponse.success()`` method (`#1463`_)
+* Added ``return_doc_meta`` parameter to ``Document.save()`` and ``Document.update()`` for
+  accessing the complete API response (`#1466`_)
+* Added support for ``calendar_interval`` and ``fixed_interval`` to ``DateHistogramFacet`` (`#1467`_)
+* Added ``Document.exists()`` method (`#1447`_, contributed by `@dem4ply`_)
+* Added support for the ``year`` interval to ``DateHistogramFacet`` (`#1502`_, contributed by `@nrsimha`_)
+* Fixed issue where ``to_dict()`` should be called recursively on ``Search.extras`` and ``**kwargs`` (`#1458`_)
+* Fixed inverse of an empty ``Bool`` query should be ``MatchNone`` (`#1459`_)
+* Fixed issue between ``retry_on_conflict`` and optimistic concurrency control within ``Document.update()`` (`#1461`_, contributed by `@armando1793`_)
+
+ .. _@dem4ply: https://github.com/dem4ply
+ .. _@nrsimha: https://github.com/nrsimha
+ .. _@armando1793: https://github.com/armando1793
+ .. _#1447: https://github.com/elastic/elasticsearch-dsl-py/pull/1447
+ .. _#1456: https://github.com/elastic/elasticsearch-dsl-py/pull/1456
+ .. _#1458: https://github.com/elastic/elasticsearch-dsl-py/pull/1458
+ .. _#1459: https://github.com/elastic/elasticsearch-dsl-py/pull/1459
+ .. _#1461: https://github.com/elastic/elasticsearch-dsl-py/pull/1461
+ .. _#1463: https://github.com/elastic/elasticsearch-dsl-py/pull/1463
+ .. _#1464: https://github.com/elastic/elasticsearch-dsl-py/pull/1464
+ .. _#1465: https://github.com/elastic/elasticsearch-dsl-py/pull/1465
+ .. _#1466: https://github.com/elastic/elasticsearch-dsl-py/pull/1466
+ .. _#1467: https://github.com/elastic/elasticsearch-dsl-py/pull/1467
+ .. _#1502: https://github.com/elastic/elasticsearch-dsl-py/pull/1502
+
+7.3.0 (2020-09-16)
+------------------
+
+* Added ``Intervals``, ``MatchBoolPrefix``, ``Shape``, and ``Wrapper`` queries (`#1392`_, `#1418`_)
+* Added ``Boxplot``, ``RareTerms``, ``VariableWidthHistogram``, ``MedianAbsoluteDeviation``,
+  ``TTest``, ``CumulativeCardinality``, ``Inference``, ``MovingPercentiles``,
+  and ``Normalize`` aggregations (`#1416`_, `#1418`_)
+* Added ``__all__``  and removed all star imports from ``elasticsearch_dsl`` namespace
+  to avoid leaking unintended names (`#1390`_)
+* Fixed an issue where ``Object`` and ``Nested`` could mutate the inner
+  ``doc_class`` mapping (`#1255`_, contributed by `@l1nd3r0th`_)
+* Fixed a typo in query ``SpanContaining``, previously was ``SpanContainining`` (`#1418`_)
+
+ .. _@l1nd3r0th: https://github.com/l1nd3r0th
+ .. _#1255: https://github.com/elastic/elasticsearch-dsl-py/pull/1255
+ .. _#1390: https://github.com/elastic/elasticsearch-dsl-py/pull/1390
+ .. _#1392: https://github.com/elastic/elasticsearch-dsl-py/pull/1392
+ .. _#1416: https://github.com/elastic/elasticsearch-dsl-py/pull/1416
+ .. _#1418: https://github.com/elastic/elasticsearch-dsl-py/pull/1418
+
+7.2.1 (2020-06-02)
+------------------
+
+* Fixed issue when slicing a Search that would result in a negative
+  ``size`` instead of a ``size`` of 0. (`#1360`_, contributed by `@bk-equityzen`_)
+
+ .. _@bk-equityzen: https://github.com/bk-equityzen
+ .. _#1360: https://github.com/elastic/elasticsearch-dsl-py/pull/1360
+
+7.2.0 (2020-05-04)
+------------------
+
+* Added support for ``geotile_grid`` aggregation (`#1350`_, contributed by `@owrcasstevens`_)
+* Added the ``DenseVector`` and ``SparseVector`` data types (`#1278`_)
+* Added the ``SearchAsYouType`` field (`#1295`_, contributed by `@dpasqualin`_)
+* Fixed name of ``DoubleRange`` (`#1272`_, contributed by `@braunsonm`_)
+
+ .. _@braunsonm: https://github.com/braunsonm
+ .. _@dpasqualin: https://github.com/dpasqualin
+ .. _@owrcasstevens: https://github.com/owrcasstevens
+ .. _#1272: https://github.com/elastic/elasticsearch-dsl-py/pull/1272
+ .. _#1278: https://github.com/elastic/elasticsearch-dsl-py/issues/1278
+ .. _#1295: https://github.com/elastic/elasticsearch-dsl-py/pull/1295
+ .. _#1350: https://github.com/elastic/elasticsearch-dsl-py/pull/1350
+
+7.1.0 (2019-10-23)
+------------------
+
+* Optimistic concurrent control for Document.delete
+* Removing deprecated ``DocType``
+* Proper count caching for ES 7.x
+* Support for ``multiplexer`` token filter
+* Don't substitute for ``__`` in ``FacetedSearch``
+
+7.0.0 (2019-04-26)
+------------------
+
+* Compatibility with Elasticsearch 7.x
+* ``Document.save()`` now returns ``"created"`` or ``"updated"``
+* Dropped support for Python 2.6, 3.2, and 3.3
+* When using ``fields`` the values are no longer merged into the body of the
+  document and have to be accessed via ``.meta.fields`` only
+
+6.4.0 (2019-04-26)
+------------------
+
+* ``Index.document`` now correctly sets the ``Document``'s ``_index`` only when
+  using default index (``#1091``)
+* ``Document`` inheritance allows overriding ``Object`` and ``Nested`` field metadata like ``dynamic``
+* adding ``auto_date_histogram`` aggregation
+* Do not change data in place when (de)serializing
+
 6.3.1 (2018-12-05)
 ------------------
 
@@ -28,7 +239,7 @@ Changelog
 * Improved behavior of ``Index.save`` where it does a better job when index
   already exists
 * Composite aggregations now correctly support multiple ``sources`` aggs
-* ``UpdateByQuery`` implementated by @emarcey
+* ``UpdateByQuery`` implemented by @emarcey
 
 6.2.1 (2018-07-03)
 ------------------
@@ -154,7 +365,7 @@ Breaking changes:
 
 2.2.0 (2016-11-04)
 ------------------
- * accessing missing string fields no longer returnd ``''`` but returns
+ * accessing missing string fields no longer returned ``''`` but returns
    ``None`` instead.
  * fix issues with bool's ``|`` and ``&`` operators and ``minimum_should_match``
 

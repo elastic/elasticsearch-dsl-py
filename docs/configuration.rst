@@ -45,7 +45,7 @@ to the ``Elasticsearch`` class from ``elasticsearch-py``.
 
 To see all
 possible configuration options refer to the `documentation
-<http://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch>`_.
+<https://elasticsearch-py.readthedocs.io/en/latest/api/elasticsearch.html>`_.
 
 Multiple clusters
 -----------------

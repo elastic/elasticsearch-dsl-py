@@ -1,17 +1,35 @@
-from six import string_types
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
 
 from elasticsearch import Elasticsearch
 
 from .serializer import serializer
 
-class Connections(object):
+
+class Connections:
     """
     Class responsible for holding connections to different clusters. Used as a
     singleton in this module.
     """
-    def __init__(self):
+
+    def __init__(self, *, elasticsearch_class=Elasticsearch):
         self._kwargs = {}
         self._conns = {}
+        self.elasticsearch_class = elasticsearch_class
 
     def configure(self, **kwargs):
         """
@@ -23,7 +41,7 @@ class Connections(object):
 
             connections.configure(
                 default={'hosts': 'localhost'},
-                dev={'hosts': ['esdev1.example.com:9200'], sniff_on_start=True}
+                dev={'hosts': ['esdev1.example.com:9200'], 'sniff_on_start': True},
             )
 
         Connections will only be constructed lazily when requested through
@@ -40,7 +58,7 @@ class Connections(object):
         """
         Add a connection object, it will be passed through as-is.
         """
-        self._conns[alias] = conn
+        self._conns[alias] = self._with_user_agent(conn)
 
     def remove_connection(self, alias):
         """
@@ -55,18 +73,18 @@ class Connections(object):
                 errors += 1
 
         if errors == 2:
-            raise KeyError('There is no connection with alias %r.' % alias)
+            raise KeyError(f"There is no connection with alias {alias!r}.")
 
-    def create_connection(self, alias='default', **kwargs):
+    def create_connection(self, alias="default", **kwargs):
         """
         Construct an instance of ``elasticsearch.Elasticsearch`` and register
         it under given alias.
         """
-        kwargs.setdefault('serializer', serializer)
-        conn = self._conns[alias] = Elasticsearch(**kwargs)
-        return conn
+        kwargs.setdefault("serializer", serializer)
+        conn = self._conns[alias] = self.elasticsearch_class(**kwargs)
+        return self._with_user_agent(conn)
 
-    def get_connection(self, alias='default'):
+    def get_connection(self, alias="default"):
         """
         Retrieve a connection, construct it if necessary (only configuration
         was passed to us). If a non-string alias has been passed through we
@@ -77,8 +95,8 @@ class Connections(object):
         """
         # do not check isinstance(Elasticsearch) so that people can wrap their
         # clients
-        if not isinstance(alias, string_types):
-            return alias
+        if not isinstance(alias, str):
+            return self._with_user_agent(alias)
 
         # connection already established
         try:
@@ -91,7 +109,23 @@ class Connections(object):
             return self.create_connection(alias, **self._kwargs[alias])
         except KeyError:
             # no connection and no kwargs to set one up
-            raise KeyError('There is no connection with alias %r.' % alias)
+            raise KeyError(f"There is no connection with alias {alias!r}.")
+
+    def _with_user_agent(self, conn):
+        from . import __versionstr__  # this is here to avoid circular imports
+
+        # try to inject our user agent
+        if hasattr(conn, "_headers"):
+            is_frozen = conn._headers.frozen
+            if is_frozen:
+                conn._headers = conn._headers.copy()
+            conn._headers.update(
+                {"user-agent": f"elasticsearch-dsl-py/{__versionstr__}"}
+            )
+            if is_frozen:
+                conn._headers.freeze()
+        return conn
+
 
 connections = Connections()
 configure = connections.configure

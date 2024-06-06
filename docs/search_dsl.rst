@@ -14,9 +14,17 @@ The ``Search`` object represents the entire search request:
 
   * aggregations
 
+  * k-nearest neighbor searches
+
   * sort
 
   * pagination
+
+  * highlighting
+
+  * suggestions
+
+  * collapsing
 
   * additional parameters
 
@@ -223,7 +231,6 @@ to directly construct the combined query:
 Filters
 ~~~~~~~
 
-
 If you want to add a query in a `filter context
 <https://www.elastic.co/guide/en/elasticsearch/reference/2.0/query-filter-context.html>`_
 you can use the ``filter()`` method to make things easier:
@@ -347,6 +354,31 @@ As opposed to other methods on the ``Search`` objects, defining aggregations is
 done in-place (does not return a copy).
 
 
+K-Nearest Neighbor Searches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To issue a kNN search, use the ``.knn()`` method:
+
+.. code:: python
+
+   s = Search()
+   vector = get_embedding("search text")
+
+   s = s.knn(
+       field="embedding",
+       k=5,
+       num_candidates=10,
+       query_vector=vector
+   )
+
+The ``field``, ``k`` and ``num_candidates`` arguments can be given as
+positional or keyword arguments and are required. In addition to these,
+``query_vector`` or ``query_vector_builder`` must be given as well.
+
+The ``.knn()`` method can be invoked multiple times to include multiple kNN
+searches in the request.
+
+
 Sorting
 ~~~~~~~
 
@@ -378,16 +410,25 @@ To specify the from/size parameters, use the Python slicing API:
 
 .. code:: python
 
-  s = s[10:20]
-  # {"from": 10, "size": 10}
+   s = s[10:20]
+   # {"from": 10, "size": 10}
+
+   s = s[:20]
+   # {"size": 20}
+
+   s = s[10:]
+   # {"from": 10}
+
+   s = s[10:20][2:]
+   # {"from": 12, "size": 8}
 
 If you want to access all the documents matched by your query you can use the
 ``scan`` method which uses the scan/scroll elasticsearch API:
 
 .. code:: python
 
-  for hit in s.scan():
-      print(hit.title)
+   for hit in s.scan():
+       print(hit.title)
 
 Note that in this case the results won't be sorted.
 
@@ -408,7 +449,7 @@ Enabling highlighting for individual fields is done using the ``highlight`` meth
     # or, including parameters:
     s = s.highlight('title', fragment_size=50)
 
-The fragments in the response will then be available on reach ``Result`` object
+The fragments in the response will then be available on each ``Result`` object
 as ``.meta.highlight.FIELD`` which will contain the list of fragments:
 
 .. code:: python
@@ -425,6 +466,7 @@ To specify a suggest request on your ``Search`` object use the ``suggest`` metho
 
 .. code:: python
 
+    # check for correct spelling
     s = s.suggest('my_suggestion', 'pyhton', term={'field': 'title'})
 
 The first argument is the name of the suggestions (name under which it will be
@@ -433,6 +475,51 @@ keyword arguments will be added to the suggest's json as-is which means that it
 should be one of ``term``, ``phrase`` or ``completion`` to indicate which type
 of suggester should be used.
 
+Collapsing
+~~~~~~~~~~
+
+To collapse search results use the ``collapse`` method on your ``Search`` object:
+
+.. code:: python
+
+    s = Search().query("match", message="GET /search")
+    # collapse results by user_id
+    s = s.collapse("user_id")
+
+The top hits will only include one result per ``user_id``. You can also expand
+each collapsed top hit with the ``inner_hits`` parameter,
+``max_concurrent_group_searches`` being the number of concurrent requests
+allowed to retrieve the inner hits per group:
+
+.. code:: python
+
+    inner_hits = {"name": "recent_search", "size": 5, "sort": [{"@timestamp": "desc"}]}
+    s = s.collapse("user_id", inner_hits=inner_hits, max_concurrent_group_searches=4)
+
+More Like This Query
+~~~~~~~~~~~~~~~~~~~~
+
+To use Elasticsearch's more_like_this functionality, you can use the MoreLikeThis query type.
+
+A simple example is below
+
+.. code:: python
+
+    from elasticsearch_dsl.query import MoreLikeThis
+    from elasticsearch_dsl import Search
+
+    my_text = 'I want to find something similar'
+
+    s = Search()
+    # We're going to match based only on two fields, in this case text and title
+    s = s.query(MoreLikeThis(like=my_text, fields=['text', 'title']))
+    # You can also exclude fields from the result to make the response quicker in the normal way
+    s = s.source(exclude=["text"])
+    response = s.execute()
+    
+    for hit in response:
+        print(hit.title)
+    
 
 Extra properties and parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -462,7 +549,7 @@ If you need to limit the fields being returned by elasticsearch, use the
   # don't return any fields, just the metadata
   s = s.source(False)
   # explicitly include/exclude fields
-  s = s.source(include=["title"], exclude=["user.*"])
+  s = s.source(includes=["title"], excludes=["user.*"])
   # reset the field selection
   s = s.source(None)
 
@@ -507,7 +594,10 @@ convenient helpers:
   print(response.took)
   # 12
 
-  print(response.hits.total)
+  print(response.hits.total.relation)
+  # eq
+  print(response.hits.total.value)
+  # 142
 
   print(response.suggest.my_suggestions)
 
@@ -528,6 +618,9 @@ just iterate over the ``Response`` object:
     for h in response:
         print(h.title, h.body)
 
+.. note::
+
+  If you are only seeing partial results (e.g. 10000 or even 10 results), consider using the option ``s.extra(track_total_hits=True)`` to get a full hit count.
 
 Result
 ~~~~~~
@@ -579,6 +672,13 @@ If you need to execute multiple searches at the same time you can use the
     responses = ms.execute()
 
     for response in responses:
-        print("Results for query %r." % response.search.query)
+        print("Results for query %r." % response._search.query)
         for hit in response:
             print(hit.title)
+
+
+``EmptySearch``
+---------------
+
+The ``EmptySearch`` class can be used as a fully compatible version of ``Search``
+that will return no results, regardless of any queries configured.

@@ -97,8 +97,8 @@ in any of the `range fields
     datetime(2018, 11, 17, 9, 30, 0) in rb.dates # True
 
     # you can also get the limits and whether they are inclusive or exclusive:
-    rb.lower # datetime(2018, 11, 17, 9, 0, 0), True
-    rb.upper # datetime(2018, 11, 17, 10, 0, 0), False
+    rb.dates.lower # datetime(2018, 11, 17, 9, 0, 0), True
+    rb.dates.upper # datetime(2018, 11, 17, 10, 0, 0), False
 
     # empty range is unbounded
     Range().lower # None, False
@@ -228,7 +228,7 @@ If the document is not found in elasticsearch an exception
     p = Post.get(id='not-in-es', ignore=404)
     p is None
 
-When you wish to retrive multiple documents at the same time by their ``id``
+When you wish to retrieve multiple documents at the same time by their ``id``
 you can use the ``mget`` method:
 
 .. code:: python
@@ -393,10 +393,6 @@ the index, its name, settings and other attributes:
   name of the index to use, if it contains a wildcard (``*``) then it cannot be
   used for any write operations and an ``index`` kwarg will have to be passed
   explicitly when calling methods like ``.save()``.
-
-``doc_type``
-  name of the ``_type`` in elasticsearch. Note that you have to define this as
-  well as ``doc_type`` in ``class Meta`` in order for it to take effect.
 
 ``using``
   default connection alias to use, defaults to ``'default'``
@@ -566,7 +562,7 @@ Potential workflow for a set of time based indices governed by a single template
             return super().save(**kwargs)
 
     # once, as part of application setup, during deploy/migrations:
-    logs = Log._index.as_template('logs')
+    logs = Log._index.as_template('logs', order=0)
     logs.save()
 
     # to perform search across all logs:

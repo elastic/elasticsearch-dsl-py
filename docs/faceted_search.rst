@@ -34,11 +34,6 @@ declaring a ``FacetedSearch`` subclass:
   values should be instances of any ``Facet`` subclass, for example: ``{'tags':
   TermsFacet(field='tags')}``
 
-``sort``
-  tuple or list of fields on which the results should be sorted. The format of
-  the individual fields are to be the same as those passed to
-  :meth:`~elasticsearch_dsl.Search.sort`.
-
 
 Facets
 ~~~~~~
@@ -49,7 +44,7 @@ There are several different facets available:
   provides an option to split documents into groups based on a value of a field, for example ``TermsFacet(field='category')``
 
 ``DateHistogramFacet``
-  split documents into time intervals, example: ``DateHistogramFacet(field="published_date", interval="day")``
+  split documents into time intervals, example: ``DateHistogramFacet(field="published_date", calendar_interval="day")``
 
 ``HistogramFacet``
   similar to ``DateHistogramFacet`` but for numerical values: ``HistogramFacet(field="rating", interval=2)``
@@ -83,7 +78,7 @@ of the methods responsible for the class' functions:
   filter for published articles only).
 
 ``query(self, search)``
-  adds the query postion of the search (if search input specified), by default
+  adds the query position of the search (if search input specified), by default
   using ``MultiField`` query. Override this if you want to modify the query type used.
 
 ``highlight(self, search)``
@@ -95,7 +90,7 @@ Usage
 -----
 
 The custom subclass can be instantiated empty to provide an empty search
-(matching everything) or with ``query`` and ``filters``.
+(matching everything) or with ``query``, ``filters`` and ``sort``.
 
 ``query``
   is used to pass in the text of the query to be performed. If ``None`` is
@@ -106,6 +101,12 @@ The custom subclass can be instantiated empty to provide an empty search
   is a dictionary containing all the facet filters that you wish to apply. Use
   the name of the facet (from ``.facets`` attribute) as the key and one of the
   possible values as value. For example ``{'tags': 'python'}``.
+
+``sort``
+  is a tuple or list of fields on which the results should be sorted. The format
+  of the individual fields are to be the same as those passed to
+  :meth:`~elasticsearch_dsl.Search.sort`.
+
 
 Response
 ~~~~~~~~
@@ -145,7 +146,8 @@ Example
     response = bs.execute()
 
     # access hits and other attributes as usual
-    print(response.hits.total, 'hits total')
+    total = response.hits.total
+    print('total hits', total.relation, total.value)
     for hit in response:
         print(hit.meta.score, hit.title)
 
