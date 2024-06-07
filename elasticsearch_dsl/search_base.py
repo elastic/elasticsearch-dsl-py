@@ -743,7 +743,7 @@ class SearchBase(Request):
             s._highlight[f] = kwargs
         return s
 
-    def suggest(self, name, text, **kwargs):
+    def suggest(self, name, text=None, regex=None, **kwargs):
         """
         Add a suggestions request to the search.
 
@@ -754,9 +754,27 @@ class SearchBase(Request):
 
             s = Search()
             s = s.suggest('suggestion-1', 'Elasticsearch', term={'field': 'body'})
+
+        # regex query for Completion Suggester
+            s = Search()
+            s = s.suggest('suggestion-1', regex='py[thon|py]', completion={'field': 'body'})
         """
+        if text is None and regex is None:
+            raise ValueError('You have to pass "text" or "regex" argument.')
+        if text and regex:
+            raise ValueError('You can only pass either "text" or "regex" argument.')
+        if regex and "completion" not in kwargs:
+            raise ValueError(
+                '"regex" argument must be passed with "completion" keyword argument.'
+            )
+
         s = self._clone()
-        s._suggest[name] = {"text": text}
+        if regex:
+            s._suggest[name] = {"regex": regex}
+        elif "completion" in kwargs:
+            s._suggest[name] = {"prefix": text}
+        else:
+            s._suggest[name] = {"text": text}
         s._suggest[name].update(kwargs)
         return s
 
