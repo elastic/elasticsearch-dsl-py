@@ -716,3 +716,43 @@ def test_empty_search():
     assert [hit for hit in s] == []
     assert [hit for hit in s.scan()] == []
     s.delete()  # should not error
+
+
+def test_suggest_completion():
+    s = Search()
+    s = s.suggest("my_suggestion", "pyhton", completion={"field": "title"})
+
+    assert {
+        "suggest": {
+            "my_suggestion": {"completion": {"field": "title"}, "prefix": "pyhton"}
+        }
+    } == s.to_dict()
+
+
+def test_suggest_regex_query():
+    s = Search()
+    s = s.suggest("my_suggestion", regex="py[thon|py]", completion={"field": "title"})
+
+    assert {
+        "suggest": {
+            "my_suggestion": {"completion": {"field": "title"}, "regex": "py[thon|py]"}
+        }
+    } == s.to_dict()
+
+
+def test_suggest_must_pass_text_or_regex():
+    s = Search()
+    with raises(ValueError):
+        s.suggest("my_suggestion")
+
+
+def test_suggest_can_only_pass_text_or_regex():
+    s = Search()
+    with raises(ValueError):
+        s.suggest("my_suggestion", text="python", regex="py[hton|py]")
+
+
+def test_suggest_regex_must_be_wtih_completion():
+    s = Search()
+    with raises(ValueError):
+        s.suggest("my_suggestion", regex="py[thon|py]")

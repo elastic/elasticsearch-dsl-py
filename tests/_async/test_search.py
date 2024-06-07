@@ -718,3 +718,43 @@ async def test_empty_search():
     assert [hit async for hit in s] == []
     assert [hit async for hit in s.scan()] == []
     await s.delete()  # should not error
+
+
+def test_suggest_completion():
+    s = AsyncSearch()
+    s = s.suggest("my_suggestion", "pyhton", completion={"field": "title"})
+
+    assert {
+        "suggest": {
+            "my_suggestion": {"completion": {"field": "title"}, "prefix": "pyhton"}
+        }
+    } == s.to_dict()
+
+
+def test_suggest_regex_query():
+    s = AsyncSearch()
+    s = s.suggest("my_suggestion", regex="py[thon|py]", completion={"field": "title"})
+
+    assert {
+        "suggest": {
+            "my_suggestion": {"completion": {"field": "title"}, "regex": "py[thon|py]"}
+        }
+    } == s.to_dict()
+
+
+def test_suggest_must_pass_text_or_regex():
+    s = AsyncSearch()
+    with raises(ValueError):
+        s.suggest("my_suggestion")
+
+
+def test_suggest_can_only_pass_text_or_regex():
+    s = AsyncSearch()
+    with raises(ValueError):
+        s.suggest("my_suggestion", text="python", regex="py[hton|py]")
+
+
+def test_suggest_regex_must_be_wtih_completion():
+    s = AsyncSearch()
+    with raises(ValueError):
+        s.suggest("my_suggestion", regex="py[thon|py]")
