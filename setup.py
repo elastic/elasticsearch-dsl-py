@@ -29,6 +29,7 @@ f.close()
 
 install_requires = [
     "python-dateutil",
+    "typing-extensions",
     "elasticsearch>=8.0.0,<9.0.0",
 ]
 
