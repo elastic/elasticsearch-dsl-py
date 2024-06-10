@@ -19,7 +19,7 @@ from os.path import dirname, join
 
 from setuptools import find_packages, setup
 
-VERSION = (8, 13, 1)
+VERSION = (8, 14, 0)
 __version__ = VERSION
 __versionstr__ = ".".join(map(str, VERSION))
 
@@ -29,6 +29,7 @@ f.close()
 
 install_requires = [
     "python-dateutil",
+    "typing-extensions",
     "elasticsearch>=8.0.0,<9.0.0",
 ]
 
