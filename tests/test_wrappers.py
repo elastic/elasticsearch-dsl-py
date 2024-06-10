@@ -16,12 +16,14 @@
 #  under the License.
 
 from datetime import datetime, timedelta
-from typing import Any, Mapping, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence
+
+if TYPE_CHECKING:
+    from _operator import _SupportsComparison
 
 import pytest
 
 from elasticsearch_dsl import Range
-from elasticsearch_dsl.wrappers import SupportsComparison
 
 
 @pytest.mark.parametrize(
@@ -37,7 +39,7 @@ from elasticsearch_dsl.wrappers import SupportsComparison
     ],
 )
 def test_range_contains(
-    kwargs: Mapping[str, SupportsComparison], item: SupportsComparison
+    kwargs: Mapping[str, _SupportsComparison], item: _SupportsComparison
 ) -> None:
     assert item in Range(**kwargs)
 
@@ -53,7 +55,7 @@ def test_range_contains(
     ],
 )
 def test_range_not_contains(
-    kwargs: Mapping[str, SupportsComparison], item: SupportsComparison
+    kwargs: Mapping[str, _SupportsComparison], item: _SupportsComparison
 ) -> None:
     assert item not in Range(**kwargs)
 
@@ -69,7 +71,7 @@ def test_range_not_contains(
     ],
 )
 def test_range_raises_value_error_on_wrong_params(
-    args: Sequence[Any], kwargs: Mapping[str, SupportsComparison]
+    args: Sequence[Any], kwargs: Mapping[str, _SupportsComparison]
 ) -> None:
     with pytest.raises(ValueError):
         Range(*args, **kwargs)
@@ -85,8 +87,8 @@ def test_range_raises_value_error_on_wrong_params(
     ],
 )
 def test_range_lower(
-    range: Range[SupportsComparison],
-    lower: Optional[SupportsComparison],
+    range: Range[_SupportsComparison],
+    lower: Optional[_SupportsComparison],
     inclusive: bool,
 ) -> None:
     assert (lower, inclusive) == range.lower
@@ -102,8 +104,8 @@ def test_range_lower(
     ],
 )
 def test_range_upper(
-    range: Range[SupportsComparison],
-    upper: Optional[SupportsComparison],
+    range: Range[_SupportsComparison],
+    upper: Optional[_SupportsComparison],
     inclusive: bool,
 ) -> None:
     assert (upper, inclusive) == range.upper

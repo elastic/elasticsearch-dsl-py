@@ -17,56 +17,37 @@
 
 import operator
 from typing import (
-    Any,
+    TYPE_CHECKING,
     Callable,
     ClassVar,
     Dict,
     Literal,
     Mapping,
     Optional,
-    Protocol,
     Tuple,
     TypeVar,
     Union,
     cast,
 )
 
+if TYPE_CHECKING:
+    from _operator import _SupportsComparison
+
 from typing_extensions import TypeAlias
 
 from .utils import AttrDict
 
-
-class SupportsDunderLT(Protocol):
-    def __lt__(self, other: Any, /) -> Any: ...
-
-
-class SupportsDunderGT(Protocol):
-    def __gt__(self, other: Any, /) -> Any: ...
-
-
-class SupportsDunderLE(Protocol):
-    def __le__(self, other: Any, /) -> Any: ...
-
-
-class SupportsDunderGE(Protocol):
-    def __ge__(self, other: Any, /) -> Any: ...
-
-
-SupportsComparison: TypeAlias = Union[
-    SupportsDunderLE, SupportsDunderGE, SupportsDunderGT, SupportsDunderLT
-]
-
 ComparisonOperators: TypeAlias = Literal["lt", "lte", "gt", "gte"]
-RangeValT = TypeVar("RangeValT", bound=SupportsComparison)
+RangeValT = TypeVar("RangeValT", bound=_SupportsComparison)
 
-__all__ = ["Range", "SupportsComparison"]
+__all__ = ["Range"]
 
 
 class Range(AttrDict[ComparisonOperators, RangeValT]):
     OPS: ClassVar[
         Mapping[
             ComparisonOperators,
-            Callable[[SupportsComparison, SupportsComparison], bool],
+            Callable[[_SupportsComparison, _SupportsComparison], bool],
         ]
     ] = {
         "lt": operator.lt,
@@ -116,7 +97,7 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
 
         # Cast to tell mypy whe have checked it and its ok to use the comparison methods
         # on `item`
-        item = cast(SupportsComparison, item)
+        item = cast(_SupportsComparison, item)
 
         for op in self.OPS:
             if op in self._d_ and not self.OPS[op](item, self._d_[op]):
