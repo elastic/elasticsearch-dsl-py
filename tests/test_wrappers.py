@@ -39,7 +39,7 @@ from elasticsearch_dsl import Range
     ],
 )
 def test_range_contains(
-    kwargs: Mapping[str, _SupportsComparison], item: _SupportsComparison
+    kwargs: Mapping[str, "_SupportsComparison"], item: "_SupportsComparison"
 ) -> None:
     assert item in Range(**kwargs)
 
@@ -55,7 +55,7 @@ def test_range_contains(
     ],
 )
 def test_range_not_contains(
-    kwargs: Mapping[str, _SupportsComparison], item: _SupportsComparison
+    kwargs: Mapping[str, "_SupportsComparison"], item: "_SupportsComparison"
 ) -> None:
     assert item not in Range(**kwargs)
 
@@ -71,7 +71,7 @@ def test_range_not_contains(
     ],
 )
 def test_range_raises_value_error_on_wrong_params(
-    args: Sequence[Any], kwargs: Mapping[str, _SupportsComparison]
+    args: Sequence[Any], kwargs: Mapping[str, "_SupportsComparison"]
 ) -> None:
     with pytest.raises(ValueError):
         Range(*args, **kwargs)
@@ -87,8 +87,8 @@ def test_range_raises_value_error_on_wrong_params(
     ],
 )
 def test_range_lower(
-    range: Range[_SupportsComparison],
-    lower: Optional[_SupportsComparison],
+    range: Range["_SupportsComparison"],
+    lower: Optional["_SupportsComparison"],
     inclusive: bool,
 ) -> None:
     assert (lower, inclusive) == range.lower
@@ -104,8 +104,8 @@ def test_range_lower(
     ],
 )
 def test_range_upper(
-    range: Range[_SupportsComparison],
-    upper: Optional[_SupportsComparison],
+    range: Range["_SupportsComparison"],
+    upper: Optional["_SupportsComparison"],
     inclusive: bool,
 ) -> None:
     assert (upper, inclusive) == range.upper

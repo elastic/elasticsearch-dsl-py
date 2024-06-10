@@ -38,7 +38,7 @@ from typing_extensions import TypeAlias
 from .utils import AttrDict
 
 ComparisonOperators: TypeAlias = Literal["lt", "lte", "gt", "gte"]
-RangeValT = TypeVar("RangeValT", bound=_SupportsComparison)
+RangeValT = TypeVar("RangeValT", bound="_SupportsComparison")
 
 __all__ = ["Range"]
 
@@ -47,7 +47,7 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
     OPS: ClassVar[
         Mapping[
             ComparisonOperators,
-            Callable[[_SupportsComparison, _SupportsComparison], bool],
+            Callable[["_SupportsComparison", "_SupportsComparison"], bool],
         ]
     ] = {
         "lt": operator.lt,
@@ -97,7 +97,7 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
 
         # Cast to tell mypy whe have checked it and its ok to use the comparison methods
         # on `item`
-        item = cast(_SupportsComparison, item)
+        item = cast("_SupportsComparison", item)
 
         for op in self.OPS:
             if op in self._d_ and not self.OPS[op](item, self._d_[op]):
