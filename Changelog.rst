@@ -3,6 +3,20 @@
 Changelog
 =========
 
+8.14.0 (2024-06-10)
+-------------------
+
+* Added ``text_expansion`` query clause (`#1837 <https://github.com/elastic/elasticsearch-dsl-py/pull/1837>`_)
+* Added ``Response.search_after()`` and ``Search.search_after()`` methods for efficient iteration (`#1829 <https://github.com/elastic/elasticsearch-dsl-py/pull/1829>`_)
+* Added point in time support and the ``iterate()`` method in the ``Search`` class (`#1833 <https://github.com/elastic/elasticsearch-dsl-py/pull/1833>`_)
+* Added support for slicing multiple times in ``Search`` class (`#1771 <https://github.com/elastic/elasticsearch-dsl-py/pull/1771>`_)
+  Added support for regular expressions in ``Completion.suggest()`` (`#1836 <https://github.com/elastic/elasticsearch-dsl-py/pull/1836>`_)
+* Fixed ``suggest()`` method of the ``Completion`` class to format requests correctly. (`#1836 <https://github.com/elastic/elasticsearch-dsl-py/pull/1836>`_)
+* Fixed ``Document.update()`` to accept fields set to ``None`` or empty (`#1820 <https://github.com/elastic/elasticsearch-dsl-py/pull/1820>`_)
+* Started work on type hints (Thanks Caio Fontes for leading this effort!)
+    * Added Type hints to ``function.py`` (`#1827 <https://github.com/elastic/elasticsearch-dsl-py/pull/1827>`_)
+    * Added Type hints to ``query.py`` (`#1821 <https://github.com/elastic/elasticsearch-dsl-py/pull/1821>`_)
+
 8.13.1 (2024-04-30)
 -------------------
 
