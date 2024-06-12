@@ -67,8 +67,10 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
                 "Range accepts a single dictionary or a set of keyword arguments."
             )
 
-        # Cast here since mypy is inferring d as an `object` type for some reason
-        data = cast(Dict[str, RangeValT], d) if d is not None else kwargs
+        if d is None:
+            data = cast(Dict[ComparisonOperators, RangeValT], kwargs)
+        else:
+            data = d
 
         for k in data:
             if k not in self.OPS:
@@ -80,9 +82,7 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
         if "lt" in data and "lte" in data:
             raise ValueError("You cannot specify both lt and lte for Range.")
 
-        # Here we use cast() since we now the keys are in the allowed values, but mypy does
-        # not infer it.
-        super().__init__(cast(Dict[ComparisonOperators, RangeValT], data))
+        super().__init__(data)
 
     def __repr__(self) -> str:
         return "Range(%s)" % ", ".join("%s=%r" % op for op in self._d_.items())
@@ -95,12 +95,8 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
         if not item_supports_comp:
             return False
 
-        # Cast to tell mypy whe have checked it and its ok to use the comparison methods
-        # on `item`
-        item = cast("_SupportsComparison", item)
-
         for op in self.OPS:
-            if op in self._d_ and not self.OPS[op](item, self._d_[op]):
+            if op in self._d_ and not self.OPS[op](cast("_SupportsComparison", item), self._d_[op]):
                 return False
         return True
 
