@@ -96,7 +96,9 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
             return False
 
         for op in self.OPS:
-            if op in self._d_ and not self.OPS[op](cast("_SupportsComparison", item), self._d_[op]):
+            if op in self._d_ and not self.OPS[op](
+                cast("_SupportsComparison", item), self._d_[op]
+            ):
                 return False
         return True
 
