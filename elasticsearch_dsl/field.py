@@ -77,6 +77,8 @@ class Field(DslBase):
         """
         self._multi = multi
         self._required = required
+        self._name = None
+        self._parent = None
         super().__init__(*args, **kwargs)
 
     def __getitem__(self, subfield):
@@ -121,6 +123,25 @@ class Field(DslBase):
         name, value = d.popitem()
         value["type"] = name
         return value
+
+
+class InstrumentedField:
+    def __init__(self, name, field):
+        self._name = name
+        self._field = field
+
+    def __getattr__(self, attr):
+        f = None
+        try:
+            f = self._field[attr]
+        except KeyError:
+            pass
+        if isinstance(f, Field):
+            return InstrumentedField(f"{self._name}.{attr}", f)
+        return getattr(self._field, attr)
+
+    def __repr__(self):
+        return self._name
 
 
 class CustomField(Field):

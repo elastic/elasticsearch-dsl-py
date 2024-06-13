@@ -17,9 +17,21 @@
 
 from datetime import date, datetime
 from fnmatch import fnmatch
+from typing import List, Optional
 
 from .exceptions import ValidationException
-from .field import Field, Integer, Float, Boolean, Text, Binary, Date
+from .field import (
+    Binary,
+    Boolean,
+    Date,
+    Field,
+    Float,
+    InstrumentedField,
+    Integer,
+    Nested,
+    Object,
+    Text,
+)
 from .mapping import Mapping
 from .utils import DOC_META_FIELDS, ObjectBase
 
@@ -34,6 +46,11 @@ class DocumentMeta(type):
         # DocumentMeta filters attrs in place
         attrs["_doc_type"] = DocumentOptions(name, bases, attrs)
         return super().__new__(cls, name, bases, attrs)
+
+    def __getattr__(cls, attr):
+        if attr in cls._doc_type.mapping:
+            return InstrumentedField(attr, cls._doc_type.mapping[attr])
+        return super().__getattribute__(attr)
 
 
 class DocumentOptions:
@@ -53,18 +70,38 @@ class DocumentOptions:
         # create the mapping instance
         self.mapping = getattr(meta, "mapping", Mapping())
 
-        for name, type_ in attrs.get('__annotations__', {}).items():
-            if name not in attrs:
-                if type_ in self.type_annotation_map:
+        annotations = attrs.get("__annotations__", {})
+        fields = set([n for n in attrs if isinstance(attrs[n], Field)])
+        fields.update(annotations.keys())
+        for name in fields:
+            if name in attrs:
+                value = attrs[name]
+            else:
+                type_ = annotations[name]
+                required = True
+                multi = False
+                while hasattr(type_, "__origin__"):
+                    if type_.__origin__ == Optional:
+                        required = False
+                        type_ = type_.__args__[0]
+                    elif issubclass(type_.__origin__, List):
+                        multi = True
+                        type_ = type_.__args__[0]
+                if issubclass(type_, InnerDoc):
+                    field = Nested if multi else Object
+                    field_args = {}
+                elif type_ in self.type_annotation_map:
                     field, field_args = self.type_annotation_map[type_]
-                    self.mapping.field(name, field(**field_args))
-                elif issubclass(type_, Field):
-                    self.mapping.field(name, type_())
-
-        # register all declared fields into the mapping
-        for name, value in list(attrs.items()):
-            if isinstance(value, Field):
-                self.mapping.field(name, value)
+                elif not issubclass(type_, Field):
+                    raise TypeError(f"Cannot map type {type_}")
+                else:
+                    field = type_
+                    field_args = {}
+                field_args = {"multi": multi, "required": required, **field_args}
+                value = field(**field_args)
+            value._name = name
+            self.mapping.field(name, value)
+            if name in attrs:
                 del attrs[name]
 
         # add all the mappings for meta fields

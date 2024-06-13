@@ -499,6 +499,12 @@ class ObjectBase(AttrDict):
                 return value
             raise
 
+    def __setattr__(self, name, value):
+        if name in self.__class__._doc_type.mapping:
+            self._d_[name] = value
+        else:
+            super().__setattr__(name, value)
+
     def to_dict(self, skip_empty=True):
         out = {}
         for k, v in self._d_.items():
