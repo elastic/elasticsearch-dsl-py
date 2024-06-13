@@ -17,7 +17,7 @@
 
 from datetime import date, datetime
 from fnmatch import fnmatch
-from typing import List, Optional
+from typing import TYPE_CHECKING, Any, Generic, List, Optional, TypeVar, Union, overload
 
 from .exceptions import ValidationException
 from .field import (
@@ -70,6 +70,34 @@ class DocumentOptions:
         # create the mapping instance
         self.mapping = getattr(meta, "mapping", Mapping())
 
+        # register the document's fields, which can be given in a few formats:
+        #
+        # class MyDocument(Document):
+        #     # required field using native typing
+        #     # (str, int, float, bool, datetime, date)
+        #     field1: str
+        #
+        #     # optional field using native typing
+        #     field2: Optional[datetime]
+        #
+        #     # array field using native typing
+        #     field3: list[int]
+        #
+        #     # sub-object, same as Object(MyInnerDoc)
+        #     field4: MyInnerDoc
+        #
+        #     # nested sub-objects, same as Nested(MyInnerDoc)
+        #     field5: list[MyInnerDoc]
+        #
+        #     # use typing, but override with any stock or custom field
+        #     field6: bool = MyCustomField()
+        #
+        #     # best mypy and pyright typing support
+        #     field7: M[date]
+        #     field8: M[str] = mapped_field(MyCustomText())
+        #
+        #     # legacy format without Python typing
+        #     field8 = Text()
         annotations = attrs.get("__annotations__", {})
         fields = set([n for n in attrs if isinstance(attrs[n], Field)])
         fields.update(annotations.keys())
@@ -81,25 +109,34 @@ class DocumentOptions:
                 required = True
                 multi = False
                 while hasattr(type_, "__origin__"):
-                    if type_.__origin__ == Optional:
-                        required = False
+                    if type_.__origin__ == Mapped:
                         type_ = type_.__args__[0]
-                    elif issubclass(type_.__origin__, List):
+                    elif type_.__origin__ == Union:
+                        if len(type_.__args__) == 2 and type_.__args__[1] is type(None):
+                            required = False
+                            type_ = type_.__args__[0]
+                        else:
+                            raise TypeError("Unsupported union")
+                    elif type_.__origin__ in [list, List]:
                         multi = True
                         type_ = type_.__args__[0]
-                if issubclass(type_, InnerDoc):
+                    else:
+                        break
+                field_args = []
+                field_kwargs = {}
+                if not isinstance(type_, type):
+                    raise TypeError(f"Cannot map type {type_}")
+                elif issubclass(type_, InnerDoc):
                     field = Nested if multi else Object
-                    field_args = {}
+                    field_args = [type_]
                 elif type_ in self.type_annotation_map:
-                    field, field_args = self.type_annotation_map[type_]
+                    field, field_kwargs = self.type_annotation_map[type_]
                 elif not issubclass(type_, Field):
                     raise TypeError(f"Cannot map type {type_}")
                 else:
                     field = type_
-                    field_args = {}
-                field_args = {"multi": multi, "required": required, **field_args}
-                value = field(**field_args)
-            value._name = name
+                field_kwargs = {"multi": multi, "required": required, **field_kwargs}
+                value = field(*field_args, **field_kwargs)
             self.mapping.field(name, value)
             if name in attrs:
                 del attrs[name]
@@ -118,6 +155,36 @@ class DocumentOptions:
     @property
     def name(self):
         return self.mapping.properties.name
+
+
+_FieldType = TypeVar("_FieldType")
+
+
+class Mapped(Generic[_FieldType]):
+    __slots__ = {}
+
+    if TYPE_CHECKING:
+
+        @overload
+        def __get__(self, instance: None, owner: Any) -> InstrumentedField: ...
+
+        @overload
+        def __get__(self, instance: object, owner: Any) -> _FieldType: ...
+
+        def __get__(
+            self, instance: Optional[object], owner: Any
+        ) -> Union[InstrumentedField, _FieldType]: ...
+
+        def __set__(self, instance: Optional[object], value: _FieldType) -> None: ...
+
+        def __delete__(self, instance: Any) -> None: ...
+
+
+M = Mapped
+
+
+def mapped_field(field) -> Any:
+    return field
 
 
 class InnerDoc(ObjectBase, metaclass=DocumentMeta):

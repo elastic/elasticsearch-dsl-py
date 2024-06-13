@@ -47,6 +47,8 @@ import argparse
 import asyncio
 import json
 import os
+from datetime import datetime
+from typing import List, Optional
 from urllib.request import urlopen
 
 import nltk
@@ -55,12 +57,10 @@ from tqdm import tqdm
 
 from elasticsearch_dsl import (
     AsyncDocument,
-    Date,
     DenseVector,
     InnerDoc,
     Keyword,
-    Nested,
-    Text,
+    M,
     async_connections,
 )
 
@@ -72,22 +72,22 @@ nltk.download("punkt", quiet=True)
 
 
 class Passage(InnerDoc):
-    content = Text()
-    embedding = DenseVector()
+    content: M[str]
+    embedding: M[DenseVector]
 
 
 class WorkplaceDoc(AsyncDocument):
     class Index:
         name = "workplace_documents"
 
-    name = Text()
-    summary = Text()
-    content = Text()
-    created = Date()
-    updated = Date()
-    url = Keyword()
-    category = Keyword()
-    passages = Nested(Passage)
+    name: M[str]
+    summary: M[str]
+    content: M[str]
+    created: M[datetime]
+    updated: M[Optional[datetime]]
+    url: M[Keyword]
+    category: M[Keyword]
+    passages: M[Optional[List[Passage]]]
 
     _model = None
 

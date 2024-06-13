@@ -77,8 +77,6 @@ class Field(DslBase):
         """
         self._multi = multi
         self._required = required
-        self._name = None
-        self._parent = None
         super().__init__(*args, **kwargs)
 
     def __getitem__(self, subfield):

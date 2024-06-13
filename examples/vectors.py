@@ -46,22 +46,15 @@ command to see individual passage results as well.
 import argparse
 import json
 import os
+from datetime import datetime
+from typing import List, Optional
 from urllib.request import urlopen
 
 import nltk
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
-from elasticsearch_dsl import (
-    Date,
-    DenseVector,
-    Document,
-    InnerDoc,
-    Keyword,
-    Nested,
-    Text,
-    connections,
-)
+from elasticsearch_dsl import DenseVector, Document, InnerDoc, Keyword, M, connections
 
 DATASET_URL = "https://raw.githubusercontent.com/elastic/elasticsearch-labs/main/datasets/workplace-documents.json"
 MODEL_NAME = "all-MiniLM-L6-v2"
@@ -71,22 +64,22 @@ nltk.download("punkt", quiet=True)
 
 
 class Passage(InnerDoc):
-    content = Text()
-    embedding = DenseVector()
+    content: M[str]
+    embedding: M[DenseVector]
 
 
 class WorkplaceDoc(Document):
     class Index:
         name = "workplace_documents"
 
-    name = Text()
-    summary = Text()
-    content = Text()
-    created = Date()
-    updated = Date()
-    url = Keyword()
-    category = Keyword()
-    passages = Nested(Passage)
+    name: M[str]
+    summary: M[str]
+    content: M[str]
+    created: M[datetime]
+    updated: M[Optional[datetime]]
+    url: M[Keyword]
+    category: M[Keyword]
+    passages: M[Optional[List[Passage]]]
 
     _model = None
 
