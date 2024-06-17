@@ -47,14 +47,22 @@ import argparse
 import json
 import os
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, cast
 from urllib.request import urlopen
 
 import nltk
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
-from elasticsearch_dsl import DenseVector, Document, InnerDoc, Keyword, M, connections
+from elasticsearch_dsl import (
+    DenseVector,
+    Document,
+    InnerDoc,
+    Keyword,
+    M,
+    connections,
+    mapped_field,
+)
 
 DATASET_URL = "https://raw.githubusercontent.com/elastic/elasticsearch-labs/main/datasets/workplace-documents.json"
 MODEL_NAME = "all-MiniLM-L6-v2"
@@ -65,7 +73,7 @@ nltk.download("punkt", quiet=True)
 
 class Passage(InnerDoc):
     content: M[str]
-    embedding: M[DenseVector]
+    embedding: M[List[float]] = mapped_field(DenseVector())
 
 
 class WorkplaceDoc(Document):
@@ -77,32 +85,30 @@ class WorkplaceDoc(Document):
     content: M[str]
     created: M[datetime]
     updated: M[Optional[datetime]]
-    url: M[Keyword]
-    category: M[Keyword]
-    passages: M[Optional[List[Passage]]]
+    url: M[str] = mapped_field(Keyword())
+    category: M[str] = mapped_field(Keyword())
+    passages: M[List[Passage]] = mapped_field(default=[])
 
     _model = None
 
     @classmethod
-    def get_embedding_model(cls):
+    def get_embedding(cls, input: str) -> List[float]:
         if cls._model is None:
             cls._model = SentenceTransformer(MODEL_NAME)
-        return cls._model
+        return cast(List[float], cls._model.encode(input))
 
     def clean(self):
         # split the content into sentences
         passages = nltk.sent_tokenize(self.content)
 
         # generate an embedding for each passage and save it as a nested document
-        model = self.get_embedding_model()
         for passage in passages:
             self.passages.append(
-                Passage(content=passage, embedding=list(model.encode(passage)))
+                Passage(content=passage, embedding=self.get_embedding(passage))
             )
 
 
 def create():
-
     # create the index
     WorkplaceDoc._index.delete(ignore_unavailable=True)
     WorkplaceDoc.init()
@@ -125,12 +131,11 @@ def create():
 
 
 def search(query):
-    model = WorkplaceDoc.get_embedding_model()
     return WorkplaceDoc.search().knn(
         field="passages.embedding",
         k=5,
         num_candidates=50,
-        query_vector=list(model.encode(query)),
+        query_vector=list(WorkplaceDoc.get_embedding(query)),
         inner_hits={"size": 2},
     )
 

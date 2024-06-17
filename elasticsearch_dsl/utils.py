@@ -427,6 +427,15 @@ class ObjectBase(AttrDict):
 
         super(AttrDict, self).__setattr__("meta", HitMeta(meta))
 
+        # process field defaults
+        if hasattr(self, "_defaults"):
+            for name in self._defaults:
+                if name not in kwargs:
+                    value = self._defaults[name]
+                    if callable(value):
+                        value = value()
+                    kwargs[name] = value
+
         super().__init__(kwargs)
 
     @classmethod

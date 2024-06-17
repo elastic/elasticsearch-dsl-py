@@ -18,10 +18,11 @@
 import collections.abc
 
 from elasticsearch.exceptions import NotFoundError, RequestError
+from typing_extensions import dataclass_transform
 
 from .._async.index import AsyncIndex
 from ..async_connections import get_connection
-from ..document_base import DocumentBase, DocumentMeta
+from ..document_base import DocumentBase, DocumentMeta, mapped_field
 from ..exceptions import IllegalOperation
 from ..utils import DOC_META_FIELDS, META_FIELDS, merge
 from .search import AsyncSearch
@@ -62,6 +63,7 @@ class AsyncIndexMeta(DocumentMeta):
         return i
 
 
+@dataclass_transform(field_specifiers=(mapped_field,))
 class AsyncDocument(DocumentBase, metaclass=AsyncIndexMeta):
     """
     Model-like class for persisting documents in elasticsearch.

@@ -17,7 +17,19 @@
 
 from datetime import date, datetime
 from fnmatch import fnmatch
-from typing import TYPE_CHECKING, Any, Generic, List, Optional, TypeVar, Union, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Generic,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+    overload,
+)
+
+from typing_extensions import dataclass_transform
 
 from .exceptions import ValidationException
 from .field import (
@@ -101,10 +113,22 @@ class DocumentOptions:
         annotations = attrs.get("__annotations__", {})
         fields = set([n for n in attrs if isinstance(attrs[n], Field)])
         fields.update(annotations.keys())
+        field_defaults = {}
         for name in fields:
+            value = None
             if name in attrs:
                 value = attrs[name]
-            else:
+                if isinstance(value, dict):
+                    # the mapped_field() wrapper function was used so we need
+                    # to look for the field instance and also record any
+                    # defaults
+                    value = attrs[name].get("_field")
+                    default_value = attrs[name].get("default") or attrs[name].get(
+                        "default_factory"
+                    )
+                    if default_value:
+                        field_defaults[name] = default_value
+            if value is None:
                 type_ = annotations[name]
                 required = True
                 multi = False
@@ -129,6 +153,7 @@ class DocumentOptions:
                 elif issubclass(type_, InnerDoc):
                     field = Nested if multi else Object
                     field_args = [type_]
+                    required = False
                 elif type_ in self.type_annotation_map:
                     field, field_kwargs = self.type_annotation_map[type_]
                 elif not issubclass(type_, Field):
@@ -140,6 +165,9 @@ class DocumentOptions:
             self.mapping.field(name, value)
             if name in attrs:
                 del attrs[name]
+
+        # store dataclass-style defaults for ObjectBase.__init__ to assign
+        attrs["_defaults"] = field_defaults
 
         # add all the mappings for meta fields
         for name in dir(meta):
@@ -161,6 +189,26 @@ _FieldType = TypeVar("_FieldType")
 
 
 class Mapped(Generic[_FieldType]):
+    """Class that represents the type of a mapped field.
+
+    This class can be used as an optional wrapper on a field type to help type
+    checkers assign the correct type when the field is used as a class
+    attribute.
+
+    Consider the following definitions::
+
+        class MyDocument(Document):
+            first: str
+            second: M[str]
+
+        mydoc = MyDocument(first="1", second="2")
+
+    Type checkers have no trouble inferring the type of both ``mydoc.first``
+    and ``mydoc.second`` as ``str``, but while ``MyDocument.first`` will be
+    incorrectly typed as ``str``, ``MyDocument.second`` should be assigned the
+    correct ``InstrumentedField`` type.
+    """
+
     __slots__ = {}
 
     if TYPE_CHECKING:
@@ -172,7 +220,7 @@ class Mapped(Generic[_FieldType]):
         def __get__(self, instance: object, owner: Any) -> _FieldType: ...
 
         def __get__(
-            self, instance: Optional[object], owner: Any
+            self, instance: object | None, owner: Any
         ) -> Union[InstrumentedField, _FieldType]: ...
 
         def __set__(self, instance: Optional[object], value: _FieldType) -> None: ...
@@ -183,10 +231,40 @@ class Mapped(Generic[_FieldType]):
 M = Mapped
 
 
-def mapped_field(field) -> Any:
-    return field
+def mapped_field(
+    field: Optional[Field] = None,
+    *,
+    init: bool = True,
+    default: Any = None,
+    default_factory: Callable = None,
+    **kwargs,
+) -> Any:
+    """Construct a field using dataclass behaviors
+
+    This function can be used in the right side of a document field definition
+    as a wrapper for the field instance or as a way to provide dataclass-compatible
+    options.
+
+    :param field: The instance of ``Field`` to use for this field. If not provided,
+    an instance that is appropriate for the type given to the field is used.
+    :param init: a value of ``True`` adds this field to the constructor, and a
+    value of ``False`` omits it from it. The default is ``True``.
+    :param default: a default value to use for this field when one is not provided
+    explicitly.
+    :param default_factory: a callable that returns a default value for the field,
+    when one isn't provided explicitly. Only one of ``factory`` and
+    ``default_factory`` can be used.
+    """
+    return {
+        "_field": field,
+        "init": init,
+        "default": default,
+        "default_factory": default_factory,
+        **kwargs,
+    }
 
 
+@dataclass_transform(field_specifiers=(mapped_field,))
 class InnerDoc(ObjectBase, metaclass=DocumentMeta):
     """
     Common class for inner documents like Object or Nested
