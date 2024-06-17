@@ -16,6 +16,10 @@
 #  under the License.
 
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence
+
+if TYPE_CHECKING:
+    from _operator import _SupportsComparison
 
 import pytest
 
@@ -34,7 +38,9 @@ from elasticsearch_dsl import Range
         ({"gt": datetime.now() - timedelta(seconds=10)}, datetime.now()),
     ],
 )
-def test_range_contains(kwargs, item):
+def test_range_contains(
+    kwargs: Mapping[str, "_SupportsComparison"], item: "_SupportsComparison"
+) -> None:
     assert item in Range(**kwargs)
 
 
@@ -48,7 +54,9 @@ def test_range_contains(kwargs, item):
         ({"lte": datetime.now() - timedelta(seconds=10)}, datetime.now()),
     ],
 )
-def test_range_not_contains(kwargs, item):
+def test_range_not_contains(
+    kwargs: Mapping[str, "_SupportsComparison"], item: "_SupportsComparison"
+) -> None:
     assert item not in Range(**kwargs)
 
 
@@ -62,7 +70,9 @@ def test_range_not_contains(kwargs, item):
         ((), {"gt": 1, "gte": 1}),
     ],
 )
-def test_range_raises_value_error_on_wrong_params(args, kwargs):
+def test_range_raises_value_error_on_wrong_params(
+    args: Sequence[Any], kwargs: Mapping[str, "_SupportsComparison"]
+) -> None:
     with pytest.raises(ValueError):
         Range(*args, **kwargs)
 
@@ -76,7 +86,11 @@ def test_range_raises_value_error_on_wrong_params(args, kwargs):
         (Range(lt=42), None, False),
     ],
 )
-def test_range_lower(range, lower, inclusive):
+def test_range_lower(
+    range: Range["_SupportsComparison"],
+    lower: Optional["_SupportsComparison"],
+    inclusive: bool,
+) -> None:
     assert (lower, inclusive) == range.lower
 
 
@@ -89,5 +103,9 @@ def test_range_lower(range, lower, inclusive):
         (Range(gt=42), None, False),
     ],
 )
-def test_range_upper(range, upper, inclusive):
+def test_range_upper(
+    range: Range["_SupportsComparison"],
+    upper: Optional["_SupportsComparison"],
+    inclusive: bool,
+) -> None:
     assert (upper, inclusive) == range.upper
