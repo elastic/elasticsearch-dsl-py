@@ -130,29 +130,6 @@ class Host(AsyncDocument):
         name = "test-host"
 
 
-class TypedInnerDoc(InnerDoc):
-    st: M[str]
-    dt: M[Optional[datetime]]
-    li: M[List[int]]
-
-
-class TypedDoc(AsyncDocument):
-    st: str
-    dt: Optional[datetime]
-    li: List[int]
-    ob: TypedInnerDoc
-    ns: List[TypedInnerDoc]
-    ip: Optional[str] = field.Ip()
-    k1: str = field.Keyword(required=True)
-    k2: M[str] = field.Keyword()
-    k3: str = mapped_field(field.Keyword(), default="foo")
-    k4: M[Optional[str]] = mapped_field(field.Keyword())
-    s1: Secret = SecretField()
-    s2: M[Secret] = SecretField()
-    s3: Secret = mapped_field(SecretField())
-    s4: M[Optional[Secret]] = mapped_field(SecretField(), default_factory=lambda: "foo")
-
-
 def test_range_serializes_properly():
     class D(AsyncDocument):
         lr = field.LongRange()
@@ -669,6 +646,29 @@ def test_nested_and_object_inner_doc():
 
 
 def test_doc_with_type_hints():
+    class TypedInnerDoc(InnerDoc):
+        st: M[str]
+        dt: M[Optional[datetime]]
+        li: M[List[int]]
+
+    class TypedDoc(AsyncDocument):
+        st: str
+        dt: Optional[datetime]
+        li: List[int]
+        ob: TypedInnerDoc
+        ns: List[TypedInnerDoc]
+        ip: Optional[str] = field.Ip()
+        k1: str = field.Keyword(required=True)
+        k2: M[str] = field.Keyword()
+        k3: str = mapped_field(field.Keyword(), default="foo")
+        k4: M[Optional[str]] = mapped_field(field.Keyword())
+        s1: Secret = SecretField()
+        s2: M[Secret] = SecretField()
+        s3: Secret = mapped_field(SecretField())
+        s4: M[Optional[Secret]] = mapped_field(
+            SecretField(), default_factory=lambda: "foo"
+        )
+
     props = TypedDoc._doc_type.mapping.to_dict()["properties"]
     assert props == {
         "st": {"type": "text"},
@@ -752,3 +752,6 @@ def test_doc_with_type_hints():
         "k3": "foo",
         "s4": "foo",
     }
+
+    s = TypedDoc.search().sort(TypedDoc.st, -TypedDoc.dt, +TypedDoc.ob.st)
+    assert s.to_dict() == {"sort": ["st", {"dt": {"order": "desc"}}, "ob.st"]}

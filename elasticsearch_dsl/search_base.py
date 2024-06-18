@@ -523,7 +523,7 @@ class SearchBase(Request):
         """
         Add a k-nearest neighbor (kNN) search.
 
-        :arg field: the name of the vector field to search against
+        :arg field: the vector field to search against as a string or document class attribute
         :arg k: number of nearest neighbors to return as top hits
         :arg num_candidates: number of nearest neighbor candidates to consider per shard
         :arg query_vector: the vector to search for
@@ -542,7 +542,7 @@ class SearchBase(Request):
         s = self._clone()
         s._knn.append(
             {
-                "field": field,
+                "field": str(field),  # str() is for InstrumentedField instances
                 "k": k,
                 "num_candidates": num_candidates,
             }
@@ -596,11 +596,15 @@ class SearchBase(Request):
         """
         Selectively control how the _source field is returned.
 
-        :arg fields: wildcard string, array of wildcards, or dictionary of includes and excludes
+        :arg fields: field name, wildcard string, list of field names or wildcards,
+                     or dictionary of includes and excludes
+        :arg kwargs: ``includes`` or ``excludes`` arguments, when ``fields`` is ``None``.
 
-        If ``fields`` is None, the entire document will be returned for
-        each hit.  If fields is a dictionary with keys of 'includes' and/or
-        'excludes' the fields will be either included or excluded appropriately.
+        When no arguments are given, the entire document will be returned for
+        each hit.  If ``fields`` is a string or list of strings, the field names or field
+        wildcards given will be included. If ``fields`` is a dictionary with keys of
+        'includes' and/or 'excludes' the fields will be either included or excluded
+        appropriately.
 
         Calling this multiple times with the same named parameter will override the
         previous values with the new ones.
@@ -619,8 +623,16 @@ class SearchBase(Request):
         if fields and kwargs:
             raise ValueError("You cannot specify fields and kwargs at the same time.")
 
+        def ensure_strings(fields):
+            if isinstance(fields, list):
+                return [str(f) for f in fields]
+            elif isinstance(fields, dict):
+                return {k: ensure_strings(v) for k, v in fields.items()}
+            else:
+                return str(fields)
+
         if fields is not None:
-            s._source = fields
+            s._source = fields if isinstance(fields, bool) else ensure_strings(fields)
             return s
 
         if kwargs and not isinstance(s._source, dict):
@@ -633,7 +645,7 @@ class SearchBase(Request):
                 except KeyError:
                     pass
             else:
-                s._source[key] = value
+                s._source[key] = ensure_strings(value)
 
         return s
 
@@ -663,11 +675,12 @@ class SearchBase(Request):
         s = self._clone()
         s._sort = []
         for k in keys:
-            if isinstance(k, str) and k.startswith("-"):
-                if k[1:] == "_score":
+            sort_field = str(k)
+            if sort_field.startswith("-"):
+                if sort_field[1:] == "_score":
                     raise IllegalOperation("Sorting by `-_score` is not allowed.")
-                k = {k[1:]: {"order": "desc"}}
-            s._sort.append(k)
+                sort_field = {sort_field[1:]: {"order": "desc"}}
+            s._sort.append(sort_field)
         return s
 
     def collapse(self, field=None, inner_hits=None, max_concurrent_group_searches=None):
@@ -684,7 +697,7 @@ class SearchBase(Request):
         if field is None:
             return s
 
-        s._collapse["field"] = field
+        s._collapse["field"] = str(field)
         if inner_hits:
             s._collapse["inner_hits"] = inner_hits
         if max_concurrent_group_searches:
@@ -740,7 +753,7 @@ class SearchBase(Request):
         """
         s = self._clone()
         for f in fields:
-            s._highlight[f] = kwargs
+            s._highlight[str(f)] = kwargs
         return s
 
     def suggest(self, name, text=None, regex=None, **kwargs):

@@ -123,25 +123,6 @@ class Field(DslBase):
         return value
 
 
-class InstrumentedField:
-    def __init__(self, name, field):
-        self._name = name
-        self._field = field
-
-    def __getattr__(self, attr):
-        f = None
-        try:
-            f = self._field[attr]
-        except KeyError:
-            pass
-        if isinstance(f, Field):
-            return InstrumentedField(f"{self._name}.{attr}", f)
-        return getattr(self._field, attr)
-
-    def __repr__(self):
-        return self._name
-
-
 class CustomField(Field):
     name = "custom"
     _coerce = True

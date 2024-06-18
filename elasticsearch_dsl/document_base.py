@@ -32,18 +32,7 @@ from typing import (
 from typing_extensions import dataclass_transform
 
 from .exceptions import ValidationException
-from .field import (
-    Binary,
-    Boolean,
-    Date,
-    Field,
-    Float,
-    InstrumentedField,
-    Integer,
-    Nested,
-    Object,
-    Text,
-)
+from .field import Binary, Boolean, Date, Field, Float, Integer, Nested, Object, Text
 from .mapping import Mapping
 from .utils import DOC_META_FIELDS, ObjectBase
 
@@ -51,6 +40,50 @@ from .utils import DOC_META_FIELDS, ObjectBase
 class MetaField:
     def __init__(self, *args, **kwargs):
         self.args, self.kwargs = args, kwargs
+
+
+class InstrumentedField:
+    """Proxy object for a mapped document field.
+
+    An object of this instance is returned when a field is access as a class
+    attribute of a ``Document`` or ``InnerDoc`` subclass. These objects can
+    be used in any situation in which a reference to a field is required, such
+    as when specifying sort options in a search::
+
+        class MyDocument(Document):
+            name: str
+
+        s = MyDocument.search()
+        s = s.sort(-MyDocument.name)  # sort by name in descending order
+    """
+
+    def __init__(self, name, field):
+        self._name = name
+        self._field = field
+
+    def __getattr__(self, attr):
+        f = None
+        try:
+            f = self._field[attr]
+        except KeyError:
+            pass
+        if isinstance(f, Field):
+            return InstrumentedField(f"{self._name}.{attr}", f)
+        return getattr(self._field, attr)
+
+    def __pos__(self):
+        """Return the field name representation for ascending sort order"""
+        return f"{self._name}"
+
+    def __neg__(self):
+        """Return the field name representation for descending sort order"""
+        return f"-{self._name}"
+
+    def __str__(self):
+        return self._name
+
+    def __repr__(self):
+        return f"InstrumentedField[{self._name}]"
 
 
 class DocumentMeta(type):
