@@ -132,7 +132,7 @@ def create():
 
 def search(query):
     return WorkplaceDoc.search().knn(
-        field="passages.embedding",
+        field=WorkplaceDoc.passages.embedding,
         k=5,
         num_candidates=50,
         query_vector=list(WorkplaceDoc.get_embedding(query)),

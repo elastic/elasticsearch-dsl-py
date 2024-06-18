@@ -9,7 +9,7 @@ layer for your application.
 For more comprehensive examples have a look at the examples_ directory in the
 repository.
 
-.. _examples: https://github.com/elastic/elasticsearch-dsl-py/tree/master/examples
+.. _examples: https://github.com/elastic/elasticsearch-dsl-py/tree/main/examples
 
 .. _doc_type:
 
@@ -66,14 +66,14 @@ settings in elasticsearch (see :ref:`life-cycle` for details).
 Data types
 ~~~~~~~~~~
 
-The ``Document`` instances should be using native python types like
+The ``Document`` instances use native python types like ``str`` and
 ``datetime``. In case of ``Object`` or ``Nested`` fields an instance of the
-``InnerDoc`` subclass should be used just like in the ``add_comment`` method in
-the above example where we are creating an instance of the ``Comment`` class.
+``InnerDoc`` subclass is used, as in the ``add_comment`` method in the above
+example where we are creating an instance of the ``Comment`` class.
 
 There are some specific types that were created as part of this library to make
-working with specific field types easier, for example the ``Range`` object used
-in any of the `range fields
+working with some field types easier, for example the ``Range`` object used in
+any of the `range fields
 <https://www.elastic.co/guide/en/elasticsearch/reference/current/range.html>`_:
 
 .. code:: python
@@ -102,6 +102,148 @@ in any of the `range fields
 
     # empty range is unbounded
     Range().lower # None, False
+
+Python Type Hints
+~~~~~~~~~~~~~~~~~
+
+Document fields can be defined using standard Python type hints if desired.
+Here are some simple examples:
+
+.. code:: python
+
+    from typing import Optional
+
+    class Post(Document):
+        title: str                      # same as Text(required=True)
+        created_at: Optional[datetime]  # same as Date(required=False)
+        published: bool                 # same as Boolean(required=True)    
+
+Python types are mapped to their corresponding field type according to the
+following table:
+
+.. list-table:: Python type to DSL field mappings
+   :header-rows: 1
+
+   * - Python type
+     - DSL field
+   * - ``str``
+     - ``Text(required=True)``
+   * - ``bool``
+     - ``Boolean(required=True)``
+   * - ``int``
+     - ``Integer(required=True)``
+   * - ``float``
+     - ``Float(required=True)``
+   * - ``bytes``
+     - ``Binary(required=True)``
+   * - ``datetime``
+     - ``Date(required=True)``
+   * - ``date``
+     - ``Date(format="yyyy-MM-dd", required=True)``
+
+In addition to the above native types, a field can also be given a type hint
+of an ``InnerDoc`` subclass, in which case it becomes an ``Object`` field of
+that class. When the ``InnerDoc`` subclass is wrapped with ``List``, a
+``Nested`` field is created instead.
+
+.. code:: python
+
+    from typing import List
+
+    class Address(InnerDoc):
+        ...
+
+    class Comment(InnerDoc):
+        ...
+    
+    class Post(Document):
+        address: Address         # same as Object(Address)
+        comments: List[Comment]  # same as Nested(Comment)
+
+Unfortunately it is impossible to have Python type hints that uniquely
+identify every possible Elasticsearch field type. To choose a field type that
+is different thant the ones in the table above, the field instance can be added
+explicitly as a right-side assignment in the field declaration. The next
+example creates a field that is typed as ``str``, but is mapped to ``Keyword``
+instead of ``Text``:
+
+.. code:: python
+
+    class MyDocument(Document):
+        category: str = Keyword()
+
+This form can also be used when additional options need to be given to
+initialize the field, such as when using custom analyzer settings:
+
+.. code:: python
+
+    class Comment(InnerDoc):
+        content: str = Text(analyzer='snowball')
+
+The standard ``Optional`` modifier from the Python ``typing`` package can be
+used to change a typed field from required to optional. The ``List`` modifier
+can be added to a field to convert it to an array, similar to using the
+``multi=True`` argument on the field object.
+
+When using type hints as above, subclasses of ``Document`` and ``InnerDoc``
+inherit some of the behaviors associated with Python dataclasses. If
+necessary, the ``mapped_field()`` wrapper can be used on the right side of a
+typed field declaration, enabling dataclass options such as ``default`` or
+``default_factory`` to be included:
+
+.. code:: python
+
+    class MyDocument(Document):
+        title: str = mapped_field(default="no title")
+        created_at: datetime = mapped_field(default_factory=datetime.now)
+        published: bool = mapped_field(default=False)
+        category: str = mapped_field(Keyword(), default="general")
+
+Static type checkers such as `mypy <https://mypy-lang.org/>`_ and
+`pyright <https://github.com/microsoft/pyright>`_ can use the type hints and
+the dataclass-specific options added to the ``mapped_field()`` function to
+improve type inference and provide better real-time suggestions in IDEs.
+
+One situation in which type checkers can't infer the correct type is when
+using fields as class attributes. Consider the following example:
+
+.. code:: python
+
+    class MyDocument(Document):
+        title: str = mapped_field(default="no title")
+
+    doc = MyDocument()
+    # doc.title is typed as "str" (correct)
+    # MyDocument.title is also typed as "str" (incorrect)
+
+To help type checkers correctly identify class attributes as such, the ``M``
+generic must be used as a wrapper to the type hint, as shown in the next
+example:
+
+.. code:: python
+
+    from elasticsearch_dsl import M
+
+    class MyDocument(Document):
+        title: M[str]
+        created_at: M[datetime] = mapped_field(default_factory=datetime.now)
+
+    doc = MyDocument()
+    # doc.title is typed as "str"
+    # MyDocument.title is typed as "InstrumentedField"
+
+Note that the ``M`` type hint does not provide any runtime behavior, it just
+provides additional typing declarations for type checkers.
+
+The ``InstrumentedField`` objects returned when fields are accessed as class
+attributes are proxies for the field instances that can be used anywhere a
+field needs to be referenced, such as when specifying sort options in a
+``Search`` object:
+
+.. code:: python
+
+    # sort by creation date descending, and title ascending
+    s = MyDocument.search().sort(-MyDocument.created_at, MyDocument.title)
 
 Note on dates
 ~~~~~~~~~~~~~
