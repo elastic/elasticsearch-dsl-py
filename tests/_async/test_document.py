@@ -20,6 +20,7 @@ import ipaddress
 import pickle
 from datetime import datetime
 from hashlib import md5
+from typing import List, Optional
 
 import pytest
 from pytest import raises
@@ -28,11 +29,13 @@ from elasticsearch_dsl import (
     AsyncDocument,
     Index,
     InnerDoc,
+    M,
     Mapping,
     MetaField,
     Range,
     analyzer,
     field,
+    mapped_field,
     utils,
 )
 from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
@@ -125,6 +128,29 @@ class Host(AsyncDocument):
 
     class Index:
         name = "test-host"
+
+
+class TypedInnerDoc(InnerDoc):
+    st: M[str]
+    dt: M[Optional[datetime]]
+    li: M[List[int]]
+
+
+class TypedDoc(AsyncDocument):
+    st: str
+    dt: Optional[datetime]
+    li: List[int]
+    ob: TypedInnerDoc
+    ns: List[TypedInnerDoc]
+    ip: Optional[str] = field.Ip()
+    k1: str = field.Keyword(required=True)
+    k2: M[str] = field.Keyword()
+    k3: str = mapped_field(field.Keyword(), default="foo")
+    k4: M[Optional[str]] = mapped_field(field.Keyword())
+    s1: Secret = SecretField()
+    s2: M[Secret] = SecretField()
+    s3: Secret = mapped_field(SecretField())
+    s4: M[Optional[Secret]] = mapped_field(SecretField(), default_factory=lambda: "foo")
 
 
 def test_range_serializes_properly():
@@ -639,4 +665,90 @@ def test_nested_and_object_inner_doc():
             "type": "nested",
         },
         "title": {"type": "keyword"},
+    }
+
+
+def test_doc_with_type_hints():
+    props = TypedDoc._doc_type.mapping.to_dict()["properties"]
+    assert props == {
+        "st": {"type": "text"},
+        "dt": {"type": "date"},
+        "li": {"type": "integer"},
+        "ob": {
+            "type": "object",
+            "properties": {
+                "st": {"type": "text"},
+                "dt": {"type": "date"},
+                "li": {"type": "integer"},
+            },
+        },
+        "ns": {
+            "type": "nested",
+            "properties": {
+                "st": {"type": "text"},
+                "dt": {"type": "date"},
+                "li": {"type": "integer"},
+            },
+        },
+        "ip": {"type": "ip"},
+        "k1": {"type": "keyword"},
+        "k2": {"type": "keyword"},
+        "k3": {"type": "keyword"},
+        "k4": {"type": "keyword"},
+        "s1": {"type": "text"},
+        "s2": {"type": "text"},
+        "s3": {"type": "text"},
+        "s4": {"type": "text"},
+    }
+
+    doc = TypedDoc()
+    assert doc.k3 == "foo"
+    assert doc.s4 == "foo"
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+    assert set(exc_info.value.args[0].keys()) == {"st", "li", "k1"}
+
+    doc.st = "s"
+    doc.li = [1, 2, 3]
+    doc.k1 = "k"
+    doc.full_clean()
+
+    doc.ob = TypedInnerDoc()
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+    assert set(exc_info.value.args[0].keys()) == {"ob"}
+    assert set(exc_info.value.args[0]["ob"][0].args[0].keys()) == {"st", "li"}
+
+    doc.ob.st = "s"
+    doc.ob.li = [1]
+    doc.full_clean()
+
+    doc.ns.append(TypedInnerDoc(st="s"))
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+
+    doc.ns[0].li = [1, 2]
+    doc.full_clean()
+
+    doc.ip = "1.2.3.4"
+    n = datetime.now()
+    doc.dt = n
+    assert doc.to_dict() == {
+        "st": "s",
+        "li": [1, 2, 3],
+        "dt": n,
+        "ob": {
+            "st": "s",
+            "li": [1],
+        },
+        "ns": [
+            {
+                "st": "s",
+                "li": [1, 2],
+            }
+        ],
+        "ip": "1.2.3.4",
+        "k1": "k",
+        "k3": "foo",
+        "s4": "foo",
     }

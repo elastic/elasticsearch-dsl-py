@@ -96,7 +96,7 @@ class WorkplaceDoc(AsyncDocument):
     def get_embedding(cls, input: str) -> List[float]:
         if cls._model is None:
             cls._model = SentenceTransformer(MODEL_NAME)
-        return cast(List[float], cls._model.encode(input))
+        return cast(List[float], list(cls._model.encode(input)))
 
     def clean(self):
         # split the content into sentences

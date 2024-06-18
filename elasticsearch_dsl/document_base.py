@@ -104,9 +104,9 @@ class DocumentOptions:
         #     # use typing, but override with any stock or custom field
         #     field6: bool = MyCustomField()
         #
-        #     # best mypy and pyright typing support
+        #     # best mypy and pyright support and dataclass-like behavior
         #     field7: M[date]
-        #     field8: M[str] = mapped_field(MyCustomText())
+        #     field8: M[str] = mapped_field(MyCustomText(), default="foo")
         #
         #     # legacy format without Python typing
         #     field8 = Text()
@@ -117,11 +117,13 @@ class DocumentOptions:
         for name in fields:
             value = None
             if name in attrs:
+                # this field has a right-side value, which can be field
+                # instance on its own or wrapped with mapped_field()
                 value = attrs[name]
                 if isinstance(value, dict):
                     # the mapped_field() wrapper function was used so we need
                     # to look for the field instance and also record any
-                    # defaults
+                    # dataclass-style defaults
                     value = attrs[name].get("_field")
                     default_value = attrs[name].get("default") or attrs[name].get(
                         "default_factory"
@@ -129,19 +131,25 @@ class DocumentOptions:
                     if default_value:
                         field_defaults[name] = default_value
             if value is None:
+                # the field does not have an explicit field instance given in
+                # a right-side assignment, so we need to figure out what field
+                # type to use from the annotation
                 type_ = annotations[name]
                 required = True
                 multi = False
                 while hasattr(type_, "__origin__"):
                     if type_.__origin__ == Mapped:
+                        # M[type] -> extract the wrapped type
                         type_ = type_.__args__[0]
                     elif type_.__origin__ == Union:
                         if len(type_.__args__) == 2 and type_.__args__[1] is type(None):
+                            # Optional[type] -> mark instance as optional
                             required = False
                             type_ = type_.__args__[0]
                         else:
                             raise TypeError("Unsupported union")
                     elif type_.__origin__ in [list, List]:
+                        # List[type] -> mark instance as multi
                         multi = True
                         type_ = type_.__args__[0]
                     else:
@@ -151,15 +159,15 @@ class DocumentOptions:
                 if not isinstance(type_, type):
                     raise TypeError(f"Cannot map type {type_}")
                 elif issubclass(type_, InnerDoc):
+                    # object or nested field
                     field = Nested if multi else Object
                     field_args = [type_]
                     required = False
                 elif type_ in self.type_annotation_map:
+                    # use best field type for the type hint provided
                     field, field_kwargs = self.type_annotation_map[type_]
-                elif not issubclass(type_, Field):
-                    raise TypeError(f"Cannot map type {type_}")
                 else:
-                    field = type_
+                    raise TypeError(f"Cannot map type {type_}")
                 field_kwargs = {"multi": multi, "required": required, **field_kwargs}
                 value = field(*field_args, **field_kwargs)
             self.mapping.field(name, value)
