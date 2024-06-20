@@ -186,10 +186,10 @@ can be added to a field to convert it to an array, similar to using the
 ``multi=True`` argument on the field object.
 
 When using type hints as above, subclasses of ``Document`` and ``InnerDoc``
-inherit some of the behaviors associated with Python dataclasses. If
-necessary, the ``mapped_field()`` wrapper can be used on the right side of a
-typed field declaration, enabling dataclass options such as ``default`` or
-``default_factory`` to be included:
+inherit some of the behaviors associated with Python dataclasses. To add
+per-field dataclass options such as ``default`` or ``default_factory`` , the
+``mapped_field()`` wrapper can be used on the right side of a typed field
+declaration:
 
 .. code:: python
 
