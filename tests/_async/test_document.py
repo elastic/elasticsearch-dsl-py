@@ -38,6 +38,7 @@ from elasticsearch_dsl import (
     mapped_field,
     utils,
 )
+from elasticsearch_dsl.document_base import InstrumentedField
 from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
 
 
@@ -755,3 +756,64 @@ def test_doc_with_type_hints():
 
     s = TypedDoc.search().sort(TypedDoc.st, -TypedDoc.dt, +TypedDoc.ob.st)
     assert s.to_dict() == {"sort": ["st", {"dt": {"order": "desc"}}, "ob.st"]}
+
+
+def test_instrumented_field():
+    class Child(InnerDoc):
+        st: M[str]
+
+    class Doc(AsyncDocument):
+        st: str
+        ob: Child
+        ns: List[Child]
+
+    doc = Doc(
+        st="foo",
+        ob=Child(st="bar"),
+        ns=[
+            Child(st="baz"),
+            Child(st="qux"),
+        ],
+    )
+
+    assert type(doc.st) is str
+    assert doc.st == "foo"
+
+    assert type(doc.ob) is Child
+    assert doc.ob.st == "bar"
+
+    assert type(doc.ns) is utils.AttrList
+    assert doc.ns[0].st == "baz"
+    assert doc.ns[1].st == "qux"
+    assert type(doc.ns[0]) is Child
+    assert type(doc.ns[1]) is Child
+
+    assert type(Doc.st) is InstrumentedField
+    assert str(Doc.st) == "st"
+    assert +Doc.st == "st"
+    assert -Doc.st == "-st"
+    assert Doc.st.to_dict() == {"type": "text"}
+    with raises(AttributeError):
+        Doc.st.something
+
+    assert type(Doc.ob) is InstrumentedField
+    assert str(Doc.ob) == "ob"
+    assert str(Doc.ob.st) == "ob.st"
+    assert +Doc.ob.st == "ob.st"
+    assert -Doc.ob.st == "-ob.st"
+    assert Doc.ob.st.to_dict() == {"type": "text"}
+    with raises(AttributeError):
+        Doc.ob.something
+    with raises(AttributeError):
+        Doc.ob.st.something
+
+    assert type(Doc.ns) is InstrumentedField
+    assert str(Doc.ns) == "ns"
+    assert str(Doc.ns.st) == "ns.st"
+    assert +Doc.ns.st == "ns.st"
+    assert -Doc.ns.st == "-ns.st"
+    assert Doc.ns.st.to_dict() == {"type": "text"}
+    with raises(AttributeError):
+        Doc.ns.something
+    with raises(AttributeError):
+        Doc.ns.st.something

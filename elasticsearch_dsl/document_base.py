@@ -62,14 +62,16 @@ class InstrumentedField:
         self._field = field
 
     def __getattr__(self, attr):
-        f = None
         try:
-            f = self._field[attr]
-        except KeyError:
-            pass
-        if isinstance(f, Field):
-            return InstrumentedField(f"{self._name}.{attr}", f)
-        return getattr(self._field, attr)
+            # first let's see if this is an attribute of this object
+            return super().__getattribute__(attr)
+        except AttributeError:
+            try:
+                # next we see if we have a sub-field with this name
+                return InstrumentedField(f"{self._name}.{attr}", self._field[attr])
+            except KeyError:
+                # lastly we let the wrapped field resolve this attribute
+                return getattr(self._field, attr)
 
     def __pos__(self):
         """Return the field name representation for ascending sort order"""
