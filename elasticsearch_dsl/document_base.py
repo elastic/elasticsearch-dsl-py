@@ -45,7 +45,7 @@ class MetaField:
 class InstrumentedField:
     """Proxy object for a mapped document field.
 
-    An object of this instance is returned when a field is access as a class
+    An object of this instance is returned when a field is accessed as a class
     attribute of a ``Document`` or ``InnerDoc`` subclass. These objects can
     be used in any situation in which a reference to a field is required, such
     as when specifying sort options in a search::
