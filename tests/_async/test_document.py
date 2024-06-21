@@ -656,8 +656,8 @@ def test_doc_with_type_hints():
         st: str
         dt: Optional[datetime]
         li: List[int]
-        ob: TypedInnerDoc
-        ns: List[TypedInnerDoc]
+        ob: Optional[TypedInnerDoc]
+        ns: Optional[List[TypedInnerDoc]]
         ip: Optional[str] = field.Ip()
         k1: str = field.Keyword(required=True)
         k2: M[str] = field.Keyword()
