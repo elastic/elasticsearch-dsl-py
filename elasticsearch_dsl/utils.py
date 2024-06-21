@@ -441,6 +441,15 @@ class ObjectBase(AttrDict):
 
         super(AttrDict, self).__setattr__("meta", HitMeta(meta))
 
+        # process field defaults
+        if hasattr(self, "_defaults"):
+            for name in self._defaults:
+                if name not in kwargs:
+                    value = self._defaults[name]
+                    if callable(value):
+                        value = value()
+                    kwargs[name] = value
+
         super().__init__(kwargs)
 
     @classmethod
@@ -512,6 +521,12 @@ class ObjectBase(AttrDict):
                     value = getattr(self, name)
                 return value
             raise
+
+    def __setattr__(self, name, value):
+        if name in self.__class__._doc_type.mapping:
+            self._d_[name] = value
+        else:
+            super().__setattr__(name, value)
 
     def to_dict(self, skip_empty=True):
         out = {}
