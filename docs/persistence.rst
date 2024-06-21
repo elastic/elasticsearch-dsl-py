@@ -145,15 +145,24 @@ following table:
      - ``Date(required=True)``
    * - ``date``
      - ``Date(format="yyyy-MM-dd", required=True)``
-   * - ``InnerDocSubclass``
-     - ``Object(InnerDocSubclass)``
-   * - ``List(InnerDocSubclass)``
-     - ``Nested(InnerDocSubclass)``
 
-As noted in the last two rows of the table, a field can also be given a type
-hint of an ``InnerDoc`` subclass, in which case it becomes an ``Object`` field
-of that class. When the ``InnerDoc`` subclass is wrapped with ``List``, a
-``Nested`` field is created instead.
+To type a field as optional, the standard ``Optional`` modifier from the Python
+``typing`` package can be used. The ``List`` modifier can be added to a field
+to convert it to an array, similar to using the ``multi=True`` argument on the
+field object.
+
+.. code:: python
+
+    from typing import Optional, List
+
+    class MyDoc(Document):
+        pub_date: Optional[datetime]  # same as pub_date = Date()
+        authors: List[str]            # same as authors = Text(multi=True, required=True)
+        comments: Optional[List[str]] # same as comments = Text(multi=True)
+
+A field can also be given a type hint of an ``InnerDoc`` subclass, in which
+case it becomes an ``Object`` field of that class. When the ``InnerDoc``
+subclass is wrapped with ``List``, a ``Nested`` field is created instead.
 
 .. code:: python
 
@@ -166,33 +175,29 @@ of that class. When the ``InnerDoc`` subclass is wrapped with ``List``, a
         ...
     
     class Post(Document):
-        address: Address         # same as address = Object(Address)
-        comments: List[Comment]  # same as comments = Nested(Comment)
+        address: Address         # same as address = Object(Address, required=True)
+        comments: List[Comment]  # same as comments = Nested(Comment, required=True)
 
 Unfortunately it is impossible to have Python type hints that uniquely
 identify every possible Elasticsearch field type. To choose a field type that
 is different than the ones in the table above, the field instance can be added
 explicitly as a right-side assignment in the field declaration. The next
-example creates a field that is typed as ``str``, but is mapped to ``Keyword``
-instead of ``Text``:
+example creates a field that is typed as ``Optional[str]``, but is mapped to
+``Keyword`` instead of ``Text``:
 
 .. code:: python
 
     class MyDocument(Document):
-        category: str = Keyword(required=True)
+        category: Optional[str] = Keyword()
 
 This form can also be used when additional options need to be given to
-initialize the field, such as when using custom analyzer settings:
+initialize the field, such as when using custom analyzer settings or changing
+the ``required`` default:
 
 .. code:: python
 
     class Comment(InnerDoc):
         content: str = Text(analyzer='snowball', required=True)
-
-The standard ``Optional`` modifier from the Python ``typing`` package can be
-used to change a typed field from required to optional. The ``List`` modifier
-can be added to a field to convert it to an array, similar to using the
-``multi=True`` argument on the field object.
 
 When using type hints as above, subclasses of ``Document`` and ``InnerDoc``
 inherit some of the behaviors associated with Python dataclasses, as defined by

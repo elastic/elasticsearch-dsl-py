@@ -85,9 +85,9 @@ class WorkplaceDoc(Document):
     content: M[str]
     created: M[datetime]
     updated: M[Optional[datetime]]
-    url: M[str] = mapped_field(Keyword())
-    category: M[str] = mapped_field(Keyword())
-    passages: M[List[Passage]] = mapped_field(default=[])
+    url: M[str] = mapped_field(Keyword(required=True))
+    category: M[str] = mapped_field(Keyword(required=True))
+    passages: M[Optional[List[Passage]]] = mapped_field(default=[])
 
     _model = None
 

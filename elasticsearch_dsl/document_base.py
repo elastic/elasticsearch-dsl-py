@@ -197,7 +197,6 @@ class DocumentOptions:
                     # object or nested field
                     field = Nested if multi else Object
                     field_args = [type_]
-                    required = False
                 elif type_ in self.type_annotation_map:
                     # use best field type for the type hint provided
                     field, field_kwargs = self.type_annotation_map[type_]
