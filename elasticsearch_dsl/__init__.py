@@ -19,7 +19,7 @@ from . import connections
 from .aggs import A
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
 from .document import AsyncDocument, Document
-from .document_base import InnerDoc, MetaField
+from .document_base import InnerDoc, M, MetaField, mapped_field
 from .exceptions import (
     ElasticsearchDslException,
     IllegalOperation,
@@ -148,6 +148,7 @@ __all__ = [
     "Keyword",
     "Long",
     "LongRange",
+    "M",
     "Mapping",
     "MetaField",
     "MultiSearch",
@@ -178,6 +179,7 @@ __all__ = [
     "char_filter",
     "connections",
     "construct_field",
+    "mapped_field",
     "normalizer",
     "token_filter",
     "tokenizer",
