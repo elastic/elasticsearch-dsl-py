@@ -91,7 +91,7 @@ def type_check(session):
     session.install("mypy", ".[develop]")
     errors = []
     popen = subprocess.Popen(
-        "mypy --strict elasticsearch_dsl tests",
+        "mypy --strict elasticsearch_dsl tests examples",
         env=session.env,
         shell=True,
         stdout=subprocess.PIPE,

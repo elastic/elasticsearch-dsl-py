@@ -20,6 +20,7 @@ import ipaddress
 import pickle
 from datetime import datetime
 from hashlib import md5
+from typing import List, Optional
 
 import pytest
 from pytest import raises
@@ -28,13 +29,16 @@ from elasticsearch_dsl import (
     AsyncDocument,
     Index,
     InnerDoc,
+    M,
     Mapping,
     MetaField,
     Range,
     analyzer,
     field,
+    mapped_field,
     utils,
 )
+from elasticsearch_dsl.document_base import InstrumentedField
 from elasticsearch_dsl.exceptions import IllegalOperation, ValidationException
 
 
@@ -640,3 +644,176 @@ def test_nested_and_object_inner_doc():
         },
         "title": {"type": "keyword"},
     }
+
+
+def test_doc_with_type_hints():
+    class TypedInnerDoc(InnerDoc):
+        st: M[str]
+        dt: M[Optional[datetime]]
+        li: M[List[int]]
+
+    class TypedDoc(AsyncDocument):
+        st: str
+        dt: Optional[datetime]
+        li: List[int]
+        ob: Optional[TypedInnerDoc]
+        ns: Optional[List[TypedInnerDoc]]
+        ip: Optional[str] = field.Ip()
+        k1: str = field.Keyword(required=True)
+        k2: M[str] = field.Keyword()
+        k3: str = mapped_field(field.Keyword(), default="foo")
+        k4: M[Optional[str]] = mapped_field(field.Keyword())
+        s1: Secret = SecretField()
+        s2: M[Secret] = SecretField()
+        s3: Secret = mapped_field(SecretField())
+        s4: M[Optional[Secret]] = mapped_field(
+            SecretField(), default_factory=lambda: "foo"
+        )
+
+    props = TypedDoc._doc_type.mapping.to_dict()["properties"]
+    assert props == {
+        "st": {"type": "text"},
+        "dt": {"type": "date"},
+        "li": {"type": "integer"},
+        "ob": {
+            "type": "object",
+            "properties": {
+                "st": {"type": "text"},
+                "dt": {"type": "date"},
+                "li": {"type": "integer"},
+            },
+        },
+        "ns": {
+            "type": "nested",
+            "properties": {
+                "st": {"type": "text"},
+                "dt": {"type": "date"},
+                "li": {"type": "integer"},
+            },
+        },
+        "ip": {"type": "ip"},
+        "k1": {"type": "keyword"},
+        "k2": {"type": "keyword"},
+        "k3": {"type": "keyword"},
+        "k4": {"type": "keyword"},
+        "s1": {"type": "text"},
+        "s2": {"type": "text"},
+        "s3": {"type": "text"},
+        "s4": {"type": "text"},
+    }
+
+    doc = TypedDoc()
+    assert doc.k3 == "foo"
+    assert doc.s4 == "foo"
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+    assert set(exc_info.value.args[0].keys()) == {"st", "li", "k1"}
+
+    doc.st = "s"
+    doc.li = [1, 2, 3]
+    doc.k1 = "k"
+    doc.full_clean()
+
+    doc.ob = TypedInnerDoc()
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+    assert set(exc_info.value.args[0].keys()) == {"ob"}
+    assert set(exc_info.value.args[0]["ob"][0].args[0].keys()) == {"st", "li"}
+
+    doc.ob.st = "s"
+    doc.ob.li = [1]
+    doc.full_clean()
+
+    doc.ns.append(TypedInnerDoc(st="s"))
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+
+    doc.ns[0].li = [1, 2]
+    doc.full_clean()
+
+    doc.ip = "1.2.3.4"
+    n = datetime.now()
+    doc.dt = n
+    assert doc.to_dict() == {
+        "st": "s",
+        "li": [1, 2, 3],
+        "dt": n,
+        "ob": {
+            "st": "s",
+            "li": [1],
+        },
+        "ns": [
+            {
+                "st": "s",
+                "li": [1, 2],
+            }
+        ],
+        "ip": "1.2.3.4",
+        "k1": "k",
+        "k3": "foo",
+        "s4": "foo",
+    }
+
+    s = TypedDoc.search().sort(TypedDoc.st, -TypedDoc.dt, +TypedDoc.ob.st)
+    assert s.to_dict() == {"sort": ["st", {"dt": {"order": "desc"}}, "ob.st"]}
+
+
+def test_instrumented_field():
+    class Child(InnerDoc):
+        st: M[str]
+
+    class Doc(AsyncDocument):
+        st: str
+        ob: Child
+        ns: List[Child]
+
+    doc = Doc(
+        st="foo",
+        ob=Child(st="bar"),
+        ns=[
+            Child(st="baz"),
+            Child(st="qux"),
+        ],
+    )
+
+    assert type(doc.st) is str
+    assert doc.st == "foo"
+
+    assert type(doc.ob) is Child
+    assert doc.ob.st == "bar"
+
+    assert type(doc.ns) is utils.AttrList
+    assert doc.ns[0].st == "baz"
+    assert doc.ns[1].st == "qux"
+    assert type(doc.ns[0]) is Child
+    assert type(doc.ns[1]) is Child
+
+    assert type(Doc.st) is InstrumentedField
+    assert str(Doc.st) == "st"
+    assert +Doc.st == "st"
+    assert -Doc.st == "-st"
+    assert Doc.st.to_dict() == {"type": "text"}
+    with raises(AttributeError):
+        Doc.st.something
+
+    assert type(Doc.ob) is InstrumentedField
+    assert str(Doc.ob) == "ob"
+    assert str(Doc.ob.st) == "ob.st"
+    assert +Doc.ob.st == "ob.st"
+    assert -Doc.ob.st == "-ob.st"
+    assert Doc.ob.st.to_dict() == {"type": "text"}
+    with raises(AttributeError):
+        Doc.ob.something
+    with raises(AttributeError):
+        Doc.ob.st.something
+
+    assert type(Doc.ns) is InstrumentedField
+    assert str(Doc.ns) == "ns"
+    assert str(Doc.ns.st) == "ns.st"
+    assert +Doc.ns.st == "ns.st"
+    assert -Doc.ns.st == "-ns.st"
+    assert Doc.ns.st.to_dict() == {"type": "text"}
+    with raises(AttributeError):
+        Doc.ns.something
+    with raises(AttributeError):
+        Doc.ns.st.something

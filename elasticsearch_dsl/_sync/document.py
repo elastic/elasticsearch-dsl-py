@@ -18,10 +18,11 @@
 import collections.abc
 
 from elasticsearch.exceptions import NotFoundError, RequestError
+from typing_extensions import dataclass_transform
 
 from .._sync.index import Index
 from ..connections import get_connection
-from ..document_base import DocumentBase, DocumentMeta
+from ..document_base import DocumentBase, DocumentMeta, mapped_field
 from ..exceptions import IllegalOperation
 from ..utils import DOC_META_FIELDS, META_FIELDS, merge
 from .search import Search
@@ -60,6 +61,7 @@ class IndexMeta(DocumentMeta):
         return i
 
 
+@dataclass_transform(field_specifiers=(mapped_field,))
 class Document(DocumentBase, metaclass=IndexMeta):
     """
     Model-like class for persisting documents in elasticsearch.
