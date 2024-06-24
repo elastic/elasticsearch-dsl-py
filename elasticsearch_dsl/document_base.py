@@ -21,6 +21,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Dict,
     Generic,
     List,
     Optional,
@@ -313,7 +314,9 @@ class InnerDoc(ObjectBase, metaclass=DocumentMeta):
     """
 
     @classmethod
-    def from_es(cls, data, data_only=False):
+    def from_es(
+        cls, data: Union[Dict[str, Any], List[Any]], data_only: bool = False
+    ) -> "InnerDoc":
         if data_only:
             data = {"_source": data}
         return super().from_es(data)

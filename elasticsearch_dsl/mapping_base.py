@@ -17,9 +17,10 @@
 
 import collections.abc
 from itertools import chain
+from typing import Dict, Generator
 
-from .field import Nested, Text, construct_field
-from .utils import DslBase
+from .field import Field, Nested, Text, construct_field
+from .utils import DslBase, JSONType
 
 META_FIELDS = frozenset(
     (
@@ -44,10 +45,10 @@ class Properties(DslBase):
     def __repr__(self):
         return "Properties()"
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Field:
         return self.properties[name]
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         return name in self.properties
 
     def to_dict(self):
@@ -57,7 +58,7 @@ class Properties(DslBase):
         self.properties[name] = construct_field(*args, **kwargs)
         return self
 
-    def _collect_fields(self):
+    def _collect_fields(self) -> Generator[Field, None, None]:
         """Iterate over all Field objects within, including multi fields."""
         for f in self.properties.to_dict().values():
             yield f
@@ -157,7 +158,7 @@ class MappingBase:
                 else:
                     self.meta(name, value)
 
-    def update(self, mapping, update_only=False):
+    def update(self, mapping: "MappingBase", update_only: bool = False):
         for name in mapping:
             if update_only and name in self:
                 # nested and inner objects, merge recursively
@@ -174,10 +175,10 @@ class MappingBase:
         else:
             self._meta.update(mapping._meta)
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         return name in self.properties.properties
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Field:
         return self.properties.properties[name]
 
     def __iter__(self):
@@ -197,7 +198,7 @@ class MappingBase:
         self._meta[name] = kwargs if params is None else params
         return self
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         meta = self._meta
 
         # hard coded serialization of analyzers in _all

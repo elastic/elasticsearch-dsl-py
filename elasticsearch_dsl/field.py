@@ -17,28 +17,59 @@
 
 import base64
 import collections.abc
-import copy
 import ipaddress
+from copy import deepcopy
 from datetime import date, datetime
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 from dateutil import parser, tz
 
 from .exceptions import ValidationException
 from .query import Q
-from .utils import AttrDict, AttrList, DslBase
+from .utils import AttrDict, AttrList, DslBase, JSONType
 from .wrappers import Range
+
+if TYPE_CHECKING:
+    from datetime import tzinfo
+    from ipaddress import IPv4Address, IPv6Address
+
+    from _operator import _SupportsComparison
+
+    from .document import InnerDoc
+    from .mapping_base import MappingBase
+    from .query import Query
 
 unicode = str
 
 
-def construct_field(name_or_field, **params):
+def construct_field(
+    name_or_field: Union[
+        str,
+        "Field",
+        Dict[str, Any],
+    ],
+    **params: Any,
+) -> "Field":
     # {"type": "text", "analyzer": "snowball"}
     if isinstance(name_or_field, collections.abc.Mapping):
         if params:
             raise ValueError(
                 "construct_field() cannot accept parameters when passing in a dict."
             )
-        params = name_or_field.copy()
+        params = deepcopy(name_or_field)
         if "type" not in params:
             # inner object can be implicitly defined
             if "properties" in params:
@@ -67,10 +98,12 @@ class Field(DslBase):
     _type_shortcut = staticmethod(construct_field)
     # all fields can be multifields
     _param_defs = {"fields": {"type": "field", "hash": True}}
-    name = None
+    name = ""
     _coerce = False
 
-    def __init__(self, multi=False, required=False, *args, **kwargs):
+    def __init__(
+        self, multi: bool = False, required: bool = False, *args: Any, **kwargs: Any
+    ):
         """
         :arg bool multi: specifies whether field can contain array of values
         :arg bool required: specifies whether field is required
@@ -79,46 +112,49 @@ class Field(DslBase):
         self._required = required
         super().__init__(*args, **kwargs)
 
-    def __getitem__(self, subfield):
-        return self._params.get("fields", {})[subfield]
+    def __getitem__(self, subfield: str) -> Optional["Field"]:
+        return cast(Field, self._params.get("fields", {})[subfield])
 
-    def _serialize(self, data):
+    def _serialize(self, data: Any) -> Any:
         return data
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> Any:
         return data
 
-    def _empty(self):
+    def _empty(self) -> Optional[Any]:
         return None
 
-    def empty(self):
+    def empty(self) -> Optional[Any]:
         if self._multi:
             return AttrList([])
         return self._empty()
 
-    def serialize(self, data):
+    def serialize(self, data: Any) -> Any:
         if isinstance(data, (list, AttrList, tuple)):
-            return list(map(self._serialize, data))
+            return list(map(self._serialize, cast(Iterable[Any], data)))
         return self._serialize(data)
 
-    def deserialize(self, data):
+    def deserialize(self, data: Any) -> Any:
         if isinstance(data, (list, AttrList, tuple)):
-            data = [None if d is None else self._deserialize(d) for d in data]
+            data = [
+                None if d is None else self._deserialize(d)
+                for d in cast(Iterable[Any], data)
+            ]
             return data
         if data is None:
             return None
         return self._deserialize(data)
 
-    def clean(self, data):
+    def clean(self, data: Any) -> Any:
         if data is not None:
             data = self.deserialize(data)
         if data in (None, [], {}) and self._required:
             raise ValidationException("Value required for this field.")
         return data
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
-        name, value = d.popitem()
+        name, value = cast(Tuple[str, Dict[str, JSONType]], d.popitem())
         value["type"] = name
         return value
 
@@ -127,7 +163,7 @@ class CustomField(Field):
     name = "custom"
     _coerce = True
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         if isinstance(self.builtin_type, Field):
             return self.builtin_type.to_dict()
 
@@ -140,7 +176,13 @@ class Object(Field):
     name = "object"
     _coerce = True
 
-    def __init__(self, doc_class=None, dynamic=None, properties=None, **kwargs):
+    def __init__(
+        self,
+        doc_class: Optional[Type["InnerDoc"]] = None,
+        dynamic: Optional[Union[bool, str]] = None,
+        properties: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ):
         """
         :arg document.InnerDoc doc_class: base doc class that handles mapping.
             If no `doc_class` is provided, new instance of `InnerDoc` will be created,
@@ -170,35 +212,35 @@ class Object(Field):
             if dynamic is not None:
                 self._doc_class._doc_type.mapping.meta("dynamic", dynamic)
 
-        self._mapping = copy.deepcopy(self._doc_class._doc_type.mapping)
+        self._mapping: "MappingBase" = deepcopy(self._doc_class._doc_type.mapping)
         super().__init__(**kwargs)
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Field:
         return self._mapping[name]
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         return name in self._mapping
 
-    def _empty(self):
+    def _empty(self) -> "InnerDoc":
         return self._wrap({})
 
-    def _wrap(self, data):
+    def _wrap(self, data: Union[Dict[str, Any], List[Any]]) -> "InnerDoc":
         return self._doc_class.from_es(data, data_only=True)
 
-    def empty(self):
+    def empty(self) -> Union["InnerDoc", AttrList]:
         if self._multi:
             return AttrList([], self._wrap)
         return self._empty()
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         d = self._mapping.to_dict()
         d.update(super().to_dict())
         return d
 
-    def _collect_fields(self):
+    def _collect_fields(self) -> Generator[Field, None, None]:
         return self._mapping.properties._collect_fields()
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> "InnerDoc":
         # don't wrap already wrapped data
         if isinstance(data, self._doc_class):
             return data
@@ -208,7 +250,9 @@ class Object(Field):
 
         return self._wrap(data)
 
-    def _serialize(self, data):
+    def _serialize(
+        self, data: Optional[Union[Dict[str, Any], "InnerDoc"]]
+    ) -> Optional[Dict[str, Any]]:
         if data is None:
             return None
 
@@ -218,18 +262,18 @@ class Object(Field):
 
         return data.to_dict()
 
-    def clean(self, data):
+    def clean(self, data: Any) -> Any:
         data = super().clean(data)
         if data is None:
             return None
         if isinstance(data, (list, AttrList)):
-            for d in data:
+            for d in cast(Iterator["InnerDoc"], data):
                 d.full_clean()
         else:
             data.full_clean()
         return data
 
-    def update(self, other, update_only=False):
+    def update(self, other: Any, update_only: bool = False) -> None:
         if not isinstance(other, Object):
             # not an inner/nested object, no merge possible
             return
@@ -240,7 +284,7 @@ class Object(Field):
 class Nested(Object):
     name = "nested"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         kwargs.setdefault("multi", True)
         super().__init__(*args, **kwargs)
 
@@ -249,17 +293,23 @@ class Date(Field):
     name = "date"
     _coerce = True
 
-    def __init__(self, default_timezone=None, *args, **kwargs):
+    def __init__(
+        self,
+        default_timezone: Optional[Union[str, "tzinfo"]] = None,
+        *args: Any,
+        **kwargs: Any,
+    ):
         """
         :arg default_timezone: timezone that will be automatically used for tz-naive values
             May be instance of `datetime.tzinfo` or string containing TZ offset
         """
-        self._default_timezone = default_timezone
-        if isinstance(self._default_timezone, str):
-            self._default_timezone = tz.gettz(self._default_timezone)
+        if isinstance(default_timezone, str):
+            self._default_timezone = tz.gettz(default_timezone)
+        else:
+            self._default_timezone = default_timezone
         super().__init__(*args, **kwargs)
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> Union[datetime, date]:
         if isinstance(data, str):
             try:
                 data = parser.parse(data)
@@ -317,31 +367,31 @@ class Boolean(Field):
     name = "boolean"
     _coerce = True
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> bool:
         if data == "false":
             return False
         return bool(data)
 
-    def clean(self, data):
+    def clean(self, data: Any) -> Optional[bool]:
         if data is not None:
             data = self.deserialize(data)
         if data is None and self._required:
             raise ValidationException("Value required for this field.")
-        return data
+        return data  # type: ignore
 
 
 class Float(Field):
     name = "float"
     _coerce = True
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> float:
         return float(data)
 
 
 class DenseVector(Float):
     name = "dense_vector"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         kwargs["multi"] = True
         super().__init__(**kwargs)
 
@@ -357,7 +407,7 @@ class HalfFloat(Float):
 class ScaledFloat(Float):
     name = "scaled_float"
 
-    def __init__(self, scaling_factor, *args, **kwargs):
+    def __init__(self, scaling_factor: int, *args: Any, **kwargs: Any):
         super().__init__(scaling_factor=scaling_factor, *args, **kwargs)
 
 
@@ -377,7 +427,7 @@ class Integer(Field):
     name = "integer"
     _coerce = True
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> int:
         return int(data)
 
 
@@ -397,11 +447,11 @@ class Ip(Field):
     name = "ip"
     _coerce = True
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> Union["IPv4Address", "IPv6Address"]:
         # the ipaddress library for pypy only accepts unicode.
         return ipaddress.ip_address(unicode(data))
 
-    def _serialize(self, data):
+    def _serialize(self, data: Any) -> Optional[str]:
         if data is None:
             return None
         return str(data)
@@ -411,15 +461,15 @@ class Binary(Field):
     name = "binary"
     _coerce = True
 
-    def clean(self, data):
+    def clean(self, data: str) -> str:
         # Binary fields are opaque, so there's not much cleaning
         # that can be done.
         return data
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> bytes:
         return base64.b64decode(data)
 
-    def _serialize(self, data):
+    def _serialize(self, data: Any) -> Optional[str]:
         if data is None:
             return None
         return base64.b64encode(data).decode()
@@ -445,31 +495,31 @@ class Percolator(Field):
     name = "percolator"
     _coerce = True
 
-    def _deserialize(self, data):
-        return Q(data)
+    def _deserialize(self, data: Any) -> "Query":
+        return Q(data)  # type: ignore
 
-    def _serialize(self, data):
+    def _serialize(self, data: Any) -> Optional[Dict[str, Any]]:
         if data is None:
             return None
-        return data.to_dict()
+        return data.to_dict()  # type: ignore
 
 
 class RangeField(Field):
     _coerce = True
-    _core_field = None
+    _core_field: Optional[Field] = None
 
-    def _deserialize(self, data):
+    def _deserialize(self, data: Any) -> Range["_SupportsComparison"]:
         if isinstance(data, Range):
             return data
-        data = {k: self._core_field.deserialize(v) for k, v in data.items()}
+        data = {k: self._core_field.deserialize(v) for k, v in data.items()}  # type: ignore
         return Range(data)
 
-    def _serialize(self, data):
+    def _serialize(self, data: Any) -> Optional[Dict[str, Any]]:
         if data is None:
             return None
         if not isinstance(data, collections.abc.Mapping):
             data = data.to_dict()
-        return {k: self._core_field.serialize(v) for k, v in data.items()}
+        return {k: self._core_field.serialize(v) for k, v in data.items()}  # type: ignore
 
 
 class IntegerRange(RangeField):
