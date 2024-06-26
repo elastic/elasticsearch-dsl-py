@@ -15,8 +15,14 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING, Any
+
 from ..utils import AttrDict, AttrList
 from . import AggResponse, Response
+
+if TYPE_CHECKING:
+    from ..aggs import Agg
+    from ..search_base import SearchBase
 
 
 class Bucket(AggResponse):
@@ -73,7 +79,7 @@ class FieldBucketData(BucketData):
 
 
 class TopHitsData(Response):
-    def __init__(self, agg, search, data):
+    def __init__(self, agg: "Agg", search: "SearchBase", data: Any):
         super(AttrDict, self).__setattr__(
             "meta", AttrDict({"agg": agg, "search": search})
         )

@@ -15,11 +15,21 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import Type
+
 from elasticsearch import AsyncElasticsearch
 
 from elasticsearch_dsl.connections import Connections
 
-connections = Connections(elasticsearch_class=AsyncElasticsearch)
+
+class AsyncElasticsearchConnections(Connections[AsyncElasticsearch]):
+    def __init__(
+        self, *, elasticsearch_class: Type[AsyncElasticsearch] = AsyncElasticsearch
+    ):
+        super().__init__(elasticsearch_class=elasticsearch_class)
+
+
+connections = AsyncElasticsearchConnections(elasticsearch_class=AsyncElasticsearch)
 configure = connections.configure
 add_connection = connections.add_connection
 remove_connection = connections.remove_connection

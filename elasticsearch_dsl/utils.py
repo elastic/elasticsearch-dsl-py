@@ -18,7 +18,19 @@
 
 import collections.abc
 from copy import copy
-from typing import Any, ClassVar, Dict, Generic, List, Optional, Type, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from typing_extensions import Self, TypeAlias
 
@@ -61,7 +73,7 @@ META_FIELDS = frozenset(
 ).union(DOC_META_FIELDS)
 
 
-def _wrap(val, obj_wrapper=None):
+def _wrap(val: Any, obj_wrapper: Callable[[Any], Any] = None) -> Any:
     if isinstance(val, collections.abc.Mapping):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
@@ -70,7 +82,7 @@ def _wrap(val, obj_wrapper=None):
 
 
 class AttrList:
-    def __init__(self, l, obj_wrapper=None):
+    def __init__(self, l: List[Any], obj_wrapper: Callable[[Any], Any] = None):
         # make iterables into lists
         if not isinstance(l, list):
             l = list(l)
@@ -89,16 +101,16 @@ class AttrList:
     def __ne__(self, other):
         return not self == other
 
-    def __getitem__(self, k):
+    def __getitem__(self, k) -> Any:
         l = self._l_[k]
         if isinstance(k, slice):
             return AttrList(l, obj_wrapper=self._obj_wrapper)
         return _wrap(l, self._obj_wrapper)
 
-    def __setitem__(self, k, value):
+    def __setitem__(self, k: int, value: Any) -> None:
         self._l_[k] = value
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[Any]:
         return map(lambda i: _wrap(i, self._obj_wrapper), self._l_)
 
     def __len__(self):
@@ -233,7 +245,7 @@ class DslMeta(type):
         # skip for DslBase
         if not hasattr(cls, "_type_shortcut"):
             return
-        if cls.name is None:
+        if not cls.name:
             # abstract base class, register it's shortcut
             cls._types[cls._type_name] = cls._type_shortcut
             # and create a registry for subclasses
@@ -286,7 +298,7 @@ class DslBase(metaclass=DslMeta):
     def __init__(self, _expand__to_dot: Optional[bool] = None, **params: Any) -> None:
         if _expand__to_dot is None:
             _expand__to_dot = EXPAND__TO_DOT
-        self._params = {}
+        self._params: Dict[str, Any] = {}
         for pname, pvalue in params.items():
             if "__" in pname and _expand__to_dot:
                 pname = pname.replace("__", ".")
@@ -528,7 +540,7 @@ class ObjectBase(AttrDict):
         else:
             super().__setattr__(name, value)
 
-    def to_dict(self, skip_empty=True):
+    def to_dict(self, skip_empty=True) -> Dict[str, JSONType]:
         out = {}
         for k, v in self._d_.items():
             # if this is a mapped field,
@@ -567,15 +579,17 @@ class ObjectBase(AttrDict):
         if errors:
             raise ValidationException(errors)
 
-    def clean(self):
+    def clean(self) -> None:
         pass
 
-    def full_clean(self):
+    def full_clean(self) -> None:
         self.clean_fields()
         self.clean()
 
 
-def merge(data, new_data, raise_on_conflict=False):
+def merge(
+    data: Dict[str, Any], new_data: Dict[str, Any], raise_on_conflict: bool = False
+):
     if not (
         isinstance(data, (AttrDict, collections.abc.Mapping))
         and isinstance(new_data, (AttrDict, collections.abc.Mapping))
