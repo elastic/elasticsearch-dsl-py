@@ -15,24 +15,34 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Union, cast
+
 from . import async_connections, connections
-from .utils import AttrDict, DslBase, merge
+from .utils import AttrDict, DslBase, JSONType, merge
+
+if TYPE_CHECKING:
+    from elasticsearch import AsyncElasticsearch, Elasticsearch
 
 __all__ = ["tokenizer", "analyzer", "char_filter", "token_filter", "normalizer"]
 
 
 class AnalysisBase:
     @classmethod
-    def _type_shortcut(cls, name_or_instance, type=None, **kwargs):
+    def _type_shortcut(
+        cls,
+        name_or_instance: Union[str, "AnalysisBase"],
+        type: Optional[str] = None,
+        **kwargs: Any,
+    ) -> DslBase:
         if isinstance(name_or_instance, cls):
             if type or kwargs:
                 raise ValueError(f"{cls.__name__}() cannot accept parameters.")
-            return name_or_instance
+            return name_or_instance  # type: ignore[return-value]
 
         if not (type or kwargs):
-            return cls.get_dsl_class("builtin")(name_or_instance)
+            return cls.get_dsl_class("builtin")(name_or_instance)  # type: ignore
 
-        return cls.get_dsl_class(type, "custom")(
+        return cls.get_dsl_class(type, "custom")(  # type: ignore
             name_or_instance, type or "custom", **kwargs
         )
 
@@ -40,27 +50,32 @@ class AnalysisBase:
 class CustomAnalysis:
     name = "custom"
 
-    def __init__(self, filter_name, builtin_type="custom", **kwargs):
+    def __init__(self, filter_name: str, builtin_type: str = "custom", **kwargs: Any):
         self._builtin_type = builtin_type
         self._name = filter_name
         super().__init__(**kwargs)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         # only name to present in lists
-        return self._name
+        return self._name  # type: ignore
 
-    def get_definition(self):
-        d = super().to_dict()
+    def get_definition(self) -> Dict[str, Any]:
+        d = super().to_dict()  # type: ignore
         d = d.pop(self.name)
         d["type"] = self._builtin_type
-        return d
+        return d  # type: ignore
 
 
 class CustomAnalysisDefinition(CustomAnalysis):
-    def get_analysis_definition(self):
+    _type_name: str
+    _param_defs: ClassVar[Dict[str, Any]]
+    filter: List[Any]
+    char_filter: List[Any]
+
+    def get_analysis_definition(self) -> Dict[str, Any]:
         out = {self._type_name: {self._name: self.get_definition()}}
 
-        t = getattr(self, "tokenizer", None)
+        t = cast("Tokenizer", getattr(self, "tokenizer", None))
         if "tokenizer" in self._param_defs and hasattr(t, "get_definition"):
             out["tokenizer"] = {t._name: t.get_definition()}
 
@@ -93,22 +108,22 @@ class CustomAnalysisDefinition(CustomAnalysis):
 class BuiltinAnalysis:
     name = "builtin"
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._name = name
         super().__init__()
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         # only name to present in lists
-        return self._name
+        return self._name  # type: ignore
 
 
 class Analyzer(AnalysisBase, DslBase):
     _type_name = "analyzer"
-    name = None
+    name = ""
 
 
 class BuiltinAnalyzer(BuiltinAnalysis, Analyzer):
-    def get_analysis_definition(self):
+    def get_analysis_definition(self) -> Dict[str, Any]:
         return {}
 
 
@@ -119,7 +134,9 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         "tokenizer": {"type": "tokenizer"},
     }
 
-    def _get_body(self, text, explain, attributes):
+    def _get_body(
+        self, text: str, explain: bool, attributes: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         body = {"text": text, "explain": explain}
         if attributes:
             body["attributes"] = attributes
@@ -145,7 +162,13 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
 
         return body
 
-    def simulate(self, text, using="default", explain=False, attributes=None):
+    def simulate(
+        self,
+        text: str,
+        using: Union[str, "Elasticsearch"] = "default",
+        explain: bool = False,
+        attributes: Optional[Dict[str, Any]] = None,
+    ) -> AttrDict[str, Any]:
         """
         Use the Analyze API of elasticsearch to test the outcome of this analyzer.
 
@@ -159,12 +182,19 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         """
         es = connections.get_connection(using)
         return AttrDict(
-            es.indices.analyze(body=self._get_body(text, explain, attributes))
+            cast(
+                Dict[str, Any],
+                es.indices.analyze(body=self._get_body(text, explain, attributes)),
+            )
         )
 
     async def async_simulate(
-        self, text, using="default", explain=False, attributes=None
-    ):
+        self,
+        text: str,
+        using: Union[str, "AsyncElasticsearch"] = "default",
+        explain: bool = False,
+        attributes: Optional[Dict[str, Any]] = None,
+    ) -> AttrDict[str, Any]:
         """
         Use the Analyze API of elasticsearch to test the outcome of this analyzer.
 
@@ -178,17 +208,22 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
         """
         es = async_connections.get_connection(using)
         return AttrDict(
-            await es.indices.analyze(body=self._get_body(text, explain, attributes))
+            cast(
+                Dict[str, Any],
+                await es.indices.analyze(
+                    body=self._get_body(text, explain, attributes)
+                ),
+            )
         )
 
 
 class Normalizer(AnalysisBase, DslBase):
     _type_name = "normalizer"
-    name = None
+    name = ""
 
 
 class BuiltinNormalizer(BuiltinAnalysis, Normalizer):
-    def get_analysis_definition(self):
+    def get_analysis_definition(self) -> Dict[str, Any]:
         return {}
 
 
@@ -201,7 +236,7 @@ class CustomNormalizer(CustomAnalysisDefinition, Normalizer):
 
 class Tokenizer(AnalysisBase, DslBase):
     _type_name = "tokenizer"
-    name = None
+    name = ""
 
 
 class BuiltinTokenizer(BuiltinAnalysis, Tokenizer):
@@ -214,7 +249,7 @@ class CustomTokenizer(CustomAnalysis, Tokenizer):
 
 class TokenFilter(AnalysisBase, DslBase):
     _type_name = "token_filter"
-    name = None
+    name = ""
 
 
 class BuiltinTokenFilter(BuiltinAnalysis, TokenFilter):
@@ -228,7 +263,7 @@ class CustomTokenFilter(CustomAnalysis, TokenFilter):
 class MultiplexerTokenFilter(CustomTokenFilter):
     name = "multiplexer"
 
-    def get_definition(self):
+    def get_definition(self) -> Dict[str, Any]:
         d = super(CustomTokenFilter, self).get_definition()
 
         if "filters" in d:
@@ -245,11 +280,11 @@ class MultiplexerTokenFilter(CustomTokenFilter):
             ]
         return d
 
-    def get_analysis_definition(self):
+    def get_analysis_definition(self) -> Dict[str, Any]:
         if not hasattr(self, "filters"):
             return {}
 
-        fs = {}
+        fs: Dict[str, Any] = {}
         d = {"filter": fs}
         for filters in self.filters:
             if isinstance(filters, str):
@@ -267,7 +302,7 @@ class MultiplexerTokenFilter(CustomTokenFilter):
 class ConditionalTokenFilter(CustomTokenFilter):
     name = "condition"
 
-    def get_definition(self):
+    def get_definition(self) -> Dict[str, Any]:
         d = super(CustomTokenFilter, self).get_definition()
         if "filter" in d:
             d["filter"] = [
@@ -275,7 +310,7 @@ class ConditionalTokenFilter(CustomTokenFilter):
             ]
         return d
 
-    def get_analysis_definition(self):
+    def get_analysis_definition(self) -> Dict[str, Any]:
         if not hasattr(self, "filter"):
             return {}
 
@@ -290,7 +325,7 @@ class ConditionalTokenFilter(CustomTokenFilter):
 
 class CharFilter(AnalysisBase, DslBase):
     _type_name = "char_filter"
-    name = None
+    name = ""
 
 
 class BuiltinCharFilter(BuiltinAnalysis, CharFilter):

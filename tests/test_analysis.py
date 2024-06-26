@@ -20,13 +20,13 @@ from pytest import raises
 from elasticsearch_dsl import analysis
 
 
-def test_analyzer_serializes_as_name():
+def test_analyzer_serializes_as_name() -> None:
     a = analysis.analyzer("my_analyzer")
 
-    assert "my_analyzer" == a.to_dict()
+    assert "my_analyzer" == a.to_dict()  # type: ignore
 
 
-def test_analyzer_has_definition():
+def test_analyzer_has_definition() -> None:
     a = analysis.CustomAnalyzer(
         "my_analyzer", tokenizer="keyword", filter=["lowercase"]
     )
@@ -38,7 +38,7 @@ def test_analyzer_has_definition():
     } == a.get_definition()
 
 
-def test_simple_multiplexer_filter():
+def test_simple_multiplexer_filter() -> None:
     a = analysis.analyzer(
         "my_analyzer",
         tokenizer="keyword",
@@ -66,7 +66,7 @@ def test_simple_multiplexer_filter():
     } == a.get_analysis_definition()
 
 
-def test_multiplexer_with_custom_filter():
+def test_multiplexer_with_custom_filter() -> None:
     a = analysis.analyzer(
         "my_analyzer",
         tokenizer="keyword",
@@ -97,7 +97,7 @@ def test_multiplexer_with_custom_filter():
     } == a.get_analysis_definition()
 
 
-def test_conditional_token_filter():
+def test_conditional_token_filter() -> None:
     a = analysis.analyzer(
         "my_cond",
         tokenizer=analysis.tokenizer("keyword"),
@@ -134,7 +134,7 @@ def test_conditional_token_filter():
     } == a.get_analysis_definition()
 
 
-def test_conflicting_nested_filters_cause_error():
+def test_conflicting_nested_filters_cause_error() -> None:
     a = analysis.analyzer(
         "my_cond",
         tokenizer=analysis.tokenizer("keyword"),
@@ -156,13 +156,13 @@ def test_conflicting_nested_filters_cause_error():
         a.get_analysis_definition()
 
 
-def test_normalizer_serializes_as_name():
+def test_normalizer_serializes_as_name() -> None:
     n = analysis.normalizer("my_normalizer")
 
-    assert "my_normalizer" == n.to_dict()
+    assert "my_normalizer" == n.to_dict()  # type: ignore
 
 
-def test_normalizer_has_definition():
+def test_normalizer_has_definition() -> None:
     n = analysis.CustomNormalizer(
         "my_normalizer", filter=["lowercase", "asciifolding"], char_filter=["quote"]
     )
@@ -174,14 +174,14 @@ def test_normalizer_has_definition():
     } == n.get_definition()
 
 
-def test_tokenizer():
+def test_tokenizer() -> None:
     t = analysis.tokenizer("trigram", "nGram", min_gram=3, max_gram=3)
 
-    assert t.to_dict() == "trigram"
+    assert t.to_dict() == "trigram"  # type: ignore
     assert {"type": "nGram", "min_gram": 3, "max_gram": 3} == t.get_definition()
 
 
-def test_custom_analyzer_can_collect_custom_items():
+def test_custom_analyzer_can_collect_custom_items() -> None:
     trigram = analysis.tokenizer("trigram", "nGram", min_gram=3, max_gram=3)
     my_stop = analysis.token_filter("my_stop", "stop", stopwords=["a", "b"])
     umlauts = analysis.char_filter("umlauts", "pattern_replace", mappings=["ü=>ue"])
@@ -192,7 +192,7 @@ def test_custom_analyzer_can_collect_custom_items():
         char_filter=["html_strip", umlauts],
     )
 
-    assert a.to_dict() == "my_analyzer"
+    assert a.to_dict() == "my_analyzer"  # type: ignore
     assert {
         "analyzer": {
             "my_analyzer": {
@@ -208,9 +208,9 @@ def test_custom_analyzer_can_collect_custom_items():
     } == a.get_analysis_definition()
 
 
-def test_stemmer_analyzer_can_pass_name():
+def test_stemmer_analyzer_can_pass_name() -> None:
     t = analysis.token_filter(
         "my_english_filter", name="minimal_english", type="stemmer"
     )
-    assert t.to_dict() == "my_english_filter"
+    assert t.to_dict() == "my_english_filter"  # type: ignore
     assert {"type": "stemmer", "name": "minimal_english"} == t.get_definition()

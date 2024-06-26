@@ -15,23 +15,27 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import Any, Dict, Generic, Type, TypeVar, Union
+
 from elasticsearch import Elasticsearch
 
 from .serializer import serializer
 
+_T = TypeVar("_T")
 
-class Connections:
+
+class Connections(Generic[_T]):
     """
     Class responsible for holding connections to different clusters. Used as a
     singleton in this module.
     """
 
-    def __init__(self, *, elasticsearch_class=Elasticsearch):
-        self._kwargs = {}
-        self._conns = {}
-        self.elasticsearch_class = elasticsearch_class
+    def __init__(self, *, elasticsearch_class: Type[_T]):
+        self._kwargs: Dict[str, Any] = {}
+        self._conns: Dict[str, _T] = {}
+        self.elasticsearch_class: Type[_T] = elasticsearch_class
 
-    def configure(self, **kwargs):
+    def configure(self, **kwargs: Any) -> None:
         """
         Configure multiple connections at once, useful for passing in config
         dictionaries obtained from other sources, like Django's settings or a
@@ -54,13 +58,13 @@ class Connections:
             del self._conns[k]
         self._kwargs = kwargs
 
-    def add_connection(self, alias, conn):
+    def add_connection(self, alias: str, conn: _T) -> None:
         """
         Add a connection object, it will be passed through as-is.
         """
         self._conns[alias] = self._with_user_agent(conn)
 
-    def remove_connection(self, alias):
+    def remove_connection(self, alias: str) -> None:
         """
         Remove connection from the registry. Raises ``KeyError`` if connection
         wasn't found.
@@ -75,7 +79,7 @@ class Connections:
         if errors == 2:
             raise KeyError(f"There is no connection with alias {alias!r}.")
 
-    def create_connection(self, alias="default", **kwargs):
+    def create_connection(self, alias: str = "default", **kwargs: Any) -> _T:
         """
         Construct an instance of ``elasticsearch.Elasticsearch`` and register
         it under given alias.
@@ -84,7 +88,7 @@ class Connections:
         conn = self._conns[alias] = self.elasticsearch_class(**kwargs)
         return self._with_user_agent(conn)
 
-    def get_connection(self, alias="default"):
+    def get_connection(self, alias: Union[str, _T] = "default") -> _T:
         """
         Retrieve a connection, construct it if necessary (only configuration
         was passed to us). If a non-string alias has been passed through we
@@ -111,7 +115,7 @@ class Connections:
             # no connection and no kwargs to set one up
             raise KeyError(f"There is no connection with alias {alias!r}.")
 
-    def _with_user_agent(self, conn):
+    def _with_user_agent(self, conn: _T) -> _T:
         from . import __versionstr__  # this is here to avoid circular imports
 
         # try to inject our user agent
@@ -127,7 +131,12 @@ class Connections:
         return conn
 
 
-connections = Connections()
+class ElasticsearchConnections(Connections[Elasticsearch]):
+    def __init__(self, *, elasticsearch_class: Type[Elasticsearch] = Elasticsearch):
+        super().__init__(elasticsearch_class=elasticsearch_class)
+
+
+connections = ElasticsearchConnections()
 configure = connections.configure
 add_connection = connections.add_connection
 remove_connection = connections.remove_connection
