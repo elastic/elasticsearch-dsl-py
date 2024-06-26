@@ -24,7 +24,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
-    Generator,
     Iterable,
     Iterator,
     List,
@@ -237,7 +236,7 @@ class Object(Field):
         d.update(super().to_dict())
         return d
 
-    def _collect_fields(self) -> Generator[Field, None, None]:
+    def _collect_fields(self) -> Iterator[Field]:
         return self._mapping.properties._collect_fields()
 
     def _deserialize(self, data: Any) -> "InnerDoc":

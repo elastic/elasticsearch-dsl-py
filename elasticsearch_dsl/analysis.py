@@ -67,11 +67,10 @@ class CustomAnalysis:
 
 
 class CustomAnalysisDefinition(CustomAnalysis):
-    if TYPE_CHECKING:
-        _type_name: str
-        _param_defs: ClassVar[Dict[str, Any]]
-        filter: List[Any]
-        char_filter: List[Any]
+    _type_name: str
+    _param_defs: ClassVar[Dict[str, Any]]
+    filter: List[Any]
+    char_filter: List[Any]
 
     def get_analysis_definition(self) -> Dict[str, Any]:
         out = {self._type_name: {self._name: self.get_definition()}}

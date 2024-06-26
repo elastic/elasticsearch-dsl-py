@@ -17,7 +17,7 @@
 
 import collections.abc
 from itertools import chain
-from typing import Dict, Generator
+from typing import Dict, Iterator
 
 from .field import Field, Nested, Text, construct_field
 from .utils import DslBase, JSONType
@@ -58,7 +58,7 @@ class Properties(DslBase):
         self.properties[name] = construct_field(*args, **kwargs)
         return self
 
-    def _collect_fields(self) -> Generator[Field, None, None]:
+    def _collect_fields(self) -> Iterator[Field]:
         """Iterate over all Field objects within, including multi fields."""
         for f in self.properties.to_dict().values():
             yield f

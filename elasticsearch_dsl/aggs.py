@@ -108,9 +108,8 @@ class Agg(DslBase):
 
 
 class AggBase:
-    if TYPE_CHECKING:
-        aggs: Dict[str, Agg]
-        _base: Agg
+    aggs: Dict[str, Agg]
+    _base: Agg
     _params: Dict[str, Any]
     _param_defs: ClassVar[Dict[str, Any]] = {
         "aggs": {"type": "agg", "hash": True},
