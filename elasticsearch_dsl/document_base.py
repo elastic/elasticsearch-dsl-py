@@ -25,6 +25,7 @@ from typing import (
     Generic,
     List,
     Optional,
+    Tuple,
     TypeVar,
     Union,
     overload,
@@ -35,11 +36,16 @@ from typing_extensions import dataclass_transform
 from .exceptions import ValidationException
 from .field import Binary, Boolean, Date, Field, Float, Integer, Nested, Object, Text
 from .mapping import Mapping
-from .utils import DOC_META_FIELDS, ObjectBase
+from .utils import DOC_META_FIELDS, JSONType, ObjectBase
+
+if TYPE_CHECKING:
+    from elastic_transport import ObjectApiResponse
+
+    from .index_base import IndexBase
 
 
 class MetaField:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         self.args, self.kwargs = args, kwargs
 
 
@@ -58,44 +64,52 @@ class InstrumentedField:
         s = s.sort(-MyDocument.name)  # sort by name in descending order
     """
 
-    def __init__(self, name, field):
+    def __init__(self, name: str, field: Field):
         self._name = name
         self._field = field
 
-    def __getattr__(self, attr):
+    # note that the return value type here assumes classes will only be used to
+    # access fields (I haven't found a way to make this type dynamic based on a
+    # decision taken at runtime)
+    def __getattr__(self, attr: str) -> "InstrumentedField":
         try:
             # first let's see if this is an attribute of this object
-            return super().__getattribute__(attr)
+            return super().__getattribute__(attr)  # type: ignore
         except AttributeError:
             try:
                 # next we see if we have a sub-field with this name
                 return InstrumentedField(f"{self._name}.{attr}", self._field[attr])
             except KeyError:
                 # lastly we let the wrapped field resolve this attribute
-                return getattr(self._field, attr)
+                return getattr(self._field, attr)  # type: ignore
 
-    def __pos__(self):
+    def __pos__(self) -> str:
         """Return the field name representation for ascending sort order"""
         return f"{self._name}"
 
-    def __neg__(self):
+    def __neg__(self) -> str:
         """Return the field name representation for descending sort order"""
         return f"-{self._name}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"InstrumentedField[{self._name}]"
 
 
 class DocumentMeta(type):
-    def __new__(cls, name, bases, attrs):
+    _doc_type: "DocumentOptions"
+    _index: "IndexBase"
+
+    def __new__(
+        cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any]
+    ) -> "DocumentMeta":
         # DocumentMeta filters attrs in place
         attrs["_doc_type"] = DocumentOptions(name, bases, attrs)
         return super().__new__(cls, name, bases, attrs)
 
-    def __getattr__(cls, attr):
+    def __getattr__(cls, attr: str) -> Any:
         if attr in cls._doc_type.mapping:
             return InstrumentedField(attr, cls._doc_type.mapping[attr])
         return super().__getattribute__(attr)
@@ -112,11 +126,11 @@ class DocumentOptions:
         date: (Date, {"format": "yyyy-MM-dd"}),
     }
 
-    def __init__(self, name, bases, attrs):
+    def __init__(self, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any]):
         meta = attrs.pop("Meta", None)
 
         # create the mapping instance
-        self.mapping = getattr(meta, "mapping", Mapping())
+        self.mapping: Mapping = getattr(meta, "mapping", Mapping())
 
         # register the document's fields, which can be given in a few formats:
         #
@@ -190,8 +204,8 @@ class DocumentOptions:
                         type_ = type_.__args__[0]
                     else:
                         break
-                field_args = []
-                field_kwargs = {}
+                field_args: List[Any] = []
+                field_kwargs: Dict[str, Any] = {}
                 if not isinstance(type_, type):
                     raise TypeError(f"Cannot map type {type_}")
                 elif issubclass(type_, InnerDoc):
@@ -224,7 +238,7 @@ class DocumentOptions:
                 self.mapping.update(b._doc_type.mapping, update_only=True)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.mapping.properties.name
 
 
@@ -252,7 +266,7 @@ class Mapped(Generic[_FieldType]):
     correct ``InstrumentedField`` type.
     """
 
-    __slots__ = {}
+    __slots__: Dict[str, Any] = {}
 
     if TYPE_CHECKING:
 
@@ -263,7 +277,7 @@ class Mapped(Generic[_FieldType]):
         def __get__(self, instance: object, owner: Any) -> _FieldType: ...
 
         def __get__(
-            self, instance: object | None, owner: Any
+            self, instance: Optional[object], owner: Any
         ) -> Union[InstrumentedField, _FieldType]: ...
 
         def __set__(self, instance: Optional[object], value: _FieldType) -> None: ...
@@ -279,8 +293,8 @@ def mapped_field(
     *,
     init: bool = True,
     default: Any = None,
-    default_factory: Callable = None,
-    **kwargs,
+    default_factory: Optional[Callable[[], Any]] = None,
+    **kwargs: Any,
 ) -> Any:
     """Construct a field using dataclass behaviors
 
@@ -315,7 +329,9 @@ class InnerDoc(ObjectBase, metaclass=DocumentMeta):
 
     @classmethod
     def from_es(
-        cls, data: Union[Dict[str, Any], List[Any]], data_only: bool = False
+        cls,
+        data: Union[Dict[str, Any], "ObjectApiResponse[Any]"],
+        data_only: bool = False,
     ) -> "InnerDoc":
         if data_only:
             data = {"_source": data}
@@ -328,30 +344,18 @@ class DocumentBase(ObjectBase):
     """
 
     @classmethod
-    def _matches(cls, hit):
+    def _matches(cls, hit: Dict[str, Any]) -> bool:
         if cls._index._name is None:
             return True
         return fnmatch(hit.get("_index", ""), cls._index._name)
 
     @classmethod
-    def _get_using(cls, using=None):
-        return using or cls._index._using
-
-    @classmethod
-    def _default_index(cls, index=None):
+    def _default_index(cls, index: Optional[str] = None) -> str:
         return index or cls._index._name
 
-    @classmethod
-    def init(cls, index=None, using=None):
-        """
-        Create the index and populate the mappings in elasticsearch.
-        """
-        i = cls._index
-        if index:
-            i = i.clone(name=index)
-        i.save(using=using)
-
-    def _get_index(self, index=None, required=True):
+    def _get_index(
+        self, index: Optional[str] = None, required: bool = True
+    ) -> Optional[str]:
         if index is None:
             index = getattr(self.meta, "index", None)
         if index is None:
@@ -362,7 +366,7 @@ class DocumentBase(ObjectBase):
             raise ValidationException("You cannot write to a wildcard index.")
         return index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{}({})".format(
             self.__class__.__name__,
             ", ".join(
@@ -372,7 +376,7 @@ class DocumentBase(ObjectBase):
             ),
         )
 
-    def to_dict(self, include_meta=False, skip_empty=True):
+    def to_dict(self, include_meta: bool = False, skip_empty: bool = True) -> Dict[str, JSONType]:  # type: ignore[override]
         """
         Serialize the instance into a dictionary so that it can be saved in elasticsearch.
 

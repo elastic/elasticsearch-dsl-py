@@ -15,13 +15,10 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Union, cast
+from typing import Any, ClassVar, Dict, List, Optional, Union, cast
 
 from . import async_connections, connections
-from .utils import AttrDict, DslBase, JSONType, merge
-
-if TYPE_CHECKING:
-    from elasticsearch import AsyncElasticsearch, Elasticsearch
+from .utils import AsyncUsingType, AttrDict, DslBase, JSONType, UsingType, merge
 
 __all__ = ["tokenizer", "analyzer", "char_filter", "token_filter", "normalizer"]
 
@@ -165,10 +162,10 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
     def simulate(
         self,
         text: str,
-        using: Union[str, "Elasticsearch"] = "default",
+        using: UsingType = "default",
         explain: bool = False,
         attributes: Optional[Dict[str, Any]] = None,
-    ) -> AttrDict[str, Any]:
+    ) -> AttrDict[Any]:
         """
         Use the Analyze API of elasticsearch to test the outcome of this analyzer.
 
@@ -191,10 +188,10 @@ class CustomAnalyzer(CustomAnalysisDefinition, Analyzer):
     async def async_simulate(
         self,
         text: str,
-        using: Union[str, "AsyncElasticsearch"] = "default",
+        using: AsyncUsingType = "default",
         explain: bool = False,
         attributes: Optional[Dict[str, Any]] = None,
-    ) -> AttrDict[str, Any]:
+    ) -> AttrDict[Any]:
         """
         Use the Analyze API of elasticsearch to test the outcome of this analyzer.
 

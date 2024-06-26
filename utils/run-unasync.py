@@ -60,6 +60,7 @@ def main(check=False):
         "AsyncUpdateByQuery": "UpdateByQuery",
         "AsyncMapping": "Mapping",
         "AsyncFacetedSearch": "FacetedSearch",
+        "AsyncUsingType": "UsingType",
         "async_connections": "connections",
         "async_scan": "scan",
         "async_simulate": "simulate",

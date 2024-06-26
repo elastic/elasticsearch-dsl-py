@@ -15,61 +15,88 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
-from ..utils import AttrDict, AttrList, _wrap
+from typing_extensions import TypeVar
+
+from ..utils import AttrDict, AttrList, JSONType, _wrap
 from .hit import Hit, HitMeta
 
 if TYPE_CHECKING:
-    from ..search_base import SearchBase
+    from ..aggs import Agg
+    from ..search_base import Request, SearchBase
 
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 
+_R = TypeVar("_R", default=Hit)
 
-class Response(AttrDict):
-    def __init__(self, search, response, doc_class=None):
+
+class Response(AttrDict[JSONType], Generic[_R]):
+    _search: "SearchBase[_R]"
+    _doc_class: Optional[_R]
+    _hits: List[_R]
+
+    def __init__(
+        self,
+        search: "Request[_R]",
+        response: Dict[str, Any],
+        doc_class: Optional[_R] = None,
+    ):
         super(AttrDict, self).__setattr__("_search", search)
         super(AttrDict, self).__setattr__("_doc_class", doc_class)
         super().__init__(response)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[_R]:  # type: ignore[override]
         return iter(self.hits)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[slice, int, str]) -> Any:
         if isinstance(key, (slice, int)):
             # for slicing etc
             return self.hits[key]
         return super().__getitem__(key)
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         return bool(self.hits)
 
     __bool__ = __nonzero__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Response: %r>" % (self.hits or self.aggregations)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.hits)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Tuple[Dict[str, Any], "SearchBase[_R]", Optional[_R]]:  # type: ignore[override]
         return self._d_, self._search, self._doc_class
 
-    def __setstate__(self, state):
+    def __setstate__(
+        self, state: Tuple[Dict[str, Any], "SearchBase[_R]", Optional[_R]]  # type: ignore[override]
+    ) -> None:
         super(AttrDict, self).__setattr__("_d_", state[0])
         super(AttrDict, self).__setattr__("_search", state[1])
         super(AttrDict, self).__setattr__("_doc_class", state[2])
 
-    def success(self):
+    def success(self) -> bool:
         return self._shards.total == self._shards.successful and not self.timed_out
 
     @property
-    def hits(self):
+    def hits(self) -> List[_R]:
         if not hasattr(self, "_hits"):
-            h = self._d_["hits"]
+            h = cast(AttrDict[JSONType], self._d_["hits"])
 
             try:
-                hits = AttrList(map(self._search._get_result, h["hits"]))
+                hits = AttrList(list(map(self._search._get_result, h["hits"])))
             except AttributeError as e:
                 # avoid raising AttributeError since it will be hidden by the property
                 raise TypeError("Could not parse hits.", e)
@@ -81,21 +108,23 @@ class Response(AttrDict):
         return self._hits
 
     @property
-    def aggregations(self):
+    def aggregations(self) -> "AggResponse[_R]":
         return self.aggs
 
     @property
-    def aggs(self):
+    def aggs(self) -> "AggResponse[_R]":
         if not hasattr(self, "_aggs"):
-            aggs = AggResponse(
-                self._search.aggs, self._search, self._d_.get("aggregations", {})
+            aggs = AggResponse[_R](
+                cast("Agg", self._search.aggs),
+                self._search,
+                cast(Dict[str, JSONType], self._d_.get("aggregations", {})),
             )
 
             # avoid assigning _aggs into self._d_
             super(AttrDict, self).__setattr__("_aggs", aggs)
-        return self._aggs
+        return cast("AggResponse[_R]", self._aggs)
 
-    def search_after(self):
+    def search_after(self) -> "SearchBase[_R]":
         """
         Return a ``Search`` instance that retrieves the next page of results.
 
@@ -123,33 +152,42 @@ class Response(AttrDict):
         """
         if len(self.hits) == 0:
             raise ValueError("Cannot use search_after when there are no search results")
-        if not hasattr(self.hits[-1].meta, "sort"):
+        if not hasattr(self.hits[-1].meta, "sort"):  # type: ignore
             raise ValueError("Cannot use search_after when results are not sorted")
-        return self._search.extra(search_after=self.hits[-1].meta.sort)
+        return self._search.extra(search_after=self.hits[-1].meta.sort)  # type: ignore
 
 
-class AggResponse(AttrDict):
-    def __init__(self, aggs, search: "SearchBase", data):
+class AggResponse(AttrDict[JSONType], Generic[_R]):
+    _meta: Dict[str, Any]
+
+    def __init__(
+        self, aggs: "Agg[_R]", search: "SearchBase[_R]", data: Dict[str, JSONType]
+    ):
         super(AttrDict, self).__setattr__("_meta", {"search": search, "aggs": aggs})
         super().__init__(data)
 
-    def __getitem__(self, attr_name):
+    def __getitem__(self, attr_name: str) -> Any:
         if attr_name in self._meta["aggs"]:
             # don't do self._meta['aggs'][attr_name] to avoid copying
             agg = self._meta["aggs"].aggs[attr_name]
             return agg.result(self._meta["search"], self._d_[attr_name])
         return super().__getitem__(attr_name)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator["Agg"]:  # type: ignore[override]
         for name in self._meta["aggs"]:
             yield self[name]
 
 
-class UpdateByQueryResponse(AttrDict):
-    def __init__(self, search, response, doc_class=None):
+class UpdateByQueryResponse(AttrDict[JSONType], Generic[_R]):
+    def __init__(
+        self,
+        search: "SearchBase[_R]",
+        response: Dict[str, Any],
+        doc_class: Optional[_R] = None,
+    ):
         super(AttrDict, self).__setattr__("_search", search)
         super(AttrDict, self).__setattr__("_doc_class", doc_class)
         super().__init__(response)
 
-    def success(self):
+    def success(self) -> bool:
         return not self.timed_out and not self.failures

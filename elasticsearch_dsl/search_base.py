@@ -17,32 +17,55 @@
 
 import collections.abc
 import copy
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+    overload,
+)
 
-from .aggs import A, AggBase
+from typing_extensions import Self, TypeVar
+
+from .aggs import A, Agg, AggBase
 from .exceptions import IllegalOperation
 from .query import Bool, Q, Query
 from .response import Hit, Response
-from .utils import DslBase, recursive_to_dict
+from .utils import AnyUsingType, AttrDict, DslBase, JSONType, recursive_to_dict
+
+if TYPE_CHECKING:
+    from .document_base import InstrumentedField
+    from .field import Field, Object
+
+_R = TypeVar("_R", default=Hit)
 
 
-class QueryProxy:
+class QueryProxy(Generic[_R]):
     """
     Simple proxy around DSL objects (queries) that can be called
     (to add query/post_filter) and also allows attribute access which is proxied to
     the wrapped query.
     """
 
-    def __init__(self, search, attr_name):
+    def __init__(self, search: "SearchBase[_R]", attr_name: str):
         self._search = search
-        self._proxied = None
+        self._proxied: Optional[Query] = None
         self._attr_name = attr_name
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         return self._proxied is not None
 
     __bool__ = __nonzero__
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> "SearchBase[_R]":
         s = self._search._clone()
 
         # we cannot use self._proxied since we just cloned self._search and
@@ -56,23 +79,26 @@ class QueryProxy:
         # always return search to be chainable
         return s
 
-    def __getattr__(self, attr_name):
+    def __getattr__(self, attr_name: str) -> Any:
         return getattr(self._proxied, attr_name)
 
-    def __setattr__(self, attr_name, value):
+    def __setattr__(self, attr_name: str, value: Any) -> None:
         if not attr_name.startswith("_"):
-            self._proxied = Q(self._proxied.to_dict())
-            setattr(self._proxied, attr_name, value)
+            if self._proxied is not None:
+                self._proxied = Q(self._proxied.to_dict())  # type: ignore
+                setattr(self._proxied, attr_name, value)
         super().__setattr__(attr_name, value)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Tuple["SearchBase[_R]", Optional[Query], str]:
         return self._search, self._proxied, self._attr_name
 
-    def __setstate__(self, state):
+    def __setstate__(
+        self, state: Tuple["SearchBase[_R]", Optional[Query], str]
+    ) -> None:
         self._search, self._proxied, self._attr_name = state
 
 
-class ProxyDescriptor:
+class ProxyDescriptor(Generic[_R]):
     """
     Simple descriptor to enable setting of queries and filters as:
 
@@ -81,31 +107,39 @@ class ProxyDescriptor:
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._attr_name = f"_{name}_proxy"
 
-    def __get__(self, instance, owner):
-        return getattr(instance, self._attr_name)
+    def __get__(self, instance: "SearchBase[_R]", owner: object) -> QueryProxy[_R]:
+        return cast(QueryProxy[_R], getattr(instance, self._attr_name))
 
-    def __set__(self, instance, value):
-        proxy = getattr(instance, self._attr_name)
+    def __set__(self, instance: "SearchBase[_R]", value: Dict[str, Any]) -> None:
+        proxy: QueryProxy[_R] = getattr(instance, self._attr_name)
         proxy._proxied = Q(value)
 
 
-class AggsProxy(AggBase, DslBase):
+class AggsProxy(AggBase, DslBase, Generic[_R]):
     name = "aggs"
 
-    def __init__(self, search):
-        self._base = self
+    def __init__(self, search: "SearchBase[_R]"):
+        self._base = cast("Agg", self)
         self._search = search
         self._params = {"aggs": {}}
 
-    def to_dict(self):
-        return super().to_dict().get("aggs", {})
+    def to_dict(self) -> Dict[str, JSONType]:
+        return cast(Dict[str, JSONType], super().to_dict().get("aggs", {}))
 
 
-class Request:
-    def __init__(self, using="default", index=None, doc_type=None, extra=None):
+class Request(Generic[_R]):
+    def __init__(
+        self,
+        using: AnyUsingType = "default",
+        index: Optional[Union[str, List[str]]] = None,
+        doc_type: Optional[
+            Union[type, str, List[Union[type, str]], Dict[str, Union[type, str]]]
+        ] = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ):
         self._using = using
 
         self._index = None
@@ -114,8 +148,8 @@ class Request:
         elif index:
             self._index = [index]
 
-        self._doc_type = []
-        self._doc_type_map = {}
+        self._doc_type: List[Union[type, str]] = []
+        self._doc_type_map: Dict[str, Any] = {}
         if isinstance(doc_type, (tuple, list)):
             self._doc_type.extend(doc_type)
         elif isinstance(doc_type, collections.abc.Mapping):
@@ -124,10 +158,10 @@ class Request:
         elif doc_type:
             self._doc_type.append(doc_type)
 
-        self._params = {}
-        self._extra = extra or {}
+        self._params: Dict[str, Any] = {}
+        self._extra: Dict[str, Any] = extra or {}
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, Request)
             and other._params == self._params
@@ -136,10 +170,10 @@ class Request:
             and other.to_dict() == self.to_dict()
         )
 
-    def __copy__(self):
+    def __copy__(self) -> Self:
         return self._clone()
 
-    def params(self, **kwargs):
+    def params(self, **kwargs: Any) -> Self:
         """
         Specify query params to be used when executing the search. All the
         keyword arguments will override the current values. See
@@ -155,7 +189,7 @@ class Request:
         s._params.update(kwargs)
         return s
 
-    def index(self, *index):
+    def index(self, *index: str) -> Self:
         """
         Set the index for the search. If called empty it will remove all information.
 
@@ -183,15 +217,18 @@ class Request:
 
         return s
 
-    def _resolve_field(self, path):
+    def _resolve_field(self, path: str) -> Optional["Field"]:
         for dt in self._doc_type:
             if not hasattr(dt, "_index"):
                 continue
             field = dt._index.resolve_field(path)
             if field is not None:
-                return field
+                return cast("Field", field)
+        return None
 
-    def _resolve_nested(self, hit, parent_class=None):
+    def _resolve_nested(
+        self, hit: AttrDict[JSONType], parent_class: Optional[type] = None
+    ) -> Type[_R]:
         doc_class = Hit
 
         nested_path = []
@@ -199,20 +236,27 @@ class Request:
         while nesting and "field" in nesting:
             nested_path.append(nesting["field"])
             nesting = nesting.get("_nested")
-        nested_path = ".".join(nested_path)
+        nested_path_str = ".".join(nested_path)
 
-        if hasattr(parent_class, "_index"):
-            nested_field = parent_class._index.resolve_field(nested_path)
+        nested_field: Optional["Object"]
+        if parent_class is not None and hasattr(parent_class, "_index"):
+            nested_field = cast(
+                Optional["Object"], parent_class._index.resolve_field(nested_path_str)
+            )
         else:
-            nested_field = self._resolve_field(nested_path)
+            nested_field = cast(
+                Optional["Object"], self._resolve_field(nested_path_str)
+            )
 
         if nested_field is not None:
-            return nested_field._doc_class
+            return cast(Type[_R], nested_field._doc_class)
 
-        return doc_class
+        return cast(Type[_R], doc_class)
 
-    def _get_result(self, hit, parent_class=None):
-        doc_class = Hit
+    def _get_result(
+        self, hit: AttrDict[JSONType], parent_class: Optional[type] = None
+    ) -> _R:
+        doc_class: Any = Hit
         dt = hit.get("_type")
 
         if "_nested" in hit:
@@ -228,14 +272,16 @@ class Request:
                     break
 
         for t in hit.get("inner_hits", ()):
-            hit["inner_hits"][t] = Response(
+            hit["inner_hits"][t] = Response[_R](
                 self, hit["inner_hits"][t], doc_class=doc_class
             )
 
         callback = getattr(doc_class, "from_es", doc_class)
-        return callback(hit)
+        return cast(_R, callback(hit))
 
-    def doc_type(self, *doc_type, **kwargs):
+    def doc_type(
+        self, *doc_type: Union[type, str], **kwargs: Callable[[AttrDict[JSONType]], Any]
+    ) -> Self:
         """
         Set the type to search through. You can supply a single value or
         multiple. Values can be strings or subclasses of ``Document``.
@@ -261,7 +307,7 @@ class Request:
             s._doc_type_map.update(kwargs)
         return s
 
-    def using(self, client):
+    def using(self, client: AnyUsingType) -> Self:
         """
         Associate the search request with an elasticsearch client. A fresh copy
         will be returned with current instance remaining unchanged.
@@ -274,7 +320,7 @@ class Request:
         s._using = client
         return s
 
-    def extra(self, **kwargs):
+    def extra(self, **kwargs: Any) -> Self:
         """
         Add extra keys to the request body. Mostly here for backwards
         compatibility.
@@ -285,7 +331,7 @@ class Request:
         s._extra.update(kwargs)
         return s
 
-    def _clone(self):
+    def _clone(self) -> Self:
         s = self.__class__(
             using=self._using, index=self._index, doc_type=self._doc_type
         )
@@ -294,12 +340,21 @@ class Request:
         s._params = self._params.copy()
         return s
 
+    if TYPE_CHECKING:
 
-class SearchBase(Request):
-    query = ProxyDescriptor("query")
-    post_filter = ProxyDescriptor("post_filter")
+        def to_dict(self) -> Dict[str, JSONType]: ...
 
-    def __init__(self, **kwargs):
+
+class SearchBase(Request[_R]):
+    if TYPE_CHECKING:
+
+        def count(self) -> int: ...
+
+    query = ProxyDescriptor[_R]("query")
+    post_filter = ProxyDescriptor[_R]("post_filter")
+    _response: Response[_R]
+
+    def __init__(self, **kwargs: Any):
         """
         Search request to elasticsearch.
 
@@ -313,27 +368,27 @@ class SearchBase(Request):
         super().__init__(**kwargs)
 
         self.aggs = AggsProxy(self)
-        self._sort = []
-        self._knn = []
-        self._rank = {}
-        self._collapse = {}
-        self._source = None
-        self._highlight = {}
-        self._highlight_opts = {}
-        self._suggest = {}
-        self._script_fields = {}
-        self._response_class = Response
+        self._sort: List[Union[str, Dict[str, Dict[str, str]]]] = []
+        self._knn: List[Dict[str, JSONType]] = []
+        self._rank: Dict[str, JSONType] = {}
+        self._collapse: Dict[str, JSONType] = {}
+        self._source: Optional[Union[bool, List[str], Dict[str, List[str]]]] = None
+        self._highlight: Dict[str, JSONType] = {}
+        self._highlight_opts: Dict[str, JSONType] = {}
+        self._suggest: Dict[str, JSONType] = {}
+        self._script_fields: Dict[str, JSONType] = {}
+        self._response_class = Response[_R]
 
         self._query_proxy = QueryProxy(self, "query")
         self._post_filter_proxy = QueryProxy(self, "post_filter")
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args: Any, **kwargs: Any) -> "SearchBase[_R]":
         return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
-    def exclude(self, *args, **kwargs):
+    def exclude(self, *args: Any, **kwargs: Any) -> "SearchBase[_R]":
         return self.query(Bool(filter=[~Q(*args, **kwargs)]))
 
-    def __getitem__(self, n):
+    def __getitem__(self, n: Union[int, slice]) -> Self:
         """
         Support slicing the `Search` instance for pagination.
 
@@ -382,7 +437,7 @@ class SearchBase(Request):
         return s
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d: Dict[str, Any]) -> "SearchBase[_R]":
         """
         Construct a new `Search` instance from a raw dict containing the search
         body. Useful when migrating from raw dictionaries.
@@ -403,7 +458,7 @@ class SearchBase(Request):
         s.update_from_dict(d)
         return s
 
-    def _clone(self):
+    def _clone(self) -> Self:
         """
         Return a clone of the current search request. Performs a shallow copy
         of all the underlying objects. Used internally by most state modifying
@@ -429,7 +484,7 @@ class SearchBase(Request):
             s.aggs._params = {"aggs": self.aggs._params["aggs"].copy()}
         return s
 
-    def response_class(self, cls):
+    def response_class(self, cls: Type[Response[_R]]) -> Self:
         """
         Override the default wrapper used for the response.
         """
@@ -437,7 +492,7 @@ class SearchBase(Request):
         s._response_class = cls
         return s
 
-    def update_from_dict(self, d):
+    def update_from_dict(self, d: Dict[str, Any]) -> Self:
         """
         Apply options from a serialized body to the current instance. Modifies
         the object in-place. Used mostly by ``from_dict``.
@@ -474,13 +529,13 @@ class SearchBase(Request):
             if "text" in self._suggest:
                 text = self._suggest.pop("text")
                 for s in self._suggest.values():
-                    s.setdefault("text", text)
+                    s.setdefault("text", text)  # type: ignore[union-attr]
         if "script_fields" in d:
             self._script_fields = d.pop("script_fields")
         self._extra.update(d)
         return self
 
-    def script_fields(self, **kwargs):
+    def script_fields(self, **kwargs: Any) -> Self:
         """
         Define script fields to be calculated on hits. See
         https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-script-fields.html
@@ -510,16 +565,16 @@ class SearchBase(Request):
 
     def knn(
         self,
-        field,
-        k,
-        num_candidates,
-        query_vector=None,
-        query_vector_builder=None,
-        boost=None,
-        filter=None,
-        similarity=None,
-        inner_hits=None,
-    ):
+        field: Union[str, "InstrumentedField"],
+        k: int,
+        num_candidates: int,
+        query_vector: Optional[List[float]] = None,
+        query_vector_builder: Optional[Dict[str, JSONType]] = None,
+        boost: Optional[float] = None,
+        filter: Optional[Query] = None,
+        similarity: Optional[float] = None,
+        inner_hits: Optional[Dict[str, JSONType]] = None,
+    ) -> Self:
         """
         Add a k-nearest neighbor (kNN) search.
 
@@ -554,7 +609,7 @@ class SearchBase(Request):
                 "only one of query_vector and query_vector_builder must be given"
             )
         if query_vector is not None:
-            s._knn[-1]["query_vector"] = query_vector
+            s._knn[-1]["query_vector"] = cast(JSONType, query_vector)
         if query_vector_builder is not None:
             s._knn[-1]["query_vector_builder"] = query_vector_builder
         if boost is not None:
@@ -570,7 +625,7 @@ class SearchBase(Request):
             s._knn[-1]["inner_hits"] = inner_hits
         return s
 
-    def rank(self, rrf=None):
+    def rank(self, rrf: Optional[Union[bool, Dict[str, JSONType]]] = None) -> Self:
         """
         Defines a method for combining and ranking results sets from a combination
         of searches. Requires a minimum of 2 results sets.
@@ -592,7 +647,19 @@ class SearchBase(Request):
             s._rank["rrf"] = {} if rrf is True else rrf
         return s
 
-    def source(self, fields=None, **kwargs):
+    def source(
+        self,
+        fields: Optional[
+            Union[
+                bool,
+                str,
+                "InstrumentedField",
+                List[Union[str, "InstrumentedField"]],
+                Dict[str, List[Union[str, "InstrumentedField"]]],
+            ]
+        ] = None,
+        **kwargs: Any,
+    ) -> Self:
         """
         Selectively control how the _source field is returned.
 
@@ -623,7 +690,30 @@ class SearchBase(Request):
         if fields and kwargs:
             raise ValueError("You cannot specify fields and kwargs at the same time.")
 
-        def ensure_strings(fields):
+        @overload
+        def ensure_strings(fields: str) -> str: ...
+
+        @overload
+        def ensure_strings(fields: "InstrumentedField") -> str: ...
+
+        @overload
+        def ensure_strings(
+            fields: List[Union[str, "InstrumentedField"]]
+        ) -> List[str]: ...
+
+        @overload
+        def ensure_strings(
+            fields: Dict[str, List[Union[str, "InstrumentedField"]]]
+        ) -> Dict[str, List[str]]: ...
+
+        def ensure_strings(
+            fields: Union[
+                str,
+                "InstrumentedField",
+                List[Union[str, "InstrumentedField"]],
+                Dict[str, List[Union[str, "InstrumentedField"]]],
+            ]
+        ) -> Union[str, List[str], Dict[str, List[str]]]:
             if isinstance(fields, list):
                 return [str(f) for f in fields]
             elif isinstance(fields, dict):
@@ -632,24 +722,27 @@ class SearchBase(Request):
                 return str(fields)
 
         if fields is not None:
-            s._source = fields if isinstance(fields, bool) else ensure_strings(fields)
+            s._source = fields if isinstance(fields, bool) else ensure_strings(fields)  # type: ignore[assignment]
             return s
 
         if kwargs and not isinstance(s._source, dict):
             s._source = {}
 
-        for key, value in kwargs.items():
-            if value is None:
-                try:
-                    del s._source[key]
-                except KeyError:
-                    pass
-            else:
-                s._source[key] = ensure_strings(value)
+        if isinstance(s._source, dict):
+            for key, value in kwargs.items():
+                if value is None:
+                    try:
+                        del s._source[key]
+                    except KeyError:
+                        pass
+                else:
+                    s._source[key] = ensure_strings(value)
 
         return s
 
-    def sort(self, *keys):
+    def sort(
+        self, *keys: Union[str, "InstrumentedField", Dict[str, Dict[str, str]]]
+    ) -> Self:
         """
         Add sorting information to the search request. If called without
         arguments it will remove all sort requirements. Otherwise it will
@@ -675,15 +768,24 @@ class SearchBase(Request):
         s = self._clone()
         s._sort = []
         for k in keys:
-            sort_field = str(k)
-            if sort_field.startswith("-"):
-                if sort_field[1:] == "_score":
-                    raise IllegalOperation("Sorting by `-_score` is not allowed.")
-                sort_field = {sort_field[1:]: {"order": "desc"}}
-            s._sort.append(sort_field)
+            if not isinstance(k, dict):
+                sort_field = str(k)
+                if sort_field.startswith("-"):
+                    if sort_field[1:] == "_score":
+                        raise IllegalOperation("Sorting by `-_score` is not allowed.")
+                    s._sort.append({sort_field[1:]: {"order": "desc"}})
+                else:
+                    s._sort.append(sort_field)
+            else:
+                s._sort.append(k)
         return s
 
-    def collapse(self, field=None, inner_hits=None, max_concurrent_group_searches=None):
+    def collapse(
+        self,
+        field: Optional[Union[str, "InstrumentedField"]] = None,
+        inner_hits: Optional[Dict[str, JSONType]] = None,
+        max_concurrent_group_searches: Optional[int] = None,
+    ) -> Self:
         """
         Add collapsing information to the search request.
         If called without providing ``field``, it will remove all collapse
@@ -704,7 +806,7 @@ class SearchBase(Request):
             s._collapse["max_concurrent_group_searches"] = max_concurrent_group_searches
         return s
 
-    def highlight_options(self, **kwargs):
+    def highlight_options(self, **kwargs: Any) -> Self:
         """
         Update the global highlighting options used for this request. For
         example::
@@ -716,7 +818,9 @@ class SearchBase(Request):
         s._highlight_opts.update(kwargs)
         return s
 
-    def highlight(self, *fields, **kwargs):
+    def highlight(
+        self, *fields: Union[str, "InstrumentedField"], **kwargs: Any
+    ) -> "SearchBase[_R]":
         """
         Request highlighting of some fields. All keyword arguments passed in will be
         used as parameters for all the fields in the ``fields`` parameter. Example::
@@ -756,7 +860,13 @@ class SearchBase(Request):
             s._highlight[str(f)] = kwargs
         return s
 
-    def suggest(self, name, text=None, regex=None, **kwargs):
+    def suggest(
+        self,
+        name: str,
+        text: Optional[str] = None,
+        regex: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Self:
         """
         Add a suggestions request to the search.
 
@@ -784,14 +894,15 @@ class SearchBase(Request):
         s = self._clone()
         if regex:
             s._suggest[name] = {"regex": regex}
-        elif "completion" in kwargs:
-            s._suggest[name] = {"prefix": text}
-        else:
-            s._suggest[name] = {"text": text}
-        s._suggest[name].update(kwargs)
+        elif text:
+            if "completion" in kwargs:
+                s._suggest[name] = {"prefix": text}
+            else:
+                s._suggest[name] = {"text": text}
+        s._suggest[name].update(kwargs)  # type: ignore[union-attr]
         return s
 
-    def search_after(self):
+    def search_after(self) -> "SearchBase[_R]":
         """
         Return a ``Search`` instance that retrieves the next page of results.
 
@@ -821,7 +932,7 @@ class SearchBase(Request):
             raise ValueError("A search must be executed before using search_after")
         return self._response.search_after()
 
-    def to_dict(self, count=False, **kwargs):
+    def to_dict(self, count: bool = False, **kwargs: Any) -> Dict[str, JSONType]:
         """
         Serialize the search into the dictionary that will be sent over as the
         request's body.
@@ -878,28 +989,28 @@ class SearchBase(Request):
         return d
 
 
-class MultiSearchBase(Request):
+class MultiSearchBase(Request[_R]):
     """
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self._searches = []
+        self._searches: List[SearchBase[_R]] = []
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, slice]) -> Any:
         return self._searches[key]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[SearchBase[_R]]:
         return iter(self._searches)
 
-    def _clone(self):
+    def _clone(self) -> Self:
         ms = super()._clone()
         ms._searches = self._searches[:]
         return ms
 
-    def add(self, search):
+    def add(self, search: SearchBase[_R]) -> Self:
         """
         Adds a new :class:`~elasticsearch_dsl.Search` object to the request::
 
@@ -911,12 +1022,12 @@ class MultiSearchBase(Request):
         ms._searches.append(search)
         return ms
 
-    def to_dict(self):
-        out = []
+    def to_dict(self) -> List[Dict[str, JSONType]]:  # type: ignore[override]
+        out: List[Dict[str, JSONType]] = []
         for s in self._searches:
-            meta = {}
+            meta: Dict[str, JSONType] = {}
             if s._index:
-                meta["index"] = s._index
+                meta["index"] = cast(JSONType, s._index)
             meta.update(s._params)
 
             out.append(meta)

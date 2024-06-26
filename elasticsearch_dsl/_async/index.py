@@ -15,12 +15,20 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING, Any, Optional
+
+from typing_extensions import Self
+
 from ..async_connections import get_connection
 from ..exceptions import IllegalOperation
 from ..index_base import IndexBase
+from ..utils import AsyncUsingType
 from .mapping import AsyncMapping
 from .search import AsyncSearch
 from .update_by_query import AsyncUpdateByQuery
+
+if TYPE_CHECKING:
+    from elastic_transport import ObjectApiResponse
 
 
 class AsyncIndexTemplate:
@@ -56,7 +64,7 @@ class AsyncIndexTemplate:
 
 
 class AsyncIndex(IndexBase):
-    def __init__(self, name, using="default"):
+    def __init__(self, name: str, using: AsyncUsingType = "default"):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
@@ -83,7 +91,9 @@ class AsyncIndex(IndexBase):
             self._name, using=using or self._using
         )
 
-    def clone(self, name=None, using=None):
+    def clone(
+        self, name: Optional[str] = None, using: Optional[AsyncUsingType] = None
+    ) -> Self:
         """
         Create a copy of the instance with another name or connection alias.
         Useful for creating multiple indices with shared configuration::
@@ -148,7 +158,7 @@ class AsyncIndex(IndexBase):
         )
         return state["metadata"]["indices"][self._name]["state"] == "close"
 
-    async def save(self, using=None):
+    async def save(self, using: Optional[AsyncUsingType] = None):
         """
         Sync the index definition with elasticsearch, creating the index if it
         doesn't exist and updating its settings and mappings if it does.
@@ -267,7 +277,9 @@ class AsyncIndex(IndexBase):
             index=self._name, **kwargs
         )
 
-    async def delete(self, using=None, **kwargs):
+    async def delete(
+        self, using: Optional[AsyncUsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Deletes the index in elasticsearch.
 
@@ -278,15 +290,17 @@ class AsyncIndex(IndexBase):
             index=self._name, **kwargs
         )
 
-    async def exists(self, using=None, **kwargs):
+    async def exists(
+        self, using: Optional[AsyncUsingType] = None, **kwargs: Any
+    ) -> bool:
         """
         Returns ``True`` if the index already exists in elasticsearch.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.exists`` unchanged.
         """
-        return await self._get_connection(using).indices.exists(
-            index=self._name, **kwargs
+        return bool(
+            await self._get_connection(using).indices.exists(index=self._name, **kwargs)
         )
 
     async def exists_type(self, using=None, **kwargs):
