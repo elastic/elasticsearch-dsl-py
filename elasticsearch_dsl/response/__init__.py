@@ -15,8 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING
+
 from ..utils import AttrDict, AttrList, _wrap
 from .hit import Hit, HitMeta
+
+if TYPE_CHECKING:
+    from ..search_base import SearchBase
 
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 
@@ -124,7 +129,7 @@ class Response(AttrDict):
 
 
 class AggResponse(AttrDict):
-    def __init__(self, aggs, search, data):
+    def __init__(self, aggs, search: "SearchBase", data):
         super(AttrDict, self).__setattr__("_meta", {"search": search, "aggs": aggs})
         super().__init__(data)
 

@@ -16,12 +16,32 @@
 #  under the License.
 
 import collections.abc
+from copy import deepcopy
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Dict,
+    Iterable,
+    MutableMapping,
+    Optional,
+    Union,
+    cast,
+)
 
 from .response.aggs import AggResponse, BucketData, FieldBucketData, TopHitsData
-from .utils import DslBase
+from .utils import AttrDict, DslBase, JSONType
+
+if TYPE_CHECKING:
+    from .query import Query
+    from .search_base import SearchBase
 
 
-def A(name_or_agg, filter=None, **params):
+def A(
+    name_or_agg: Union[MutableMapping[str, Any], "Agg", str],
+    filter: Optional[Union[str, "Query"]] = None,
+    **params: Any,
+) -> "Agg":
     if filter is not None:
         if name_or_agg != "filter":
             raise ValueError(
@@ -31,11 +51,11 @@ def A(name_or_agg, filter=None, **params):
         params["filter"] = filter
 
     # {"terms": {"field": "tags"}, "aggs": {...}}
-    if isinstance(name_or_agg, collections.abc.Mapping):
+    if isinstance(name_or_agg, collections.abc.MutableMapping):
         if params:
             raise ValueError("A() cannot accept parameters when passing in a dict.")
         # copy to avoid modifying in-place
-        agg = name_or_agg.copy()
+        agg = deepcopy(name_or_agg)
         # pop out nested aggs
         aggs = agg.pop("aggs", None)
         # pop out meta data
@@ -70,48 +90,57 @@ def A(name_or_agg, filter=None, **params):
 class Agg(DslBase):
     _type_name = "agg"
     _type_shortcut = staticmethod(A)
-    name = None
+    name = ""
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return False
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
-        if "meta" in d[self.name]:
-            d["meta"] = d[self.name].pop("meta")
+        if isinstance(d[self.name], dict):
+            n = cast(Dict[str, JSONType], d[self.name])
+            if "meta" in n:
+                d["meta"] = n.pop("meta")
         return d
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return AggResponse(self, search, data)
 
 
 class AggBase:
-    _param_defs = {
+    aggs: Dict[str, Agg]
+    _base: Agg
+    _params: Dict[str, Any]
+    _param_defs: ClassVar[Dict[str, Any]] = {
         "aggs": {"type": "agg", "hash": True},
     }
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self._params.get("aggs", {})
 
-    def __getitem__(self, agg_name):
-        agg = self._params.setdefault("aggs", {})[agg_name]  # propagate KeyError
+    def __getitem__(self, agg_name: str) -> Agg:
+        agg = cast(
+            Agg, self._params.setdefault("aggs", {})[agg_name]
+        )  # propagate KeyError
 
         # make sure we're not mutating a shared state - whenever accessing a
         # bucket, return a shallow copy of it to be safe
         if isinstance(agg, Bucket):
-            agg = A(agg.name, **agg._params)
+            agg = A(agg.name, filter=None, **agg._params)
             # be sure to store the copy so any modifications to it will affect us
             self._params["aggs"][agg_name] = agg
 
         return agg
 
-    def __setitem__(self, agg_name, agg):
+    def __setitem__(self, agg_name: str, agg: Agg) -> None:
         self.aggs[agg_name] = A(agg)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[str]:
         return iter(self.aggs)
 
-    def _agg(self, bucket, name, agg_type, *args, **params):
+    def _agg(
+        self, bucket: bool, name: str, agg_type: str, *args: Any, **params: Any
+    ) -> Agg:
         agg = self[name] = A(agg_type, *args, **params)
 
         # For chaining - when creating new buckets return them...
@@ -121,29 +150,31 @@ class AggBase:
         else:
             return self._base
 
-    def metric(self, name, agg_type, *args, **params):
+    def metric(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg:
         return self._agg(False, name, agg_type, *args, **params)
 
-    def bucket(self, name, agg_type, *args, **params):
+    def bucket(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg:
         return self._agg(True, name, agg_type, *args, **params)
 
-    def pipeline(self, name, agg_type, *args, **params):
+    def pipeline(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg:
         return self._agg(False, name, agg_type, *args, **params)
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return BucketData(self, search, data)
 
 
 class Bucket(AggBase, Agg):
-    def __init__(self, **params):
+    def __init__(self, **params: Any):
         super().__init__(**params)
         # remember self for chaining
         self._base = self
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super(AggBase, self).to_dict()
-        if "aggs" in d[self.name]:
-            d["aggs"] = d[self.name].pop("aggs")
+        if isinstance(d[self.name], dict):
+            n = cast(AttrDict[str, Any], d[self.name])
+            if "aggs" in n:
+                d["aggs"] = n.pop("aggs")
         return d
 
 
@@ -154,14 +185,16 @@ class Filter(Bucket):
         "aggs": {"type": "agg", "hash": True},
     }
 
-    def __init__(self, filter=None, **params):
+    def __init__(self, filter: Optional[Union[str, "Query"]] = None, **params: Any):
         if filter is not None:
             params["filter"] = filter
         super().__init__(**params)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
-        d[self.name].update(d[self.name].pop("filter", {}))
+        if isinstance(d[self.name], dict):
+            n = cast(AttrDict[str, Any], d[self.name])
+            n.update(n.pop("filter", {}))
         return d
 
 
@@ -189,7 +222,7 @@ class Parent(Bucket):
 class DateHistogram(Bucket):
     name = "date_histogram"
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return FieldBucketData(self, search, data)
 
 
@@ -232,7 +265,7 @@ class Global(Bucket):
 class Histogram(Bucket):
     name = "histogram"
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return FieldBucketData(self, search, data)
 
 
@@ -259,7 +292,7 @@ class Range(Bucket):
 class RareTerms(Bucket):
     name = "rare_terms"
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return FieldBucketData(self, search, data)
 
 
@@ -278,7 +311,7 @@ class SignificantText(Bucket):
 class Terms(Bucket):
     name = "terms"
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return FieldBucketData(self, search, data)
 
 
@@ -305,7 +338,7 @@ class Composite(Bucket):
 class VariableWidthHistogram(Bucket):
     name = "variable_width_histogram"
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return FieldBucketData(self, search, data)
 
 
@@ -321,7 +354,7 @@ class CategorizeText(Bucket):
 class TopHits(Agg):
     name = "top_hits"
 
-    def result(self, search, data):
+    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
         return TopHitsData(self, search, data)
 
 

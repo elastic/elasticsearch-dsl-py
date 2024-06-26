@@ -46,6 +46,8 @@ develop_requires = [
     "pytest-asyncio",
     "pytz",
     "coverage",
+    # typing support
+    "types-python-dateutil",
     # the following three are used by the vectors example and its tests
     "nltk",
     "sentence_transformers",

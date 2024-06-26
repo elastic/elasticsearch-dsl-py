@@ -15,6 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import Any, List
+
 from elasticsearch import Elasticsearch
 from pytest import raises
 
@@ -22,12 +24,12 @@ from elasticsearch_dsl import connections, serializer
 
 
 class DummyElasticsearch:
-    def __init__(self, *args, hosts, **kwargs):
+    def __init__(self, *args: Any, hosts: List[str], **kwargs: Any):
         self.hosts = hosts
 
 
-def test_default_connection_is_returned_by_default():
-    c = connections.Connections()
+def test_default_connection_is_returned_by_default() -> None:
+    c = connections.Connections[object](elasticsearch_class=object)
 
     con, con2 = object(), object()
     c.add_connection("default", con)
@@ -37,8 +39,10 @@ def test_default_connection_is_returned_by_default():
     assert c.get_connection() is con
 
 
-def test_get_connection_created_connection_if_needed():
-    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
+def test_get_connection_created_connection_if_needed() -> None:
+    c = connections.Connections[DummyElasticsearch](
+        elasticsearch_class=DummyElasticsearch
+    )
     c.configure(
         default={"hosts": ["https://es.com:9200"]},
         local={"hosts": ["https://localhost:9200"]},
@@ -54,8 +58,10 @@ def test_get_connection_created_connection_if_needed():
     assert local.hosts == ["https://localhost:9200"]
 
 
-def test_configure_preserves_unchanged_connections():
-    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
+def test_configure_preserves_unchanged_connections() -> None:
+    c = connections.Connections[DummyElasticsearch](
+        elasticsearch_class=DummyElasticsearch
+    )
 
     c.configure(
         default={"hosts": ["https://es.com:9200"]},
@@ -75,8 +81,8 @@ def test_configure_preserves_unchanged_connections():
     assert new_default is not default
 
 
-def test_remove_connection_removes_both_conn_and_conf():
-    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
+def test_remove_connection_removes_both_conn_and_conf() -> None:
+    c = connections.Connections[object](elasticsearch_class=DummyElasticsearch)
 
     c.configure(
         default={"hosts": ["https://es.com:9200"]},
@@ -93,24 +99,26 @@ def test_remove_connection_removes_both_conn_and_conf():
         c.get_connection("default")
 
 
-def test_create_connection_constructs_client():
-    c = connections.Connections(elasticsearch_class=DummyElasticsearch)
+def test_create_connection_constructs_client() -> None:
+    c = connections.Connections[DummyElasticsearch](
+        elasticsearch_class=DummyElasticsearch
+    )
     c.create_connection("testing", hosts=["https://es.com:9200"])
 
     con = c.get_connection("testing")
     assert con.hosts == ["https://es.com:9200"]
 
 
-def test_create_connection_adds_our_serializer():
-    c = connections.Connections(elasticsearch_class=Elasticsearch)
+def test_create_connection_adds_our_serializer() -> None:
+    c = connections.Connections[Elasticsearch](elasticsearch_class=Elasticsearch)
     c.create_connection("testing", hosts=["https://es.com:9200"])
 
     c_serializers = c.get_connection("testing").transport.serializers
     assert c_serializers.serializers["application/json"] is serializer.serializer
 
 
-def test_connection_has_correct_user_agent():
-    c = connections.Connections(elasticsearch_class=Elasticsearch)
+def test_connection_has_correct_user_agent() -> None:
+    c = connections.Connections[Elasticsearch](elasticsearch_class=Elasticsearch)
 
     c.create_connection("testing", hosts=["https://es.com:9200"])
     assert (
@@ -132,4 +140,4 @@ def test_connection_has_correct_user_agent():
     )
 
     not_a_client = object()
-    assert c.get_connection(not_a_client) == not_a_client
+    assert c.get_connection(not_a_client) == not_a_client  # type: ignore[arg-type]
