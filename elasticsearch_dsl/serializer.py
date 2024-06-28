@@ -15,13 +15,15 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import Any
+
 from elasticsearch.serializer import JSONSerializer
 
 from .utils import AttrList
 
 
 class AttrJSONSerializer(JSONSerializer):
-    def default(self, data):
+    def default(self, data: Any) -> Any:
         if isinstance(data, AttrList):
             return data._l_
         if hasattr(data, "to_dict"):

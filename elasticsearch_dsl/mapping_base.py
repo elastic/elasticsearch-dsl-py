@@ -17,7 +17,9 @@
 
 import collections.abc
 from itertools import chain
-from typing import Dict, Iterator
+from typing import Any, Dict, Iterator
+
+from typing_extensions import Self
 
 from .field import Field, Nested, Text, construct_field
 from .utils import DslBase, JSONType
@@ -84,7 +86,7 @@ class Properties(DslBase):
 
 
 class MappingBase:
-    def __init__(self):
+    def __init__(self) -> None:
         self.properties = Properties()
         self._meta = {}
 
@@ -184,11 +186,11 @@ class MappingBase:
     def __iter__(self):
         return iter(self.properties.properties)
 
-    def field(self, *args, **kwargs):
+    def field(self, *args: Any, **kwargs: Any) -> Self:
         self.properties.field(*args, **kwargs)
         return self
 
-    def meta(self, name, params=None, **kwargs):
+    def meta(self, name: str, params: Any = None, **kwargs: Any):
         if not name.startswith("_") and name not in META_FIELDS:
             name = "_" + name
 

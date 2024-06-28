@@ -26,7 +26,6 @@ from typing import (
     Dict,
     Iterable,
     Iterator,
-    List,
     Optional,
     Tuple,
     Type,
@@ -111,7 +110,7 @@ class Field(DslBase):
         self._required = required
         super().__init__(*args, **kwargs)
 
-    def __getitem__(self, subfield: str) -> Optional["Field"]:
+    def __getitem__(self, subfield: str) -> "Field":
         return cast(Field, self._params.get("fields", {})[subfield])
 
     def _serialize(self, data: Any) -> Any:
@@ -199,7 +198,7 @@ class Object(Field):
                 "doc_class and properties/dynamic should not be provided together"
             )
         if doc_class:
-            self._doc_class = doc_class
+            self._doc_class: Type["InnerDoc"] = doc_class
         else:
             # FIXME import
             from .document import InnerDoc
@@ -223,7 +222,7 @@ class Object(Field):
     def _empty(self) -> "InnerDoc":
         return self._wrap({})
 
-    def _wrap(self, data: Union[Dict[str, Any], List[Any]]) -> "InnerDoc":
+    def _wrap(self, data: Dict[str, Any]) -> "InnerDoc":
         return self._doc_class.from_es(data, data_only=True)
 
     def empty(self) -> Union["InnerDoc", AttrList]:

@@ -16,42 +16,43 @@
 #  under the License.
 
 import pickle
+from typing import Any, Dict, Tuple
 
 from pytest import raises
 
 from elasticsearch_dsl import Q, serializer, utils
 
 
-def test_attrdict_pickle():
-    ad = utils.AttrDict({})
+def test_attrdict_pickle() -> None:
+    ad: utils.AttrDict[str] = utils.AttrDict({})
 
     pickled_ad = pickle.dumps(ad)
     assert ad == pickle.loads(pickled_ad)
 
 
-def test_attrlist_pickle():
+def test_attrlist_pickle() -> None:
     al = utils.AttrList([])
 
     pickled_al = pickle.dumps(al)
     assert al == pickle.loads(pickled_al)
 
 
-def test_attrlist_slice():
-    class MyAttrDict(utils.AttrDict):
+def test_attrlist_slice() -> None:
+    class MyAttrDict(utils.AttrDict[str]):
         pass
 
     l = utils.AttrList([{}, {}], obj_wrapper=MyAttrDict)
     assert isinstance(l[:][0], MyAttrDict)
 
 
-def test_attrdict_keys_items():
+def test_attrdict_keys_items() -> None:
     a = utils.AttrDict({"a": {"b": 42, "c": 47}, "d": "e"})
     assert list(a.keys()) == ["a", "d"]
     assert list(a.items()) == [("a", {"b": 42, "c": 47}), ("d", "e")]
 
 
-def test_merge():
-    a = utils.AttrDict({"a": {"b": 42, "c": 47}})
+def test_merge() -> None:
+    a: utils.AttrDict[Any] = utils.AttrDict({"a": {"b": 42, "c": 47}})
     b = {"a": {"b": 123, "d": -12}, "e": [1, 2, 3]}
 
     utils.merge(a, b)
@@ -59,25 +60,26 @@ def test_merge():
     assert a == {"a": {"b": 123, "c": 47, "d": -12}, "e": [1, 2, 3]}
 
 
-def test_merge_conflict():
-    for d in (
+def test_merge_conflict() -> None:
+    data: Tuple[Dict[str, Any], ...] = (
         {"a": 42},
         {"a": {"b": 47}},
-    ):
+    )
+    for d in data:
         utils.merge({"a": {"b": 42}}, d)
         with raises(ValueError):
             utils.merge({"a": {"b": 42}}, d, True)
 
 
-def test_attrdict_bool():
-    d = utils.AttrDict({})
+def test_attrdict_bool() -> None:
+    d: utils.AttrDict[str] = utils.AttrDict({})
 
     assert not d
     d.title = "Title"
     assert d
 
 
-def test_attrlist_items_get_wrapped_during_iteration():
+def test_attrlist_items_get_wrapped_during_iteration() -> None:
     al = utils.AttrList([1, object(), [1], {}])
 
     l = list(iter(al))
@@ -86,7 +88,7 @@ def test_attrlist_items_get_wrapped_during_iteration():
     assert isinstance(l[3], utils.AttrDict)
 
 
-def test_serializer_deals_with_Attr_versions():
+def test_serializer_deals_with_Attr_versions() -> None:
     d = utils.AttrDict({"key": utils.AttrList([1, 2, 3])})
 
     assert serializer.serializer.dumps(d) == serializer.serializer.dumps(
@@ -94,21 +96,21 @@ def test_serializer_deals_with_Attr_versions():
     )
 
 
-def test_serializer_deals_with_objects_with_to_dict():
+def test_serializer_deals_with_objects_with_to_dict() -> None:
     class MyClass:
-        def to_dict(self):
+        def to_dict(self) -> int:
             return 42
 
     assert serializer.serializer.dumps(MyClass()) == b"42"
 
 
-def test_recursive_to_dict():
+def test_recursive_to_dict() -> None:
     assert utils.recursive_to_dict({"k": [1, (1.0, {"v": Q("match", key="val")})]}) == {
         "k": [1, (1.0, {"v": {"match": {"key": "val"}}})]
     }
 
 
-def test_attrlist_to_list():
+def test_attrlist_to_list() -> None:
     l = utils.AttrList([{}, {}]).to_list()
     assert isinstance(l, list)
     assert l == [{}, {}]

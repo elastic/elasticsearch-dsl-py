@@ -16,28 +16,32 @@
 #  under the License.
 
 import contextlib
+from typing import AsyncIterator, Generic
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import async_scan
+from typing_extensions import TypeVar
 
 from ..async_connections import get_connection
-from ..response import Response
+from ..response import Hit, Response
 from ..search_base import MultiSearchBase, SearchBase
 from ..utils import AttrDict
 
+_R = TypeVar("_R", default=Hit)
 
-class AsyncSearch(SearchBase):
-    def __aiter__(self):
+
+class AsyncSearch(SearchBase[_R]):
+    def __aiter__(self) -> AsyncIterator[_R]:
         """
         Iterate over the hits.
         """
 
-        class ResultsIterator:
-            def __init__(self, search):
+        class ResultsIterator(Generic[_R]):
+            def __init__(self, search: AsyncSearch[_R]):
                 self.search = search
                 self.iterator = None
 
-            async def __anext__(self):
+            async def __anext__(self) -> _R:
                 if self.iterator is None:
                     self.iterator = iter(await self.search.execute())
                 try:
@@ -64,7 +68,7 @@ class AsyncSearch(SearchBase):
         )
         return resp["count"]
 
-    async def execute(self, ignore_cache=False):
+    async def execute(self, ignore_cache: bool = False) -> Response[_R]:
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.

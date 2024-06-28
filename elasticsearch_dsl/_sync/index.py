@@ -15,12 +15,20 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING, Any, Optional
+
+from typing_extensions import Self
+
 from ..connections import get_connection
 from ..exceptions import IllegalOperation
 from ..index_base import IndexBase
+from ..utils import UsingType
 from .mapping import Mapping
 from .search import Search
 from .update_by_query import UpdateByQuery
+
+if TYPE_CHECKING:
+    from elastic_transport import ObjectApiResponse
 
 
 class IndexTemplate:
@@ -54,7 +62,7 @@ class IndexTemplate:
 
 
 class Index(IndexBase):
-    def __init__(self, name, using="default"):
+    def __init__(self, name: str, using: UsingType = "default"):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
@@ -81,7 +89,9 @@ class Index(IndexBase):
             self._name, using=using or self._using
         )
 
-    def clone(self, name=None, using=None):
+    def clone(
+        self, name: Optional[str] = None, using: Optional[UsingType] = None
+    ) -> Self:
         """
         Create a copy of the instance with another name or connection alias.
         Useful for creating multiple indices with shared configuration::
@@ -146,7 +156,7 @@ class Index(IndexBase):
         )
         return state["metadata"]["indices"][self._name]["state"] == "close"
 
-    def save(self, using=None):
+    def save(self, using: Optional[UsingType] = None):
         """
         Sync the index definition with elasticsearch, creating the index if it
         doesn't exist and updating its settings and mappings if it does.
@@ -255,7 +265,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.close(index=self._name, **kwargs)
 
-    def delete(self, using=None, **kwargs):
+    def delete(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Deletes the index in elasticsearch.
 
@@ -264,14 +276,16 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.delete(index=self._name, **kwargs)
 
-    def exists(self, using=None, **kwargs):
+    def exists(self, using: Optional[UsingType] = None, **kwargs: Any) -> bool:
         """
         Returns ``True`` if the index already exists in elasticsearch.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.exists`` unchanged.
         """
-        return self._get_connection(using).indices.exists(index=self._name, **kwargs)
+        return bool(
+            self._get_connection(using).indices.exists(index=self._name, **kwargs)
+        )
 
     def exists_type(self, using=None, **kwargs):
         """

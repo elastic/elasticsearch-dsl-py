@@ -19,36 +19,44 @@
 import collections.abc
 from copy import copy
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     ClassVar,
     Dict,
     Generic,
     Iterable,
+    Iterator,
     List,
     Optional,
+    Tuple,
     Type,
     TypeVar,
     Union,
+    cast,
 )
 
 from typing_extensions import Self, TypeAlias
 
 from .exceptions import UnknownDslObject, ValidationException
 
-# Usefull types
+if TYPE_CHECKING:
+    from elastic_transport import ObjectApiResponse
+    from elasticsearch import AsyncElasticsearch, Elasticsearch
+
+    from .document_base import DocumentOptions
+    from .field import Field
+    from .index_base import IndexBase
+
+UsingType: TypeAlias = Union[str, "Elasticsearch"]
+AsyncUsingType: TypeAlias = Union[str, "AsyncElasticsearch"]
+AnyUsingType: TypeAlias = Union[str, "Elasticsearch", "AsyncElasticsearch"]
 
 JSONType: TypeAlias = Union[
     int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
 ]
 
-
-# Type variables for internals
-
-_KeyT = TypeVar("_KeyT")
 _ValT = TypeVar("_ValT")
-
-# Constants
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
@@ -73,8 +81,8 @@ META_FIELDS = frozenset(
 ).union(DOC_META_FIELDS)
 
 
-def _wrap(val: Any, obj_wrapper: Callable[[Any], Any] = None) -> Any:
-    if isinstance(val, collections.abc.Mapping):
+def _wrap(val: Any, obj_wrapper: Optional[Callable[[Any], Any]] = None) -> Any:
+    if isinstance(val, dict):
         return AttrDict(val) if obj_wrapper is None else obj_wrapper(val)
     if isinstance(val, list):
         return AttrList(val)
@@ -82,26 +90,28 @@ def _wrap(val: Any, obj_wrapper: Callable[[Any], Any] = None) -> Any:
 
 
 class AttrList:
-    def __init__(self, l: List[Any], obj_wrapper: Callable[[Any], Any] = None):
+    def __init__(
+        self, l: List[Any], obj_wrapper: Optional[Callable[[Any], Any]] = None
+    ):
         # make iterables into lists
         if not isinstance(l, list):
             l = list(l)
         self._l_ = l
         self._obj_wrapper = obj_wrapper
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self._l_)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, AttrList):
             return other._l_ == self._l_
         # make sure we still equal to a dict with the same data
-        return other == self._l_
+        return bool(other == self._l_)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self == other
 
-    def __getitem__(self, k) -> Any:
+    def __getitem__(self, k: Union[int, slice]) -> Any:
         l = self._l_[k]
         if isinstance(k, slice):
             return AttrList(l, obj_wrapper=self._obj_wrapper)
@@ -110,77 +120,79 @@ class AttrList:
     def __setitem__(self, k: int, value: Any) -> None:
         self._l_[k] = value
 
-    def __iter__(self) -> Iterable[Any]:
+    def __iter__(self) -> Iterator[Any]:
         return map(lambda i: _wrap(i, self._obj_wrapper), self._l_)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._l_)
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         return bool(self._l_)
 
     __bool__ = __nonzero__
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         return getattr(self._l_, name)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Tuple[List[Any], Optional[Callable[[Any], Any]]]:
         return self._l_, self._obj_wrapper
 
-    def __setstate__(self, state):
+    def __setstate__(
+        self, state: Tuple[List[Any], Optional[Callable[[Any], Any]]]
+    ) -> None:
         self._l_, self._obj_wrapper = state
 
-    def to_list(self):
+    def to_list(self) -> List[Any]:
         return self._l_
 
 
-class AttrDict(Generic[_KeyT, _ValT]):
+class AttrDict(Generic[_ValT]):
     """
     Helper class to provide attribute like access (read and write) to
     dictionaries. Used to provide a convenient way to access both results and
     nested dsl dicts.
     """
 
-    _d_: Dict[_KeyT, _ValT]
+    _d_: Dict[str, _ValT]
 
-    def __init__(self, d: Dict[_KeyT, _ValT]):
+    def __init__(self, d: Dict[str, _ValT]):
         # assign the inner dict manually to prevent __setattr__ from firing
         super().__setattr__("_d_", d)
 
     def __contains__(self, key: object) -> bool:
         return key in self._d_
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         return bool(self._d_)
 
     __bool__ = __nonzero__
 
-    def __dir__(self):
+    def __dir__(self) -> List[str]:
         # introspection for auto-complete in IPython etc
         return list(self._d_.keys())
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, AttrDict):
             return other._d_ == self._d_
         # make sure we still equal to a dict with the same data
-        return other == self._d_
+        return bool(other == self._d_)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self == other
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         r = repr(self._d_)
         if len(r) > 60:
             r = r[:60] + "...}"
         return r
 
-    def __getstate__(self):
+    def __getstate__(self) -> Tuple[Dict[str, _ValT]]:
         return (self._d_,)
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Tuple[Dict[str, _ValT]]) -> None:
         super().__setattr__("_d_", state[0])
 
-    def __getattr__(self, attr_name):
+    def __getattr__(self, attr_name: str) -> Any:
         try:
             return self.__getitem__(attr_name)
         except KeyError:
@@ -188,7 +200,7 @@ class AttrDict(Generic[_KeyT, _ValT]):
                 f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
-    def __delattr__(self, attr_name):
+    def __delattr__(self, attr_name: str) -> None:
         try:
             del self._d_[attr_name]
         except KeyError:
@@ -196,32 +208,32 @@ class AttrDict(Generic[_KeyT, _ValT]):
                 f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return _wrap(self._d_[key])
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: _ValT) -> None:
         self._d_[key] = value
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self._d_[key]
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: _ValT) -> None:
         if name in self._d_ or not hasattr(self.__class__, name):
             self._d_[name] = value
         else:
             # there is an attribute on the class (could be property, ..) - don't add it as field
             super().__setattr__(name, value)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self._d_)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, _ValT]:
         return self._d_
 
-    def keys(self):
+    def keys(self) -> Iterable[str]:
         return self._d_.keys()
 
-    def items(self):
+    def items(self) -> Iterable[Tuple[str, _ValT]]:
         return self._d_.items()
 
 
@@ -238,9 +250,12 @@ class DslMeta(type):
     For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
     """
 
+    name: str
+    _classes: Dict[str, type]
+    _type_name: str
     _types: ClassVar[Dict[str, Type["DslBase"]]] = {}
 
-    def __init__(cls, name, bases, attrs):
+    def __init__(cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any]):
         super().__init__(name, bases, attrs)
         # skip for DslBase
         if not hasattr(cls, "_type_shortcut"):
@@ -256,7 +271,7 @@ class DslMeta(type):
             cls._classes[cls.name] = cls
 
     @classmethod
-    def get_dsl_type(cls, name):
+    def get_dsl_type(cls, name: str) -> Type["DslBase"]:
         try:
             return cls._types[name]
         except KeyError:
@@ -279,7 +294,7 @@ class DslBase(metaclass=DslMeta):
           all values in the `must` attribute into Query objects)
     """
 
-    _type_name: ClassVar[str]
+    # _type_name: ClassVar[str]
     _param_defs: ClassVar[Dict[str, Dict[str, Union[str, bool]]]] = {}
 
     @classmethod
@@ -304,7 +319,7 @@ class DslBase(metaclass=DslMeta):
                 pname = pname.replace("__", ".")
             self._setattr(pname, pvalue)
 
-    def _repr_params(self):
+    def _repr_params(self) -> str:
         """Produce a repr of all our parameters to be used in __repr__."""
         return ", ".join(
             f"{n.replace('.', '__')}={v!r}"
@@ -313,28 +328,28 @@ class DslBase(metaclass=DslMeta):
             if "type" not in self._param_defs.get(n, {}) or v
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self._repr_params()})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and other.to_dict() == self.to_dict()
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self == other
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         if name.startswith("_"):
             return super().__setattr__(name, value)
         return self._setattr(name, value)
 
-    def _setattr(self, name, value):
+    def _setattr(self, name: str, value: Any) -> None:
         # if this attribute has special type assigned to it...
         if name in self._param_defs:
             pinfo = self._param_defs[name]
 
             if "type" in pinfo:
                 # get the shortcut used to construct this type (query.Q, aggs.A, etc)
-                shortcut = self.__class__.get_dsl_type(pinfo["type"])
+                shortcut = self.__class__.get_dsl_type(str(pinfo["type"]))
 
                 # list of dict(name -> DslBase)
                 if pinfo.get("multi") and pinfo.get("hash"):
@@ -357,7 +372,7 @@ class DslBase(metaclass=DslMeta):
                     value = shortcut(value)
         self._params[name] = value
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         if name.startswith("_"):
             raise AttributeError(
                 f"{self.__class__.__name__!r} object has no attribute {name!r}"
@@ -381,7 +396,7 @@ class DslBase(metaclass=DslMeta):
             )
 
         # wrap nested dicts in AttrDict for convenient access
-        if isinstance(value, collections.abc.Mapping):
+        if isinstance(value, dict):
             return AttrDict(value)
         return value
 
@@ -431,8 +446,12 @@ class DslBase(metaclass=DslMeta):
         return c
 
 
-class HitMeta(AttrDict):
-    def __init__(self, document, exclude=("_source", "_fields")):
+class HitMeta(AttrDict[JSONType]):
+    def __init__(
+        self,
+        document: Dict[str, Any],
+        exclude: Tuple[str, ...] = ("_source", "_fields"),
+    ):
         d = {
             k[1:] if k.startswith("_") else k: v
             for (k, v) in document.items()
@@ -444,8 +463,12 @@ class HitMeta(AttrDict):
         super().__init__(d)
 
 
-class ObjectBase(AttrDict):
-    def __init__(self, meta=None, **kwargs):
+class ObjectBase(AttrDict[JSONType]):
+    _doc_type: "DocumentOptions"
+    _index: "IndexBase"
+    meta: HitMeta
+
+    def __init__(self, meta: Optional[Dict[str, Any]] = None, **kwargs: Any):
         meta = meta or {}
         for k in list(kwargs):
             if k.startswith("_") and k[1:] in META_FIELDS:
@@ -465,7 +488,7 @@ class ObjectBase(AttrDict):
         super().__init__(kwargs)
 
     @classmethod
-    def __list_fields(cls):
+    def __list_fields(cls) -> Iterator[Tuple[str, "Field", bool]]:
         """
         Get all the fields defined for our class, if we have an Index, try
         looking at the index mappings as well, mark the fields from Index as
@@ -486,7 +509,7 @@ class ObjectBase(AttrDict):
                 yield name, field, True
 
     @classmethod
-    def __get_field(cls, name):
+    def __get_field(cls, name: str) -> Optional["Field"]:
         try:
             return cls._doc_type.mapping[name]
         except KeyError:
@@ -496,37 +519,38 @@ class ObjectBase(AttrDict):
                     return cls._index._mapping[name]
                 except KeyError:
                     pass
+            return None
 
     @classmethod
-    def from_es(cls, hit):
+    def from_es(cls, hit: Union[Dict[str, Any], "ObjectApiResponse[Any]"]) -> Self:
         meta = hit.copy()
         data = meta.pop("_source", {})
         doc = cls(meta=meta)
         doc._from_dict(data)
         return doc
 
-    def _from_dict(self, data):
+    def _from_dict(self, data: Dict[str, Any]) -> None:
         for k, v in data.items():
             f = self.__get_field(k)
             if f and f._coerce:
                 v = f.deserialize(v)
             setattr(self, k, v)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Tuple[Dict[str, JSONType], Dict[str, JSONType]]:  # type: ignore[override]
         return self.to_dict(), self.meta._d_
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Tuple[Dict[str, JSONType], Dict[str, JSONType]]) -> None:  # type: ignore[override]
         data, meta = state
         super(AttrDict, self).__setattr__("_d_", {})
         super(AttrDict, self).__setattr__("meta", HitMeta(meta))
         self._from_dict(data)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         try:
             return super().__getattr__(name)
         except AttributeError:
             f = self.__get_field(name)
-            if hasattr(f, "empty"):
+            if f is not None and hasattr(f, "empty"):
                 value = f.empty()
                 if value not in SKIP_VALUES:
                     setattr(self, name, value)
@@ -534,13 +558,13 @@ class ObjectBase(AttrDict):
                 return value
             raise
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         if name in self.__class__._doc_type.mapping:
             self._d_[name] = value
         else:
             super().__setattr__(name, value)
 
-    def to_dict(self, skip_empty=True) -> Dict[str, JSONType]:
+    def to_dict(self, skip_empty: bool = True) -> Dict[str, JSONType]:
         out = {}
         for k, v in self._d_.items():
             # if this is a mapped field,
@@ -561,8 +585,8 @@ class ObjectBase(AttrDict):
             out[k] = v
         return out
 
-    def clean_fields(self):
-        errors = {}
+    def clean_fields(self, validate: bool = True) -> None:
+        errors: Dict[str, List[ValidationException]] = {}
         for name, field, optional in self.__list_fields():
             data = self._d_.get(name, None)
             if data is None and optional:
@@ -574,22 +598,25 @@ class ObjectBase(AttrDict):
                 errors.setdefault(name, []).append(e)
 
             if name in self._d_ or data not in ([], {}, None):
-                self._d_[name] = data
+                self._d_[name] = cast(JSONType, data)
 
-        if errors:
+        if validate and errors:
             raise ValidationException(errors)
 
     def clean(self) -> None:
         pass
 
     def full_clean(self) -> None:
-        self.clean_fields()
+        self.clean_fields(validate=False)
         self.clean()
+        self.clean_fields(validate=True)
 
 
 def merge(
-    data: Dict[str, Any], new_data: Dict[str, Any], raise_on_conflict: bool = False
-):
+    data: Union[Dict[str, Any], AttrDict[Any]],
+    new_data: Union[Dict[str, Any], AttrDict[Any]],
+    raise_on_conflict: bool = False,
+) -> None:
     if not (
         isinstance(data, (AttrDict, collections.abc.Mapping))
         and isinstance(new_data, (AttrDict, collections.abc.Mapping))
@@ -604,14 +631,14 @@ def merge(
             and isinstance(data[key], (AttrDict, collections.abc.Mapping))
             and isinstance(value, (AttrDict, collections.abc.Mapping))
         ):
-            merge(data[key], value, raise_on_conflict)
+            merge(data[key], value, raise_on_conflict)  # type: ignore
         elif key in data and data[key] != value and raise_on_conflict:
             raise ValueError(f"Incompatible data for key {key!r}, cannot be merged.")
         else:
             data[key] = value
 
 
-def recursive_to_dict(data):
+def recursive_to_dict(data: Any) -> Any:
     """Recursively transform objects that potentially have .to_dict()
     into dictionary literals by traversing AttrList, AttrDict, list,
     tuple, and Mapping types.
@@ -622,6 +649,6 @@ def recursive_to_dict(data):
         data = data.to_dict()
     if isinstance(data, (list, tuple)):
         return type(data)(recursive_to_dict(inner) for inner in data)
-    elif isinstance(data, collections.abc.Mapping):
+    elif isinstance(data, dict):
         return {key: recursive_to_dict(val) for key, val in data.items()}
     return data

@@ -15,8 +15,17 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING, Any, Optional
+
+from typing_extensions import Self
+
 from . import analysis
 from .utils import merge
+
+if TYPE_CHECKING:
+    from .document_base import DocumentMeta
+    from .field import Field
+    from .mapping_base import MappingBase
 
 
 class IndexBase:
@@ -32,7 +41,7 @@ class IndexBase:
         self._aliases = {}
         self._analysis = {}
         self._mapping_class = mapping_class
-        self._mapping = None
+        self._mapping: Optional["MappingBase"] = None
 
     def resolve_nested(self, field_path):
         for doc in self._doc_types:
@@ -43,7 +52,7 @@ class IndexBase:
             return self._mapping.resolve_nested(field_path)
         return (), None
 
-    def resolve_field(self, field_path):
+    def resolve_field(self, field_path: str) -> Optional["Field"]:
         for doc in self._doc_types:
             field = doc._doc_type.mapping.resolve_field(field_path)
             if field is not None:
@@ -66,7 +75,7 @@ class IndexBase:
         """
         self.get_or_create_mapping().update(mapping)
 
-    def document(self, document):
+    def document(self, document: "DocumentMeta") -> "DocumentMeta":
         """
         Associate a :class:`~elasticsearch_dsl.Document` subclass with an index.
         This means that, when this index is created, it will contain the
@@ -97,7 +106,7 @@ class IndexBase:
 
         return document
 
-    def settings(self, **kwargs):
+    def settings(self, **kwargs: Any) -> Self:
         """
         Add settings to the index::
 
@@ -110,7 +119,7 @@ class IndexBase:
         self._settings.update(kwargs)
         return self
 
-    def aliases(self, **kwargs):
+    def aliases(self, **kwargs: Any) -> Self:
         """
         Add aliases to the index definition::
 
@@ -120,7 +129,7 @@ class IndexBase:
         self._aliases.update(kwargs)
         return self
 
-    def analyzer(self, *args, **kwargs):
+    def analyzer(self, *args: Any, **kwargs: Any) -> None:
         """
         Explicitly add an analyzer to an index. Note that all custom analyzers
         defined in mappings will also be created. This is useful for search analyzers.
