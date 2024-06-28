@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from typing_extensions import Self
 
@@ -29,10 +29,18 @@ from .update_by_query import UpdateByQuery
 
 if TYPE_CHECKING:
     from elastic_transport import ObjectApiResponse
+    from elasticsearch import Elasticsearch
 
 
 class IndexTemplate:
-    def __init__(self, name, template, index=None, order=None, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        template: str,
+        index: Optional["Index"] = None,
+        order: Optional[str] = None,
+        **kwargs: Any,
+    ):
         if index is None:
             self._index = Index(template, **kwargs)
         else:
@@ -46,22 +54,28 @@ class IndexTemplate:
         self._template_name = name
         self.order = order
 
-    def __getattr__(self, attr_name):
+    def __getattr__(self, attr_name: str) -> Any:
         return getattr(self._index, attr_name)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         d = self._index.to_dict()
         d["index_patterns"] = [self._index._name]
         if self.order is not None:
             d["order"] = self.order
         return d
 
-    def save(self, using=None):
+    def save(self, using: Optional[UsingType] = None) -> "ObjectApiResponse[Any]":
         es = get_connection(using or self._index._using)
         return es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 
 class Index(IndexBase):
+    _using: UsingType
+
+    if TYPE_CHECKING:
+
+        def get_or_create_mapping(self) -> Mapping: ...
+
     def __init__(self, name: str, using: UsingType = "default"):
         """
         :arg name: name of the index
@@ -69,14 +83,19 @@ class Index(IndexBase):
         """
         super().__init__(name, Mapping, using=using)
 
-    def _get_connection(self, using=None):
+    def _get_connection(self, using: Optional[UsingType] = None) -> "Elasticsearch":
         if self._name is None:
             raise ValueError("You cannot perform API calls on the default index.")
         return get_connection(using or self._using)
 
     connection = property(_get_connection)
 
-    def as_template(self, template_name, pattern=None, order=None):
+    def as_template(
+        self,
+        template_name: str,
+        pattern: Optional[str] = None,
+        order: Optional[str] = None,
+    ) -> IndexTemplate:
         # TODO: should we allow pattern to be a top-level arg?
         # or maybe have an IndexPattern that allows for it and have
         # Document._index be that?
@@ -84,7 +103,7 @@ class Index(IndexBase):
             template_name, pattern or self._name, index=self, order=order
         )
 
-    def load_mappings(self, using=None):
+    def load_mappings(self, using: Optional[UsingType] = None) -> None:
         self.get_or_create_mapping().update_from_es(
             self._name, using=using or self._using
         )
@@ -106,7 +125,7 @@ class Index(IndexBase):
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
-        i = Index(name or self._name, using=using or self._using)
+        i = self.__class__(name or self._name, using=using or self._using)
         i._settings = self._settings.copy()
         i._aliases = self._aliases.copy()
         i._analysis = self._analysis.copy()
@@ -115,7 +134,7 @@ class Index(IndexBase):
             i._mapping = self._mapping._clone()
         return i
 
-    def search(self, using=None):
+    def search(self, using: Optional[UsingType] = None) -> Search:
         """
         Return a :class:`~elasticsearch_dsl.Search` object searching over the
         index (or all the indices belonging to this template) and its
@@ -125,7 +144,7 @@ class Index(IndexBase):
             using=using or self._using, index=self._name, doc_type=self._doc_types
         )
 
-    def updateByQuery(self, using=None):
+    def updateByQuery(self, using: Optional[UsingType] = None) -> UpdateByQuery:
         """
         Return a :class:`~elasticsearch_dsl.UpdateByQuery` object searching over the index
         (or all the indices belonging to this template) and updating Documents that match
@@ -139,24 +158,24 @@ class Index(IndexBase):
             index=self._name,
         )
 
-    def create(self, using=None, **kwargs):
+    def create(self, using: Optional[UsingType] = None, **kwargs: Any) -> None:
         """
         Creates the index in elasticsearch.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
-        return self._get_connection(using).indices.create(
+        self._get_connection(using).indices.create(
             index=self._name, body=self.to_dict(), **kwargs
         )
 
-    def is_closed(self, using=None):
+    def is_closed(self, using: Optional[UsingType] = None) -> bool:
         state = self._get_connection(using).cluster.state(
             index=self._name, metric="metadata"
         )
-        return state["metadata"]["indices"][self._name]["state"] == "close"
+        return bool(state["metadata"]["indices"][self._name]["state"] == "close")
 
-    def save(self, using: Optional[UsingType] = None):
+    def save(self, using: Optional[UsingType] = None) -> None:
         """
         Sync the index definition with elasticsearch, creating the index if it
         doesn't exist and updating its settings and mappings if it does.
@@ -210,7 +229,9 @@ class Index(IndexBase):
         if mappings:
             self.put_mapping(using=using, body=mappings)
 
-    def analyze(self, using=None, **kwargs):
+    def analyze(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Perform the analysis process on a text and return the tokens breakdown
         of the text.
@@ -220,7 +241,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.analyze(index=self._name, **kwargs)
 
-    def refresh(self, using=None, **kwargs):
+    def refresh(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Performs a refresh operation on the index.
 
@@ -229,7 +252,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.refresh(index=self._name, **kwargs)
 
-    def flush(self, using=None, **kwargs):
+    def flush(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Performs a flush operation on the index.
 
@@ -238,7 +263,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.flush(index=self._name, **kwargs)
 
-    def get(self, using=None, **kwargs):
+    def get(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         The get index API allows to retrieve information about the index.
 
@@ -247,7 +274,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.get(index=self._name, **kwargs)
 
-    def open(self, using=None, **kwargs):
+    def open(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Opens the index in elasticsearch.
 
@@ -256,7 +285,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.open(index=self._name, **kwargs)
 
-    def close(self, using=None, **kwargs):
+    def close(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Closes the index in elasticsearch.
 
@@ -287,18 +318,9 @@ class Index(IndexBase):
             self._get_connection(using).indices.exists(index=self._name, **kwargs)
         )
 
-    def exists_type(self, using=None, **kwargs):
-        """
-        Check if a type/types exists in the index.
-
-        Any additional keyword arguments will be passed to
-        ``Elasticsearch.indices.exists_type`` unchanged.
-        """
-        return self._get_connection(using).indices.exists_type(
-            index=self._name, **kwargs
-        )
-
-    def put_mapping(self, using=None, **kwargs):
+    def put_mapping(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Register specific mapping definition for a specific type.
 
@@ -309,7 +331,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def get_mapping(self, using=None, **kwargs):
+    def get_mapping(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Retrieve specific mapping definition for a specific type.
 
@@ -320,7 +344,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def get_field_mapping(self, using=None, **kwargs):
+    def get_field_mapping(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Retrieve mapping definition of a specific field.
 
@@ -331,7 +357,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def put_alias(self, using=None, **kwargs):
+    def put_alias(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Create an alias for the index.
 
@@ -340,18 +368,20 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.put_alias(index=self._name, **kwargs)
 
-    def exists_alias(self, using=None, **kwargs):
+    def exists_alias(self, using: Optional[UsingType] = None, **kwargs: Any) -> bool:
         """
         Return a boolean indicating whether given alias exists for this index.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.exists_alias`` unchanged.
         """
-        return self._get_connection(using).indices.exists_alias(
-            index=self._name, **kwargs
+        return bool(
+            self._get_connection(using).indices.exists_alias(index=self._name, **kwargs)
         )
 
-    def get_alias(self, using=None, **kwargs):
+    def get_alias(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Retrieve a specified alias.
 
@@ -360,7 +390,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.get_alias(index=self._name, **kwargs)
 
-    def delete_alias(self, using=None, **kwargs):
+    def delete_alias(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Delete specific alias.
 
@@ -371,7 +403,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def get_settings(self, using=None, **kwargs):
+    def get_settings(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Retrieve settings for the index.
 
@@ -382,7 +416,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def put_settings(self, using=None, **kwargs):
+    def put_settings(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Change specific index level settings in real time.
 
@@ -393,7 +429,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def stats(self, using=None, **kwargs):
+    def stats(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Retrieve statistics on different operations happening on the index.
 
@@ -402,7 +440,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.stats(index=self._name, **kwargs)
 
-    def segments(self, using=None, **kwargs):
+    def segments(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Provide low level segments information that a Lucene index (shard
         level) is built with.
@@ -412,7 +452,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.segments(index=self._name, **kwargs)
 
-    def validate_query(self, using=None, **kwargs):
+    def validate_query(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Validate a potentially expensive query without executing it.
 
@@ -423,7 +465,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def clear_cache(self, using=None, **kwargs):
+    def clear_cache(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Clear all caches or specific cached associated with the index.
 
@@ -434,7 +478,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def recovery(self, using=None, **kwargs):
+    def recovery(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         The indices recovery API provides insight into on-going shard
         recoveries for the index.
@@ -444,39 +490,9 @@ class Index(IndexBase):
         """
         return self._get_connection(using).indices.recovery(index=self._name, **kwargs)
 
-    def upgrade(self, using=None, **kwargs):
-        """
-        Upgrade the index to the latest format.
-
-        Any additional keyword arguments will be passed to
-        ``Elasticsearch.indices.upgrade`` unchanged.
-        """
-        return self._get_connection(using).indices.upgrade(index=self._name, **kwargs)
-
-    def get_upgrade(self, using=None, **kwargs):
-        """
-        Monitor how much of the index is upgraded.
-
-        Any additional keyword arguments will be passed to
-        ``Elasticsearch.indices.get_upgrade`` unchanged.
-        """
-        return self._get_connection(using).indices.get_upgrade(
-            index=self._name, **kwargs
-        )
-
-    def flush_synced(self, using=None, **kwargs):
-        """
-        Perform a normal flush, then add a generated unique marker (sync_id) to
-        all shards.
-
-        Any additional keyword arguments will be passed to
-        ``Elasticsearch.indices.flush_synced`` unchanged.
-        """
-        return self._get_connection(using).indices.flush_synced(
-            index=self._name, **kwargs
-        )
-
-    def shard_stores(self, using=None, **kwargs):
+    def shard_stores(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         Provides store information for shard copies of the index. Store
         information reports on which nodes shard copies exist, the shard copy
@@ -490,7 +506,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def forcemerge(self, using=None, **kwargs):
+    def forcemerge(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         The force merge API allows to force merging of the index through an
         API. The merge relates to the number of segments a Lucene index holds
@@ -508,7 +526,9 @@ class Index(IndexBase):
             index=self._name, **kwargs
         )
 
-    def shrink(self, using=None, **kwargs):
+    def shrink(
+        self, using: Optional[UsingType] = None, **kwargs: Any
+    ) -> "ObjectApiResponse[Any]":
         """
         The shrink index API allows you to shrink an existing index into a new
         index with fewer primary shards. The number of primary shards in the

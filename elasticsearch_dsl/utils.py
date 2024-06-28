@@ -38,7 +38,6 @@ from typing import (
 from typing_extensions import Self, TypeAlias, TypeVar
 
 from .exceptions import UnknownDslObject, ValidationException
-from .response import Hit
 
 if TYPE_CHECKING:
     from elastic_transport import ObjectApiResponse
@@ -47,6 +46,7 @@ if TYPE_CHECKING:
     from .document_base import DocumentOptions
     from .field import Field
     from .index_base import IndexBase
+    from .response import Hit  # noqa: F401
 
 UsingType: TypeAlias = Union[str, "Elasticsearch"]
 AsyncUsingType: TypeAlias = Union[str, "AsyncElasticsearch"]
@@ -57,7 +57,7 @@ JSONType: TypeAlias = Union[
 ]
 
 _ValT = TypeVar("_ValT")  # used by AttrDict
-_R = TypeVar("_R", default=Hit)  # used by Search and Response classes
+_R = TypeVar("_R", default="Hit")  # used by Search and Response classes
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
@@ -219,6 +219,7 @@ class AttrDict(Generic[_ValT]):
         del self._d_[key]
 
     def __setattr__(self, name: str, value: _ValT) -> None:
+        print(self._d_)
         if name in self._d_ or not hasattr(self.__class__, name):
             self._d_[name] = value
         else:
@@ -295,7 +296,6 @@ class DslBase(metaclass=DslMeta):
           all values in the `must` attribute into Query objects)
     """
 
-    # _type_name: ClassVar[str]
     _param_defs: ClassVar[Dict[str, Dict[str, Union[str, bool]]]] = {}
 
     @classmethod

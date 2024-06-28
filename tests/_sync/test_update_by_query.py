@@ -140,11 +140,11 @@ def test_from_dict_doesnt_need_query():
 
 @pytest.mark.sync
 def test_params_being_passed_to_search(mock_client):
-    ubq = UpdateByQuery(using="mock")
+    ubq = UpdateByQuery(using="mock", index="i")
     ubq = ubq.params(routing="42")
     ubq.execute()
 
-    mock_client.update_by_query.assert_called_once_with(index=None, routing="42")
+    mock_client.update_by_query.assert_called_once_with(index=["i"], routing="42")
 
 
 def test_overwrite_script():

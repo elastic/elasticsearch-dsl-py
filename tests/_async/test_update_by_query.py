@@ -140,11 +140,11 @@ def test_from_dict_doesnt_need_query():
 
 @pytest.mark.asyncio
 async def test_params_being_passed_to_search(async_mock_client):
-    ubq = AsyncUpdateByQuery(using="mock")
+    ubq = AsyncUpdateByQuery(using="mock", index="i")
     ubq = ubq.params(routing="42")
     await ubq.execute()
 
-    async_mock_client.update_by_query.assert_called_once_with(index=None, routing="42")
+    async_mock_client.update_by_query.assert_called_once_with(index=["i"], routing="42")
 
 
 def test_overwrite_script():
