@@ -368,10 +368,6 @@ class FacetedSearchBase(Generic[_R]):
         self._s = self._s[k]
         return self
 
-    # TODO this goes in async/sync subclasses!
-    # def __iter__(self) -> Iterator[Response[_R]]:
-    #    return iter(self._s)
-
     def add_filter(
         self, name: str, filter_values: Union[FilterValueType, List[FilterValueType]]
     ) -> None:

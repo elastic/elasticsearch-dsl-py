@@ -48,8 +48,6 @@ if TYPE_CHECKING:
     from .field import Field
     from .index_base import IndexBase
 
-# Useful types
-
 UsingType: TypeAlias = Union[str, "Elasticsearch"]
 AsyncUsingType: TypeAlias = Union[str, "AsyncElasticsearch"]
 AnyUsingType: TypeAlias = Union[str, "Elasticsearch", "AsyncElasticsearch"]
@@ -58,11 +56,7 @@ JSONType: TypeAlias = Union[
     int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
 ]
 
-# Type variables for internals
-
 _ValT = TypeVar("_ValT")
-
-# Constants
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True
@@ -525,7 +519,7 @@ class ObjectBase(AttrDict[JSONType]):
                     return cls._index._mapping[name]
                 except KeyError:
                     pass
-          return None
+            return None
 
     @classmethod
     def from_es(cls, hit: Union[Dict[str, Any], "ObjectApiResponse[Any]"]) -> Self:

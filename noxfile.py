@@ -42,6 +42,7 @@ TYPED_FILES = (
     "elasticsearch_dsl/field.py",
     "elasticsearch_dsl/function.py",
     "elasticsearch_dsl/query.py",
+    "elasticsearch_dsl/search_base.py",
     "elasticsearch_dsl/serializer.py",
     "elasticsearch_dsl/utils.py",
     "elasticsearch_dsl/wrappers.py",
