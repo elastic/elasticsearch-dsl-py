@@ -16,24 +16,32 @@
 #  under the License.
 
 import collections.abc
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 from elasticsearch.exceptions import NotFoundError, RequestError
-from typing_extensions import dataclass_transform
+from typing_extensions import Self, dataclass_transform
 
 from .._sync.index import Index
 from ..connections import get_connection
 from ..document_base import DocumentBase, DocumentMeta, mapped_field
 from ..exceptions import IllegalOperation
-from ..utils import DOC_META_FIELDS, META_FIELDS, merge
+from ..utils import DOC_META_FIELDS, META_FIELDS, UsingType, merge
 from .search import Search
+
+if TYPE_CHECKING:
+    from elasticsearch import Elasticsearch
 
 
 class IndexMeta(DocumentMeta):
+    _index: Index
+
     # global flag to guard us from associating an Index with the base Document
     # class, only user defined subclasses should have an _index attr
     _document_initialized = False
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(
+        cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any]
+    ) -> "IndexMeta":
         new_cls = super().__new__(cls, name, bases, attrs)
         if cls._document_initialized:
             index_opts = attrs.pop("Index", None)
@@ -41,10 +49,10 @@ class IndexMeta(DocumentMeta):
             new_cls._index = index
             index.document(new_cls)
         cls._document_initialized = True
-        return new_cls
+        return cast(IndexMeta, new_cls)
 
     @classmethod
-    def construct_index(cls, opts, bases):
+    def construct_index(cls, opts: Dict[str, Any], bases: Tuple[type, ...]) -> Index:
         if opts is None:
             for b in bases:
                 if hasattr(b, "_index"):
@@ -67,12 +75,21 @@ class Document(DocumentBase, metaclass=IndexMeta):
     Model-like class for persisting documents in elasticsearch.
     """
 
+    if TYPE_CHECKING:
+        _index: Index
+
     @classmethod
-    def _get_connection(cls, using=None):
+    def _get_using(cls, using: Optional[UsingType] = None) -> UsingType:
+        return using or cls._index._using
+
+    @classmethod
+    def _get_connection(cls, using: Optional[UsingType] = None) -> "Elasticsearch":
         return get_connection(cls._get_using(using))
 
     @classmethod
-    def init(cls, index=None, using=None):
+    def init(
+        cls, index: Optional[str] = None, using: Optional[UsingType] = None
+    ) -> None:
         """
         Create the index and populate the mappings in elasticsearch.
         """
@@ -82,7 +99,9 @@ class Document(DocumentBase, metaclass=IndexMeta):
         i.save(using=using)
 
     @classmethod
-    def search(cls, using=None, index=None):
+    def search(
+        cls, using: Optional[UsingType] = None, index: Optional[str] = None
+    ) -> Search[Self]:
         """
         Create an :class:`~elasticsearch_dsl.Search` instance that will search
         over this ``Document``.
@@ -92,7 +111,13 @@ class Document(DocumentBase, metaclass=IndexMeta):
         )
 
     @classmethod
-    def get(cls, id, using=None, index=None, **kwargs):
+    def get(
+        cls,
+        id: str,
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Optional[Self]:
         """
         Retrieve a single document from elasticsearch using its ``id``.
 
@@ -111,7 +136,13 @@ class Document(DocumentBase, metaclass=IndexMeta):
         return cls.from_es(doc)
 
     @classmethod
-    def exists(cls, id, using=None, index=None, **kwargs):
+    def exists(
+        cls,
+        id: str,
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        **kwargs: Any,
+    ) -> bool:
         """
         check if exists a single document from elasticsearch using its ``id``.
 
@@ -124,12 +155,18 @@ class Document(DocumentBase, metaclass=IndexMeta):
         ``Elasticsearch.exists`` unchanged.
         """
         es = cls._get_connection(using)
-        return es.exists(index=cls._default_index(index), id=id, **kwargs)
+        return bool(es.exists(index=cls._default_index(index), id=id, **kwargs))
 
     @classmethod
     def mget(
-        cls, docs, using=None, index=None, raise_on_error=True, missing="none", **kwargs
-    ):
+        cls,
+        docs: List[Dict[str, Any]],
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        raise_on_error: bool = True,
+        missing: str = "none",
+        **kwargs: Any,
+    ) -> List[Optional[Self]]:
         r"""
         Retrieve multiple document by their ``id``\s. Returns a list of instances
         in the same order as requested.
@@ -158,7 +195,9 @@ class Document(DocumentBase, metaclass=IndexMeta):
         }
         results = es.mget(index=cls._default_index(index), body=body, **kwargs)
 
-        objs, error_docs, missing_docs = [], [], []
+        objs: List[Optional[Self]] = []
+        error_docs: List[Self] = []
+        missing_docs: List[Self] = []
         for doc in results["docs"]:
             if doc.get("found"):
                 if error_docs or missing_docs:
@@ -184,14 +223,19 @@ class Document(DocumentBase, metaclass=IndexMeta):
             error_ids = [doc["_id"] for doc in error_docs]
             message = "Required routing not provided for documents %s."
             message %= ", ".join(error_ids)
-            raise RequestError(400, message, error_docs)
+            raise RequestError(400, message, error_docs)  # type: ignore
         if missing_docs:
             missing_ids = [doc["_id"] for doc in missing_docs]
             message = f"Documents {', '.join(missing_ids)} not found."
-            raise NotFoundError(404, message, {"docs": missing_docs})
+            raise NotFoundError(404, message, {"docs": missing_docs})  # type: ignore
         return objs
 
-    def delete(self, using=None, index=None, **kwargs):
+    def delete(
+        self,
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Delete the instance in elasticsearch.
 
@@ -212,23 +256,26 @@ class Document(DocumentBase, metaclass=IndexMeta):
             doc_meta["if_primary_term"] = self.meta["primary_term"]
 
         doc_meta.update(kwargs)
-        es.delete(index=self._get_index(index), **doc_meta)
+        i = self._get_index(index)
+        assert i is not None
+
+        es.delete(index=i, **doc_meta)
 
     def update(
         self,
-        using=None,
-        index=None,
-        detect_noop=True,
-        doc_as_upsert=False,
-        refresh=False,
-        retry_on_conflict=None,
-        script=None,
-        script_id=None,
-        scripted_upsert=False,
-        upsert=None,
-        return_doc_meta=False,
-        **fields,
-    ):
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        detect_noop: bool = True,
+        doc_as_upsert: bool = False,
+        refresh: bool = False,
+        retry_on_conflict: Optional[int] = None,
+        script: Optional[Union[str, Dict[str, Any]]] = None,
+        script_id: Optional[str] = None,
+        scripted_upsert: bool = False,
+        upsert: Optional[Dict[str, Any]] = None,
+        return_doc_meta: bool = False,
+        **fields: Any,
+    ) -> Any:
         """
         Partial update of the document, specify fields you wish to update and
         both the instance and the document in elasticsearch will be updated::
@@ -259,7 +306,7 @@ class Document(DocumentBase, metaclass=IndexMeta):
 
         :return: operation result noop/updated
         """
-        body = {
+        body: Dict[str, Any] = {
             "doc_as_upsert": doc_as_upsert,
             "detect_noop": detect_noop,
         }
@@ -315,9 +362,13 @@ class Document(DocumentBase, metaclass=IndexMeta):
             doc_meta["if_seq_no"] = self.meta["seq_no"]
             doc_meta["if_primary_term"] = self.meta["primary_term"]
 
+        i = self._get_index(index)
+        assert i is not None
+
         meta = self._get_connection(using).update(
-            index=self._get_index(index), body=body, refresh=refresh, **doc_meta
+            index=i, body=body, refresh=refresh, **doc_meta
         )
+
         # update meta information from ES
         for k in META_FIELDS:
             if "_" + k in meta:
@@ -327,13 +378,13 @@ class Document(DocumentBase, metaclass=IndexMeta):
 
     def save(
         self,
-        using=None,
-        index=None,
-        validate=True,
-        skip_empty=True,
-        return_doc_meta=False,
-        **kwargs,
-    ):
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        validate: bool = True,
+        skip_empty: bool = True,
+        return_doc_meta: bool = False,
+        **kwargs: Any,
+    ) -> Any:
         """
         Save the document into elasticsearch. If the document doesn't exist it
         is created, it is overwritten otherwise. Returns ``True`` if this
@@ -367,8 +418,11 @@ class Document(DocumentBase, metaclass=IndexMeta):
             doc_meta["if_primary_term"] = self.meta["primary_term"]
 
         doc_meta.update(kwargs)
+        i = self._get_index(index)
+        assert i is not None
+
         meta = es.index(
-            index=self._get_index(index),
+            index=i,
             body=self.to_dict(skip_empty=skip_empty),
             **doc_meta,
         )

@@ -37,8 +37,11 @@ class Author(InnerDoc):
     email = Text(required=True)
 
     def clean(self):
-        print(self, type(self), self.name)
-        if self.name.lower() not in self.email:
+        if not self.name:
+            raise ValidationException("name is missing")
+        if not self.email:
+            raise ValidationException("email is missing")
+        elif self.name.lower() not in self.email:
             raise ValidationException("Invalid email!")
 
 

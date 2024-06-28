@@ -43,7 +43,7 @@ RangeValT = TypeVar("RangeValT", bound="_SupportsComparison")
 __all__ = ["Range"]
 
 
-class Range(AttrDict[ComparisonOperators, RangeValT]):
+class Range(AttrDict[RangeValT]):
     OPS: ClassVar[
         Mapping[
             ComparisonOperators,
@@ -58,7 +58,7 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
 
     def __init__(
         self,
-        d: Optional[Dict[ComparisonOperators, RangeValT]] = None,
+        d: Optional[Dict[str, RangeValT]] = None,
         /,
         **kwargs: RangeValT,
     ):
@@ -68,7 +68,7 @@ class Range(AttrDict[ComparisonOperators, RangeValT]):
             )
 
         if d is None:
-            data = cast(Dict[ComparisonOperators, RangeValT], kwargs)
+            data = kwargs
         else:
             data = d
 

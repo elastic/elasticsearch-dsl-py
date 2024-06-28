@@ -16,28 +16,32 @@
 #  under the License.
 
 import contextlib
+from typing import Generic, Iterator
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import scan
+from typing_extensions import TypeVar
 
 from ..connections import get_connection
-from ..response import Response
+from ..response import Hit, Response
 from ..search_base import MultiSearchBase, SearchBase
 from ..utils import AttrDict
 
+_R = TypeVar("_R", default=Hit)
 
-class Search(SearchBase):
-    def __iter__(self):
+
+class Search(SearchBase[_R]):
+    def __iter__(self) -> Iterator[_R]:
         """
         Iterate over the hits.
         """
 
-        class ResultsIterator:
-            def __init__(self, search):
+        class ResultsIterator(Generic[_R]):
+            def __init__(self, search: Search[_R]):
                 self.search = search
                 self.iterator = None
 
-            def __next__(self):
+            def __next__(self) -> _R:
                 if self.iterator is None:
                     self.iterator = iter(self.search.execute())
                 try:
@@ -62,7 +66,7 @@ class Search(SearchBase):
         resp = es.count(index=self._index, query=d.get("query", None), **self._params)
         return resp["count"]
 
-    def execute(self, ignore_cache=False):
+    def execute(self, ignore_cache: bool = False) -> Response[_R]:
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
