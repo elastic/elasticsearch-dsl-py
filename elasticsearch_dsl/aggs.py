@@ -22,6 +22,7 @@ from typing import (
     Any,
     ClassVar,
     Dict,
+    Generic,
     Iterable,
     MutableMapping,
     Optional,
@@ -29,6 +30,9 @@ from typing import (
     cast,
 )
 
+from typing_extensions import TypeVar
+
+from .response import Hit
 from .response.aggs import AggResponse, BucketData, FieldBucketData, TopHitsData
 from .utils import AttrDict, DslBase, JSONType
 
@@ -36,12 +40,14 @@ if TYPE_CHECKING:
     from .query import Query
     from .search_base import SearchBase
 
+_R = TypeVar("_R", default=Hit)
+
 
 def A(
-    name_or_agg: Union[MutableMapping[str, Any], "Agg", str],
+    name_or_agg: Union[MutableMapping[str, Any], "Agg[_R]", str],
     filter: Optional[Union[str, "Query"]] = None,
     **params: Any,
-) -> "Agg":
+) -> "Agg[_R]":
     if filter is not None:
         if name_or_agg != "filter":
             raise ValueError(
@@ -73,7 +79,7 @@ def A(
         if meta:
             params = params.copy()
             params["meta"] = meta
-        return Agg.get_dsl_class(agg_type)(_expand__to_dot=False, **params)
+        return Agg[_R].get_dsl_class(agg_type)(_expand__to_dot=False, **params)
 
     # Terms(...) just return the nested agg
     elif isinstance(name_or_agg, Agg):
@@ -84,10 +90,10 @@ def A(
         return name_or_agg
 
     # "terms", field="tags"
-    return Agg.get_dsl_class(name_or_agg)(**params)
+    return Agg[_R].get_dsl_class(name_or_agg)(**params)
 
 
-class Agg(DslBase):
+class Agg(DslBase, Generic[_R]):
     _type_name = "agg"
     _type_shortcut = staticmethod(A)
     name = ""
@@ -103,13 +109,13 @@ class Agg(DslBase):
                 d["meta"] = n.pop("meta")
         return d
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
-        return AggResponse(self, search, data)
+    def result(self, search: "SearchBase[_R]", data: Dict[str, Any]) -> AttrDict[Any]:
+        return AggResponse[_R](self, search, data)
 
 
-class AggBase:
-    aggs: Dict[str, Agg]
-    _base: Agg
+class AggBase(Generic[_R]):
+    aggs: Dict[str, Agg[_R]]
+    _base: Agg[_R]
     _params: Dict[str, Any]
     _param_defs: ClassVar[Dict[str, Any]] = {
         "aggs": {"type": "agg", "hash": True},
@@ -118,9 +124,9 @@ class AggBase:
     def __contains__(self, key: str) -> bool:
         return key in self._params.get("aggs", {})
 
-    def __getitem__(self, agg_name: str) -> Agg:
+    def __getitem__(self, agg_name: str) -> Agg[_R]:
         agg = cast(
-            Agg, self._params.setdefault("aggs", {})[agg_name]
+            Agg[_R], self._params.setdefault("aggs", {})[agg_name]
         )  # propagate KeyError
 
         # make sure we're not mutating a shared state - whenever accessing a
@@ -132,7 +138,7 @@ class AggBase:
 
         return agg
 
-    def __setitem__(self, agg_name: str, agg: Agg) -> None:
+    def __setitem__(self, agg_name: str, agg: Agg[_R]) -> None:
         self.aggs[agg_name] = A(agg)
 
     def __iter__(self) -> Iterable[str]:
@@ -140,7 +146,7 @@ class AggBase:
 
     def _agg(
         self, bucket: bool, name: str, agg_type: str, *args: Any, **params: Any
-    ) -> Agg:
+    ) -> Agg[_R]:
         agg = self[name] = A(agg_type, *args, **params)
 
         # For chaining - when creating new buckets return them...
@@ -150,20 +156,20 @@ class AggBase:
         else:
             return self._base
 
-    def metric(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg:
+    def metric(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg[_R]:
         return self._agg(False, name, agg_type, *args, **params)
 
-    def bucket(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg:
+    def bucket(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg[_R]:
         return self._agg(True, name, agg_type, *args, **params)
 
-    def pipeline(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg:
+    def pipeline(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg[_R]:
         return self._agg(False, name, agg_type, *args, **params)
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
-        return BucketData(self, search, data)
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
+        return BucketData(self, search, data)  # type: ignore
 
 
-class Bucket(AggBase, Agg):
+class Bucket(AggBase[_R], Agg[_R]):
     def __init__(self, **params: Any):
         super().__init__(**params)
         # remember self for chaining
@@ -172,13 +178,13 @@ class Bucket(AggBase, Agg):
     def to_dict(self) -> Dict[str, JSONType]:
         d = super(AggBase, self).to_dict()
         if isinstance(d[self.name], dict):
-            n = cast(AttrDict[str, Any], d[self.name])
+            n = cast(AttrDict[Any], d[self.name])
             if "aggs" in n:
                 d["aggs"] = n.pop("aggs")
         return d
 
 
-class Filter(Bucket):
+class Filter(Bucket[_R]):
     name = "filter"
     _param_defs = {
         "filter": {"type": "query"},
@@ -193,17 +199,17 @@ class Filter(Bucket):
     def to_dict(self) -> Dict[str, JSONType]:
         d = super().to_dict()
         if isinstance(d[self.name], dict):
-            n = cast(AttrDict[str, Any], d[self.name])
+            n = cast(AttrDict[Any], d[self.name])
             n.update(n.pop("filter", {}))
         return d
 
 
-class Pipeline(Agg):
+class Pipeline(Agg[_R]):
     pass
 
 
 # bucket aggregations
-class Filters(Bucket):
+class Filters(Bucket[_R]):
     name = "filters"
     _param_defs = {
         "filters": {"type": "query", "hash": True},
@@ -211,123 +217,123 @@ class Filters(Bucket):
     }
 
 
-class Children(Bucket):
+class Children(Bucket[_R]):
     name = "children"
 
 
-class Parent(Bucket):
+class Parent(Bucket[_R]):
     name = "parent"
 
 
-class DateHistogram(Bucket):
+class DateHistogram(Bucket[_R]):
     name = "date_histogram"
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return FieldBucketData(self, search, data)
 
 
-class AutoDateHistogram(DateHistogram):
+class AutoDateHistogram(DateHistogram[_R]):
     name = "auto_date_histogram"
 
 
-class AdjacencyMatrix(Bucket):
+class AdjacencyMatrix(Bucket[_R]):
     name = "adjacency_matrix"
 
 
-class DateRange(Bucket):
+class DateRange(Bucket[_R]):
     name = "date_range"
 
 
-class GeoDistance(Bucket):
+class GeoDistance(Bucket[_R]):
     name = "geo_distance"
 
 
-class GeohashGrid(Bucket):
+class GeohashGrid(Bucket[_R]):
     name = "geohash_grid"
 
 
-class GeohexGrid(Bucket):
+class GeohexGrid(Bucket[_R]):
     name = "geohex_grid"
 
 
-class GeotileGrid(Bucket):
+class GeotileGrid(Bucket[_R]):
     name = "geotile_grid"
 
 
-class GeoCentroid(Bucket):
+class GeoCentroid(Bucket[_R]):
     name = "geo_centroid"
 
 
-class Global(Bucket):
+class Global(Bucket[_R]):
     name = "global"
 
 
-class Histogram(Bucket):
+class Histogram(Bucket[_R]):
     name = "histogram"
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return FieldBucketData(self, search, data)
 
 
-class IPRange(Bucket):
+class IPRange(Bucket[_R]):
     name = "ip_range"
 
 
-class IPPrefix(Bucket):
+class IPPrefix(Bucket[_R]):
     name = "ip_prefix"
 
 
-class Missing(Bucket):
+class Missing(Bucket[_R]):
     name = "missing"
 
 
-class Nested(Bucket):
+class Nested(Bucket[_R]):
     name = "nested"
 
 
-class Range(Bucket):
+class Range(Bucket[_R]):
     name = "range"
 
 
-class RareTerms(Bucket):
+class RareTerms(Bucket[_R]):
     name = "rare_terms"
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return FieldBucketData(self, search, data)
 
 
-class ReverseNested(Bucket):
+class ReverseNested(Bucket[_R]):
     name = "reverse_nested"
 
 
-class SignificantTerms(Bucket):
+class SignificantTerms(Bucket[_R]):
     name = "significant_terms"
 
 
-class SignificantText(Bucket):
+class SignificantText(Bucket[_R]):
     name = "significant_text"
 
 
-class Terms(Bucket):
+class Terms(Bucket[_R]):
     name = "terms"
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return FieldBucketData(self, search, data)
 
 
-class Sampler(Bucket):
+class Sampler(Bucket[_R]):
     name = "sampler"
 
 
-class DiversifiedSampler(Bucket):
+class DiversifiedSampler(Bucket[_R]):
     name = "diversified_sampler"
 
 
-class RandomSampler(Bucket):
+class RandomSampler(Bucket[_R]):
     name = "random_sampler"
 
 
-class Composite(Bucket):
+class Composite(Bucket[_R]):
     name = "composite"
     _param_defs = {
         "sources": {"type": "agg", "hash": True, "multi": True},
@@ -335,177 +341,177 @@ class Composite(Bucket):
     }
 
 
-class VariableWidthHistogram(Bucket):
+class VariableWidthHistogram(Bucket[_R]):
     name = "variable_width_histogram"
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return FieldBucketData(self, search, data)
 
 
-class MultiTerms(Bucket):
+class MultiTerms(Bucket[_R]):
     name = "multi_terms"
 
 
-class CategorizeText(Bucket):
+class CategorizeText(Bucket[_R]):
     name = "categorize_text"
 
 
 # metric aggregations
-class TopHits(Agg):
+class TopHits(Agg[_R]):
     name = "top_hits"
 
-    def result(self, search: "SearchBase", data: Any) -> AttrDict[str, Any]:
+    def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return TopHitsData(self, search, data)
 
 
-class Avg(Agg):
+class Avg(Agg[_R]):
     name = "avg"
 
 
-class WeightedAvg(Agg):
+class WeightedAvg(Agg[_R]):
     name = "weighted_avg"
 
 
-class Cardinality(Agg):
+class Cardinality(Agg[_R]):
     name = "cardinality"
 
 
-class ExtendedStats(Agg):
+class ExtendedStats(Agg[_R]):
     name = "extended_stats"
 
 
-class Boxplot(Agg):
+class Boxplot(Agg[_R]):
     name = "boxplot"
 
 
-class GeoBounds(Agg):
+class GeoBounds(Agg[_R]):
     name = "geo_bounds"
 
 
-class GeoLine(Agg):
+class GeoLine(Agg[_R]):
     name = "geo_line"
 
 
-class Max(Agg):
+class Max(Agg[_R]):
     name = "max"
 
 
-class MatrixStats(Agg):
+class MatrixStats(Agg[_R]):
     name = "matrix_stats"
 
 
-class MedianAbsoluteDeviation(Agg):
+class MedianAbsoluteDeviation(Agg[_R]):
     name = "median_absolute_deviation"
 
 
-class Min(Agg):
+class Min(Agg[_R]):
     name = "min"
 
 
-class Percentiles(Agg):
+class Percentiles(Agg[_R]):
     name = "percentiles"
 
 
-class PercentileRanks(Agg):
+class PercentileRanks(Agg[_R]):
     name = "percentile_ranks"
 
 
-class ScriptedMetric(Agg):
+class ScriptedMetric(Agg[_R]):
     name = "scripted_metric"
 
 
-class Stats(Agg):
+class Stats(Agg[_R]):
     name = "stats"
 
 
-class Sum(Agg):
+class Sum(Agg[_R]):
     name = "sum"
 
 
-class TopMetrics(Agg):
+class TopMetrics(Agg[_R]):
     name = "top_metrics"
 
 
-class TTest(Agg):
+class TTest(Agg[_R]):
     name = "t_test"
 
 
-class ValueCount(Agg):
+class ValueCount(Agg[_R]):
     name = "value_count"
 
 
 # pipeline aggregations
-class AvgBucket(Pipeline):
+class AvgBucket(Pipeline[_R]):
     name = "avg_bucket"
 
 
-class BucketScript(Pipeline):
+class BucketScript(Pipeline[_R]):
     name = "bucket_script"
 
 
-class BucketSelector(Pipeline):
+class BucketSelector(Pipeline[_R]):
     name = "bucket_selector"
 
 
-class CumulativeSum(Pipeline):
+class CumulativeSum(Pipeline[_R]):
     name = "cumulative_sum"
 
 
-class CumulativeCardinality(Pipeline):
+class CumulativeCardinality(Pipeline[_R]):
     name = "cumulative_cardinality"
 
 
-class Derivative(Pipeline):
+class Derivative(Pipeline[_R]):
     name = "derivative"
 
 
-class ExtendedStatsBucket(Pipeline):
+class ExtendedStatsBucket(Pipeline[_R]):
     name = "extended_stats_bucket"
 
 
-class Inference(Pipeline):
+class Inference(Pipeline[_R]):
     name = "inference"
 
 
-class MaxBucket(Pipeline):
+class MaxBucket(Pipeline[_R]):
     name = "max_bucket"
 
 
-class MinBucket(Pipeline):
+class MinBucket(Pipeline[_R]):
     name = "min_bucket"
 
 
-class MovingFn(Pipeline):
+class MovingFn(Pipeline[_R]):
     name = "moving_fn"
 
 
-class MovingAvg(Pipeline):
+class MovingAvg(Pipeline[_R]):
     name = "moving_avg"
 
 
-class MovingPercentiles(Pipeline):
+class MovingPercentiles(Pipeline[_R]):
     name = "moving_percentiles"
 
 
-class Normalize(Pipeline):
+class Normalize(Pipeline[_R]):
     name = "normalize"
 
 
-class PercentilesBucket(Pipeline):
+class PercentilesBucket(Pipeline[_R]):
     name = "percentiles_bucket"
 
 
-class SerialDiff(Pipeline):
+class SerialDiff(Pipeline[_R]):
     name = "serial_diff"
 
 
-class StatsBucket(Pipeline):
+class StatsBucket(Pipeline[_R]):
     name = "stats_bucket"
 
 
-class SumBucket(Pipeline):
+class SumBucket(Pipeline[_R]):
     name = "sum_bucket"
 
 
-class BucketSort(Pipeline):
+class BucketSort(Pipeline[_R]):
     name = "bucket_sort"

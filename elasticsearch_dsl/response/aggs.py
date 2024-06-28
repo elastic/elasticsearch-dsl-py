@@ -15,32 +15,50 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union, cast
 
-from ..utils import AttrDict, AttrList
-from . import AggResponse, Response
+from typing_extensions import TypeVar
+
+from ..utils import AttrDict, AttrList, JSONType
+from . import AggResponse, Hit, Response
 
 if TYPE_CHECKING:
     from ..aggs import Agg
+    from ..field import Field
     from ..search_base import SearchBase
 
+_R = TypeVar("_R", default=Hit)
 
-class Bucket(AggResponse):
-    def __init__(self, aggs, search, data, field=None):
+
+class Bucket(AggResponse[_R]):
+    def __init__(
+        self,
+        aggs: "Agg",
+        search: "SearchBase[_R]",
+        data: Dict[str, JSONType],
+        field: Optional["Field"] = None,
+    ):
         super().__init__(aggs, search, data)
 
 
-class FieldBucket(Bucket):
-    def __init__(self, aggs, search, data, field=None):
+class FieldBucket(Bucket[_R]):
+    def __init__(
+        self,
+        aggs: "Agg",
+        search: "SearchBase[_R]",
+        data: Dict[str, JSONType],
+        field: Optional["Field"] = None,
+    ):
         if field:
             data["key"] = field.deserialize(data["key"])
         super().__init__(aggs, search, data, field)
 
 
-class BucketData(AggResponse):
+class BucketData(AggResponse[_R]):
     _bucket_class = Bucket
+    _buckets: Union[AttrDict[JSONType], AttrList]
 
-    def _wrap_bucket(self, data):
+    def _wrap_bucket(self, data: Dict[str, JSONType]) -> Bucket[_R]:
         return self._bucket_class(
             self._meta["aggs"],
             self._meta["search"],
@@ -48,38 +66,38 @@ class BucketData(AggResponse):
             field=self._meta.get("field"),
         )
 
-    def __iter__(self):
-        return iter(self.buckets)
+    def __iter__(self) -> Iterator["Agg"]:  # type: ignore[override]
+        return iter(self.buckets)  # type: ignore
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.buckets)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Any) -> Any:
         if isinstance(key, (int, slice)):
-            return self.buckets[key]
+            return cast(AttrList, self.buckets)[key]
         return super().__getitem__(key)
 
     @property
-    def buckets(self):
+    def buckets(self) -> Union[AttrDict[JSONType], AttrList]:
         if not hasattr(self, "_buckets"):
             field = getattr(self._meta["aggs"], "field", None)
             if field:
                 self._meta["field"] = self._meta["search"]._resolve_field(field)
-            bs = self._d_["buckets"]
+            bs = cast(Union[Dict[str, JSONType], List[JSONType]], self._d_["buckets"])
             if isinstance(bs, list):
-                bs = AttrList(bs, obj_wrapper=self._wrap_bucket)
+                ret = AttrList(bs, obj_wrapper=self._wrap_bucket)
             else:
-                bs = AttrDict({k: self._wrap_bucket(bs[k]) for k in bs})
-            super(AttrDict, self).__setattr__("_buckets", bs)
+                ret = AttrDict[JSONType]({k: self._wrap_bucket(bs[k]) for k in bs})  # type: ignore
+            super(AttrDict, self).__setattr__("_buckets", ret)
         return self._buckets
 
 
-class FieldBucketData(BucketData):
+class FieldBucketData(BucketData[_R]):
     _bucket_class = FieldBucket
 
 
-class TopHitsData(Response):
-    def __init__(self, agg: "Agg", search: "SearchBase", data: Any):
+class TopHitsData(Response[_R]):
+    def __init__(self, agg: "Agg[_R]", search: "SearchBase[_R]", data: Any):
         super(AttrDict, self).__setattr__(
             "meta", AttrDict({"agg": agg, "search": search})
         )

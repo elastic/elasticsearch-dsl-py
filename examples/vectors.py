@@ -50,7 +50,7 @@ from datetime import datetime
 from typing import List, Optional, cast
 from urllib.request import urlopen
 
-import nltk
+import nltk  # type: ignore
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
@@ -60,6 +60,7 @@ from elasticsearch_dsl import (
     InnerDoc,
     Keyword,
     M,
+    Search,
     connections,
     mapped_field,
 )
@@ -87,7 +88,7 @@ class WorkplaceDoc(Document):
     updated: M[Optional[datetime]]
     url: M[str] = mapped_field(Keyword(required=True))
     category: M[str] = mapped_field(Keyword(required=True))
-    passages: M[Optional[List[Passage]]] = mapped_field(default=[])
+    passages: M[List[Passage]] = mapped_field(default=[])
 
     _model = None
 
@@ -97,9 +98,9 @@ class WorkplaceDoc(Document):
             cls._model = SentenceTransformer(MODEL_NAME)
         return cast(List[float], list(cls._model.encode(input)))
 
-    def clean(self):
+    def clean(self) -> None:
         # split the content into sentences
-        passages = nltk.sent_tokenize(self.content)
+        passages = cast(List[str], nltk.sent_tokenize(self.content))
 
         # generate an embedding for each passage and save it as a nested document
         for passage in passages:
@@ -108,7 +109,7 @@ class WorkplaceDoc(Document):
             )
 
 
-def create():
+def create() -> None:
     # create the index
     WorkplaceDoc._index.delete(ignore_unavailable=True)
     WorkplaceDoc.init()
@@ -130,7 +131,7 @@ def create():
         doc.save()
 
 
-def search(query):
+def search(query: str) -> Search[WorkplaceDoc]:
     return WorkplaceDoc.search().knn(
         field=WorkplaceDoc.passages.embedding,
         k=5,
@@ -140,7 +141,7 @@ def search(query):
     )
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Vector database with Elasticsearch")
     parser.add_argument(
         "--recreate-index", action="store_true", help="Recreate and populate the index"
@@ -154,7 +155,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     # initiate the default connection to elasticsearch

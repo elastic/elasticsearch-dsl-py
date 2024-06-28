@@ -15,34 +15,36 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ..utils import AttrDict, HitMeta
+from typing import Any, Dict, List, Tuple, cast
+
+from ..utils import AttrDict, HitMeta, JSONType
 
 
-class Hit(AttrDict):
-    def __init__(self, document):
-        data = {}
+class Hit(AttrDict[JSONType]):
+    def __init__(self, document: Dict[str, JSONType]):
+        data: Dict[str, JSONType] = {}
         if "_source" in document:
-            data = document["_source"]
+            data = cast(Dict[str, JSONType], document["_source"])
         if "fields" in document:
-            data.update(document["fields"])
+            data.update(cast(Dict[str, JSONType], document["fields"]))
 
         super().__init__(data)
         # assign meta as attribute and not as key in self._d_
         super(AttrDict, self).__setattr__("meta", HitMeta(document))
 
-    def __getstate__(self):
+    def __getstate__(self) -> Tuple[Dict[str, Any], HitMeta]:  # type: ignore[override]
         # add self.meta since it is not in self.__dict__
         return super().__getstate__() + (self.meta,)
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Tuple[Dict[str, Any], HitMeta]) -> None:  # type: ignore[override]
         super(AttrDict, self).__setattr__("meta", state[-1])
         super().__setstate__(state[:-1])
 
-    def __dir__(self):
+    def __dir__(self) -> List[str]:
         # be sure to expose meta in dir(self)
         return super().__dir__() + ["meta"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Hit({}): {}>".format(
             "/".join(
                 getattr(self.meta, key) for key in ("index", "id") if key in self.meta
