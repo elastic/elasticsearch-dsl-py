@@ -28,9 +28,7 @@ from typing import (
     cast,
 )
 
-from typing_extensions import TypeVar
-
-from ..utils import AttrDict, AttrList, JSONType, _wrap
+from ..utils import _R, AttrDict, AttrList, JSONType, _wrap
 from .hit import Hit, HitMeta
 
 if TYPE_CHECKING:
@@ -38,8 +36,6 @@ if TYPE_CHECKING:
     from ..search_base import Request, SearchBase
 
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
-
-_R = TypeVar("_R", default=Hit)
 
 
 class Response(AttrDict[JSONType], Generic[_R]):
@@ -115,7 +111,7 @@ class Response(AttrDict[JSONType], Generic[_R]):
     def aggs(self) -> "AggResponse[_R]":
         if not hasattr(self, "_aggs"):
             aggs = AggResponse[_R](
-                cast("Agg", self._search.aggs),
+                cast("Agg[_R]", self._search.aggs),
                 self._search,
                 cast(Dict[str, JSONType], self._d_.get("aggregations", {})),
             )

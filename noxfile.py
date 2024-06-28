@@ -46,6 +46,8 @@ TYPED_FILES = (
     "elasticsearch_dsl/serializer.py",
     "elasticsearch_dsl/utils.py",
     "elasticsearch_dsl/wrappers.py",
+    "elasticsearch_dsl/response/__init__.py",
+    "elasticsearch_dsl/response/aggs.py",
     "elasticsearch_dsl/_async/document.py",
     "elasticsearch_dsl/_sync/document.py",
     "tests/test_connections.py",

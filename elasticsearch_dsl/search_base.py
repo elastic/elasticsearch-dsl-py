@@ -33,19 +33,17 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Self, TypeVar
+from typing_extensions import Self
 
 from .aggs import A, Agg, AggBase
 from .exceptions import IllegalOperation
 from .query import Bool, Q, Query
 from .response import Hit, Response
-from .utils import AnyUsingType, AttrDict, DslBase, JSONType, recursive_to_dict
+from .utils import _R, AnyUsingType, AttrDict, DslBase, JSONType, recursive_to_dict
 
 if TYPE_CHECKING:
     from .document_base import InstrumentedField
     from .field import Field, Object
-
-_R = TypeVar("_R", default=Hit)
 
 
 class QueryProxy(Generic[_R]):

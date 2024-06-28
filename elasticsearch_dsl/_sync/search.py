@@ -20,14 +20,11 @@ from typing import Generic, Iterator
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import scan
-from typing_extensions import TypeVar
 
 from ..connections import get_connection
-from ..response import Hit, Response
+from ..response import Response
 from ..search_base import MultiSearchBase, SearchBase
-from ..utils import AttrDict
-
-_R = TypeVar("_R", default=Hit)
+from ..utils import _R, AttrDict
 
 
 class Search(SearchBase[_R]):

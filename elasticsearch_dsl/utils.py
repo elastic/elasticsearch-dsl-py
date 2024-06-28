@@ -31,14 +31,14 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    TypeVar,
     Union,
     cast,
 )
 
-from typing_extensions import Self, TypeAlias
+from typing_extensions import Self, TypeAlias, TypeVar
 
 from .exceptions import UnknownDslObject, ValidationException
+from .response import Hit
 
 if TYPE_CHECKING:
     from elastic_transport import ObjectApiResponse
@@ -56,7 +56,8 @@ JSONType: TypeAlias = Union[
     int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
 ]
 
-_ValT = TypeVar("_ValT")
+_ValT = TypeVar("_ValT")  # used by AttrDict
+_R = TypeVar("_R", default=Hit)  # used by Search and Response classes
 
 SKIP_VALUES = ("", None)
 EXPAND__TO_DOT = True

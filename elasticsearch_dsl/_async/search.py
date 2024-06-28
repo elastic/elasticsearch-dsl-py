@@ -20,14 +20,11 @@ from typing import AsyncIterator, Generic
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import async_scan
-from typing_extensions import TypeVar
 
 from ..async_connections import get_connection
-from ..response import Hit, Response
+from ..response import Response
 from ..search_base import MultiSearchBase, SearchBase
-from ..utils import AttrDict
-
-_R = TypeVar("_R", default=Hit)
+from ..utils import _R, AttrDict
 
 
 class AsyncSearch(SearchBase[_R]):

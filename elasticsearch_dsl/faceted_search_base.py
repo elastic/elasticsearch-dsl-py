@@ -18,19 +18,16 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, Tuple, Union, cast
 
-from typing_extensions import TypeVar
-
 from .aggs import A, Agg
 from .query import MatchAll, Nested, Query, Range, Terms
-from .response import Hit, Response
-from .utils import AttrDict, JSONType
+from .response import Response
+from .utils import _R, AttrDict, JSONType
 
 if TYPE_CHECKING:
     from .response.aggs import BucketData
     from .search_base import SearchBase
 
 FilterValueType = Union[str, datetime]
-_R = TypeVar("_R", default=Hit)
 
 __all__ = [
     "FacetedSearchBase",
