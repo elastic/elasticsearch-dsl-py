@@ -41,7 +41,7 @@ class Author(InnerDoc):
             raise ValidationException("name is missing")
         if not self.email:
             raise ValidationException("email is missing")
-        if self.name.lower() not in self.email:
+        elif self.name.lower() not in self.email:
             raise ValidationException("Invalid email!")
 
 
