@@ -525,7 +525,7 @@ class ObjectBase(AttrDict[JSONType]):
                     return cls._index._mapping[name]
                 except KeyError:
                     pass
-        return None
+          return None
 
     @classmethod
     def from_es(cls, hit: Union[Dict[str, Any], "ObjectApiResponse[Any]"]) -> Self:
