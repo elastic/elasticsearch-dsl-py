@@ -17,23 +17,19 @@
 
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union, cast
 
-from typing_extensions import TypeVar
-
-from ..utils import AttrDict, AttrList, JSONType
-from . import AggResponse, Hit, Response
+from ..utils import _R, AttrDict, AttrList, JSONType
+from . import AggResponse, Response
 
 if TYPE_CHECKING:
     from ..aggs import Agg
     from ..field import Field
     from ..search_base import SearchBase
 
-_R = TypeVar("_R", default=Hit)
-
 
 class Bucket(AggResponse[_R]):
     def __init__(
         self,
-        aggs: "Agg",
+        aggs: "Agg[_R]",
         search: "SearchBase[_R]",
         data: Dict[str, JSONType],
         field: Optional["Field"] = None,
@@ -44,7 +40,7 @@ class Bucket(AggResponse[_R]):
 class FieldBucket(Bucket[_R]):
     def __init__(
         self,
-        aggs: "Agg",
+        aggs: "Agg[_R]",
         search: "SearchBase[_R]",
         data: Dict[str, JSONType],
         field: Optional["Field"] = None,

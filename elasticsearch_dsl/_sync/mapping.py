@@ -15,26 +15,35 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import List, Optional, Union
+
+from typing_extensions import Self
+
 from ..connections import get_connection
 from ..mapping_base import MappingBase
+from ..utils import UsingType
 
 
 class Mapping(MappingBase):
     @classmethod
-    def from_es(cls, index, using="default"):
+    def from_es(
+        cls, index: Optional[Union[str, List[str]]], using: UsingType = "default"
+    ) -> Self:
         m = cls()
         m.update_from_es(index, using)
         return m
 
-    def update_from_es(self, index, using="default"):
+    def update_from_es(
+        self, index: Optional[Union[str, List[str]]], using: UsingType = "default"
+    ) -> None:
         es = get_connection(using)
         raw = es.indices.get_mapping(index=index)
         _, raw = raw.popitem()
         self._update_from_dict(raw["mappings"])
 
-    def save(self, index, using="default"):
+    def save(self, index: str, using: UsingType = "default") -> None:
         from .index import Index
 
-        index = Index(index, using=using)
-        index.mapping(self)
-        return index.save()
+        i = Index(index, using=using)
+        i.mapping(self)
+        i.save()

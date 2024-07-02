@@ -18,19 +18,18 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, Tuple, Union, cast
 
-from typing_extensions import TypeVar
+from typing_extensions import Self
 
 from .aggs import A, Agg
 from .query import MatchAll, Nested, Query, Range, Terms
-from .response import Hit, Response
-from .utils import AttrDict, JSONType
+from .response import Response
+from .utils import _R, AttrDict, JSONType
 
 if TYPE_CHECKING:
     from .response.aggs import BucketData
     from .search_base import SearchBase
 
 FilterValueType = Union[str, datetime]
-_R = TypeVar("_R", default=Hit)
 
 __all__ = [
     "FacetedSearchBase",
@@ -341,6 +340,10 @@ class FacetedSearchBase(Generic[_R]):
     facets: Dict[str, Facet[_R]] = {}
     using = "default"
 
+    if TYPE_CHECKING:
+
+        def search(self) -> "SearchBase[_R]": ...
+
     def __init__(
         self,
         query: Optional[Query] = None,
@@ -361,10 +364,7 @@ class FacetedSearchBase(Generic[_R]):
 
         self._s = self.build_search()
 
-    def count(self) -> int:
-        return self._s.count()
-
-    def __getitem__(self, k: Union[int, slice]) -> "FacetedSearchBase[_R]":
+    def __getitem__(self, k: Union[int, slice]) -> Self:
         self._s = self._s[k]
         return self
 
@@ -472,7 +472,3 @@ class FacetedSearchBase(Generic[_R]):
         s = self.sort(s)
         self.aggregate(s)
         return s
-
-    if TYPE_CHECKING:
-
-        def search(self) -> "SearchBase[_R]": ...

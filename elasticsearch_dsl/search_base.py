@@ -26,6 +26,7 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Protocol,
     Tuple,
     Type,
     Union,
@@ -39,23 +40,28 @@ from .aggs import A, Agg, AggBase
 from .exceptions import IllegalOperation
 from .query import Bool, Q, Query
 from .response import Hit, Response
-from .utils import AnyUsingType, AttrDict, DslBase, JSONType, recursive_to_dict
+from .utils import _R, AnyUsingType, AttrDict, DslBase, JSONType, recursive_to_dict
 
 if TYPE_CHECKING:
     from .document_base import InstrumentedField
     from .field import Field, Object
 
-_R = TypeVar("_R", default=Hit)
+
+class SupportsClone(Protocol):
+    def _clone(self) -> Self: ...
 
 
-class QueryProxy(Generic[_R]):
+_S = TypeVar("_S", bound=SupportsClone)
+
+
+class QueryProxy(Generic[_S]):
     """
     Simple proxy around DSL objects (queries) that can be called
     (to add query/post_filter) and also allows attribute access which is proxied to
     the wrapped query.
     """
 
-    def __init__(self, search: "SearchBase[_R]", attr_name: str):
+    def __init__(self, search: _S, attr_name: str):
         self._search = search
         self._proxied: Optional[Query] = None
         self._attr_name = attr_name
@@ -65,7 +71,7 @@ class QueryProxy(Generic[_R]):
 
     __bool__ = __nonzero__
 
-    def __call__(self, *args: Any, **kwargs: Any) -> "SearchBase[_R]":
+    def __call__(self, *args: Any, **kwargs: Any) -> _S:
         s = self._search._clone()
 
         # we cannot use self._proxied since we just cloned self._search and
@@ -89,16 +95,14 @@ class QueryProxy(Generic[_R]):
                 setattr(self._proxied, attr_name, value)
         super().__setattr__(attr_name, value)
 
-    def __getstate__(self) -> Tuple["SearchBase[_R]", Optional[Query], str]:
+    def __getstate__(self) -> Tuple[_S, Optional[Query], str]:
         return self._search, self._proxied, self._attr_name
 
-    def __setstate__(
-        self, state: Tuple["SearchBase[_R]", Optional[Query], str]
-    ) -> None:
+    def __setstate__(self, state: Tuple[_S, Optional[Query], str]) -> None:
         self._search, self._proxied, self._attr_name = state
 
 
-class ProxyDescriptor(Generic[_R]):
+class ProxyDescriptor(Generic[_S]):
     """
     Simple descriptor to enable setting of queries and filters as:
 
@@ -110,18 +114,18 @@ class ProxyDescriptor(Generic[_R]):
     def __init__(self, name: str):
         self._attr_name = f"_{name}_proxy"
 
-    def __get__(self, instance: "SearchBase[_R]", owner: object) -> QueryProxy[_R]:
-        return cast(QueryProxy[_R], getattr(instance, self._attr_name))
+    def __get__(self, instance: _S, owner: object) -> QueryProxy[_S]:
+        return cast(QueryProxy[_S], getattr(instance, self._attr_name))
 
-    def __set__(self, instance: "SearchBase[_R]", value: Dict[str, Any]) -> None:
-        proxy: QueryProxy[_R] = getattr(instance, self._attr_name)
+    def __set__(self, instance: _S, value: Dict[str, Any]) -> None:
+        proxy: QueryProxy[_S] = getattr(instance, self._attr_name)
         proxy._proxied = Q(value)
 
 
-class AggsProxy(AggBase, DslBase, Generic[_R]):
+class AggsProxy(AggBase, DslBase, Generic[_S]):
     name = "aggs"
 
-    def __init__(self, search: "SearchBase[_R]"):
+    def __init__(self, search: _S):
         self._base = cast("Agg", self)
         self._search = search
         self._params = {"aggs": {}}
@@ -346,12 +350,8 @@ class Request(Generic[_R]):
 
 
 class SearchBase(Request[_R]):
-    if TYPE_CHECKING:
-
-        def count(self) -> int: ...
-
-    query = ProxyDescriptor[_R]("query")
-    post_filter = ProxyDescriptor[_R]("post_filter")
+    query = ProxyDescriptor["SearchBase[_R]"]("query")
+    post_filter = ProxyDescriptor["SearchBase[_R]"]("post_filter")
     _response: Response[_R]
 
     def __init__(self, **kwargs: Any):
@@ -382,11 +382,11 @@ class SearchBase(Request[_R]):
         self._query_proxy = QueryProxy(self, "query")
         self._post_filter_proxy = QueryProxy(self, "post_filter")
 
-    def filter(self, *args: Any, **kwargs: Any) -> "SearchBase[_R]":
-        return self.query(Bool(filter=[Q(*args, **kwargs)]))
+    def filter(self, *args: Any, **kwargs: Any) -> Self:
+        return cast(Self, self.query(Bool(filter=[Q(*args, **kwargs)])))
 
-    def exclude(self, *args: Any, **kwargs: Any) -> "SearchBase[_R]":
-        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
+    def exclude(self, *args: Any, **kwargs: Any) -> Self:
+        return cast(Self, self.query(Bool(filter=[~Q(*args, **kwargs)])))
 
     def __getitem__(self, n: Union[int, slice]) -> Self:
         """
@@ -437,7 +437,7 @@ class SearchBase(Request[_R]):
         return s
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "SearchBase[_R]":
+    def from_dict(cls, d: Dict[str, Any]) -> Self:
         """
         Construct a new `Search` instance from a raw dict containing the search
         body. Useful when migrating from raw dictionaries.
@@ -820,7 +820,7 @@ class SearchBase(Request[_R]):
 
     def highlight(
         self, *fields: Union[str, "InstrumentedField"], **kwargs: Any
-    ) -> "SearchBase[_R]":
+    ) -> Self:
         """
         Request highlighting of some fields. All keyword arguments passed in will be
         used as parameters for all the fields in the ``fields`` parameter. Example::
@@ -902,7 +902,7 @@ class SearchBase(Request[_R]):
         s._suggest[name].update(kwargs)  # type: ignore[union-attr]
         return s
 
-    def search_after(self) -> "SearchBase[_R]":
+    def search_after(self) -> Self:
         """
         Return a ``Search`` instance that retrieves the next page of results.
 
@@ -930,7 +930,7 @@ class SearchBase(Request[_R]):
         """
         if not hasattr(self, "_response"):
             raise ValueError("A search must be executed before using search_after")
-        return self._response.search_after()
+        return cast(Self, self._response.search_after())
 
     def to_dict(self, count: bool = False, **kwargs: Any) -> Dict[str, JSONType]:
         """

@@ -28,22 +28,21 @@ from typing import (
     cast,
 )
 
-from typing_extensions import TypeVar
-
-from ..utils import AttrDict, AttrList, JSONType, _wrap
+from ..utils import _R, AttrDict, AttrList, JSONType, _wrap
 from .hit import Hit, HitMeta
 
 if TYPE_CHECKING:
     from ..aggs import Agg
+    from ..faceted_search_base import FacetedSearchBase
     from ..search_base import Request, SearchBase
+    from ..update_by_query_base import UpdateByQueryBase
 
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
-
-_R = TypeVar("_R", default=Hit)
 
 
 class Response(AttrDict[JSONType], Generic[_R]):
     _search: "SearchBase[_R]"
+    _faceted_search: "FacetedSearchBase[_R]"
     _doc_class: Optional[_R]
     _hits: List[_R]
 
@@ -77,11 +76,11 @@ class Response(AttrDict[JSONType], Generic[_R]):
     def __len__(self) -> int:
         return len(self.hits)
 
-    def __getstate__(self) -> Tuple[Dict[str, Any], "SearchBase[_R]", Optional[_R]]:  # type: ignore[override]
+    def __getstate__(self) -> Tuple[Dict[str, Any], "Request[_R]", Optional[_R]]:  # type: ignore[override]
         return self._d_, self._search, self._doc_class
 
     def __setstate__(
-        self, state: Tuple[Dict[str, Any], "SearchBase[_R]", Optional[_R]]  # type: ignore[override]
+        self, state: Tuple[Dict[str, Any], "Request[_R]", Optional[_R]]  # type: ignore[override]
     ) -> None:
         super(AttrDict, self).__setattr__("_d_", state[0])
         super(AttrDict, self).__setattr__("_search", state[1])
@@ -115,7 +114,7 @@ class Response(AttrDict[JSONType], Generic[_R]):
     def aggs(self) -> "AggResponse[_R]":
         if not hasattr(self, "_aggs"):
             aggs = AggResponse[_R](
-                cast("Agg", self._search.aggs),
+                cast("Agg[_R]", self._search.aggs),
                 self._search,
                 cast(Dict[str, JSONType], self._d_.get("aggregations", {})),
             )
@@ -161,7 +160,7 @@ class AggResponse(AttrDict[JSONType], Generic[_R]):
     _meta: Dict[str, Any]
 
     def __init__(
-        self, aggs: "Agg[_R]", search: "SearchBase[_R]", data: Dict[str, JSONType]
+        self, aggs: "Agg[_R]", search: "Request[_R]", data: Dict[str, JSONType]
     ):
         super(AttrDict, self).__setattr__("_meta", {"search": search, "aggs": aggs})
         super().__init__(data)
@@ -179,9 +178,11 @@ class AggResponse(AttrDict[JSONType], Generic[_R]):
 
 
 class UpdateByQueryResponse(AttrDict[JSONType], Generic[_R]):
+    _search: "UpdateByQueryBase[_R]"
+
     def __init__(
         self,
-        search: "SearchBase[_R]",
+        search: "Request[_R]",
         response: Dict[str, Any],
         doc_class: Optional[_R] = None,
     ):

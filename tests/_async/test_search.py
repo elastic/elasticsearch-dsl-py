@@ -625,11 +625,11 @@ def test_exclude():
 
 @pytest.mark.asyncio
 async def test_delete_by_query(async_mock_client):
-    s = AsyncSearch(using="mock").query("match", lang="java")
+    s = AsyncSearch(using="mock", index="i").query("match", lang="java")
     await s.delete()
 
     async_mock_client.delete_by_query.assert_awaited_once_with(
-        index=None, body={"query": {"match": {"lang": "java"}}}
+        index=["i"], body={"query": {"match": {"lang": "java"}}}
     )
 
 

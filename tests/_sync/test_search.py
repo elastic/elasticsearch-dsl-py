@@ -623,11 +623,11 @@ def test_exclude():
 
 @pytest.mark.sync
 def test_delete_by_query(mock_client):
-    s = Search(using="mock").query("match", lang="java")
+    s = Search(using="mock", index="i").query("match", lang="java")
     s.delete()
 
     mock_client.delete_by_query.assert_called_once_with(
-        index=None, body={"query": {"match": {"lang": "java"}}}
+        index=["i"], body={"query": {"match": {"lang": "java"}}}
     )
 
 

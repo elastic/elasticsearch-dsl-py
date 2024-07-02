@@ -16,30 +16,30 @@
 #  under the License.
 
 import contextlib
-from typing import Generic, Iterator
+from typing import Any, Dict, Iterator, List, Optional, cast
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import scan
-from typing_extensions import TypeVar
+from typing_extensions import Self
 
 from ..connections import get_connection
-from ..response import Hit, Response
+from ..response import Response
 from ..search_base import MultiSearchBase, SearchBase
-from ..utils import AttrDict
-
-_R = TypeVar("_R", default=Hit)
+from ..utils import _R, AttrDict, JSONType, UsingType
 
 
 class Search(SearchBase[_R]):
+    _using: UsingType
+
     def __iter__(self) -> Iterator[_R]:
         """
         Iterate over the hits.
         """
 
-        class ResultsIterator(Generic[_R]):
+        class ResultsIterator(Iterator[_R]):
             def __init__(self, search: Search[_R]):
                 self.search = search
-                self.iterator = None
+                self.iterator: Optional[Iterator[_R]] = None
 
             def __next__(self) -> _R:
                 if self.iterator is None:
@@ -51,20 +51,24 @@ class Search(SearchBase[_R]):
 
         return ResultsIterator(self)
 
-    def count(self):
+    def count(self) -> int:
         """
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if hasattr(self, "_response") and self._response.hits.total.relation == "eq":
-            return self._response.hits.total.value
+        if hasattr(self, "_response") and self._response.hits.total.relation == "eq":  # type: ignore[attr-defined]
+            return cast(int, self._response.hits.total.value)  # type: ignore[attr-defined]
 
         es = get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
-        resp = es.count(index=self._index, query=d.get("query", None), **self._params)
-        return resp["count"]
+        resp = es.count(
+            index=self._index,
+            query=cast(Optional[Dict[str, Any]], d.get("query", None)),
+            **self._params,
+        )
+        return cast(int, resp["count"])
 
     def execute(self, ignore_cache: bool = False) -> Response[_R]:
         """
@@ -85,7 +89,7 @@ class Search(SearchBase[_R]):
             )
         return self._response
 
-    def scan(self):
+    def scan(self) -> Iterator[_R]:
         """
         Turn the search into a scan search and return a generator that will
         iterate over all the documents matching the query.
@@ -100,21 +104,27 @@ class Search(SearchBase[_R]):
         es = get_connection(self._using)
 
         for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
-            yield self._get_result(hit)
+            yield self._get_result(cast(AttrDict[JSONType], hit))
 
-    def delete(self):
+    def delete(self) -> AttrDict[JSONType]:
         """
         delete() executes the query by delegating to delete_by_query()
         """
 
         es = get_connection(self._using)
+        assert self._index is not None
 
         return AttrDict(
-            es.delete_by_query(index=self._index, body=self.to_dict(), **self._params)
+            cast(
+                Dict[str, JSONType],
+                es.delete_by_query(
+                    index=self._index, body=self.to_dict(), **self._params
+                ),
+            )
         )
 
     @contextlib.contextmanager
-    def point_in_time(self, keep_alive="1m"):
+    def point_in_time(self, keep_alive: str = "1m") -> Iterator[Self]:
         """
         Open a point in time (pit) that can be used across several searches.
 
@@ -132,7 +142,7 @@ class Search(SearchBase[_R]):
         yield search
         es.close_point_in_time(id=pit["id"])
 
-    def iterate(self, keep_alive="1m"):
+    def iterate(self, keep_alive: str = "1m") -> Iterator[_R]:
         """
         Return a generator that iterates over all the documents matching the query.
 
@@ -148,16 +158,20 @@ class Search(SearchBase[_R]):
                     yield hit
                 if len(r.hits) == 0:
                     break
-                s = r.search_after()
+                s = s.search_after()
 
 
-class MultiSearch(MultiSearchBase):
+class MultiSearch(MultiSearchBase[_R]):
     """
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.
     """
 
-    def execute(self, ignore_cache=False, raise_on_error=True):
+    _using: UsingType
+
+    def execute(
+        self, ignore_cache: bool = False, raise_on_error: bool = True
+    ) -> List[Response[_R]]:
         """
         Execute the multi search request and return a list of search results.
         """
@@ -168,7 +182,7 @@ class MultiSearch(MultiSearchBase):
                 index=self._index, body=self.to_dict(), **self._params
             )
 
-            out = []
+            out: List[Response[_R]] = []
             for s, r in zip(self._searches, responses["responses"]):
                 if r.get("error", False):
                     if raise_on_error:
@@ -183,16 +197,16 @@ class MultiSearch(MultiSearchBase):
         return self._response
 
 
-class EmptySearch(Search):
-    def count(self):
+class EmptySearch(Search[_R]):
+    def count(self) -> int:
         return 0
 
-    def execute(self, ignore_cache=False):
+    def execute(self, ignore_cache: bool = False) -> Response[_R]:
         return self._response_class(self, {"hits": {"total": 0, "hits": []}})
 
-    def scan(self):
+    def scan(self) -> Iterator[_R]:
         return
         yield  # a bit strange, but this forces an empty generator function
 
-    def delete(self):
-        return AttrDict({})
+    def delete(self) -> AttrDict[JSONType]:
+        return AttrDict[JSONType]({})

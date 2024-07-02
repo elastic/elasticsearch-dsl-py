@@ -190,6 +190,7 @@ async def async_write_client(write_client, async_client):
 def mock_client(dummy_response):
     client = Mock()
     client.search.return_value = dummy_response
+    client.update_by_query.return_value = dummy_response
     add_connection("mock", client)
 
     yield client
@@ -473,7 +474,7 @@ async def async_pull_request(async_write_client):
 
 
 @fixture
-def setup_ubq_tests(client):
+def setup_ubq_tests(client) -> str:
     index = "test-git"
     create_git_index(client, index)
     bulk(client, TEST_GIT_DATA, raise_on_error=True, refresh=True)

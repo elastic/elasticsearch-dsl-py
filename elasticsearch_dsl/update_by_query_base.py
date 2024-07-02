@@ -15,16 +15,20 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import Any, Dict, Type, cast
+
+from typing_extensions import Self
+
 from .query import Bool, Q
 from .response import UpdateByQueryResponse
 from .search_base import ProxyDescriptor, QueryProxy, Request
-from .utils import recursive_to_dict
+from .utils import _R, JSONType, recursive_to_dict
 
 
-class UpdateByQueryBase(Request):
-    query = ProxyDescriptor("query")
+class UpdateByQueryBase(Request[_R]):
+    query = ProxyDescriptor["UpdateByQueryBase[_R]"]("query")
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         """
         Update by query request to elasticsearch.
 
@@ -37,18 +41,18 @@ class UpdateByQueryBase(Request):
 
         """
         super().__init__(**kwargs)
-        self._response_class = UpdateByQueryResponse
-        self._script = {}
+        self._response_class = UpdateByQueryResponse[_R]
+        self._script: Dict[str, Any] = {}
         self._query_proxy = QueryProxy(self, "query")
 
-    def filter(self, *args, **kwargs):
-        return self.query(Bool(filter=[Q(*args, **kwargs)]))
+    def filter(self, *args: Any, **kwargs: Any) -> Self:
+        return cast(Self, self.query(Bool(filter=[Q(*args, **kwargs)])))
 
-    def exclude(self, *args, **kwargs):
-        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
+    def exclude(self, *args: Any, **kwargs: Any) -> Self:
+        return cast(Self, self.query(Bool(filter=[~Q(*args, **kwargs)])))
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d: Dict[str, Any]) -> Self:
         """
         Construct a new `UpdateByQuery` instance from a raw dict containing the search
         body. Useful when migrating from raw dictionaries.
@@ -69,7 +73,7 @@ class UpdateByQueryBase(Request):
         u.update_from_dict(d)
         return u
 
-    def _clone(self):
+    def _clone(self) -> Self:
         """
         Return a clone of the current search request. Performs a shallow copy
         of all the underlying objects. Used internally by most state modifying
@@ -82,7 +86,7 @@ class UpdateByQueryBase(Request):
         ubq.query._proxied = self.query._proxied
         return ubq
 
-    def response_class(self, cls):
+    def response_class(self, cls: Type[UpdateByQueryResponse[_R]]) -> Self:
         """
         Override the default wrapper used for the response.
         """
@@ -90,7 +94,7 @@ class UpdateByQueryBase(Request):
         ubq._response_class = cls
         return ubq
 
-    def update_from_dict(self, d):
+    def update_from_dict(self, d: Dict[str, Any]) -> Self:
         """
         Apply options from a serialized body to the current instance. Modifies
         the object in-place. Used mostly by ``from_dict``.
@@ -103,7 +107,7 @@ class UpdateByQueryBase(Request):
         self._extra.update(d)
         return self
 
-    def script(self, **kwargs):
+    def script(self, **kwargs: Any) -> Self:
         """
         Define update action to take:
         https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-using.html
@@ -126,7 +130,7 @@ class UpdateByQueryBase(Request):
         ubq._script.update(kwargs)
         return ubq
 
-    def to_dict(self, **kwargs):
+    def to_dict(self, **kwargs: Any) -> Dict[str, JSONType]:
         """
         Serialize the search into the dictionary that will be sent over as the
         request'ubq body.

@@ -15,22 +15,33 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING
+
 from ..async_connections import get_connection
 from ..update_by_query_base import UpdateByQueryBase
+from ..utils import _R, AsyncUsingType
+
+if TYPE_CHECKING:
+    from ..response import UpdateByQueryResponse
 
 
-class AsyncUpdateByQuery(UpdateByQueryBase):
-    async def execute(self):
+class AsyncUpdateByQuery(UpdateByQueryBase[_R]):
+    _using: AsyncUsingType
+
+    async def execute(self) -> "UpdateByQueryResponse[_R]":
         """
         Execute the search and return an instance of ``Response`` wrapping all
         the data.
         """
         es = get_connection(self._using)
+        assert self._index is not None
 
         self._response = self._response_class(
             self,
-            await es.update_by_query(
-                index=self._index, **self.to_dict(), **self._params
-            ),
+            (
+                await es.update_by_query(
+                    index=self._index, **self.to_dict(), **self._params  # type: ignore
+                )
+            ).body,
         )
         return self._response

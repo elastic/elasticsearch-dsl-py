@@ -15,23 +15,34 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import TYPE_CHECKING
+
 from elasticsearch_dsl.faceted_search_base import FacetedResponse, FacetedSearchBase
 
+from ..utils import _R
 from .search import AsyncSearch
 
+if TYPE_CHECKING:
+    from ..response import Response
 
-class AsyncFacetedSearch(FacetedSearchBase):
-    def search(self):
+
+class AsyncFacetedSearch(FacetedSearchBase[_R]):
+    _s: AsyncSearch[_R]
+
+    async def count(self) -> int:
+        return await self._s.count()
+
+    def search(self) -> AsyncSearch[_R]:
         """
         Returns the base Search object to which the facets are added.
 
         You can customize the query by overriding this method and returning a
         modified search object.
         """
-        s = AsyncSearch(doc_type=self.doc_types, index=self.index, using=self.using)
+        s = AsyncSearch[_R](doc_type=self.doc_types, index=self.index, using=self.using)
         return s.response_class(FacetedResponse)
 
-    async def execute(self):
+    async def execute(self) -> "Response[_R]":
         """
         Execute the search and return the response.
         """
