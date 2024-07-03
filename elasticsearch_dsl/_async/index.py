@@ -168,14 +168,14 @@ class AsyncIndex(IndexBase):
 
     async def create(
         self, using: Optional[AsyncUsingType] = None, **kwargs: Any
-    ) -> None:
+    ) -> "ObjectApiResponse[Any]":
         """
         Creates the index in elasticsearch.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.indices.create`` unchanged.
         """
-        await self._get_connection(using).indices.create(
+        return await self._get_connection(using).indices.create(
             index=self._name, body=self.to_dict(), **kwargs
         )
 
@@ -185,7 +185,9 @@ class AsyncIndex(IndexBase):
         )
         return bool(state["metadata"]["indices"][self._name]["state"] == "close")
 
-    async def save(self, using: Optional[AsyncUsingType] = None) -> None:
+    async def save(
+        self, using: Optional[AsyncUsingType] = None
+    ) -> "Optional[ObjectApiResponse[Any]]":
         """
         Sync the index definition with elasticsearch, creating the index if it
         doesn't exist and updating its settings and mappings if it does.
@@ -237,7 +239,9 @@ class AsyncIndex(IndexBase):
         # exception
         mappings = body.pop("mappings", {})
         if mappings:
-            await self.put_mapping(using=using, body=mappings)
+            return await self.put_mapping(using=using, body=mappings)
+
+        return None
 
     async def analyze(
         self, using: Optional[AsyncUsingType] = None, **kwargs: Any
