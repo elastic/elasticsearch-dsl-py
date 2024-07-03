@@ -15,26 +15,35 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from typing import List, Optional, Union
+
+from typing_extensions import Self
+
 from ..async_connections import get_connection
 from ..mapping_base import MappingBase
+from ..utils import AsyncUsingType
 
 
 class AsyncMapping(MappingBase):
     @classmethod
-    async def from_es(cls, index, using="default"):
+    async def from_es(
+        cls, index: Optional[Union[str, List[str]]], using: AsyncUsingType = "default"
+    ) -> Self:
         m = cls()
         await m.update_from_es(index, using)
         return m
 
-    async def update_from_es(self, index, using="default"):
+    async def update_from_es(
+        self, index: Optional[Union[str, List[str]]], using: AsyncUsingType = "default"
+    ) -> None:
         es = get_connection(using)
         raw = await es.indices.get_mapping(index=index)
         _, raw = raw.popitem()
         self._update_from_dict(raw["mappings"])
 
-    async def save(self, index, using="default"):
+    async def save(self, index: str, using: AsyncUsingType = "default") -> None:
         from .index import AsyncIndex
 
-        index = AsyncIndex(index, using=using)
-        index.mapping(self)
-        return await index.save()
+        i = AsyncIndex(index, using=using)
+        i.mapping(self)
+        await i.save()

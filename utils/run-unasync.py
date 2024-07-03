@@ -86,6 +86,8 @@ def main(check=False):
 
     filepaths = []
     for root, _, filenames in os.walk(Path(__file__).absolute().parent.parent):
+        if "/site-packages" in root or "/." in root or "__pycache__" in root:
+            continue
         for filename in filenames:
             if filename.rpartition(".")[-1] in (
                 "py",

@@ -30,17 +30,12 @@ from typing import (
     cast,
 )
 
-from typing_extensions import TypeVar
-
-from .response import Hit
 from .response.aggs import AggResponse, BucketData, FieldBucketData, TopHitsData
-from .utils import AttrDict, DslBase, JSONType
+from .utils import _R, AttrDict, DslBase, JSONType
 
 if TYPE_CHECKING:
     from .query import Query
     from .search_base import SearchBase
-
-_R = TypeVar("_R", default=Hit)
 
 
 def A(
