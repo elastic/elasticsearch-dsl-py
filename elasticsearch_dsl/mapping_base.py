@@ -17,7 +17,7 @@
 
 import collections.abc
 from itertools import chain
-from typing import Any, Dict, Iterator
+from typing import Any, Dict, Iterator, List, Optional, Tuple, cast
 
 from typing_extensions import Self
 
@@ -41,10 +41,12 @@ class Properties(DslBase):
     name = "properties"
     _param_defs = {"properties": {"type": "field", "hash": True}}
 
-    def __init__(self):
+    properties: Dict[str, Field]
+
+    def __init__(self) -> None:
         super().__init__()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Properties()"
 
     def __getitem__(self, name: str) -> Field:
@@ -53,16 +55,17 @@ class Properties(DslBase):
     def __contains__(self, name: str) -> bool:
         return name in self.properties
 
-    def to_dict(self):
-        return super().to_dict()["properties"]
+    def to_dict(self) -> Dict[str, Any]:
+        return cast(Dict[str, Field], super().to_dict()["properties"])
 
-    def field(self, name, *args, **kwargs):
+    def field(self, name: str, *args: Any, **kwargs: Any) -> Self:
         self.properties[name] = construct_field(*args, **kwargs)
         return self
 
     def _collect_fields(self) -> Iterator[Field]:
         """Iterate over all Field objects within, including multi fields."""
-        for f in self.properties.to_dict().values():
+        fields = cast(Dict[str, Field], self.properties.to_dict())  # type: ignore
+        for f in fields.values():
             yield f
             # multi fields
             if hasattr(f, "fields"):
@@ -71,7 +74,7 @@ class Properties(DslBase):
             if hasattr(f, "_collect_fields"):
                 yield from f._collect_fields()
 
-    def update(self, other_object):
+    def update(self, other_object: Any) -> None:
         if not hasattr(other_object, "properties"):
             # not an inner/nested object, no merge possible
             return
@@ -88,40 +91,42 @@ class Properties(DslBase):
 class MappingBase:
     def __init__(self) -> None:
         self.properties = Properties()
-        self._meta = {}
+        self._meta: Dict[str, Any] = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Mapping()"
 
-    def _clone(self):
+    def _clone(self) -> Self:
         m = self.__class__()
         m.properties._params = self.properties._params.copy()
         return m
 
-    def resolve_nested(self, field_path):
+    def resolve_nested(
+        self, field_path: str
+    ) -> Tuple[List[str], Optional["MappingBase"]]:
         field = self
         nested = []
         parts = field_path.split(".")
         for i, step in enumerate(parts):
             try:
-                field = field[step]
+                field = field[step]  # type: ignore[assignment]
             except KeyError:
-                return (), None
+                return [], None
             if isinstance(field, Nested):
                 nested.append(".".join(parts[: i + 1]))
         return nested, field
 
-    def resolve_field(self, field_path):
+    def resolve_field(self, field_path: str) -> Optional[Field]:
         field = self
         for step in field_path.split("."):
             try:
-                field = field[step]
+                field = field[step]  # type: ignore[assignment]
             except KeyError:
-                return
-        return field
+                return None
+        return cast(Field, field)
 
-    def _collect_analysis(self):
-        analysis = {}
+    def _collect_analysis(self) -> Dict[str, Any]:
+        analysis: Dict[str, Any] = {}
         fields = []
         if "_all" in self._meta:
             fields.append(Text(**self._meta["_all"]))
@@ -148,7 +153,7 @@ class MappingBase:
 
         return analysis
 
-    def _update_from_dict(self, raw):
+    def _update_from_dict(self, raw: Dict[str, Any]) -> None:
         for name, definition in raw.get("properties", {}).items():
             self.field(name, definition)
 
@@ -160,7 +165,7 @@ class MappingBase:
                 else:
                     self.meta(name, value)
 
-    def update(self, mapping: "MappingBase", update_only: bool = False):
+    def update(self, mapping: "MappingBase", update_only: bool = False) -> None:
         for name in mapping:
             if update_only and name in self:
                 # nested and inner objects, merge recursively
@@ -183,14 +188,14 @@ class MappingBase:
     def __getitem__(self, name: str) -> Field:
         return self.properties.properties[name]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.properties.properties)
 
     def field(self, *args: Any, **kwargs: Any) -> Self:
         self.properties.field(*args, **kwargs)
         return self
 
-    def meta(self, name: str, params: Any = None, **kwargs: Any):
+    def meta(self, name: str, params: Any = None, **kwargs: Any) -> Self:
         if not name.startswith("_") and name not in META_FIELDS:
             name = "_" + name
 
