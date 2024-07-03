@@ -15,12 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from typing_extensions import Self
 
 from . import analysis
-from .utils import merge
+from .utils import AnyUsingType, merge
 
 if TYPE_CHECKING:
     from .document_base import DocumentMeta
@@ -29,28 +29,30 @@ if TYPE_CHECKING:
 
 
 class IndexBase:
-    def __init__(self, name, mapping_class, using="default"):
+    def __init__(self, name: str, mapping_class: type, using: AnyUsingType = "default"):
         """
         :arg name: name of the index
         :arg using: connection alias to use, defaults to ``'default'``
         """
         self._name = name
-        self._doc_types = []
+        self._doc_types: List["DocumentMeta"] = []
         self._using = using
-        self._settings = {}
-        self._aliases = {}
-        self._analysis = {}
+        self._settings: Dict[str, Any] = {}
+        self._aliases: Dict[str, Any] = {}
+        self._analysis: Dict[str, Any] = {}
         self._mapping_class = mapping_class
         self._mapping: Optional["MappingBase"] = None
 
-    def resolve_nested(self, field_path):
+    def resolve_nested(
+        self, field_path: str
+    ) -> Tuple[List[str], Optional["MappingBase"]]:
         for doc in self._doc_types:
             nested, field = doc._doc_type.mapping.resolve_nested(field_path)
             if field is not None:
                 return nested, field
         if self._mapping:
             return self._mapping.resolve_nested(field_path)
-        return (), None
+        return [], None
 
     def resolve_field(self, field_path: str) -> Optional["Field"]:
         for doc in self._doc_types:
@@ -61,12 +63,12 @@ class IndexBase:
             return self._mapping.resolve_field(field_path)
         return None
 
-    def get_or_create_mapping(self):
+    def get_or_create_mapping(self) -> "MappingBase":
         if self._mapping is None:
             self._mapping = self._mapping_class()
         return self._mapping
 
-    def mapping(self, mapping):
+    def mapping(self, mapping: "MappingBase") -> None:
         """
         Associate a mapping (an instance of
         :class:`~elasticsearch_dsl.Mapping`) with this index.
@@ -156,7 +158,7 @@ class IndexBase:
         # merge the definition
         merge(self._analysis, d, True)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         out = {}
         if self._settings:
             out["settings"] = self._settings

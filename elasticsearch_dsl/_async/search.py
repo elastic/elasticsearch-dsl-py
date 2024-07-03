@@ -16,30 +16,30 @@
 #  under the License.
 
 import contextlib
-from typing import AsyncIterator, Generic
+from typing import Any, AsyncIterator, Dict, Iterator, List, Optional, cast
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import async_scan
-from typing_extensions import TypeVar
+from typing_extensions import Self
 
 from ..async_connections import get_connection
-from ..response import Hit, Response
+from ..response import Response
 from ..search_base import MultiSearchBase, SearchBase
-from ..utils import AttrDict
-
-_R = TypeVar("_R", default=Hit)
+from ..utils import _R, AsyncUsingType, AttrDict, JSONType
 
 
 class AsyncSearch(SearchBase[_R]):
+    _using: AsyncUsingType
+
     def __aiter__(self) -> AsyncIterator[_R]:
         """
         Iterate over the hits.
         """
 
-        class ResultsIterator(Generic[_R]):
+        class ResultsIterator(AsyncIterator[_R]):
             def __init__(self, search: AsyncSearch[_R]):
                 self.search = search
-                self.iterator = None
+                self.iterator: Optional[Iterator[_R]] = None
 
             async def __anext__(self) -> _R:
                 if self.iterator is None:
@@ -51,22 +51,24 @@ class AsyncSearch(SearchBase[_R]):
 
         return ResultsIterator(self)
 
-    async def count(self):
+    async def count(self) -> int:
         """
         Return the number of hits matching the query and filters. Note that
         only the actual number is returned.
         """
-        if hasattr(self, "_response") and self._response.hits.total.relation == "eq":
-            return self._response.hits.total.value
+        if hasattr(self, "_response") and self._response.hits.total.relation == "eq":  # type: ignore[attr-defined]
+            return cast(int, self._response.hits.total.value)  # type: ignore[attr-defined]
 
         es = get_connection(self._using)
 
         d = self.to_dict(count=True)
         # TODO: failed shards detection
         resp = await es.count(
-            index=self._index, query=d.get("query", None), **self._params
+            index=self._index,
+            query=cast(Optional[Dict[str, Any]], d.get("query", None)),
+            **self._params,
         )
-        return resp["count"]
+        return cast(int, resp["count"])
 
     async def execute(self, ignore_cache: bool = False) -> Response[_R]:
         """
@@ -89,7 +91,7 @@ class AsyncSearch(SearchBase[_R]):
             )
         return self._response
 
-    async def scan(self):
+    async def scan(self) -> AsyncIterator[_R]:
         """
         Turn the search into a scan search and return a generator that will
         iterate over all the documents matching the query.
@@ -106,23 +108,27 @@ class AsyncSearch(SearchBase[_R]):
         async for hit in async_scan(
             es, query=self.to_dict(), index=self._index, **self._params
         ):
-            yield self._get_result(hit)
+            yield self._get_result(cast(AttrDict[JSONType], hit))
 
-    async def delete(self):
+    async def delete(self) -> AttrDict[JSONType]:
         """
         delete() executes the query by delegating to delete_by_query()
         """
 
         es = get_connection(self._using)
+        assert self._index is not None
 
         return AttrDict(
-            await es.delete_by_query(
-                index=self._index, body=self.to_dict(), **self._params
+            cast(
+                Dict[str, JSONType],
+                await es.delete_by_query(
+                    index=self._index, body=self.to_dict(), **self._params
+                ),
             )
         )
 
     @contextlib.asynccontextmanager
-    async def point_in_time(self, keep_alive="1m"):
+    async def point_in_time(self, keep_alive: str = "1m") -> AsyncIterator[Self]:
         """
         Open a point in time (pit) that can be used across several searches.
 
@@ -142,7 +148,7 @@ class AsyncSearch(SearchBase[_R]):
         yield search
         await es.close_point_in_time(id=pit["id"])
 
-    async def iterate(self, keep_alive="1m"):
+    async def iterate(self, keep_alive: str = "1m") -> AsyncIterator[_R]:
         """
         Return a generator that iterates over all the documents matching the query.
 
@@ -158,16 +164,20 @@ class AsyncSearch(SearchBase[_R]):
                     yield hit
                 if len(r.hits) == 0:
                     break
-                s = r.search_after()
+                s = s.search_after()
 
 
-class AsyncMultiSearch(MultiSearchBase):
+class AsyncMultiSearch(MultiSearchBase[_R]):
     """
     Combine multiple :class:`~elasticsearch_dsl.Search` objects into a single
     request.
     """
 
-    async def execute(self, ignore_cache=False, raise_on_error=True):
+    _using: AsyncUsingType
+
+    async def execute(
+        self, ignore_cache: bool = False, raise_on_error: bool = True
+    ) -> List[Response[_R]]:
         """
         Execute the multi search request and return a list of search results.
         """
@@ -178,7 +188,7 @@ class AsyncMultiSearch(MultiSearchBase):
                 index=self._index, body=self.to_dict(), **self._params
             )
 
-            out = []
+            out: List[Response[_R]] = []
             for s, r in zip(self._searches, responses["responses"]):
                 if r.get("error", False):
                     if raise_on_error:
@@ -193,16 +203,16 @@ class AsyncMultiSearch(MultiSearchBase):
         return self._response
 
 
-class AsyncEmptySearch(AsyncSearch):
-    async def count(self):
+class AsyncEmptySearch(AsyncSearch[_R]):
+    async def count(self) -> int:
         return 0
 
-    async def execute(self, ignore_cache=False):
+    async def execute(self, ignore_cache: bool = False) -> Response[_R]:
         return self._response_class(self, {"hits": {"total": 0, "hits": []}})
 
-    async def scan(self):
+    async def scan(self) -> AsyncIterator[_R]:
         return
         yield  # a bit strange, but this forces an empty generator function
 
-    async def delete(self):
-        return AttrDict({})
+    async def delete(self) -> AttrDict[JSONType]:
+        return AttrDict[JSONType]({})
