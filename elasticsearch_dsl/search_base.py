@@ -40,7 +40,7 @@ from .aggs import A, Agg, AggBase
 from .exceptions import IllegalOperation
 from .query import Bool, Q, Query
 from .response import Hit, Response
-from .utils import _R, AnyUsingType, AttrDict, DslBase, JSONType, recursive_to_dict
+from .utils import _R, AnyUsingType, AttrDict, DslBase, recursive_to_dict
 
 if TYPE_CHECKING:
     from .document_base import InstrumentedField
@@ -91,7 +91,7 @@ class QueryProxy(Generic[_S]):
     def __setattr__(self, attr_name: str, value: Any) -> None:
         if not attr_name.startswith("_"):
             if self._proxied is not None:
-                self._proxied = Q(self._proxied.to_dict())  # type: ignore
+                self._proxied = Q(self._proxied.to_dict())
                 setattr(self._proxied, attr_name, value)
         super().__setattr__(attr_name, value)
 
@@ -130,8 +130,8 @@ class AggsProxy(AggBase, DslBase, Generic[_S]):
         self._search = search
         self._params = {"aggs": {}}
 
-    def to_dict(self) -> Dict[str, JSONType]:
-        return cast(Dict[str, JSONType], super().to_dict().get("aggs", {}))
+    def to_dict(self) -> Dict[str, Any]:
+        return cast(Dict[str, Any], super().to_dict().get("aggs", {}))
 
 
 class Request(Generic[_R]):
@@ -231,7 +231,7 @@ class Request(Generic[_R]):
         return None
 
     def _resolve_nested(
-        self, hit: AttrDict[JSONType], parent_class: Optional[type] = None
+        self, hit: AttrDict[Any], parent_class: Optional[type] = None
     ) -> Type[_R]:
         doc_class = Hit
 
@@ -258,7 +258,7 @@ class Request(Generic[_R]):
         return cast(Type[_R], doc_class)
 
     def _get_result(
-        self, hit: AttrDict[JSONType], parent_class: Optional[type] = None
+        self, hit: AttrDict[Any], parent_class: Optional[type] = None
     ) -> _R:
         doc_class: Any = Hit
         dt = hit.get("_type")
@@ -284,7 +284,7 @@ class Request(Generic[_R]):
         return cast(_R, callback(hit))
 
     def doc_type(
-        self, *doc_type: Union[type, str], **kwargs: Callable[[AttrDict[JSONType]], Any]
+        self, *doc_type: Union[type, str], **kwargs: Callable[[AttrDict[Any]], Any]
     ) -> Self:
         """
         Set the type to search through. You can supply a single value or
@@ -346,7 +346,7 @@ class Request(Generic[_R]):
 
     if TYPE_CHECKING:
 
-        def to_dict(self) -> Dict[str, JSONType]: ...
+        def to_dict(self) -> Dict[str, Any]: ...
 
 
 class SearchBase(Request[_R]):
@@ -369,14 +369,14 @@ class SearchBase(Request[_R]):
 
         self.aggs = AggsProxy(self)
         self._sort: List[Union[str, Dict[str, Dict[str, str]]]] = []
-        self._knn: List[Dict[str, JSONType]] = []
-        self._rank: Dict[str, JSONType] = {}
-        self._collapse: Dict[str, JSONType] = {}
+        self._knn: List[Dict[str, Any]] = []
+        self._rank: Dict[str, Any] = {}
+        self._collapse: Dict[str, Any] = {}
         self._source: Optional[Union[bool, List[str], Dict[str, List[str]]]] = None
-        self._highlight: Dict[str, JSONType] = {}
-        self._highlight_opts: Dict[str, JSONType] = {}
-        self._suggest: Dict[str, JSONType] = {}
-        self._script_fields: Dict[str, JSONType] = {}
+        self._highlight: Dict[str, Any] = {}
+        self._highlight_opts: Dict[str, Any] = {}
+        self._suggest: Dict[str, Any] = {}
+        self._script_fields: Dict[str, Any] = {}
         self._response_class = Response[_R]
 
         self._query_proxy = QueryProxy(self, "query")
@@ -529,7 +529,7 @@ class SearchBase(Request[_R]):
             if "text" in self._suggest:
                 text = self._suggest.pop("text")
                 for s in self._suggest.values():
-                    s.setdefault("text", text)  # type: ignore[union-attr]
+                    s.setdefault("text", text)
         if "script_fields" in d:
             self._script_fields = d.pop("script_fields")
         self._extra.update(d)
@@ -569,11 +569,11 @@ class SearchBase(Request[_R]):
         k: int,
         num_candidates: int,
         query_vector: Optional[List[float]] = None,
-        query_vector_builder: Optional[Dict[str, JSONType]] = None,
+        query_vector_builder: Optional[Dict[str, Any]] = None,
         boost: Optional[float] = None,
         filter: Optional[Query] = None,
         similarity: Optional[float] = None,
-        inner_hits: Optional[Dict[str, JSONType]] = None,
+        inner_hits: Optional[Dict[str, Any]] = None,
     ) -> Self:
         """
         Add a k-nearest neighbor (kNN) search.
@@ -609,7 +609,7 @@ class SearchBase(Request[_R]):
                 "only one of query_vector and query_vector_builder must be given"
             )
         if query_vector is not None:
-            s._knn[-1]["query_vector"] = cast(JSONType, query_vector)
+            s._knn[-1]["query_vector"] = cast(Any, query_vector)
         if query_vector_builder is not None:
             s._knn[-1]["query_vector_builder"] = query_vector_builder
         if boost is not None:
@@ -625,7 +625,7 @@ class SearchBase(Request[_R]):
             s._knn[-1]["inner_hits"] = inner_hits
         return s
 
-    def rank(self, rrf: Optional[Union[bool, Dict[str, JSONType]]] = None) -> Self:
+    def rank(self, rrf: Optional[Union[bool, Dict[str, Any]]] = None) -> Self:
         """
         Defines a method for combining and ranking results sets from a combination
         of searches. Requires a minimum of 2 results sets.
@@ -783,7 +783,7 @@ class SearchBase(Request[_R]):
     def collapse(
         self,
         field: Optional[Union[str, "InstrumentedField"]] = None,
-        inner_hits: Optional[Dict[str, JSONType]] = None,
+        inner_hits: Optional[Dict[str, Any]] = None,
         max_concurrent_group_searches: Optional[int] = None,
     ) -> Self:
         """
@@ -899,7 +899,7 @@ class SearchBase(Request[_R]):
                 s._suggest[name] = {"prefix": text}
             else:
                 s._suggest[name] = {"text": text}
-        s._suggest[name].update(kwargs)  # type: ignore[union-attr]
+        s._suggest[name].update(kwargs)
         return s
 
     def search_after(self) -> Self:
@@ -932,7 +932,7 @@ class SearchBase(Request[_R]):
             raise ValueError("A search must be executed before using search_after")
         return cast(Self, self._response.search_after())
 
-    def to_dict(self, count: bool = False, **kwargs: Any) -> Dict[str, JSONType]:
+    def to_dict(self, count: bool = False, **kwargs: Any) -> Dict[str, Any]:
         """
         Serialize the search into the dictionary that will be sent over as the
         request's body.
@@ -1022,12 +1022,12 @@ class MultiSearchBase(Request[_R]):
         ms._searches.append(search)
         return ms
 
-    def to_dict(self) -> List[Dict[str, JSONType]]:  # type: ignore[override]
-        out: List[Dict[str, JSONType]] = []
+    def to_dict(self) -> List[Dict[str, Any]]:  # type: ignore[override]
+        out: List[Dict[str, Any]] = []
         for s in self._searches:
-            meta: Dict[str, JSONType] = {}
+            meta: Dict[str, Any] = {}
             if s._index:
-                meta["index"] = cast(JSONType, s._index)
+                meta["index"] = cast(Any, s._index)
             meta.update(s._params)
 
             out.append(meta)

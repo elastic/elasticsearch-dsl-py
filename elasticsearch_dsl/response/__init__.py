@@ -28,7 +28,7 @@ from typing import (
     cast,
 )
 
-from ..utils import _R, AttrDict, AttrList, JSONType, _wrap
+from ..utils import _R, AttrDict, AttrList, _wrap
 from .hit import Hit, HitMeta
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 
 
-class Response(AttrDict[JSONType], Generic[_R]):
+class Response(AttrDict[Any], Generic[_R]):
     _search: "SearchBase[_R]"
     _faceted_search: "FacetedSearchBase[_R]"
     _doc_class: Optional[_R]
@@ -92,7 +92,7 @@ class Response(AttrDict[JSONType], Generic[_R]):
     @property
     def hits(self) -> List[_R]:
         if not hasattr(self, "_hits"):
-            h = cast(AttrDict[JSONType], self._d_["hits"])
+            h = cast(AttrDict[Any], self._d_["hits"])
 
             try:
                 hits = AttrList(list(map(self._search._get_result, h["hits"])))
@@ -116,7 +116,7 @@ class Response(AttrDict[JSONType], Generic[_R]):
             aggs = AggResponse[_R](
                 cast("Agg[_R]", self._search.aggs),
                 self._search,
-                cast(Dict[str, JSONType], self._d_.get("aggregations", {})),
+                cast(Dict[str, Any], self._d_.get("aggregations", {})),
             )
 
             # avoid assigning _aggs into self._d_
@@ -156,12 +156,10 @@ class Response(AttrDict[JSONType], Generic[_R]):
         return self._search.extra(search_after=self.hits[-1].meta.sort)  # type: ignore
 
 
-class AggResponse(AttrDict[JSONType], Generic[_R]):
+class AggResponse(AttrDict[Any], Generic[_R]):
     _meta: Dict[str, Any]
 
-    def __init__(
-        self, aggs: "Agg[_R]", search: "Request[_R]", data: Dict[str, JSONType]
-    ):
+    def __init__(self, aggs: "Agg[_R]", search: "Request[_R]", data: Dict[str, Any]):
         super(AttrDict, self).__setattr__("_meta", {"search": search, "aggs": aggs})
         super().__init__(data)
 
@@ -177,7 +175,7 @@ class AggResponse(AttrDict[JSONType], Generic[_R]):
             yield self[name]
 
 
-class UpdateByQueryResponse(AttrDict[JSONType], Generic[_R]):
+class UpdateByQueryResponse(AttrDict[Any], Generic[_R]):
     _search: "UpdateByQueryBase[_R]"
 
     def __init__(

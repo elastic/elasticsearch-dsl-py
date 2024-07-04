@@ -40,7 +40,7 @@ class AsyncUpdateByQuery(UpdateByQueryBase[_R]):
             self,
             (
                 await es.update_by_query(
-                    index=self._index, **self.to_dict(), **self._params  # type: ignore
+                    index=self._index, **self.to_dict(), **self._params
                 )
             ).body,
         )

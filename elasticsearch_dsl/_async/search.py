@@ -25,7 +25,7 @@ from typing_extensions import Self
 from ..async_connections import get_connection
 from ..response import Response
 from ..search_base import MultiSearchBase, SearchBase
-from ..utils import _R, AsyncUsingType, AttrDict, JSONType
+from ..utils import _R, AsyncUsingType, AttrDict
 
 
 class AsyncSearch(SearchBase[_R]):
@@ -108,9 +108,9 @@ class AsyncSearch(SearchBase[_R]):
         async for hit in async_scan(
             es, query=self.to_dict(), index=self._index, **self._params
         ):
-            yield self._get_result(cast(AttrDict[JSONType], hit))
+            yield self._get_result(cast(AttrDict[Any], hit))
 
-    async def delete(self) -> AttrDict[JSONType]:
+    async def delete(self) -> AttrDict[Any]:
         """
         delete() executes the query by delegating to delete_by_query()
         """
@@ -120,7 +120,7 @@ class AsyncSearch(SearchBase[_R]):
 
         return AttrDict(
             cast(
-                Dict[str, JSONType],
+                Dict[str, Any],
                 await es.delete_by_query(
                     index=self._index, body=self.to_dict(), **self._params
                 ),
@@ -214,5 +214,5 @@ class AsyncEmptySearch(AsyncSearch[_R]):
         return
         yield  # a bit strange, but this forces an empty generator function
 
-    async def delete(self) -> AttrDict[JSONType]:
-        return AttrDict[JSONType]({})
+    async def delete(self) -> AttrDict[Any]:
+        return AttrDict[Any]({})

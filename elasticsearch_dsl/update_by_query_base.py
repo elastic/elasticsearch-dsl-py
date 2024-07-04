@@ -22,7 +22,7 @@ from typing_extensions import Self
 from .query import Bool, Q
 from .response import UpdateByQueryResponse
 from .search_base import ProxyDescriptor, QueryProxy, Request
-from .utils import _R, JSONType, recursive_to_dict
+from .utils import _R, recursive_to_dict
 
 
 class UpdateByQueryBase(Request[_R]):
@@ -130,7 +130,7 @@ class UpdateByQueryBase(Request[_R]):
         ubq._script.update(kwargs)
         return ubq
 
-    def to_dict(self, **kwargs: Any) -> Dict[str, JSONType]:
+    def to_dict(self, **kwargs: Any) -> Dict[str, Any]:
         """
         Serialize the search into the dictionary that will be sent over as the
         request'ubq body.
