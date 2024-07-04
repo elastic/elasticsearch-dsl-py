@@ -166,24 +166,11 @@ class DocumentOptions:
         field_defaults = {}
         for name in fields:
             value = None
-            if name in attrs:
-                # this field has a right-side value, which can be field
-                # instance on its own or wrapped with mapped_field()
-                value = attrs[name]
-                if isinstance(value, dict):
-                    # the mapped_field() wrapper function was used so we need
-                    # to look for the field instance and also record any
-                    # dataclass-style defaults
-                    value = attrs[name].get("_field")
-                    default_value = attrs[name].get("default") or attrs[name].get(
-                        "default_factory"
-                    )
-                    if default_value:
-                        field_defaults[name] = default_value
-            if value is None:
-                # the field does not have an explicit field instance given in
-                # a right-side assignment, so we need to figure out what field
-                # type to use from the annotation
+            required = None
+            multi = None
+            if name in annotations:
+                # the field has a type annotation, so next we try to figure out
+                # what field type we can use
                 type_ = annotations[name]
                 required = True
                 multi = False
@@ -201,9 +188,11 @@ class DocumentOptions:
                     elif type_.__origin__ in [list, List]:
                         # List[type] -> mark instance as multi
                         multi = True
+                        required = False
                         type_ = type_.__args__[0]
                     else:
                         break
+                field = None
                 field_args: List[Any] = []
                 field_kwargs: Dict[str, Any] = {}
                 if not isinstance(type_, type):
@@ -215,10 +204,39 @@ class DocumentOptions:
                 elif type_ in self.type_annotation_map:
                     # use best field type for the type hint provided
                     field, field_kwargs = self.type_annotation_map[type_]
-                else:
-                    raise TypeError(f"Cannot map type {type_}")
-                field_kwargs = {"multi": multi, "required": required, **field_kwargs}
-                value = field(*field_args, **field_kwargs)
+
+                if field:
+                    field_kwargs = {
+                        "multi": multi,
+                        "required": required,
+                        **field_kwargs,
+                    }
+                    value = field(*field_args, **field_kwargs)
+
+            if name in attrs:
+                # this field has a right-side value, which can be field
+                # instance on its own or wrapped with mapped_field()
+                attr_value = attrs[name]
+                if isinstance(attr_value, dict):
+                    # the mapped_field() wrapper function was used so we need
+                    # to look for the field instance and also record any
+                    # dataclass-style defaults
+                    attr_value = attrs[name].get("_field")
+                    default_value = attrs[name].get("default") or attrs[name].get(
+                        "default_factory"
+                    )
+                    if default_value:
+                        field_defaults[name] = default_value
+                if attr_value:
+                    value = attr_value
+                    if required is not None:
+                        value._required = required
+                    if multi is not None:
+                        value._multi = multi
+
+            if value is None:
+                raise TypeError(f"Cannot map field {name}")
+
             self.mapping.field(name, value)
             if name in attrs:
                 del attrs[name]
