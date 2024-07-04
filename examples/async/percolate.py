@@ -17,15 +17,18 @@
 
 import asyncio
 import os
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from elasticsearch_dsl import (
     AsyncDocument,
     AsyncSearch,
     Keyword,
+    M,
     Percolator,
     Q,
-    Text,
+    Query,
     async_connections,
+    mapped_field,
 )
 
 
@@ -34,13 +37,18 @@ class BlogPost(AsyncDocument):
     Blog posts that will be automatically tagged based on percolation queries.
     """
 
-    content = Text()
-    tags = Keyword(multi=True)
+    if TYPE_CHECKING:
+        _id: int
+
+    content: M[Optional[str]]
+    tags: M[List[str]] = mapped_field(
+        Keyword(multi=True, required=False), default_factory=list
+    )
 
     class Index:
         name = "test-blogpost"
 
-    async def add_tags(self):
+    async def add_tags(self) -> None:
         # run a percolation to automatically tag the blog post.
         s = AsyncSearch(index="test-percolator")
         s = s.query(
@@ -54,9 +62,9 @@ class BlogPost(AsyncDocument):
         # make sure tags are unique
         self.tags = list(set(self.tags))
 
-    async def save(self, **kwargs):
+    async def save(self, **kwargs: Any) -> None:  # type: ignore[override]
         await self.add_tags()
-        return await super().save(**kwargs)
+        await super().save(**kwargs)
 
 
 class PercolatorDoc(AsyncDocument):
@@ -64,22 +72,25 @@ class PercolatorDoc(AsyncDocument):
     Document class used for storing the percolation queries.
     """
 
+    if TYPE_CHECKING:
+        _id: str
+
     # relevant fields from BlogPost must be also present here for the queries
     # to be able to use them. Another option would be to use document
     # inheritance but save() would have to be reset to normal behavior.
-    content = Text()
+    content: M[Optional[str]]
 
     # the percolator query to be run against the doc
-    query = Percolator()
+    query: M[Query] = mapped_field(Percolator())
     # list of tags to append to a document
-    tags = Keyword(multi=True)
+    tags: M[List[str]] = mapped_field(Keyword(multi=True))
 
     class Index:
         name = "test-percolator"
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-async def setup():
+async def setup() -> None:
     # create the percolator index if it doesn't exist
     if not await PercolatorDoc._index.exists():
         await PercolatorDoc.init()
@@ -88,11 +99,12 @@ async def setup():
     await PercolatorDoc(
         _id="python",
         tags=["programming", "development", "python"],
+        content="",
         query=Q("match", content="python"),
     ).save(refresh=True)
 
 
-async def main():
+async def main() -> None:
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 

@@ -16,12 +16,15 @@
 #  under the License.
 
 import pytest
+from elasticsearch import AsyncElasticsearch
 
 from elasticsearch_dsl import analyzer, token_filter, tokenizer
 
 
 @pytest.mark.asyncio
-async def test_simulate_with_just__builtin_tokenizer(async_client):
+async def test_simulate_with_just__builtin_tokenizer(
+    async_client: AsyncElasticsearch,
+) -> None:
     a = analyzer("my-analyzer", tokenizer="keyword")
     tokens = (await a.async_simulate("Hello World!", using=async_client)).tokens
 
@@ -30,7 +33,7 @@ async def test_simulate_with_just__builtin_tokenizer(async_client):
 
 
 @pytest.mark.asyncio
-async def test_simulate_complex(async_client):
+async def test_simulate_complex(async_client: AsyncElasticsearch) -> None:
     a = analyzer(
         "my-analyzer",
         tokenizer=tokenizer("split_words", "simple_pattern_split", pattern=":"),
@@ -44,7 +47,7 @@ async def test_simulate_complex(async_client):
 
 
 @pytest.mark.asyncio
-async def test_simulate_builtin(async_client):
+async def test_simulate_builtin(async_client: AsyncElasticsearch) -> None:
     a = analyzer("my-analyzer", "english")
     tokens = (await a.async_simulate("fixes running")).tokens
 

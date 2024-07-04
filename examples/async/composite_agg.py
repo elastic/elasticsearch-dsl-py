@@ -17,18 +17,24 @@
 
 import asyncio
 import os
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from elasticsearch_dsl import A, AsyncSearch, async_connections
+from elasticsearch_dsl import A, Agg, AsyncSearch, Response, async_connections
 
 
-async def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
+async def scan_aggs(
+    search: AsyncSearch,
+    source_aggs: Union[Dict[str, Agg], List[Dict[str, Agg]]],
+    inner_aggs: Dict[str, Agg] = {},
+    size: Optional[int] = 10,
+) -> AsyncIterator[Response]:
     """
     Helper function used to iterate over all possible bucket combinations of
     ``source_aggs``, returning results of ``inner_aggs`` for each. Uses the
     ``composite`` aggregation under the hood to perform this.
     """
 
-    async def run_search(**kwargs):
+    async def run_search(**kwargs: Any) -> Response:
         s = search[:0]
         s.aggs.bucket("comp", "composite", sources=source_aggs, size=size, **kwargs)
         for agg_name, agg in inner_aggs.items():
@@ -46,7 +52,7 @@ async def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
         response = await run_search(after=after)
 
 
-async def main():
+async def main() -> None:
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 

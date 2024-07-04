@@ -54,7 +54,7 @@ class Person(AsyncDocument):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-async def main():
+async def main() -> None:
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -82,7 +82,7 @@ async def main():
     for text in ("já", "Cimr", "toulouse", "Henri Tou", "a"):
         s = Person.search()
 
-        s.query = MultiMatch(
+        s.query = MultiMatch(  # type: ignore[assignment]
             query=text,
             type="bool_prefix",
             fields=["name", "name._2gram", "name._3gram"],

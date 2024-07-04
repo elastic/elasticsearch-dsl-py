@@ -16,6 +16,7 @@
 #  under the License.
 
 import pytest
+from elasticsearch import AsyncElasticsearch
 
 from elasticsearch_dsl import (
     AsyncDocument,
@@ -33,7 +34,7 @@ class Post(AsyncDocument):
 
 
 @pytest.mark.asyncio
-async def test_index_template_works(async_write_client):
+async def test_index_template_works(async_write_client: AsyncElasticsearch) -> None:
     it = AsyncIndexTemplate("test-template", "test-*")
     it.document(Post)
     it.settings(number_of_replicas=0, number_of_shards=1)
@@ -55,7 +56,9 @@ async def test_index_template_works(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_index_can_be_saved_even_with_settings(async_write_client):
+async def test_index_can_be_saved_even_with_settings(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     i = AsyncIndex("test-blog", using=async_write_client)
     i.settings(number_of_shards=3, number_of_replicas=0)
     await i.save()
@@ -71,13 +74,15 @@ async def test_index_can_be_saved_even_with_settings(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_index_exists(async_data_client):
+async def test_index_exists(async_data_client: AsyncElasticsearch) -> None:
     assert await AsyncIndex("git").exists()
     assert not await AsyncIndex("not-there").exists()
 
 
 @pytest.mark.asyncio
-async def test_index_can_be_created_with_settings_and_mappings(async_write_client):
+async def test_index_can_be_created_with_settings_and_mappings(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     i = AsyncIndex("test-blog", using=async_write_client)
     i.document(Post)
     i.settings(number_of_replicas=0, number_of_shards=1)
@@ -103,7 +108,7 @@ async def test_index_can_be_created_with_settings_and_mappings(async_write_clien
 
 
 @pytest.mark.asyncio
-async def test_delete(async_write_client):
+async def test_delete(async_write_client: AsyncElasticsearch) -> None:
     await async_write_client.indices.create(
         index="test-index",
         body={"settings": {"number_of_replicas": 0, "number_of_shards": 1}},
@@ -115,7 +120,9 @@ async def test_delete(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_multiple_indices_with_same_doc_type_work(async_write_client):
+async def test_multiple_indices_with_same_doc_type_work(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     i1 = AsyncIndex("test-index-1", using=async_write_client)
     i2 = AsyncIndex("test-index-2", using=async_write_client)
 
@@ -123,8 +130,8 @@ async def test_multiple_indices_with_same_doc_type_work(async_write_client):
         i.document(Post)
         await i.create()
 
-    for i in ("test-index-1", "test-index-2"):
-        settings = await async_write_client.indices.get_settings(index=i)
-        assert settings[i]["settings"]["index"]["analysis"] == {
+    for j in ("test-index-1", "test-index-2"):
+        settings = await async_write_client.indices.get_settings(index=j)
+        assert settings[j]["settings"]["index"]["analysis"] == {
             "analyzer": {"my_analyzer": {"type": "custom", "tokenizer": "keyword"}}
         }

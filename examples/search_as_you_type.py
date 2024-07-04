@@ -53,7 +53,7 @@ class Person(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-def main():
+def main() -> None:
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -81,7 +81,7 @@ def main():
     for text in ("já", "Cimr", "toulouse", "Henri Tou", "a"):
         s = Person.search()
 
-        s.query = MultiMatch(
+        s.query = MultiMatch(  # type: ignore[assignment]
             query=text,
             type="bool_prefix",
             fields=["name", "name._2gram", "name._3gram"],

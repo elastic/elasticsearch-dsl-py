@@ -28,10 +28,10 @@ from elasticsearch_dsl.faceted_search import (
 
 class BlogSearch(AsyncFacetedSearch):
     doc_types = ["user", "post"]
-    fields = (
+    fields = [
         "title^5",
         "body",
-    )
+    ]
 
     facets = {
         "category": TermsFacet(field="category.raw"),
@@ -39,7 +39,7 @@ class BlogSearch(AsyncFacetedSearch):
     }
 
 
-def test_query_is_created_properly():
+def test_query_is_created_properly() -> None:
     bs = BlogSearch("python search")
     s = bs.build_search()
 
@@ -56,13 +56,13 @@ def test_query_is_created_properly():
             },
         },
         "query": {
-            "multi_match": {"fields": ("title^5", "body"), "query": "python search"}
+            "multi_match": {"fields": ["title^5", "body"], "query": "python search"}
         },
         "highlight": {"fields": {"body": {}, "title": {}}},
     } == s.to_dict()
 
 
-def test_query_is_created_properly_with_sort_tuple():
+def test_query_is_created_properly_with_sort_tuple() -> None:
     bs = BlogSearch("python search", sort=("category", "-title"))
     s = bs.build_search()
 
@@ -79,14 +79,14 @@ def test_query_is_created_properly_with_sort_tuple():
             },
         },
         "query": {
-            "multi_match": {"fields": ("title^5", "body"), "query": "python search"}
+            "multi_match": {"fields": ["title^5", "body"], "query": "python search"}
         },
         "highlight": {"fields": {"body": {}, "title": {}}},
         "sort": ["category", {"title": {"order": "desc"}}],
     } == s.to_dict()
 
 
-def test_filter_is_applied_to_search_but_not_relevant_facet():
+def test_filter_is_applied_to_search_but_not_relevant_facet() -> None:
     bs = BlogSearch("python search", filters={"category": "elastic"})
     s = bs.build_search()
 
@@ -103,13 +103,13 @@ def test_filter_is_applied_to_search_but_not_relevant_facet():
         },
         "post_filter": {"terms": {"category.raw": ["elastic"]}},
         "query": {
-            "multi_match": {"fields": ("title^5", "body"), "query": "python search"}
+            "multi_match": {"fields": ["title^5", "body"], "query": "python search"}
         },
         "highlight": {"fields": {"body": {}, "title": {}}},
     } == s.to_dict()
 
 
-def test_filters_are_applied_to_search_ant_relevant_facets():
+def test_filters_are_applied_to_search_ant_relevant_facets() -> None:
     bs = BlogSearch(
         "python search", filters={"category": "elastic", "tags": ["python", "django"]}
     )
@@ -135,17 +135,17 @@ def test_filters_are_applied_to_search_ant_relevant_facets():
             },
         },
         "query": {
-            "multi_match": {"fields": ("title^5", "body"), "query": "python search"}
+            "multi_match": {"fields": ["title^5", "body"], "query": "python search"}
         },
         "post_filter": {"bool": {}},
         "highlight": {"fields": {"body": {}, "title": {}}},
     } == d
 
 
-def test_date_histogram_facet_with_1970_01_01_date():
+def test_date_histogram_facet_with_1970_01_01_date() -> None:
     dhf = DateHistogramFacet()
-    assert dhf.get_value({"key": None}) == datetime(1970, 1, 1, 0, 0)
-    assert dhf.get_value({"key": 0}) == datetime(1970, 1, 1, 0, 0)
+    assert dhf.get_value({"key": None}) == datetime(1970, 1, 1, 0, 0)  # type: ignore[arg-type]
+    assert dhf.get_value({"key": 0}) == datetime(1970, 1, 1, 0, 0)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(
@@ -175,7 +175,7 @@ def test_date_histogram_facet_with_1970_01_01_date():
         ("fixed_interval", "1h"),
     ],
 )
-def test_date_histogram_interval_types(interval_type, interval):
+def test_date_histogram_interval_types(interval_type: str, interval: str) -> None:
     dhf = DateHistogramFacet(field="@timestamp", **{interval_type: interval})
     assert dhf.get_aggregation().to_dict() == {
         "date_histogram": {
@@ -187,14 +187,14 @@ def test_date_histogram_interval_types(interval_type, interval):
     dhf.get_value_filter(datetime.now())
 
 
-def test_date_histogram_no_interval_keyerror():
+def test_date_histogram_no_interval_keyerror() -> None:
     dhf = DateHistogramFacet(field="@timestamp")
     with pytest.raises(KeyError) as e:
         dhf.get_value_filter(datetime.now())
     assert str(e.value) == "'interval'"
 
 
-def test_params_added_to_search():
+def test_params_added_to_search() -> None:
     bs = BlogSearch("python search")
     assert bs._s._params == {}
     bs.params(routing="42")

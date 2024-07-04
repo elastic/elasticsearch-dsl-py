@@ -16,18 +16,24 @@
 #  under the License.
 
 import os
+from typing import Any, Dict, Iterator, List, Optional, Union
 
-from elasticsearch_dsl import A, Search, connections
+from elasticsearch_dsl import A, Agg, Response, Search, connections
 
 
-def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
+def scan_aggs(
+    search: Search,
+    source_aggs: Union[Dict[str, Agg], List[Dict[str, Agg]]],
+    inner_aggs: Dict[str, Agg] = {},
+    size: Optional[int] = 10,
+) -> Iterator[Response]:
     """
     Helper function used to iterate over all possible bucket combinations of
     ``source_aggs``, returning results of ``inner_aggs`` for each. Uses the
     ``composite`` aggregation under the hood to perform this.
     """
 
-    def run_search(**kwargs):
+    def run_search(**kwargs: Any) -> Response:
         s = search[:0]
         s.aggs.bucket("comp", "composite", sources=source_aggs, size=size, **kwargs)
         for agg_name, agg in inner_aggs.items():
@@ -45,7 +51,7 @@ def scan_aggs(search, source_aggs, inner_aggs={}, size=10):
         response = run_search(after=after)
 
 
-def main():
+def main() -> None:
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 

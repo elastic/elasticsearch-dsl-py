@@ -114,7 +114,7 @@ class ProxyDescriptor(Generic[_S]):
     def __init__(self, name: str):
         self._attr_name = f"_{name}_proxy"
 
-    def __get__(self, instance: _S, owner: object) -> QueryProxy[_S]:
+    def __get__(self, instance: Any, owner: object) -> QueryProxy[_S]:
         return cast(QueryProxy[_S], getattr(instance, self._attr_name))
 
     def __set__(self, instance: _S, value: Dict[str, Any]) -> None:
@@ -193,7 +193,7 @@ class Request(Generic[_R]):
         s._params.update(kwargs)
         return s
 
-    def index(self, *index: str) -> Self:
+    def index(self, *index: Union[str, List[str], Tuple[str, ...]]) -> Self:
         """
         Set the index for the search. If called empty it will remove all information.
 
@@ -350,8 +350,8 @@ class Request(Generic[_R]):
 
 
 class SearchBase(Request[_R]):
-    query = ProxyDescriptor["SearchBase[_R]"]("query")
-    post_filter = ProxyDescriptor["SearchBase[_R]"]("post_filter")
+    query = ProxyDescriptor[Self]("query")
+    post_filter = ProxyDescriptor[Self]("post_filter")
     _response: Response[_R]
 
     def __init__(self, **kwargs: Any):
@@ -383,10 +383,10 @@ class SearchBase(Request[_R]):
         self._post_filter_proxy = QueryProxy(self, "post_filter")
 
     def filter(self, *args: Any, **kwargs: Any) -> Self:
-        return cast(Self, self.query(Bool(filter=[Q(*args, **kwargs)])))
+        return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
     def exclude(self, *args: Any, **kwargs: Any) -> Self:
-        return cast(Self, self.query(Bool(filter=[~Q(*args, **kwargs)])))
+        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
 
     def __getitem__(self, n: Union[int, slice]) -> Self:
         """

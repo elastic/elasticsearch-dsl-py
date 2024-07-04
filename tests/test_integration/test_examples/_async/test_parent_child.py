@@ -19,6 +19,7 @@ from datetime import datetime
 
 import pytest
 import pytest_asyncio
+from elasticsearch import AsyncElasticsearch
 
 from elasticsearch_dsl import Q
 
@@ -42,7 +43,7 @@ nick = User(
 
 
 @pytest_asyncio.fixture
-async def question(async_write_client):
+async def question(async_write_client: AsyncElasticsearch) -> Question:
     await setup()
     assert await async_write_client.indices.exists_template(name="base")
 
@@ -55,16 +56,21 @@ async def question(async_write_client):
         body="""
         I want to use elasticsearch, how do I do it from Python?
         """,
+        created=None,
+        question_answer=None,
+        comments=[],
     )
     await q.save()
     return q
 
 
 @pytest.mark.asyncio
-async def test_comment(async_write_client, question):
+async def test_comment(
+    async_write_client: AsyncElasticsearch, question: Question
+) -> None:
     await question.add_comment(nick, "Just use elasticsearch-py")
 
-    q = await Question.get(1)
+    q = await Question.get(1)  # type: ignore[arg-type]
     assert isinstance(q, Question)
     assert 1 == len(q.comments)
 
@@ -74,7 +80,9 @@ async def test_comment(async_write_client, question):
 
 
 @pytest.mark.asyncio
-async def test_question_answer(async_write_client, question):
+async def test_question_answer(
+    async_write_client: AsyncElasticsearch, question: Question
+) -> None:
     a = await question.add_answer(honza, "Just use `elasticsearch-py`!")
 
     assert isinstance(a, Answer)

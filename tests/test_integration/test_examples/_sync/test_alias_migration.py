@@ -16,13 +16,14 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from ..examples import alias_migration
 from ..examples.alias_migration import ALIAS, PATTERN, BlogPost, migrate
 
 
 @pytest.mark.sync
-def test_alias_migration(write_client):
+def test_alias_migration(write_client: Elasticsearch) -> None:
     # create the index
     alias_migration.setup()
 
@@ -42,6 +43,7 @@ def test_alias_migration(write_client):
             title="Hello World!",
             tags=["testing", "dummy"],
             content=f.read(),
+            published=None,
         )
         bp.save(refresh=True)
 
@@ -50,6 +52,7 @@ def test_alias_migration(write_client):
     # _matches work which means we get BlogPost instance
     bp = (BlogPost.search().execute())[0]
     assert isinstance(bp, BlogPost)
+    print("**", bp.published)
     assert not bp.is_published()
     assert "0" == bp.meta.id
 

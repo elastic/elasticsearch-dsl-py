@@ -16,8 +16,9 @@
 #  under the License.
 
 import time
+from typing import Union
 
 
-def sleep(secs):
+def sleep(secs: Union[int, float]) -> None:
     """Tests can use this function to sleep."""
     time.sleep(secs)

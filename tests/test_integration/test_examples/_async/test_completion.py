@@ -16,15 +16,18 @@
 #  under the License.
 
 import pytest
+from elasticsearch import AsyncElasticsearch
 
 from ..async_examples.completion import Person
 
 
 @pytest.mark.asyncio
-async def test_person_suggests_on_all_variants_of_name(async_write_client):
+async def test_person_suggests_on_all_variants_of_name(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     await Person.init(using=async_write_client)
 
-    await Person(name="Honza Král", popularity=42).save(refresh=True)
+    await Person(_id=None, name="Honza Král", popularity=42).save(refresh=True)
 
     s = Person.search().suggest("t", "kra", completion={"field": "suggest"})
     response = await s.execute()

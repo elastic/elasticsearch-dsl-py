@@ -16,7 +16,7 @@
 #  under the License.
 
 import contextlib
-from typing import Any, Dict, Iterator, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, cast
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import scan
@@ -68,6 +68,7 @@ class Search(SearchBase[_R]):
             query=cast(Optional[Dict[str, Any]], d.get("query", None)),
             **self._params,
         )
+
         return cast(int, resp["count"])
 
     def execute(self, ignore_cache: bool = False) -> Response[_R]:
@@ -168,6 +169,10 @@ class MultiSearch(MultiSearchBase[_R]):
     """
 
     _using: UsingType
+
+    if TYPE_CHECKING:
+
+        def add(self, search: Search[_R]) -> Self: ...  # type: ignore[override]
 
     def execute(
         self, ignore_cache: bool = False, raise_on_error: bool = True

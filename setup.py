@@ -48,6 +48,7 @@ develop_requires = [
     "coverage",
     # typing support
     "types-python-dateutil",
+    "types-pytz",
     # the following three are used by the vectors example and its tests
     "nltk",
     "sentence_transformers",

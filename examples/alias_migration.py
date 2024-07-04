@@ -38,24 +38,28 @@ Key concepts:
 import os
 from datetime import datetime
 from fnmatch import fnmatch
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from elasticsearch_dsl import Date, Document, Keyword, Text, connections
+from elasticsearch_dsl import Document, Keyword, M, connections, mapped_field
 
 ALIAS = "test-blog"
 PATTERN = ALIAS + "-*"
 
 
 class BlogPost(Document):
-    title = Text()
-    published = Date()
-    tags = Keyword(multi=True)
-    content = Text()
+    if TYPE_CHECKING:
+        _id: int
 
-    def is_published(self):
-        return self.published and datetime.now() > self.published
+    title: M[str]
+    tags: M[List[str]] = mapped_field(Keyword(multi=True))
+    content: M[str]
+    published: M[Optional[datetime]]
+
+    def is_published(self) -> bool:
+        return bool(self.published and datetime.now() > self.published)
 
     @classmethod
-    def _matches(cls, hit):
+    def _matches(cls, hit: Dict[str, Any]) -> bool:
         # override _matches to match indices in a pattern instead of just ALIAS
         # hit is the raw dict as returned by elasticsearch
         return fnmatch(hit["_index"], PATTERN)
@@ -68,7 +72,7 @@ class BlogPost(Document):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-def setup():
+def setup() -> None:
     """
     Create the index template in elasticsearch specifying the mappings and any
     settings to be used. This can be run at any time, ideally at every new code
@@ -85,7 +89,7 @@ def setup():
         migrate(move_data=False)
 
 
-def migrate(move_data=True, update_alias=True):
+def migrate(move_data: bool = True, update_alias: bool = True) -> None:
     """
     Upgrade function that creates a new index for the data. Optionally it also can
     (and by default will) reindex previous copy of the data into the new index
@@ -125,7 +129,7 @@ def migrate(move_data=True, update_alias=True):
         )
 
 
-def main():
+def main() -> None:
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -138,6 +142,7 @@ def main():
         title="Hello World!",
         tags=["testing", "dummy"],
         content=open(__file__).read(),
+        published=None,
     )
     bp.save(refresh=True)
 

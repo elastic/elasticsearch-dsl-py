@@ -16,15 +16,18 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from ..examples.completion import Person
 
 
 @pytest.mark.sync
-def test_person_suggests_on_all_variants_of_name(write_client):
+def test_person_suggests_on_all_variants_of_name(
+    write_client: Elasticsearch,
+) -> None:
     Person.init(using=write_client)
 
-    Person(name="Honza Král", popularity=42).save(refresh=True)
+    Person(_id=None, name="Honza Král", popularity=42).save(refresh=True)
 
     s = Person.search().suggest("t", "kra", completion={"field": "suggest"})
     response = s.execute()

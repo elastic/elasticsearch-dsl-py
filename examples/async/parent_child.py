@@ -42,19 +42,21 @@ It is used to showcase several key features of elasticsearch-dsl:
 import asyncio
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
 from elasticsearch_dsl import (
     AsyncDocument,
-    Boolean,
+    AsyncIndex,
+    AsyncSearch,
     Date,
     InnerDoc,
     Join,
     Keyword,
     Long,
-    Nested,
-    Object,
+    M,
     Text,
     async_connections,
+    mapped_field,
 )
 
 
@@ -63,11 +65,11 @@ class User(InnerDoc):
     Class used to represent a denormalized user stored on other objects.
     """
 
-    id = Long(required=True)
-    signed_up = Date()
-    username = Text(fields={"keyword": Keyword()}, required=True)
-    email = Text(fields={"keyword": Keyword()})
-    location = Text(fields={"keyword": Keyword()})
+    id: M[int] = mapped_field(Long(required=True))
+    signed_up: M[Optional[datetime]] = mapped_field(Date())
+    username: M[str] = mapped_field(Text(fields={"keyword": Keyword()}, required=True))
+    email: M[Optional[str]] = mapped_field(Text(fields={"keyword": Keyword()}))
+    location: M[Optional[str]] = mapped_field(Text(fields={"keyword": Keyword()}))
 
 
 class Comment(InnerDoc):
@@ -75,9 +77,9 @@ class Comment(InnerDoc):
     Class wrapper for nested comment objects.
     """
 
-    author = Object(User, required=True)
-    created = Date(required=True)
-    content = Text(required=True)
+    author: M[User]
+    created: M[datetime]
+    content: M[str]
 
 
 class Post(AsyncDocument):
@@ -85,14 +87,14 @@ class Post(AsyncDocument):
     Base class for Question and Answer containing the common fields.
     """
 
-    author = Object(User, required=True)
-    created = Date(required=True)
-    body = Text(required=True)
-    comments = Nested(Comment)
-    question_answer = Join(relations={"question": "answer"})
+    author: M[User]
+    created: M[Optional[datetime]]
+    body: str
+    question_answer: M[Any] = mapped_field(Join(relations={"question": "answer"}))
+    comments: M[List[Comment]]
 
     @classmethod
-    def _matches(cls, hit):
+    def _matches(cls, hit: Dict[str, Any]) -> bool:
         # Post is an abstract class, make sure it never gets used for
         # deserialization
         return False
@@ -104,35 +106,50 @@ class Post(AsyncDocument):
             "number_of_replicas": 0,
         }
 
-    async def add_comment(self, user, content, created=None, commit=True):
+    async def add_comment(
+        self,
+        user: User,
+        content: str,
+        created: Optional[datetime] = None,
+        commit: Optional[bool] = True,
+    ) -> Comment:
         c = Comment(author=user, content=content, created=created or datetime.now())
         self.comments.append(c)
         if commit:
             await self.save()
         return c
 
-    async def save(self, **kwargs):
+    async def save(self, **kwargs: Any) -> None:  # type: ignore[override]
         # if there is no date, use now
         if self.created is None:
             self.created = datetime.now()
-        return await super().save(**kwargs)
+        await super().save(**kwargs)
 
 
 class Question(Post):
-    # use multi True so that .tags will return empty list if not present
-    tags = Keyword(multi=True)
-    title = Text(fields={"keyword": Keyword()})
+    if TYPE_CHECKING:
+        _id: Optional[int]
+
+    tags: M[List[str]]  # .tags will return empty list if not present
+    title: M[str] = mapped_field(Text(fields={"keyword": Keyword()}))
 
     @classmethod
-    def _matches(cls, hit):
+    def _matches(cls, hit: Dict[str, Any]) -> bool:
         """Use Question class for parent documents"""
-        return hit["_source"]["question_answer"] == "question"
+        return bool(hit["_source"]["question_answer"] == "question")
 
     @classmethod
-    def search(cls, **kwargs):
+    def search(cls, **kwargs: Any) -> AsyncSearch:  # type: ignore[override]
         return cls._index.search(**kwargs).filter("term", question_answer="question")
 
-    async def add_answer(self, user, body, created=None, accepted=False, commit=True):
+    async def add_answer(
+        self,
+        user: User,
+        body: str,
+        created: Optional[datetime] = None,
+        accepted: bool = False,
+        commit: Optional[bool] = True,
+    ) -> "Answer":
         answer = Answer(
             # required make sure the answer is stored in the same shard
             _routing=self.meta.id,
@@ -144,13 +161,14 @@ class Question(Post):
             author=user,
             created=created,
             body=body,
-            accepted=accepted,
+            is_accepted=accepted,
+            comments=[],
         )
         if commit:
             await answer.save()
         return answer
 
-    def search_answers(self):
+    def search_answers(self) -> AsyncSearch:
         # search only our index
         s = Answer.search()
         # filter for answers belonging to us
@@ -159,25 +177,28 @@ class Question(Post):
         s = s.params(routing=self.meta.id)
         return s
 
-    async def get_answers(self):
+    async def get_answers(self) -> List[Any]:
         """
         Get answers either from inner_hits already present or by searching
         elasticsearch.
         """
         if "inner_hits" in self.meta and "answer" in self.meta.inner_hits:
-            return self.meta.inner_hits.answer.hits
+            return cast(List[Any], self.meta.inner_hits.answer.hits)
         return [a async for a in self.search_answers()]
 
-    async def save(self, **kwargs):
+    async def save(self, **kwargs: Any) -> None:  # type: ignore[override]
         self.question_answer = "question"
-        return await super().save(**kwargs)
+        await super().save(**kwargs)
 
 
 class Answer(Post):
-    is_accepted = Boolean()
+    if TYPE_CHECKING:
+        is_accepted: M[bool]
+        _routing: str
+        _index: AsyncIndex
 
     @classmethod
-    def _matches(cls, hit):
+    def _matches(cls, hit: Dict[str, Any]) -> bool:
         """Use Answer class for child documents with child name 'answer'"""
         return (
             isinstance(hit["_source"]["question_answer"], dict)
@@ -185,31 +206,31 @@ class Answer(Post):
         )
 
     @classmethod
-    def search(cls, **kwargs):
+    def search(cls, **kwargs: Any) -> AsyncSearch:  # type: ignore[override]
         return cls._index.search(**kwargs).exclude("term", question_answer="question")
 
-    async def get_question(self):
+    async def get_question(self) -> Optional[Question]:
         # cache question in self.meta
         # any attributes set on self would be interpreted as fields
         if "question" not in self.meta:
             self.meta.question = await Question.get(
                 id=self.question_answer.parent, index=self.meta.index
             )
-        return self.meta.question
+        return cast(Optional[Question], self.meta.question)
 
-    async def save(self, **kwargs):
+    async def save(self, **kwargs: Any) -> None:  # type: ignore[override]
         # set routing to parents id automatically
         self.meta.routing = self.question_answer.parent
-        return await super().save(**kwargs)
+        await super().save(**kwargs)
 
 
-async def setup():
+async def setup() -> None:
     """Create an IndexTemplate and save it into elasticsearch."""
     index_template = Post._index.as_template("base")
     await index_template.save()
 
 
-async def main():
+async def main() -> Answer:
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
@@ -241,6 +262,9 @@ async def main():
         body="""
         I want to use elasticsearch, how do I do it from Python?
         """,
+        created=datetime.now(),
+        question_answer={},
+        comments=[],
     )
     await question.save()
     answer = await question.add_answer(honza, "Just use `elasticsearch-py`!")

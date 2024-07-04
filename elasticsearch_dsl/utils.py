@@ -215,7 +215,6 @@ class AttrDict(Generic[_ValT]):
         del self._d_[key]
 
     def __setattr__(self, name: str, value: _ValT) -> None:
-        print(self._d_)
         if name in self._d_ or not hasattr(self.__class__, name):
             self._d_[name] = value
         else:

@@ -16,6 +16,7 @@
 #  under the License.
 
 import pytest
+from elasticsearch import AsyncElasticsearch
 
 from elasticsearch_dsl import A, AsyncSearch
 
@@ -23,7 +24,9 @@ from ..async_examples.composite_agg import scan_aggs
 
 
 @pytest.mark.asyncio
-async def test_scan_aggs_exhausts_all_files(async_data_client):
+async def test_scan_aggs_exhausts_all_files(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     s = AsyncSearch(index="flat-git")
     key_aggs = {"files": A("terms", field="files")}
     file_list = [f async for f in scan_aggs(s, key_aggs)]
@@ -32,17 +35,16 @@ async def test_scan_aggs_exhausts_all_files(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_scan_aggs_with_multiple_aggs(async_data_client):
+async def test_scan_aggs_with_multiple_aggs(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     s = AsyncSearch(index="flat-git")
     key_aggs = [
         {"files": A("terms", field="files")},
         {
-            "months": {
-                "date_histogram": {
-                    "field": "committed_date",
-                    "calendar_interval": "month",
-                }
-            }
+            "months": A(
+                "date_histogram", field="committed_date", calendar_interval="month"
+            )
         },
     ]
     file_list = [f async for f in scan_aggs(s, key_aggs)]

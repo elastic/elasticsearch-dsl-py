@@ -15,8 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import subprocess
-
 import nox
 
 SOURCE_FILES = (
@@ -38,8 +36,6 @@ TYPED_FILES = (
     "tests/test_query.py",
     "tests/test_utils.py",
     "tests/test_wrappers.py",
-    "examples/vectors.py",
-    "examples/async/vectors.py",
 )
 
 
@@ -94,26 +90,15 @@ def lint(session):
 @nox.session(python="3.8")
 def type_check(session):
     session.install("mypy", ".[develop]")
-    errors = []
-    popen = subprocess.Popen(
-        "mypy --strict --implicit-reexport --explicit-package-bases elasticsearch_dsl tests examples",
-        env=session.env,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+    session.run(
+        "mypy",
+        "--strict",
+        "--implicit-reexport",
+        "--explicit-package-bases",
+        "elasticsearch_dsl",
+        "tests",
+        "examples",
     )
-
-    mypy_output = ""
-    while popen.poll() is None:
-        mypy_output += popen.stdout.read(8192).decode()
-    mypy_output += popen.stdout.read().decode()
-
-    for line in mypy_output.split("\n"):
-        filepath = line.partition(":")[0]
-        if filepath.startswith("elasticsearch_dsl/") or filepath in TYPED_FILES:
-            errors.append(line)
-    if errors:
-        session.error("\n" + "\n".join(errors))
 
 
 @nox.session()

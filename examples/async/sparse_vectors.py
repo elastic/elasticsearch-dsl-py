@@ -63,21 +63,23 @@ import argparse
 import asyncio
 import json
 import os
+from datetime import datetime
+from typing import Dict, List, Optional
 from urllib.request import urlopen
 
-import nltk
+import nltk  # type: ignore
 from tqdm import tqdm
 
 from elasticsearch_dsl import (
     AsyncDocument,
-    Date,
+    AsyncSearch,
     InnerDoc,
     Keyword,
-    Nested,
+    M,
     Q,
     SparseVector,
-    Text,
     async_connections,
+    mapped_field,
 )
 
 DATASET_URL = "https://raw.githubusercontent.com/elastic/elasticsearch-labs/main/datasets/workplace-documents.json"
@@ -87,8 +89,8 @@ nltk.download("punkt", quiet=True)
 
 
 class Passage(InnerDoc):
-    content = Text()
-    embedding = SparseVector()
+    content: M[Optional[str]]
+    embedding: M[Dict[str, float]] = mapped_field(SparseVector(), init=False)
 
 
 class WorkplaceDoc(AsyncDocument):
@@ -96,18 +98,18 @@ class WorkplaceDoc(AsyncDocument):
         name = "workplace_documents_sparse"
         settings = {"default_pipeline": "elser_ingest_pipeline"}
 
-    name = Text()
-    summary = Text()
-    content = Text()
-    created = Date()
-    updated = Date()
-    url = Keyword()
-    category = Keyword()
-    passages = Nested(Passage)
+    name: M[Optional[str]]
+    summary: M[Optional[str]]
+    content: M[Optional[str]]
+    created: M[Optional[str]]
+    updated: M[Optional[datetime]]
+    url: M[Optional[str]] = mapped_field(Keyword())
+    category: M[Optional[str]] = mapped_field(Keyword())
+    passages: M[List[Passage]] = mapped_field(default=[])
 
     _model = None
 
-    def clean(self):
+    def clean(self) -> None:
         # split the content into sentences
         passages = nltk.sent_tokenize(self.content)
 
@@ -116,7 +118,7 @@ class WorkplaceDoc(AsyncDocument):
             self.passages.append(Passage(content=passage))
 
 
-async def create():
+async def create() -> None:
 
     # create the index
     await WorkplaceDoc._index.delete(ignore_unavailable=True)
@@ -139,7 +141,7 @@ async def create():
         await doc.save()
 
 
-async def search(query):
+async def search(query: str) -> AsyncSearch[WorkplaceDoc]:
     return WorkplaceDoc.search()[:5].query(
         "nested",
         path="passages",
@@ -154,7 +156,7 @@ async def search(query):
     )
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Vector database with Elasticsearch")
     parser.add_argument(
         "--recreate-index", action="store_true", help="Recreate and populate the index"
@@ -168,7 +170,7 @@ def parse_args():
     return parser.parse_args()
 
 
-async def main():
+async def main() -> None:
     args = parse_args()
 
     # initiate the default connection to elasticsearch
