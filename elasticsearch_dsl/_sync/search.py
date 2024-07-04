@@ -25,7 +25,7 @@ from typing_extensions import Self
 from ..connections import get_connection
 from ..response import Response
 from ..search_base import MultiSearchBase, SearchBase
-from ..utils import _R, AttrDict, JSONType, UsingType
+from ..utils import _R, AttrDict, UsingType
 
 
 class Search(SearchBase[_R]):
@@ -104,9 +104,9 @@ class Search(SearchBase[_R]):
         es = get_connection(self._using)
 
         for hit in scan(es, query=self.to_dict(), index=self._index, **self._params):
-            yield self._get_result(cast(AttrDict[JSONType], hit))
+            yield self._get_result(cast(AttrDict[Any], hit))
 
-    def delete(self) -> AttrDict[JSONType]:
+    def delete(self) -> AttrDict[Any]:
         """
         delete() executes the query by delegating to delete_by_query()
         """
@@ -116,7 +116,7 @@ class Search(SearchBase[_R]):
 
         return AttrDict(
             cast(
-                Dict[str, JSONType],
+                Dict[str, Any],
                 es.delete_by_query(
                     index=self._index, body=self.to_dict(), **self._params
                 ),
@@ -208,5 +208,5 @@ class EmptySearch(Search[_R]):
         return
         yield  # a bit strange, but this forces an empty generator function
 
-    def delete(self) -> AttrDict[JSONType]:
-        return AttrDict[JSONType]({})
+    def delete(self) -> AttrDict[Any]:
+        return AttrDict[Any]({})

@@ -39,9 +39,7 @@ class UpdateByQuery(UpdateByQueryBase[_R]):
         self._response = self._response_class(
             self,
             (
-                es.update_by_query(
-                    index=self._index, **self.to_dict(), **self._params  # type: ignore
-                )
+                es.update_by_query(index=self._index, **self.to_dict(), **self._params)
             ).body,
         )
         return self._response
