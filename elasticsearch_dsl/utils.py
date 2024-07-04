@@ -52,10 +52,6 @@ UsingType: TypeAlias = Union[str, "Elasticsearch"]
 AsyncUsingType: TypeAlias = Union[str, "AsyncElasticsearch"]
 AnyUsingType: TypeAlias = Union[str, "Elasticsearch", "AsyncElasticsearch"]
 
-JSONType: TypeAlias = Union[
-    int, bool, str, float, List["JSONType"], Dict[str, "JSONType"]
-]
-
 _ValT = TypeVar("_ValT")  # used by AttrDict
 _R = TypeVar("_R", default="Hit")  # used by Search and Response classes
 
@@ -401,7 +397,7 @@ class DslBase(metaclass=DslMeta):
             return AttrDict(value)
         return value
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Serialize the DSL object to plain dict
         """
@@ -447,7 +443,7 @@ class DslBase(metaclass=DslMeta):
         return c
 
 
-class HitMeta(AttrDict[JSONType]):
+class HitMeta(AttrDict[Any]):
     def __init__(
         self,
         document: Dict[str, Any],
@@ -464,7 +460,7 @@ class HitMeta(AttrDict[JSONType]):
         super().__init__(d)
 
 
-class ObjectBase(AttrDict[JSONType]):
+class ObjectBase(AttrDict[Any]):
     _doc_type: "DocumentOptions"
     _index: "IndexBase"
     meta: HitMeta
@@ -537,10 +533,10 @@ class ObjectBase(AttrDict[JSONType]):
                 v = f.deserialize(v)
             setattr(self, k, v)
 
-    def __getstate__(self) -> Tuple[Dict[str, JSONType], Dict[str, JSONType]]:  # type: ignore[override]
+    def __getstate__(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:  # type: ignore[override]
         return self.to_dict(), self.meta._d_
 
-    def __setstate__(self, state: Tuple[Dict[str, JSONType], Dict[str, JSONType]]) -> None:  # type: ignore[override]
+    def __setstate__(self, state: Tuple[Dict[str, Any], Dict[str, Any]]) -> None:  # type: ignore[override]
         data, meta = state
         super(AttrDict, self).__setattr__("_d_", {})
         super(AttrDict, self).__setattr__("meta", HitMeta(meta))
@@ -565,7 +561,7 @@ class ObjectBase(AttrDict[JSONType]):
         else:
             super().__setattr__(name, value)
 
-    def to_dict(self, skip_empty: bool = True) -> Dict[str, JSONType]:
+    def to_dict(self, skip_empty: bool = True) -> Dict[str, Any]:
         out = {}
         for k, v in self._d_.items():
             # if this is a mapped field,
@@ -599,7 +595,7 @@ class ObjectBase(AttrDict[JSONType]):
                 errors.setdefault(name, []).append(e)
 
             if name in self._d_ or data not in ([], {}, None):
-                self._d_[name] = cast(JSONType, data)
+                self._d_[name] = cast(Any, data)
 
         if validate and errors:
             raise ValidationException(errors)

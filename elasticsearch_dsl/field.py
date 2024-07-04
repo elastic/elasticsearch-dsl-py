@@ -37,7 +37,7 @@ from dateutil import parser, tz
 
 from .exceptions import ValidationException
 from .query import Q
-from .utils import AttrDict, AttrList, DslBase, JSONType
+from .utils import AttrDict, AttrList, DslBase
 from .wrappers import Range
 
 if TYPE_CHECKING:
@@ -150,9 +150,9 @@ class Field(DslBase):
             raise ValidationException("Value required for this field.")
         return data
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         d = super().to_dict()
-        name, value = cast(Tuple[str, Dict[str, JSONType]], d.popitem())
+        name, value = cast(Tuple[str, Dict[str, Any]], d.popitem())
         value["type"] = name
         return value
 
@@ -161,7 +161,7 @@ class CustomField(Field):
     name = "custom"
     _coerce = True
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         if isinstance(self.builtin_type, Field):
             return self.builtin_type.to_dict()
 

@@ -22,7 +22,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, cast
 from typing_extensions import Self
 
 from .field import Field, Nested, Text, construct_field
-from .utils import DslBase, JSONType
+from .utils import DslBase
 
 META_FIELDS = frozenset(
     (
@@ -205,7 +205,7 @@ class MappingBase:
         self._meta[name] = kwargs if params is None else params
         return self
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         meta = self._meta
 
         # hard coded serialization of analyzers in _all

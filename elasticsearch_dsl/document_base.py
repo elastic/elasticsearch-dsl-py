@@ -36,7 +36,7 @@ from typing_extensions import dataclass_transform
 from .exceptions import ValidationException
 from .field import Binary, Boolean, Date, Field, Float, Integer, Nested, Object, Text
 from .mapping import Mapping
-from .utils import DOC_META_FIELDS, JSONType, ObjectBase
+from .utils import DOC_META_FIELDS, ObjectBase
 
 if TYPE_CHECKING:
     from elastic_transport import ObjectApiResponse
@@ -376,7 +376,7 @@ class DocumentBase(ObjectBase):
             ),
         )
 
-    def to_dict(self, include_meta: bool = False, skip_empty: bool = True) -> Dict[str, JSONType]:  # type: ignore[override]
+    def to_dict(self, include_meta: bool = False, skip_empty: bool = True) -> Dict[str, Any]:  # type: ignore[override]
         """
         Serialize the instance into a dictionary so that it can be saved in elasticsearch.
 

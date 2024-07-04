@@ -31,7 +31,7 @@ from typing import (
 )
 
 from .response.aggs import AggResponse, BucketData, FieldBucketData, TopHitsData
-from .utils import _R, AttrDict, DslBase, JSONType
+from .utils import _R, AttrDict, DslBase
 
 if TYPE_CHECKING:
     from .query import Query
@@ -96,10 +96,10 @@ class Agg(DslBase, Generic[_R]):
     def __contains__(self, key: str) -> bool:
         return False
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         d = super().to_dict()
         if isinstance(d[self.name], dict):
-            n = cast(Dict[str, JSONType], d[self.name])
+            n = cast(Dict[str, Any], d[self.name])
             if "meta" in n:
                 d["meta"] = n.pop("meta")
         return d
@@ -170,7 +170,7 @@ class Bucket(AggBase[_R], Agg[_R]):
         # remember self for chaining
         self._base = self
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         d = super(AggBase, self).to_dict()
         if isinstance(d[self.name], dict):
             n = cast(AttrDict[Any], d[self.name])
@@ -191,7 +191,7 @@ class Filter(Bucket[_R]):
             params["filter"] = filter
         super().__init__(**params)
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         d = super().to_dict()
         if isinstance(d[self.name], dict):
             n = cast(AttrDict[Any], d[self.name])

@@ -23,7 +23,7 @@ from typing_extensions import Self
 from .aggs import A, Agg
 from .query import MatchAll, Nested, Query, Range, Terms
 from .response import Response
-from .utils import _R, AttrDict, JSONType
+from .utils import _R, AttrDict
 
 if TYPE_CHECKING:
     from .response.aggs import BucketData
@@ -137,9 +137,9 @@ class TermsFacet(Facet[_R]):
 class RangeFacet(Facet[_R]):
     agg_type = "range"
 
-    def _range_to_dict(self, range: Tuple[Any, Tuple[int, int]]) -> Dict[str, JSONType]:
+    def _range_to_dict(self, range: Tuple[Any, Tuple[int, int]]) -> Dict[str, Any]:
         key, _range = range
-        out: Dict[str, JSONType] = {"key": key}
+        out: Dict[str, Any] = {"key": key}
         if _range[0] is not None:
             out["from"] = _range[0]
         if _range[1] is not None:
