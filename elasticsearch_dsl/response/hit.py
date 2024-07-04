@@ -17,16 +17,16 @@
 
 from typing import Any, Dict, List, Tuple, cast
 
-from ..utils import AttrDict, HitMeta, JSONType
+from ..utils import AttrDict, HitMeta
 
 
-class Hit(AttrDict[JSONType]):
-    def __init__(self, document: Dict[str, JSONType]):
-        data: Dict[str, JSONType] = {}
+class Hit(AttrDict[Any]):
+    def __init__(self, document: Dict[str, Any]):
+        data: Dict[str, Any] = {}
         if "_source" in document:
-            data = cast(Dict[str, JSONType], document["_source"])
+            data = cast(Dict[str, Any], document["_source"])
         if "fields" in document:
-            data.update(cast(Dict[str, JSONType], document["fields"]))
+            data.update(cast(Dict[str, Any], document["fields"]))
 
         super().__init__(data)
         # assign meta as attribute and not as key in self._d_

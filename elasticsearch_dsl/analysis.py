@@ -18,7 +18,7 @@
 from typing import Any, ClassVar, Dict, List, Optional, Union, cast
 
 from . import async_connections, connections
-from .utils import AsyncUsingType, AttrDict, DslBase, JSONType, UsingType, merge
+from .utils import AsyncUsingType, AttrDict, DslBase, UsingType, merge
 
 __all__ = ["tokenizer", "analyzer", "char_filter", "token_filter", "normalizer"]
 
@@ -52,7 +52,7 @@ class CustomAnalysis:
         self._name = filter_name
         super().__init__(**kwargs)
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         # only name to present in lists
         return self._name  # type: ignore
 
@@ -109,7 +109,7 @@ class BuiltinAnalysis:
         self._name = name
         super().__init__()
 
-    def to_dict(self) -> Dict[str, JSONType]:
+    def to_dict(self) -> Dict[str, Any]:
         # only name to present in lists
         return self._name  # type: ignore
 
