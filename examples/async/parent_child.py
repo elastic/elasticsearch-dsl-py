@@ -193,9 +193,10 @@ class Question(Post):
 
 class Answer(Post):
     if TYPE_CHECKING:
-        is_accepted: M[bool]
         _routing: str
         _index: AsyncIndex
+
+    is_accepted: M[bool]
 
     @classmethod
     def _matches(cls, hit: Dict[str, Any]) -> bool:
