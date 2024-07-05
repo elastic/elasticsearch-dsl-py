@@ -31,7 +31,7 @@ def test_attrdict_pickle() -> None:
 
 
 def test_attrlist_pickle() -> None:
-    al = utils.AttrList([])
+    al = utils.AttrList[Any]([])
 
     pickled_al = pickle.dumps(al)
     assert al == pickle.loads(pickled_al)
@@ -41,7 +41,7 @@ def test_attrlist_slice() -> None:
     class MyAttrDict(utils.AttrDict[str]):
         pass
 
-    l = utils.AttrList([{}, {}], obj_wrapper=MyAttrDict)
+    l = utils.AttrList[Any]([{}, {}], obj_wrapper=MyAttrDict)
     assert isinstance(l[:][0], MyAttrDict)
 
 
@@ -111,6 +111,6 @@ def test_recursive_to_dict() -> None:
 
 
 def test_attrlist_to_list() -> None:
-    l = utils.AttrList([{}, {}]).to_list()
+    l = utils.AttrList[Any]([{}, {}]).to_list()
     assert isinstance(l, list)
     assert l == [{}, {}]

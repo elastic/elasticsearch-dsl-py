@@ -727,7 +727,6 @@ def test_doc_with_type_hints() -> None:
     doc.ob = TypedInnerDoc(li=[1])
     with raises(ValidationException) as exc_info:
         doc.full_clean()
-    print(exc_info.value.args)
     assert set(exc_info.value.args[0].keys()) == {"ob"}
     assert set(exc_info.value.args[0]["ob"][0].args[0].keys()) == {"st"}
 

@@ -27,12 +27,14 @@ To custom analyzer with ascii folding allow search to work in different language
 
 import asyncio
 import os
+from typing import TYPE_CHECKING, Optional
 
 from elasticsearch_dsl import (
     AsyncDocument,
     SearchAsYouType,
     analyzer,
     async_connections,
+    mapped_field,
     token_filter,
 )
 from elasticsearch_dsl.query import MultiMatch
@@ -47,7 +49,10 @@ ascii_fold = analyzer(
 
 
 class Person(AsyncDocument):
-    name = SearchAsYouType(max_shingle_size=3)
+    if TYPE_CHECKING:
+        _id: Optional[int] = mapped_field(default=None)
+
+    name: str = mapped_field(SearchAsYouType(max_shingle_size=3), default="")
 
     class Index:
         name = "test-search-as-you-type"

@@ -122,11 +122,11 @@ class ProxyDescriptor(Generic[_S]):
         proxy._proxied = Q(value)
 
 
-class AggsProxy(AggBase, DslBase, Generic[_S]):
+class AggsProxy(AggBase[_R], DslBase):
     name = "aggs"
 
-    def __init__(self, search: _S):
-        self._base = cast("Agg", self)
+    def __init__(self, search: "SearchBase[_R]"):
+        self._base = cast("Agg[_R]", self)
         self._search = search
         self._params = {"aggs": {}}
 
@@ -367,7 +367,7 @@ class SearchBase(Request[_R]):
         """
         super().__init__(**kwargs)
 
-        self.aggs = AggsProxy(self)
+        self.aggs = AggsProxy[_R](self)
         self._sort: List[Union[str, Dict[str, Dict[str, str]]]] = []
         self._knn: List[Dict[str, Any]] = []
         self._rank: Dict[str, Any] = {}

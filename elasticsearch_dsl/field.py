@@ -225,9 +225,9 @@ class Object(Field):
     def _wrap(self, data: Dict[str, Any]) -> "InnerDoc":
         return self._doc_class.from_es(data, data_only=True)
 
-    def empty(self) -> Union["InnerDoc", AttrList]:
+    def empty(self) -> Union["InnerDoc", AttrList[Any]]:
         if self._multi:
-            return AttrList([], self._wrap)
+            return AttrList[Any]([], self._wrap)
         return self._empty()
 
     def to_dict(self) -> Dict[str, Any]:

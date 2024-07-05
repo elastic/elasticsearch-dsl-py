@@ -89,7 +89,7 @@ def lint(session):
 
 @nox.session(python="3.8")
 def type_check(session):
-    session.install("mypy", ".[develop]")
+    session.install(".[develop]")
     session.run(
         "mypy",
         "--strict",
@@ -97,6 +97,10 @@ def type_check(session):
         "--explicit-package-bases",
         "elasticsearch_dsl",
         "tests",
+        "examples",
+    )
+    session.run(
+        "pyright",
         "examples",
     )
 

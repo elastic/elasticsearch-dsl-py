@@ -47,6 +47,11 @@ async def test_scan_aggs_with_multiple_aggs(
             )
         },
     ]
-    file_list = [f async for f in scan_aggs(s, key_aggs)]
+    file_list = [
+        f
+        async for f in scan_aggs(
+            s, key_aggs, {"first_seen": A("min", field="committed_date")}
+        )
+    ]
 
     assert len(file_list) == 47

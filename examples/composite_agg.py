@@ -35,9 +35,11 @@ def scan_aggs(
 
     def run_search(**kwargs: Any) -> Response:
         s = search[:0]
-        s.aggs.bucket("comp", "composite", sources=source_aggs, size=size, **kwargs)
+        bucket = s.aggs.bucket(
+            "comp", "composite", sources=source_aggs, size=size, **kwargs
+        )
         for agg_name, agg in inner_aggs.items():
-            s.aggs["comp"][agg_name] = agg
+            bucket[agg_name] = agg
         return s.execute()
 
     response = run_search()
