@@ -35,7 +35,6 @@ from elasticsearch_dsl import (
     Document,
     Keyword,
     Long,
-    M,
     Text,
     analyzer,
     connections,
@@ -53,14 +52,14 @@ ascii_fold = analyzer(
 
 
 class Person(Document):
-    name: M[str] = mapped_field(Text(fields={"keyword": Keyword()}))
-    popularity: M[int] = mapped_field(Long())
+    if TYPE_CHECKING:
+        _id: Optional[int] = mapped_field(default=None)
+
+    name: str = mapped_field(Text(fields={"keyword": Keyword()}), default="")
+    popularity: int = mapped_field(Long(), default=0)
 
     # completion field with a custom analyzer
     suggest: Dict[str, Any] = mapped_field(Completion(analyzer=ascii_fold), init=False)
-
-    if TYPE_CHECKING:
-        _id: Optional[int] = mapped_field(default=None)
 
     def clean(self) -> None:
         """

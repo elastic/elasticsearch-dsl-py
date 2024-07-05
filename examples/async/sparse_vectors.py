@@ -64,7 +64,7 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from urllib.request import urlopen
 
 import nltk  # type: ignore
@@ -75,7 +75,6 @@ from elasticsearch_dsl import (
     AsyncSearch,
     InnerDoc,
     Keyword,
-    M,
     Q,
     SparseVector,
     async_connections,
@@ -89,8 +88,8 @@ nltk.download("punkt", quiet=True)
 
 
 class Passage(InnerDoc):
-    content: M[Optional[str]]
-    embedding: M[Dict[str, float]] = mapped_field(SparseVector(), init=False)
+    content: Optional[str]
+    embedding: Dict[str, float] = mapped_field(SparseVector(), init=False)
 
 
 class WorkplaceDoc(AsyncDocument):
@@ -98,16 +97,16 @@ class WorkplaceDoc(AsyncDocument):
         name = "workplace_documents_sparse"
         settings = {"default_pipeline": "elser_ingest_pipeline"}
 
-    name: M[Optional[str]]
-    summary: M[Optional[str]]
-    content: M[Optional[str]]
-    created: M[Optional[str]]
-    updated: M[Optional[datetime]]
-    url: M[Optional[str]] = mapped_field(Keyword())
-    category: M[Optional[str]] = mapped_field(Keyword())
-    passages: M[List[Passage]] = mapped_field(default=[])
+    name: str
+    summary: str
+    content: str
+    created: datetime
+    updated: Optional[datetime]
+    url: str = mapped_field(Keyword())
+    category: str = mapped_field(Keyword())
+    passages: List[Passage] = mapped_field(default=[])
 
-    _model = None
+    _model: Any = None
 
     def clean(self) -> None:
         # split the content into sentences

@@ -23,7 +23,6 @@ from elasticsearch_dsl import (
     AsyncDocument,
     AsyncSearch,
     Keyword,
-    M,
     Percolator,
     Q,
     Query,
@@ -40,10 +39,8 @@ class BlogPost(AsyncDocument):
     if TYPE_CHECKING:
         _id: int
 
-    content: M[Optional[str]]
-    tags: M[List[str]] = mapped_field(
-        Keyword(multi=True, required=False), default_factory=list
-    )
+    content: Optional[str]
+    tags: List[str] = mapped_field(Keyword(), default_factory=list)
 
     class Index:
         name = "test-blogpost"
@@ -78,12 +75,12 @@ class PercolatorDoc(AsyncDocument):
     # relevant fields from BlogPost must be also present here for the queries
     # to be able to use them. Another option would be to use document
     # inheritance but save() would have to be reset to normal behavior.
-    content: M[Optional[str]]
+    content: Optional[str]
 
     # the percolator query to be run against the doc
-    query: M[Query] = mapped_field(Percolator())
+    query: Query = mapped_field(Percolator())
     # list of tags to append to a document
-    tags: M[List[str]] = mapped_field(Keyword(multi=True))
+    tags: List[str] = mapped_field(Keyword(multi=True))
 
     class Index:
         name = "test-percolator"

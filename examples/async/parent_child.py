@@ -53,7 +53,6 @@ from elasticsearch_dsl import (
     Join,
     Keyword,
     Long,
-    M,
     Text,
     async_connections,
     mapped_field,
@@ -65,11 +64,11 @@ class User(InnerDoc):
     Class used to represent a denormalized user stored on other objects.
     """
 
-    id: M[int] = mapped_field(Long(required=True))
-    signed_up: M[Optional[datetime]] = mapped_field(Date())
-    username: M[str] = mapped_field(Text(fields={"keyword": Keyword()}, required=True))
-    email: M[Optional[str]] = mapped_field(Text(fields={"keyword": Keyword()}))
-    location: M[Optional[str]] = mapped_field(Text(fields={"keyword": Keyword()}))
+    id: int = mapped_field(Long())
+    signed_up: Optional[datetime] = mapped_field(Date())
+    username: str = mapped_field(Text(fields={"keyword": Keyword()}))
+    email: Optional[str] = mapped_field(Text(fields={"keyword": Keyword()}))
+    location: Optional[str] = mapped_field(Text(fields={"keyword": Keyword()}))
 
 
 class Comment(InnerDoc):
@@ -77,9 +76,9 @@ class Comment(InnerDoc):
     Class wrapper for nested comment objects.
     """
 
-    author: M[User]
-    created: M[datetime]
-    content: M[str]
+    author: User
+    created: datetime
+    content: str
 
 
 class Post(AsyncDocument):
@@ -87,11 +86,19 @@ class Post(AsyncDocument):
     Base class for Question and Answer containing the common fields.
     """
 
-    author: M[User]
-    created: M[Optional[datetime]]
-    body: str
-    question_answer: M[Any] = mapped_field(Join(relations={"question": "answer"}))
-    comments: M[List[Comment]]
+    author: User
+
+    if TYPE_CHECKING:
+        _routing: str = mapped_field(default=None)
+        _index: AsyncIndex = mapped_field(default=None)
+        _id: Optional[int] = mapped_field(default=None)
+
+    created: Optional[datetime] = mapped_field(default=None)
+    body: str = mapped_field(default="")
+    comments: List[Comment] = mapped_field(default_factory=list)
+    question_answer: Any = mapped_field(
+        Join(relations={"question": "answer"}), default_factory=dict
+    )
 
     @classmethod
     def _matches(cls, hit: Dict[str, Any]) -> bool:
@@ -127,11 +134,10 @@ class Post(AsyncDocument):
 
 
 class Question(Post):
-    if TYPE_CHECKING:
-        _id: Optional[int]
-
-    tags: M[List[str]]  # .tags will return empty list if not present
-    title: M[str] = mapped_field(Text(fields={"keyword": Keyword()}))
+    tags: List[str] = mapped_field(
+        default_factory=list
+    )  # .tags will return empty list if not present
+    title: str = mapped_field(Text(fields={"keyword": Keyword()}), default="")
 
     @classmethod
     def _matches(cls, hit: Dict[str, Any]) -> bool:
@@ -162,7 +168,6 @@ class Question(Post):
             created=created,
             body=body,
             is_accepted=accepted,
-            comments=[],
         )
         if commit:
             await answer.save()
@@ -192,11 +197,7 @@ class Question(Post):
 
 
 class Answer(Post):
-    if TYPE_CHECKING:
-        _routing: str
-        _index: AsyncIndex
-
-    is_accepted: M[bool]
+    is_accepted: bool = mapped_field(default=False)
 
     @classmethod
     def _matches(cls, hit: Dict[str, Any]) -> bool:
@@ -263,9 +264,6 @@ async def main() -> Answer:
         body="""
         I want to use elasticsearch, how do I do it from Python?
         """,
-        created=datetime.now(),
-        question_answer={},
-        comments=[],
     )
     await question.save()
     answer = await question.add_answer(honza, "Just use `elasticsearch-py`!")

@@ -41,7 +41,7 @@ from datetime import datetime
 from fnmatch import fnmatch
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from elasticsearch_dsl import AsyncDocument, Keyword, M, async_connections, mapped_field
+from elasticsearch_dsl import AsyncDocument, Keyword, async_connections, mapped_field
 
 ALIAS = "test-blog"
 PATTERN = ALIAS + "-*"
@@ -51,10 +51,10 @@ class BlogPost(AsyncDocument):
     if TYPE_CHECKING:
         _id: int
 
-    title: M[str]
-    tags: M[List[str]] = mapped_field(Keyword(multi=True))
-    content: M[str]
-    published: M[Optional[datetime]]
+    title: str
+    tags: List[str] = mapped_field(Keyword())
+    content: str
+    published: Optional[datetime] = mapped_field(default=None)
 
     def is_published(self) -> bool:
         return bool(self.published and datetime.now() > self.published)
@@ -143,7 +143,6 @@ async def main() -> None:
         title="Hello World!",
         tags=["testing", "dummy"],
         content=open(__file__).read(),
-        published=None,
     )
     await bp.save(refresh=True)
 
