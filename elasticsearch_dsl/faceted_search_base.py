@@ -16,7 +16,19 @@
 #  under the License.
 
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, Tuple, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 from typing_extensions import Self
 
@@ -26,10 +38,11 @@ from .response import Response
 from .utils import _R, AttrDict
 
 if TYPE_CHECKING:
+    from .document_base import DocumentBase
     from .response.aggs import BucketData
     from .search_base import SearchBase
 
-FilterValueType = Union[str, datetime]
+FilterValueType = Union[str, datetime, Sequence[str]]
 
 __all__ = [
     "FacetedSearchBase",
@@ -51,7 +64,7 @@ class Facet(Generic[_R]):
     agg_type: str = ""
 
     def __init__(
-        self, metric: Optional[str] = None, metric_sort: str = "desc", **kwargs: Any
+        self, metric: Optional[Agg[_R]] = None, metric_sort: str = "desc", **kwargs: Any
     ):
         self.filter_values = ()
         self._params = kwargs
@@ -137,7 +150,9 @@ class TermsFacet(Facet[_R]):
 class RangeFacet(Facet[_R]):
     agg_type = "range"
 
-    def _range_to_dict(self, range: Tuple[Any, Tuple[int, int]]) -> Dict[str, Any]:
+    def _range_to_dict(
+        self, range: Tuple[Any, Tuple[Optional[int], Optional[int]]]
+    ) -> Dict[str, Any]:
         key, _range = range
         out: Dict[str, Any] = {"key": key}
         if _range[0] is not None:
@@ -146,7 +161,11 @@ class RangeFacet(Facet[_R]):
             out["to"] = _range[1]
         return out
 
-    def __init__(self, ranges: List[Tuple[Any, Tuple[int, int]]], **kwargs: Any):
+    def __init__(
+        self,
+        ranges: Sequence[Tuple[Any, Tuple[Optional[int], Optional[int]]]],
+        **kwargs: Any,
+    ):
         super().__init__(**kwargs)
         self._params["ranges"] = list(map(self._range_to_dict, ranges))
         self._params["keyed"] = False
@@ -277,7 +296,7 @@ class FacetedResponse(Response[_R]):
         _facets: Dict[str, List[Tuple[Any, int, bool]]]
 
     @property
-    def query_string(self) -> Optional[Query]:
+    def query_string(self) -> Optional[Union[str, Query]]:
         return self._faceted_search._query
 
     @property
@@ -334,9 +353,9 @@ class FacetedSearchBase(Generic[_R]):
 
     """
 
-    index = None
-    doc_types = None
-    fields: List[str] = []
+    index: Optional[str] = None
+    doc_types: Optional[List[Union[str, Type["DocumentBase"]]]] = None
+    fields: Sequence[str] = []
     facets: Dict[str, Facet[_R]] = {}
     using = "default"
 
@@ -346,9 +365,9 @@ class FacetedSearchBase(Generic[_R]):
 
     def __init__(
         self,
-        query: Optional[Query] = None,
+        query: Optional[Union[str, Query]] = None,
         filters: Dict[str, FilterValueType] = {},
-        sort: List[str] = [],
+        sort: Sequence[str] = [],
     ):
         """
         :arg query: the text to search for
@@ -383,16 +402,18 @@ class FacetedSearchBase(Generic[_R]):
             ]
 
         # remember the filter values for use in FacetedResponse
-        self.filter_values[name] = filter_values
+        self.filter_values[name] = filter_values  # type: ignore[assignment]
 
         # get the filter from the facet
-        f = self.facets[name].add_filter(filter_values)
+        f = self.facets[name].add_filter(filter_values)  # type: ignore[arg-type]
         if f is None:
             return
 
         self._filters[name] = f
 
-    def query(self, search: "SearchBase[_R]", query: Query) -> "SearchBase[_R]":
+    def query(
+        self, search: "SearchBase[_R]", query: Union[str, Query]
+    ) -> "SearchBase[_R]":
         """
         Add query part to ``search``.
 

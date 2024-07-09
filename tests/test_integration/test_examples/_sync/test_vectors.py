@@ -16,9 +16,11 @@
 #  under the License.
 
 from hashlib import md5
+from typing import Any, List, Tuple
 from unittest import SkipTest
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from tests.sleep import sleep
 
@@ -26,17 +28,19 @@ from ..examples import vectors
 
 
 @pytest.mark.sync
-def test_vector_search(write_client, es_version, mocker):
+def test_vector_search(
+    write_client: Elasticsearch, es_version: Tuple[int, ...], mocker: Any
+) -> None:
     # this test only runs on Elasticsearch >= 8.11 because the example uses
     # a dense vector without specifying an explicit size
     if es_version < (8, 11):
         raise SkipTest("This test requires Elasticsearch 8.11 or newer")
 
     class MockModel:
-        def __init__(self, model):
+        def __init__(self, model: Any):
             pass
 
-        def encode(self, text):
+        def encode(self, text: str) -> List[float]:
             vector = [int(ch) for ch in md5(text.encode()).digest()]
             total = sum(vector)
             return [float(v) / total for v in vector]

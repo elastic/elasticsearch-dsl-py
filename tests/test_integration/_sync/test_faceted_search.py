@@ -16,10 +16,12 @@
 #  under the License.
 
 from datetime import datetime
+from typing import Tuple, Type
 
 import pytest
+from elasticsearch import Elasticsearch
 
-from elasticsearch_dsl import A, Boolean, Date, Document, Keyword
+from elasticsearch_dsl import A, Boolean, Date, Document, Keyword, Search
 from elasticsearch_dsl.faceted_search import (
     DateHistogramFacet,
     FacetedSearch,
@@ -57,7 +59,7 @@ class MetricSearch(FacetedSearch):
 
 
 @pytest.fixture(scope="session")
-def commit_search_cls(es_version):
+def commit_search_cls(es_version: Tuple[int, ...]) -> Type[FacetedSearch]:
     if es_version >= (7, 2):
         interval_kwargs = {"fixed_interval": "1d"}
     else:
@@ -85,7 +87,7 @@ def commit_search_cls(es_version):
 
 
 @pytest.fixture(scope="session")
-def repo_search_cls(es_version):
+def repo_search_cls(es_version: Tuple[int, ...]) -> Type[FacetedSearch]:
     interval_type = "calendar_interval" if es_version >= (7, 2) else "interval"
 
     class RepoSearch(FacetedSearch):
@@ -98,7 +100,7 @@ def repo_search_cls(es_version):
             ),
         }
 
-        def search(self):
+        def search(self) -> Search:
             s = super().search()
             return s.filter("term", commit_repo="repo")
 
@@ -106,7 +108,7 @@ def repo_search_cls(es_version):
 
 
 @pytest.fixture(scope="session")
-def pr_search_cls(es_version):
+def pr_search_cls(es_version: Tuple[int, ...]) -> Type[FacetedSearch]:
     interval_type = "calendar_interval" if es_version >= (7, 2) else "interval"
 
     class PRSearch(FacetedSearch):
@@ -125,7 +127,7 @@ def pr_search_cls(es_version):
 
 
 @pytest.mark.sync
-def test_facet_with_custom_metric(data_client):
+def test_facet_with_custom_metric(data_client: Elasticsearch) -> None:
     ms = MetricSearch()
     r = ms.execute()
 
@@ -135,20 +137,24 @@ def test_facet_with_custom_metric(data_client):
 
 
 @pytest.mark.sync
-def test_nested_facet(pull_request, pr_search_cls):
+def test_nested_facet(
+    pull_request: PullRequest, pr_search_cls: Type[FacetedSearch]
+) -> None:
     prs = pr_search_cls()
     r = prs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(datetime(2018, 1, 1, 0, 0), 1, False)] == r.facets.comments
 
 
 @pytest.mark.sync
-def test_nested_facet_with_filter(pull_request, pr_search_cls):
+def test_nested_facet_with_filter(
+    pull_request: PullRequest, pr_search_cls: Type[FacetedSearch]
+) -> None:
     prs = pr_search_cls(filters={"comments": datetime(2018, 1, 1, 0, 0)})
     r = prs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(datetime(2018, 1, 1, 0, 0), 1, True)] == r.facets.comments
 
     prs = pr_search_cls(filters={"comments": datetime(2018, 2, 1, 0, 0)})
@@ -157,31 +163,39 @@ def test_nested_facet_with_filter(pull_request, pr_search_cls):
 
 
 @pytest.mark.sync
-def test_datehistogram_facet(data_client, repo_search_cls):
+def test_datehistogram_facet(
+    data_client: Elasticsearch, repo_search_cls: Type[FacetedSearch]
+) -> None:
     rs = repo_search_cls()
     r = rs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 
 @pytest.mark.sync
-def test_boolean_facet(data_client, repo_search_cls):
+def test_boolean_facet(
+    data_client: Elasticsearch, repo_search_cls: Type[FacetedSearch]
+) -> None:
     rs = repo_search_cls()
     r = rs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(True, 1, False)] == r.facets.public
     value, count, selected = r.facets.public[0]
     assert value is True
 
 
 @pytest.mark.sync
-def test_empty_search_finds_everything(data_client, es_version, commit_search_cls):
+def test_empty_search_finds_everything(
+    data_client: Elasticsearch,
+    es_version: Tuple[int, ...],
+    commit_search_cls: Type[FacetedSearch],
+) -> None:
     cs = commit_search_cls()
     r = cs.execute()
 
-    assert r.hits.total.value == 52
+    assert r.hits.total.value == 52  # type: ignore[attr-defined]
     assert [
         ("elasticsearch_dsl", 40, False),
         ("test_elasticsearch_dsl", 35, False),
@@ -224,13 +238,13 @@ def test_empty_search_finds_everything(data_client, es_version, commit_search_cl
 
 @pytest.mark.sync
 def test_term_filters_are_shown_as_selected_and_data_is_filtered(
-    data_client, commit_search_cls
-):
+    data_client: Elasticsearch, commit_search_cls: Type[FacetedSearch]
+) -> None:
     cs = commit_search_cls(filters={"files": "test_elasticsearch_dsl"})
 
     r = cs.execute()
 
-    assert 35 == r.hits.total.value
+    assert 35 == r.hits.total.value  # type: ignore[attr-defined]
     assert [
         ("elasticsearch_dsl", 40, False),
         ("test_elasticsearch_dsl", 35, True),  # selected
@@ -271,17 +285,19 @@ def test_term_filters_are_shown_as_selected_and_data_is_filtered(
 
 @pytest.mark.sync
 def test_range_filters_are_shown_as_selected_and_data_is_filtered(
-    data_client, commit_search_cls
-):
+    data_client: Elasticsearch, commit_search_cls: Type[FacetedSearch]
+) -> None:
     cs = commit_search_cls(filters={"deletions": "better"})
 
     r = cs.execute()
 
-    assert 19 == r.hits.total.value
+    assert 19 == r.hits.total.value  # type: ignore[attr-defined]
 
 
 @pytest.mark.sync
-def test_pagination(data_client, commit_search_cls):
+def test_pagination(
+    data_client: Elasticsearch, commit_search_cls: Type[FacetedSearch]
+) -> None:
     cs = commit_search_cls()
     cs = cs[0:20]
 

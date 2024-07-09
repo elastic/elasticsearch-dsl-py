@@ -16,8 +16,9 @@
 #  under the License.
 
 import asyncio
+from typing import Union
 
 
-async def sleep(secs):
+async def sleep(secs: Union[int, float]) -> None:
     """Tests can use this function to sleep."""
     await asyncio.sleep(secs)

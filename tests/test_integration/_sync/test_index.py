@@ -16,6 +16,7 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analysis
 
@@ -26,7 +27,7 @@ class Post(Document):
 
 
 @pytest.mark.sync
-def test_index_template_works(write_client):
+def test_index_template_works(write_client: Elasticsearch) -> None:
     it = IndexTemplate("test-template", "test-*")
     it.document(Post)
     it.settings(number_of_replicas=0, number_of_shards=1)
@@ -48,7 +49,9 @@ def test_index_template_works(write_client):
 
 
 @pytest.mark.sync
-def test_index_can_be_saved_even_with_settings(write_client):
+def test_index_can_be_saved_even_with_settings(
+    write_client: Elasticsearch,
+) -> None:
     i = Index("test-blog", using=write_client)
     i.settings(number_of_shards=3, number_of_replicas=0)
     i.save()
@@ -62,13 +65,15 @@ def test_index_can_be_saved_even_with_settings(write_client):
 
 
 @pytest.mark.sync
-def test_index_exists(data_client):
+def test_index_exists(data_client: Elasticsearch) -> None:
     assert Index("git").exists()
     assert not Index("not-there").exists()
 
 
 @pytest.mark.sync
-def test_index_can_be_created_with_settings_and_mappings(write_client):
+def test_index_can_be_created_with_settings_and_mappings(
+    write_client: Elasticsearch,
+) -> None:
     i = Index("test-blog", using=write_client)
     i.document(Post)
     i.settings(number_of_replicas=0, number_of_shards=1)
@@ -94,7 +99,7 @@ def test_index_can_be_created_with_settings_and_mappings(write_client):
 
 
 @pytest.mark.sync
-def test_delete(write_client):
+def test_delete(write_client: Elasticsearch) -> None:
     write_client.indices.create(
         index="test-index",
         body={"settings": {"number_of_replicas": 0, "number_of_shards": 1}},
@@ -106,7 +111,9 @@ def test_delete(write_client):
 
 
 @pytest.mark.sync
-def test_multiple_indices_with_same_doc_type_work(write_client):
+def test_multiple_indices_with_same_doc_type_work(
+    write_client: Elasticsearch,
+) -> None:
     i1 = Index("test-index-1", using=write_client)
     i2 = Index("test-index-2", using=write_client)
 
@@ -114,8 +121,8 @@ def test_multiple_indices_with_same_doc_type_work(write_client):
         i.document(Post)
         i.create()
 
-    for i in ("test-index-1", "test-index-2"):
-        settings = write_client.indices.get_settings(index=i)
-        assert settings[i]["settings"]["index"]["analysis"] == {
+    for j in ("test-index-1", "test-index-2"):
+        settings = write_client.indices.get_settings(index=j)
+        assert settings[j]["settings"]["index"]["analysis"] == {
             "analyzer": {"my_analyzer": {"type": "custom", "tokenizer": "keyword"}}
         }

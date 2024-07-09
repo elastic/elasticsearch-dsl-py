@@ -38,7 +38,7 @@ class IndexTemplate:
         name: str,
         template: str,
         index: Optional["Index"] = None,
-        order: Optional[str] = None,
+        order: Optional[int] = None,
         **kwargs: Any,
     ):
         if index is None:
@@ -94,7 +94,7 @@ class Index(IndexBase):
         self,
         template_name: str,
         pattern: Optional[str] = None,
-        order: Optional[str] = None,
+        order: Optional[int] = None,
     ) -> IndexTemplate:
         # TODO: should we allow pattern to be a top-level arg?
         # or maybe have an IndexPattern that allows for it and have

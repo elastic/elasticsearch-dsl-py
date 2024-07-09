@@ -140,7 +140,12 @@ class AggBase(Generic[_R]):
         return iter(self.aggs)
 
     def _agg(
-        self, bucket: bool, name: str, agg_type: str, *args: Any, **params: Any
+        self,
+        bucket: bool,
+        name: str,
+        agg_type: Union[Dict[str, Any], Agg[_R], str],
+        *args: Any,
+        **params: Any,
     ) -> Agg[_R]:
         agg = self[name] = A(agg_type, *args, **params)
 
@@ -151,14 +156,32 @@ class AggBase(Generic[_R]):
         else:
             return self._base
 
-    def metric(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg[_R]:
+    def metric(
+        self,
+        name: str,
+        agg_type: Union[Dict[str, Any], Agg[_R], str],
+        *args: Any,
+        **params: Any,
+    ) -> Agg[_R]:
         return self._agg(False, name, agg_type, *args, **params)
 
-    def bucket(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg[_R]:
-        return self._agg(True, name, agg_type, *args, **params)
+    def bucket(
+        self,
+        name: str,
+        agg_type: Union[Dict[str, Any], Agg[_R], str],
+        *args: Any,
+        **params: Any,
+    ) -> "Bucket[_R]":
+        return cast("Bucket[_R]", self._agg(True, name, agg_type, *args, **params))
 
-    def pipeline(self, name: str, agg_type: str, *args: Any, **params: Any) -> Agg[_R]:
-        return self._agg(False, name, agg_type, *args, **params)
+    def pipeline(
+        self,
+        name: str,
+        agg_type: Union[Dict[str, Any], Agg[_R], str],
+        *args: Any,
+        **params: Any,
+    ) -> "Pipeline[_R]":
+        return cast("Pipeline[_R]", self._agg(False, name, agg_type, *args, **params))
 
     def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return BucketData(self, search, data)  # type: ignore

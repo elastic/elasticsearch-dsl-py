@@ -86,9 +86,9 @@ def _wrap(val: Any, obj_wrapper: Optional[Callable[[Any], Any]] = None) -> Any:
     return val
 
 
-class AttrList:
+class AttrList(Generic[_ValT]):
     def __init__(
-        self, l: List[Any], obj_wrapper: Optional[Callable[[Any], Any]] = None
+        self, l: List[_ValT], obj_wrapper: Optional[Callable[[_ValT], Any]] = None
     ):
         # make iterables into lists
         if not isinstance(l, list):
@@ -111,10 +111,10 @@ class AttrList:
     def __getitem__(self, k: Union[int, slice]) -> Any:
         l = self._l_[k]
         if isinstance(k, slice):
-            return AttrList(l, obj_wrapper=self._obj_wrapper)
+            return AttrList[_ValT](l, obj_wrapper=self._obj_wrapper)  # type: ignore[arg-type]
         return _wrap(l, self._obj_wrapper)
 
-    def __setitem__(self, k: int, value: Any) -> None:
+    def __setitem__(self, k: int, value: _ValT) -> None:
         self._l_[k] = value
 
     def __iter__(self) -> Iterator[Any]:
@@ -131,15 +131,15 @@ class AttrList:
     def __getattr__(self, name: str) -> Any:
         return getattr(self._l_, name)
 
-    def __getstate__(self) -> Tuple[List[Any], Optional[Callable[[Any], Any]]]:
+    def __getstate__(self) -> Tuple[List[_ValT], Optional[Callable[[_ValT], Any]]]:
         return self._l_, self._obj_wrapper
 
     def __setstate__(
-        self, state: Tuple[List[Any], Optional[Callable[[Any], Any]]]
+        self, state: Tuple[List[_ValT], Optional[Callable[[_ValT], Any]]]
     ) -> None:
         self._l_, self._obj_wrapper = state
 
-    def to_list(self) -> List[Any]:
+    def to_list(self) -> List[_ValT]:
         return self._l_
 
 
@@ -215,7 +215,6 @@ class AttrDict(Generic[_ValT]):
         del self._d_[key]
 
     def __setattr__(self, name: str, value: _ValT) -> None:
-        print(self._d_)
         if name in self._d_ or not hasattr(self.__class__, name):
             self._d_[name] = value
         else:

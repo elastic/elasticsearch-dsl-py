@@ -16,13 +16,14 @@
 #  under the License.
 
 import pytest
+from elasticsearch import AsyncElasticsearch
 from pytest import raises
 
 from elasticsearch_dsl import AsyncMapping, analysis, exceptions
 
 
 @pytest.mark.asyncio
-async def test_mapping_saved_into_es(async_write_client):
+async def test_mapping_saved_into_es(async_write_client: AsyncElasticsearch) -> None:
     m = AsyncMapping()
     m.field(
         "name", "text", analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword")
@@ -44,8 +45,8 @@ async def test_mapping_saved_into_es(async_write_client):
 
 @pytest.mark.asyncio
 async def test_mapping_saved_into_es_when_index_already_exists_closed(
-    async_write_client,
-):
+    async_write_client: AsyncElasticsearch,
+) -> None:
     m = AsyncMapping()
     m.field(
         "name", "text", analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword")
@@ -72,8 +73,8 @@ async def test_mapping_saved_into_es_when_index_already_exists_closed(
 
 @pytest.mark.asyncio
 async def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
-    async_write_client,
-):
+    async_write_client: AsyncElasticsearch,
+) -> None:
     m = AsyncMapping()
     analyzer = analysis.analyzer("my_analyzer", tokenizer="keyword")
     m.field("name", "text", analyzer=analyzer)
@@ -103,7 +104,9 @@ async def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
 
 
 @pytest.mark.asyncio
-async def test_mapping_gets_updated_from_es(async_write_client):
+async def test_mapping_gets_updated_from_es(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     await async_write_client.indices.create(
         index="test-mapping",
         body={
@@ -136,7 +139,7 @@ async def test_mapping_gets_updated_from_es(async_write_client):
     m = await AsyncMapping.from_es("test-mapping", using=async_write_client)
 
     assert ["comments", "created_at", "title"] == list(
-        sorted(m.properties.properties._d_.keys())
+        sorted(m.properties.properties._d_.keys())  # type: ignore[attr-defined]
     )
     assert {
         "date_detection": False,

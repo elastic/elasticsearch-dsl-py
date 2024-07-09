@@ -15,16 +15,24 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+# this file creates several documents using bad or no types because
+# these are still supported and should be kept functional in spite
+# of not having appropriate type hints. For that reason the comment
+# below disables many mypy checks that fails as a result of this.
+# mypy: disable-error-code="assignment, index, arg-type, call-arg, operator, comparison-overlap, attr-defined"
+
 from datetime import datetime
 from ipaddress import ip_address
+from typing import Any
 
 import pytest
-from elasticsearch import ConflictError, NotFoundError
+from elasticsearch import AsyncElasticsearch, ConflictError, NotFoundError
 from pytest import raises
 from pytz import timezone
 
 from elasticsearch_dsl import (
     AsyncDocument,
+    AsyncSearch,
     Binary,
     Boolean,
     Date,
@@ -67,7 +75,7 @@ class Repository(AsyncDocument):
     tags = Keyword()
 
     @classmethod
-    def search(cls):
+    def search(cls) -> AsyncSearch["Repository"]:  # type: ignore[override]
         return super().search().filter("term", commit_repo="repo")
 
     class Index:
@@ -128,7 +136,7 @@ class Tags(AsyncDocument):
 
 
 @pytest.mark.asyncio
-async def test_serialization(async_write_client):
+async def test_serialization(async_write_client: AsyncElasticsearch) -> None:
     await SerializationDoc.init()
     await async_write_client.index(
         index="test-serialization",
@@ -142,6 +150,7 @@ async def test_serialization(async_write_client):
         },
     )
     sd = await SerializationDoc.get(id=42)
+    assert sd is not None
 
     assert sd.i == [1, 2, 3, None]
     assert sd.b == [True, False, True, False, None]
@@ -159,7 +168,7 @@ async def test_serialization(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_nested_inner_hits_are_wrapped_properly(async_pull_request):
+async def test_nested_inner_hits_are_wrapped_properly(async_pull_request: Any) -> None:
     history_query = Q(
         "nested",
         path="comments.history",
@@ -188,7 +197,9 @@ async def test_nested_inner_hits_are_wrapped_properly(async_pull_request):
 
 
 @pytest.mark.asyncio
-async def test_nested_inner_hits_are_deserialized_properly(async_pull_request):
+async def test_nested_inner_hits_are_deserialized_properly(
+    async_pull_request: Any,
+) -> None:
     s = PullRequest.search().query(
         "nested",
         inner_hits={},
@@ -204,7 +215,7 @@ async def test_nested_inner_hits_are_deserialized_properly(async_pull_request):
 
 
 @pytest.mark.asyncio
-async def test_nested_top_hits_are_wrapped_properly(async_pull_request):
+async def test_nested_top_hits_are_wrapped_properly(async_pull_request: Any) -> None:
     s = PullRequest.search()
     s.aggs.bucket("comments", "nested", path="comments").metric(
         "hits", "top_hits", size=1
@@ -217,7 +228,7 @@ async def test_nested_top_hits_are_wrapped_properly(async_pull_request):
 
 
 @pytest.mark.asyncio
-async def test_update_object_field(async_write_client):
+async def test_update_object_field(async_write_client: AsyncElasticsearch) -> None:
     await Wiki.init()
     w = Wiki(
         owner=User(name="Honza Kral"),
@@ -238,7 +249,7 @@ async def test_update_object_field(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_update_script(async_write_client):
+async def test_update_script(async_write_client: AsyncElasticsearch) -> None:
     await Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     await w.save()
@@ -249,7 +260,7 @@ async def test_update_script(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_update_script_with_dict(async_write_client):
+async def test_update_script_with_dict(async_write_client: AsyncElasticsearch) -> None:
     await Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     await w.save()
@@ -267,13 +278,16 @@ async def test_update_script_with_dict(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_update_retry_on_conflict(async_write_client):
+async def test_update_retry_on_conflict(async_write_client: AsyncElasticsearch) -> None:
     await Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     await w.save()
 
     w1 = await Wiki.get(id="elasticsearch-py")
     w2 = await Wiki.get(id="elasticsearch-py")
+    assert w1 is not None
+    assert w2 is not None
+
     await w1.update(
         script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1
     )
@@ -287,13 +301,18 @@ async def test_update_retry_on_conflict(async_write_client):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("retry_on_conflict", [None, 0])
-async def test_update_conflicting_version(async_write_client, retry_on_conflict):
+async def test_update_conflicting_version(
+    async_write_client: AsyncElasticsearch, retry_on_conflict: bool
+) -> None:
     await Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     await w.save()
 
     w1 = await Wiki.get(id="elasticsearch-py")
     w2 = await Wiki.get(id="elasticsearch-py")
+    assert w1 is not None
+    assert w2 is not None
+
     await w1.update(script="ctx._source.views += params.inc", inc=5)
 
     with raises(ConflictError):
@@ -305,7 +324,9 @@ async def test_update_conflicting_version(async_write_client, retry_on_conflict)
 
 
 @pytest.mark.asyncio
-async def test_save_and_update_return_doc_meta(async_write_client):
+async def test_save_and_update_return_doc_meta(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     await Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     resp = await w.save(return_doc_meta=True)
@@ -338,26 +359,32 @@ async def test_save_and_update_return_doc_meta(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_init(async_write_client):
+async def test_init(async_write_client: AsyncElasticsearch) -> None:
     await Repository.init(index="test-git")
 
     assert await async_write_client.indices.exists(index="test-git")
 
 
 @pytest.mark.asyncio
-async def test_get_raises_404_on_index_missing(async_data_client):
+async def test_get_raises_404_on_index_missing(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     with raises(NotFoundError):
         await Repository.get("elasticsearch-dsl-php", index="not-there")
 
 
 @pytest.mark.asyncio
-async def test_get_raises_404_on_non_existent_id(async_data_client):
+async def test_get_raises_404_on_non_existent_id(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     with raises(NotFoundError):
         await Repository.get("elasticsearch-dsl-php")
 
 
 @pytest.mark.asyncio
-async def test_get_returns_none_if_404_ignored(async_data_client):
+async def test_get_returns_none_if_404_ignored(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     assert None is await Repository.get(
         "elasticsearch-dsl-php", using=async_data_client.options(ignore_status=404)
     )
@@ -365,15 +392,15 @@ async def test_get_returns_none_if_404_ignored(async_data_client):
 
 @pytest.mark.asyncio
 async def test_get_returns_none_if_404_ignored_and_index_doesnt_exist(
-    async_data_client,
-):
+    async_data_client: AsyncElasticsearch,
+) -> None:
     assert None is await Repository.get(
         "42", index="not-there", using=async_data_client.options(ignore_status=404)
     )
 
 
 @pytest.mark.asyncio
-async def test_get(async_data_client):
+async def test_get(async_data_client: AsyncElasticsearch) -> None:
     elasticsearch_repo = await Repository.get("elasticsearch-dsl-py")
 
     assert isinstance(elasticsearch_repo, Repository)
@@ -382,20 +409,21 @@ async def test_get(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_exists_return_true(async_data_client):
+async def test_exists_return_true(async_data_client: AsyncElasticsearch) -> None:
     assert await Repository.exists("elasticsearch-dsl-py")
 
 
 @pytest.mark.asyncio
-async def test_exists_false(async_data_client):
+async def test_exists_false(async_data_client: AsyncElasticsearch) -> None:
     assert not await Repository.exists("elasticsearch-dsl-php")
 
 
 @pytest.mark.asyncio
-async def test_get_with_tz_date(async_data_client):
+async def test_get_with_tz_date(async_data_client: AsyncElasticsearch) -> None:
     first_commit = await Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
     )
+    assert first_commit is not None
 
     tzinfo = timezone("Europe/Prague")
     assert (
@@ -405,11 +433,13 @@ async def test_get_with_tz_date(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_save_with_tz_date(async_data_client):
+async def test_save_with_tz_date(async_data_client: AsyncElasticsearch) -> None:
     tzinfo = timezone("Europe/Prague")
     first_commit = await Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
     )
+    assert first_commit is not None
+
     first_commit.committed_date = tzinfo.localize(
         datetime(2014, 5, 2, 13, 47, 19, 123456)
     )
@@ -418,6 +448,8 @@ async def test_save_with_tz_date(async_data_client):
     first_commit = await Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
     )
+    assert first_commit is not None
+
     assert (
         tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123456))
         == first_commit.committed_date
@@ -433,48 +465,62 @@ COMMIT_DOCS_WITH_MISSING = [
 
 
 @pytest.mark.asyncio
-async def test_mget(async_data_client):
+async def test_mget(async_data_client: AsyncElasticsearch) -> None:
     commits = await Commit.mget(COMMIT_DOCS_WITH_MISSING)
     assert commits[0] is None
+    assert commits[1] is not None
     assert commits[1].meta.id == "3ca6e1e73a071a705b4babd2f581c91a2a3e5037"
     assert commits[2] is None
+    assert commits[3] is not None
     assert commits[3].meta.id == "eb3e543323f189fd7b698e66295427204fff5755"
 
 
 @pytest.mark.asyncio
-async def test_mget_raises_exception_when_missing_param_is_invalid(async_data_client):
+async def test_mget_raises_exception_when_missing_param_is_invalid(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     with raises(ValueError):
         await Commit.mget(COMMIT_DOCS_WITH_MISSING, missing="raj")
 
 
 @pytest.mark.asyncio
-async def test_mget_raises_404_when_missing_param_is_raise(async_data_client):
+async def test_mget_raises_404_when_missing_param_is_raise(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     with raises(NotFoundError):
         await Commit.mget(COMMIT_DOCS_WITH_MISSING, missing="raise")
 
 
 @pytest.mark.asyncio
-async def test_mget_ignores_missing_docs_when_missing_param_is_skip(async_data_client):
+async def test_mget_ignores_missing_docs_when_missing_param_is_skip(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     commits = await Commit.mget(COMMIT_DOCS_WITH_MISSING, missing="skip")
+    assert commits[0] is not None
     assert commits[0].meta.id == "3ca6e1e73a071a705b4babd2f581c91a2a3e5037"
+    assert commits[1] is not None
     assert commits[1].meta.id == "eb3e543323f189fd7b698e66295427204fff5755"
 
 
 @pytest.mark.asyncio
-async def test_update_works_from_search_response(async_data_client):
+async def test_update_works_from_search_response(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     elasticsearch_repo = (await Repository.search().execute())[0]
 
     await elasticsearch_repo.update(owner={"other_name": "elastic"})
     assert "elastic" == elasticsearch_repo.owner.other_name
 
     new_version = await Repository.get("elasticsearch-dsl-py")
+    assert new_version is not None
     assert "elastic" == new_version.owner.other_name
     assert "elasticsearch" == new_version.owner.name
 
 
 @pytest.mark.asyncio
-async def test_update(async_data_client):
+async def test_update(async_data_client: AsyncElasticsearch) -> None:
     elasticsearch_repo = await Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
     v = elasticsearch_repo.meta.version
 
     old_seq_no = elasticsearch_repo.meta.seq_no
@@ -489,6 +535,7 @@ async def test_update(async_data_client):
     assert elasticsearch_repo.meta.version == v + 1
 
     new_version = await Repository.get("elasticsearch-dsl-py")
+    assert new_version is not None
     assert "testing-update" == new_version.new_field
     assert "elastic" == new_version.owner.new_name
     assert "elasticsearch" == new_version.owner.name
@@ -498,8 +545,9 @@ async def test_update(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_save_updates_existing_doc(async_data_client):
+async def test_save_updates_existing_doc(async_data_client: AsyncElasticsearch) -> None:
     elasticsearch_repo = await Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
 
     elasticsearch_repo.new_field = "testing-save"
     old_seq_no = elasticsearch_repo.meta.seq_no
@@ -512,7 +560,7 @@ async def test_save_updates_existing_doc(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_update_empty_field(async_client):
+async def test_update_empty_field(async_client: AsyncElasticsearch) -> None:
     await Tags._index.delete(ignore_unavailable=True)
     await Tags.init()
     d = Tags(id="123", tags=["a", "b"])
@@ -525,8 +573,11 @@ async def test_update_empty_field(async_client):
 
 
 @pytest.mark.asyncio
-async def test_save_automatically_uses_seq_no_and_primary_term(async_data_client):
+async def test_save_automatically_uses_seq_no_and_primary_term(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     elasticsearch_repo = await Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
     elasticsearch_repo.meta.seq_no += 1
 
     with raises(ConflictError):
@@ -534,22 +585,27 @@ async def test_save_automatically_uses_seq_no_and_primary_term(async_data_client
 
 
 @pytest.mark.asyncio
-async def test_delete_automatically_uses_seq_no_and_primary_term(async_data_client):
+async def test_delete_automatically_uses_seq_no_and_primary_term(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     elasticsearch_repo = await Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
     elasticsearch_repo.meta.seq_no += 1
 
     with raises(ConflictError):
         await elasticsearch_repo.delete()
 
 
-def assert_doc_equals(expected, actual):
+def assert_doc_equals(expected: Any, actual: Any) -> None:
     for f in expected:
         assert f in actual
         assert actual[f] == expected[f]
 
 
 @pytest.mark.asyncio
-async def test_can_save_to_different_index(async_write_client):
+async def test_can_save_to_different_index(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     test_repo = Repository(description="testing", meta={"id": 42})
     assert await test_repo.save(index="test-document")
 
@@ -565,7 +621,9 @@ async def test_can_save_to_different_index(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_save_without_skip_empty_will_include_empty_fields(async_write_client):
+async def test_save_without_skip_empty_will_include_empty_fields(
+    async_write_client: AsyncElasticsearch,
+) -> None:
     test_repo = Repository(field_1=[], field_2=None, field_3={}, meta={"id": 42})
     assert await test_repo.save(index="test-document", skip_empty=False)
 
@@ -581,7 +639,7 @@ async def test_save_without_skip_empty_will_include_empty_fields(async_write_cli
 
 
 @pytest.mark.asyncio
-async def test_delete(async_write_client):
+async def test_delete(async_write_client: AsyncElasticsearch) -> None:
     await async_write_client.create(
         index="test-document",
         id="elasticsearch-dsl-py",
@@ -603,12 +661,14 @@ async def test_delete(async_write_client):
 
 
 @pytest.mark.asyncio
-async def test_search(async_data_client):
+async def test_search(async_data_client: AsyncElasticsearch) -> None:
     assert await Repository.search().count() == 1
 
 
 @pytest.mark.asyncio
-async def test_search_returns_proper_doc_classes(async_data_client):
+async def test_search_returns_proper_doc_classes(
+    async_data_client: AsyncElasticsearch,
+) -> None:
     result = await Repository.search().execute()
 
     elasticsearch_repo = result.hits[0]
@@ -618,7 +678,7 @@ async def test_search_returns_proper_doc_classes(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_refresh_mapping(async_data_client):
+async def test_refresh_mapping(async_data_client: AsyncElasticsearch) -> None:
     class Commit(AsyncDocument):
         class Index:
             name = "git"
@@ -633,7 +693,7 @@ async def test_refresh_mapping(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_highlight_in_meta(async_data_client):
+async def test_highlight_in_meta(async_data_client: AsyncElasticsearch) -> None:
     commit = (
         await Commit.search()
         .query("match", description="inverting")

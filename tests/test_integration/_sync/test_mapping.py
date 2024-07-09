@@ -16,13 +16,14 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 from pytest import raises
 
 from elasticsearch_dsl import Mapping, analysis, exceptions
 
 
 @pytest.mark.sync
-def test_mapping_saved_into_es(write_client):
+def test_mapping_saved_into_es(write_client: Elasticsearch) -> None:
     m = Mapping()
     m.field(
         "name", "text", analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword")
@@ -44,8 +45,8 @@ def test_mapping_saved_into_es(write_client):
 
 @pytest.mark.sync
 def test_mapping_saved_into_es_when_index_already_exists_closed(
-    write_client,
-):
+    write_client: Elasticsearch,
+) -> None:
     m = Mapping()
     m.field(
         "name", "text", analyzer=analysis.analyzer("my_analyzer", tokenizer="keyword")
@@ -70,8 +71,8 @@ def test_mapping_saved_into_es_when_index_already_exists_closed(
 
 @pytest.mark.sync
 def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
-    write_client,
-):
+    write_client: Elasticsearch,
+) -> None:
     m = Mapping()
     analyzer = analysis.analyzer("my_analyzer", tokenizer="keyword")
     m.field("name", "text", analyzer=analyzer)
@@ -101,7 +102,9 @@ def test_mapping_saved_into_es_when_index_already_exists_with_analysis(
 
 
 @pytest.mark.sync
-def test_mapping_gets_updated_from_es(write_client):
+def test_mapping_gets_updated_from_es(
+    write_client: Elasticsearch,
+) -> None:
     write_client.indices.create(
         index="test-mapping",
         body={
@@ -134,7 +137,7 @@ def test_mapping_gets_updated_from_es(write_client):
     m = Mapping.from_es("test-mapping", using=write_client)
 
     assert ["comments", "created_at", "title"] == list(
-        sorted(m.properties.properties._d_.keys())
+        sorted(m.properties.properties._d_.keys())  # type: ignore[attr-defined]
     )
     assert {
         "date_detection": False,
