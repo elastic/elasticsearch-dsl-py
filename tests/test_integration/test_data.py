@@ -19,99 +19,91 @@ from typing import Any, Dict
 
 from elasticsearch import Elasticsearch
 
+user_mapping = {
+    "properties": {"name": {"type": "text", "fields": {"raw": {"type": "keyword"}}}}
+}
+
+FLAT_GIT_INDEX: Dict[str, Any] = {
+    "settings": {
+        # just one shard, no replicas for testing
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        # custom analyzer for analyzing file paths
+        "analysis": {
+            "analyzer": {
+                "file_path": {
+                    "type": "custom",
+                    "tokenizer": "path_hierarchy",
+                    "filter": ["lowercase"],
+                }
+            }
+        },
+    },
+    "mappings": {
+        "properties": {
+            "description": {"type": "text", "analyzer": "snowball"},
+            "author": user_mapping,
+            "authored_date": {"type": "date"},
+            "committer": user_mapping,
+            "committed_date": {"type": "date"},
+            "parent_shas": {"type": "keyword"},
+            "files": {
+                "type": "text",
+                "analyzer": "file_path",
+                "fielddata": True,
+            },
+        }
+    },
+}
+
+GIT_INDEX: Dict[str, Any] = {
+    "settings": {
+        # just one shard, no replicas for testing
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        # custom analyzer for analyzing file paths
+        "analysis": {
+            "analyzer": {
+                "file_path": {
+                    "type": "custom",
+                    "tokenizer": "path_hierarchy",
+                    "filter": ["lowercase"],
+                }
+            }
+        },
+    },
+    "mappings": {
+        "properties": {
+            # common fields
+            "description": {"type": "text", "analyzer": "snowball"},
+            "commit_repo": {"type": "join", "relations": {"repo": "commit"}},
+            # COMMIT mappings
+            "author": user_mapping,
+            "authored_date": {"type": "date"},
+            "committer": user_mapping,
+            "committed_date": {"type": "date"},
+            "parent_shas": {"type": "keyword"},
+            "files": {
+                "type": "text",
+                "analyzer": "file_path",
+                "fielddata": True,
+            },
+            # REPO mappings
+            "is_public": {"type": "boolean"},
+            "owner": user_mapping,
+            "created_at": {"type": "date"},
+            "tags": {"type": "keyword"},
+        }
+    },
+}
+
 
 def create_flat_git_index(client: Elasticsearch, index: str) -> None:
-    # we will use user on several places
-    user_mapping = {
-        "properties": {"name": {"type": "text", "fields": {"raw": {"type": "keyword"}}}}
-    }
-
-    client.indices.create(
-        index=index,
-        body={
-            "settings": {
-                # just one shard, no replicas for testing
-                "number_of_shards": 1,
-                "number_of_replicas": 0,
-                # custom analyzer for analyzing file paths
-                "analysis": {
-                    "analyzer": {
-                        "file_path": {
-                            "type": "custom",
-                            "tokenizer": "path_hierarchy",
-                            "filter": ["lowercase"],
-                        }
-                    }
-                },
-            },
-            "mappings": {
-                "properties": {
-                    "description": {"type": "text", "analyzer": "snowball"},
-                    "author": user_mapping,
-                    "authored_date": {"type": "date"},
-                    "committer": user_mapping,
-                    "committed_date": {"type": "date"},
-                    "parent_shas": {"type": "keyword"},
-                    "files": {
-                        "type": "text",
-                        "analyzer": "file_path",
-                        "fielddata": True,
-                    },
-                }
-            },
-        },
-    )
+    client.indices.create(index=index, body=FLAT_GIT_INDEX)
 
 
 def create_git_index(client: Elasticsearch, index: str) -> None:
-    # we will use user on several places
-    user_mapping = {
-        "properties": {"name": {"type": "text", "fields": {"raw": {"type": "keyword"}}}}
-    }
-
-    client.indices.create(
-        index=index,
-        body={
-            "settings": {
-                # just one shard, no replicas for testing
-                "number_of_shards": 1,
-                "number_of_replicas": 0,
-                # custom analyzer for analyzing file paths
-                "analysis": {
-                    "analyzer": {
-                        "file_path": {
-                            "type": "custom",
-                            "tokenizer": "path_hierarchy",
-                            "filter": ["lowercase"],
-                        }
-                    }
-                },
-            },
-            "mappings": {
-                "properties": {
-                    # common fields
-                    "description": {"type": "text", "analyzer": "snowball"},
-                    "commit_repo": {"type": "join", "relations": {"repo": "commit"}},
-                    # COMMIT mappings
-                    "author": user_mapping,
-                    "authored_date": {"type": "date"},
-                    "committer": user_mapping,
-                    "committed_date": {"type": "date"},
-                    "parent_shas": {"type": "keyword"},
-                    "files": {
-                        "type": "text",
-                        "analyzer": "file_path",
-                        "fielddata": True,
-                    },
-                    # REPO mappings
-                    "is_public": {"type": "boolean"},
-                    "owner": user_mapping,
-                    "created_at": {"type": "date"},
-                    "tags": {"type": "keyword"},
-                }
-            },
-        },
-    )
+    client.indices.create(index=index, body=GIT_INDEX)
 
 
 DATA = [
