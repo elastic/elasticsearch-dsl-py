@@ -88,6 +88,8 @@ class Post(Document):
     author: User
 
     if TYPE_CHECKING:
+        # definitions here help type checkers understand additional arguments
+        # that are allowed in the constructor
         _routing: str = mapped_field(default=None)
         _index: Index = mapped_field(default=None)
         _id: Optional[int] = mapped_field(default=None)

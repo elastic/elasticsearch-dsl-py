@@ -50,6 +50,8 @@ ascii_fold = analyzer(
 
 class Person(AsyncDocument):
     if TYPE_CHECKING:
+        # definitions here help type checkers understand additional arguments
+        # that are allowed in the constructor
         _id: Optional[int] = mapped_field(default=None)
 
     name: str = mapped_field(SearchAsYouType(max_shingle_size=3), default="")

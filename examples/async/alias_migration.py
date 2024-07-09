@@ -49,6 +49,8 @@ PATTERN = ALIAS + "-*"
 
 class BlogPost(AsyncDocument):
     if TYPE_CHECKING:
+        # definitions here help type checkers understand additional arguments
+        # that are allowed in the constructor
         _id: int
 
     title: str

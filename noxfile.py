@@ -27,17 +27,6 @@ SOURCE_FILES = (
     "utils/",
 )
 
-TYPED_FILES = (
-    # elasticsearch_dsl files are all assumed typed so they are omitted here
-    "tests/test_connections.py",
-    "tests/test_aggs.py",
-    "tests/test_analysis.py",
-    "tests/test_field.py",
-    "tests/test_query.py",
-    "tests/test_utils.py",
-    "tests/test_wrappers.py",
-)
-
 
 @nox.session(
     python=[

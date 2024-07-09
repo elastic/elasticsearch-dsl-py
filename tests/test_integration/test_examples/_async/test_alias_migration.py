@@ -52,7 +52,6 @@ async def test_alias_migration(async_write_client: AsyncElasticsearch) -> None:
     # _matches work which means we get BlogPost instance
     bp = (await BlogPost.search().execute())[0]
     assert isinstance(bp, BlogPost)
-    print("**", bp.published)
     assert not bp.is_published()
     assert "0" == bp.meta.id
 

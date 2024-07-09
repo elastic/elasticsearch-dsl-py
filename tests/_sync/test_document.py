@@ -713,12 +713,22 @@ def test_doc_with_type_hints() -> None:
     assert doc.s4 == "foo"
     with raises(ValidationException) as exc_info:
         doc.full_clean()
-    assert set(exc_info.value.args[0].keys()) == {"st", "k1", "k2", "s1", "s2", "s3"}
+    assert set(exc_info.value.args[0].keys()) == {
+        "st",
+        "k1",
+        "k2",
+        "ob",
+        "s1",
+        "s2",
+        "s3",
+    }
 
     doc.st = "s"
     doc.li = [1, 2, 3]
     doc.k1 = "k1"
     doc.k2 = "k2"
+    doc.ob.st = "s"
+    doc.ob.li = [1]
     doc.s1 = "s1"
     doc.s2 = "s2"
     doc.s3 = "s3"
@@ -731,9 +741,6 @@ def test_doc_with_type_hints() -> None:
     assert set(exc_info.value.args[0]["ob"][0].args[0].keys()) == {"st"}
 
     doc.ob.st = "s"
-    doc.ob.li = [1]
-    doc.full_clean()
-
     doc.ns.append(TypedInnerDoc(li=[1, 2]))
     with raises(ValidationException) as exc_info:
         doc.full_clean()
