@@ -707,28 +707,32 @@ def test_doc_with_type_hints():
     assert doc.s4 == "foo"
     with raises(ValidationException) as exc_info:
         doc.full_clean()
-    assert set(exc_info.value.args[0].keys()) == {"st", "li", "k1"}
+    assert set(exc_info.value.args[0].keys()) == {"st", "k1", "k2", "s1", "s2", "s3"}
 
     doc.st = "s"
     doc.li = [1, 2, 3]
-    doc.k1 = "k"
+    doc.k1 = "k1"
+    doc.k2 = "k2"
+    doc.s1 = "s1"
+    doc.s2 = "s2"
+    doc.s3 = "s3"
     doc.full_clean()
 
     doc.ob = TypedInnerDoc()
     with raises(ValidationException) as exc_info:
         doc.full_clean()
     assert set(exc_info.value.args[0].keys()) == {"ob"}
-    assert set(exc_info.value.args[0]["ob"][0].args[0].keys()) == {"st", "li"}
+    assert set(exc_info.value.args[0]["ob"][0].args[0].keys()) == {"st"}
 
     doc.ob.st = "s"
     doc.ob.li = [1]
     doc.full_clean()
 
-    doc.ns.append(TypedInnerDoc(st="s"))
+    doc.ns.append(TypedInnerDoc(li=[1, 2]))
     with raises(ValidationException) as exc_info:
         doc.full_clean()
 
-    doc.ns[0].li = [1, 2]
+    doc.ns[0].st = "s"
     doc.full_clean()
 
     doc.ip = "1.2.3.4"
@@ -749,8 +753,12 @@ def test_doc_with_type_hints():
             }
         ],
         "ip": "1.2.3.4",
-        "k1": "k",
+        "k1": "k1",
+        "k2": "k2",
         "k3": "foo",
+        "s1": "s1",
+        "s2": "s2",
+        "s3": "s3",
         "s4": "foo",
     }
 
