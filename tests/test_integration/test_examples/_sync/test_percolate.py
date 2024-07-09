@@ -16,12 +16,15 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from ..examples.percolate import BlogPost, setup
 
 
 @pytest.mark.sync
-def test_post_gets_tagged_automatically(write_client):
+def test_post_gets_tagged_automatically(
+    write_client: Elasticsearch,
+) -> None:
     setup()
 
     bp = BlogPost(_id=47, content="nothing about snakes here!")

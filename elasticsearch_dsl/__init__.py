@@ -16,7 +16,7 @@
 #  under the License.
 
 from . import connections
-from .aggs import A
+from .aggs import A, Agg
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
 from .document import AsyncDocument, Document
 from .document_base import InnerDoc, M, MetaField, mapped_field
@@ -81,7 +81,8 @@ from .field import (
 from .function import SF
 from .index import AsyncIndex, AsyncIndexTemplate, Index, IndexTemplate
 from .mapping import AsyncMapping, Mapping
-from .query import Q
+from .query import Q, Query
+from .response import AggResponse, Response, UpdateByQueryResponse
 from .search import (
     AsyncEmptySearch,
     AsyncMultiSearch,
@@ -99,6 +100,8 @@ __version__ = VERSION
 __versionstr__ = ".".join(map(str, VERSION))
 __all__ = [
     "A",
+    "Agg",
+    "AggResponse",
     "AsyncDocument",
     "AsyncEmptySearch",
     "AsyncFacetedSearch",
@@ -158,11 +161,13 @@ __all__ = [
     "Object",
     "Percolator",
     "Q",
+    "Query",
     "Range",
     "RangeFacet",
     "RangeField",
     "RankFeature",
     "RankFeatures",
+    "Response",
     "SF",
     "ScaledFloat",
     "Search",
@@ -174,6 +179,7 @@ __all__ = [
     "TokenCount",
     "UnknownDslObject",
     "UpdateByQuery",
+    "UpdateByQueryResponse",
     "ValidationException",
     "analyzer",
     "char_filter",

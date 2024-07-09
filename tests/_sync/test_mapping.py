@@ -20,7 +20,7 @@ import json
 from elasticsearch_dsl import Keyword, Mapping, Nested, Text, analysis
 
 
-def test_mapping_can_has_fields():
+def test_mapping_can_has_fields() -> None:
     m = Mapping()
     m.field("name", "text").field("tags", "keyword")
 
@@ -29,7 +29,7 @@ def test_mapping_can_has_fields():
     } == m.to_dict()
 
 
-def test_mapping_update_is_recursive():
+def test_mapping_update_is_recursive() -> None:
     m1 = Mapping()
     m1.field("title", "text")
     m1.field("author", "object")
@@ -62,7 +62,7 @@ def test_mapping_update_is_recursive():
     } == m1.to_dict()
 
 
-def test_properties_can_iterate_over_all_the_fields():
+def test_properties_can_iterate_over_all_the_fields() -> None:
     m = Mapping()
     m.field("f1", "text", test_attr="f1", fields={"f2": Keyword(test_attr="f2")})
     m.field("f3", Nested(test_attr="f3", properties={"f4": Text(test_attr="f4")}))
@@ -72,7 +72,7 @@ def test_properties_can_iterate_over_all_the_fields():
     }
 
 
-def test_mapping_can_collect_all_analyzers_and_normalizers():
+def test_mapping_can_collect_all_analyzers_and_normalizers() -> None:
     a1 = analysis.analyzer(
         "my_analyzer1",
         tokenizer="keyword",
@@ -145,7 +145,7 @@ def test_mapping_can_collect_all_analyzers_and_normalizers():
     assert json.loads(json.dumps(m.to_dict())) == m.to_dict()
 
 
-def test_mapping_can_collect_multiple_analyzers():
+def test_mapping_can_collect_multiple_analyzers() -> None:
     a1 = analysis.analyzer(
         "my_analyzer1",
         tokenizer="keyword",
@@ -191,7 +191,7 @@ def test_mapping_can_collect_multiple_analyzers():
     } == m._collect_analysis()
 
 
-def test_even_non_custom_analyzers_can_have_params():
+def test_even_non_custom_analyzers_can_have_params() -> None:
     a1 = analysis.analyzer("whitespace", type="pattern", pattern=r"\\s+")
     m = Mapping()
     m.field("title", "text", analyzer=a1)
@@ -201,14 +201,14 @@ def test_even_non_custom_analyzers_can_have_params():
     } == m._collect_analysis()
 
 
-def test_resolve_field_can_resolve_multifields():
+def test_resolve_field_can_resolve_multifields() -> None:
     m = Mapping()
     m.field("title", "text", fields={"keyword": Keyword()})
 
     assert isinstance(m.resolve_field("title.keyword"), Keyword)
 
 
-def test_resolve_nested():
+def test_resolve_nested() -> None:
     m = Mapping()
     m.field("n1", "nested", properties={"n2": Nested(properties={"k1": Keyword()})})
     m.field("k2", "keyword")

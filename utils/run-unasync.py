@@ -40,7 +40,7 @@ def main(check=False):
             "tests/test_integration/_sync/",
         ),
         (
-            "tests/test_integration/test_examples/_async",
+            "tests/test_integration/test_examples/_async/",
             "tests/test_integration/test_examples/_sync/",
         ),
         ("examples/async/", "examples/"),

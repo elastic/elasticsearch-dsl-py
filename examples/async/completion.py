@@ -29,6 +29,7 @@ that does ascii folding.
 import asyncio
 import os
 from itertools import permutations
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from elasticsearch_dsl import (
     AsyncDocument,
@@ -38,6 +39,7 @@ from elasticsearch_dsl import (
     Text,
     analyzer,
     async_connections,
+    mapped_field,
     token_filter,
 )
 
@@ -51,13 +53,18 @@ ascii_fold = analyzer(
 
 
 class Person(AsyncDocument):
-    name = Text(fields={"keyword": Keyword()})
-    popularity = Long()
+    if TYPE_CHECKING:
+        # definitions here help type checkers understand additional arguments
+        # that are allowed in the constructor
+        _id: Optional[int] = mapped_field(default=None)
+
+    name: str = mapped_field(Text(fields={"keyword": Keyword()}), default="")
+    popularity: int = mapped_field(Long(), default=0)
 
     # completion field with a custom analyzer
-    suggest = Completion(analyzer=ascii_fold)
+    suggest: Dict[str, Any] = mapped_field(Completion(analyzer=ascii_fold), init=False)
 
-    def clean(self):
+    def clean(self) -> None:
         """
         Automatically construct the suggestion input and weight by taking all
         possible permutations of Person's name as ``input`` and taking their
@@ -73,7 +80,7 @@ class Person(AsyncDocument):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-async def main():
+async def main() -> None:
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 

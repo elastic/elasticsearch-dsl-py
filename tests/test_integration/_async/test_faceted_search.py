@@ -16,10 +16,12 @@
 #  under the License.
 
 from datetime import datetime
+from typing import Tuple, Type
 
 import pytest
+from elasticsearch import AsyncElasticsearch
 
-from elasticsearch_dsl import A, AsyncDocument, Boolean, Date, Keyword
+from elasticsearch_dsl import A, AsyncDocument, AsyncSearch, Boolean, Date, Keyword
 from elasticsearch_dsl.faceted_search import (
     AsyncFacetedSearch,
     DateHistogramFacet,
@@ -57,7 +59,7 @@ class MetricSearch(AsyncFacetedSearch):
 
 
 @pytest.fixture(scope="session")
-def commit_search_cls(es_version):
+def commit_search_cls(es_version: Tuple[int, ...]) -> Type[AsyncFacetedSearch]:
     if es_version >= (7, 2):
         interval_kwargs = {"fixed_interval": "1d"}
     else:
@@ -85,7 +87,7 @@ def commit_search_cls(es_version):
 
 
 @pytest.fixture(scope="session")
-def repo_search_cls(es_version):
+def repo_search_cls(es_version: Tuple[int, ...]) -> Type[AsyncFacetedSearch]:
     interval_type = "calendar_interval" if es_version >= (7, 2) else "interval"
 
     class RepoSearch(AsyncFacetedSearch):
@@ -98,7 +100,7 @@ def repo_search_cls(es_version):
             ),
         }
 
-        def search(self):
+        def search(self) -> AsyncSearch:
             s = super().search()
             return s.filter("term", commit_repo="repo")
 
@@ -106,7 +108,7 @@ def repo_search_cls(es_version):
 
 
 @pytest.fixture(scope="session")
-def pr_search_cls(es_version):
+def pr_search_cls(es_version: Tuple[int, ...]) -> Type[AsyncFacetedSearch]:
     interval_type = "calendar_interval" if es_version >= (7, 2) else "interval"
 
     class PRSearch(AsyncFacetedSearch):
@@ -125,7 +127,7 @@ def pr_search_cls(es_version):
 
 
 @pytest.mark.asyncio
-async def test_facet_with_custom_metric(async_data_client):
+async def test_facet_with_custom_metric(async_data_client: AsyncElasticsearch) -> None:
     ms = MetricSearch()
     r = await ms.execute()
 
@@ -135,20 +137,24 @@ async def test_facet_with_custom_metric(async_data_client):
 
 
 @pytest.mark.asyncio
-async def test_nested_facet(async_pull_request, pr_search_cls):
+async def test_nested_facet(
+    async_pull_request: PullRequest, pr_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     prs = pr_search_cls()
     r = await prs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(datetime(2018, 1, 1, 0, 0), 1, False)] == r.facets.comments
 
 
 @pytest.mark.asyncio
-async def test_nested_facet_with_filter(async_pull_request, pr_search_cls):
+async def test_nested_facet_with_filter(
+    async_pull_request: PullRequest, pr_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     prs = pr_search_cls(filters={"comments": datetime(2018, 1, 1, 0, 0)})
     r = await prs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(datetime(2018, 1, 1, 0, 0), 1, True)] == r.facets.comments
 
     prs = pr_search_cls(filters={"comments": datetime(2018, 2, 1, 0, 0)})
@@ -157,20 +163,24 @@ async def test_nested_facet_with_filter(async_pull_request, pr_search_cls):
 
 
 @pytest.mark.asyncio
-async def test_datehistogram_facet(async_data_client, repo_search_cls):
+async def test_datehistogram_facet(
+    async_data_client: AsyncElasticsearch, repo_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     rs = repo_search_cls()
     r = await rs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(datetime(2014, 3, 1, 0, 0), 1, False)] == r.facets.created
 
 
 @pytest.mark.asyncio
-async def test_boolean_facet(async_data_client, repo_search_cls):
+async def test_boolean_facet(
+    async_data_client: AsyncElasticsearch, repo_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     rs = repo_search_cls()
     r = await rs.execute()
 
-    assert r.hits.total.value == 1
+    assert r.hits.total.value == 1  # type: ignore[attr-defined]
     assert [(True, 1, False)] == r.facets.public
     value, count, selected = r.facets.public[0]
     assert value is True
@@ -178,12 +188,14 @@ async def test_boolean_facet(async_data_client, repo_search_cls):
 
 @pytest.mark.asyncio
 async def test_empty_search_finds_everything(
-    async_data_client, es_version, commit_search_cls
-):
+    async_data_client: AsyncElasticsearch,
+    es_version: Tuple[int, ...],
+    commit_search_cls: Type[AsyncFacetedSearch],
+) -> None:
     cs = commit_search_cls()
     r = await cs.execute()
 
-    assert r.hits.total.value == 52
+    assert r.hits.total.value == 52  # type: ignore[attr-defined]
     assert [
         ("elasticsearch_dsl", 40, False),
         ("test_elasticsearch_dsl", 35, False),
@@ -226,13 +238,13 @@ async def test_empty_search_finds_everything(
 
 @pytest.mark.asyncio
 async def test_term_filters_are_shown_as_selected_and_data_is_filtered(
-    async_data_client, commit_search_cls
-):
+    async_data_client: AsyncElasticsearch, commit_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     cs = commit_search_cls(filters={"files": "test_elasticsearch_dsl"})
 
     r = await cs.execute()
 
-    assert 35 == r.hits.total.value
+    assert 35 == r.hits.total.value  # type: ignore[attr-defined]
     assert [
         ("elasticsearch_dsl", 40, False),
         ("test_elasticsearch_dsl", 35, True),  # selected
@@ -273,17 +285,19 @@ async def test_term_filters_are_shown_as_selected_and_data_is_filtered(
 
 @pytest.mark.asyncio
 async def test_range_filters_are_shown_as_selected_and_data_is_filtered(
-    async_data_client, commit_search_cls
-):
+    async_data_client: AsyncElasticsearch, commit_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     cs = commit_search_cls(filters={"deletions": "better"})
 
     r = await cs.execute()
 
-    assert 19 == r.hits.total.value
+    assert 19 == r.hits.total.value  # type: ignore[attr-defined]
 
 
 @pytest.mark.asyncio
-async def test_pagination(async_data_client, commit_search_cls):
+async def test_pagination(
+    async_data_client: AsyncElasticsearch, commit_search_cls: Type[AsyncFacetedSearch]
+) -> None:
     cs = commit_search_cls()
     cs = cs[0:20]
 

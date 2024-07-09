@@ -195,9 +195,7 @@ class DocumentOptions:
                 field = None
                 field_args: List[Any] = []
                 field_kwargs: Dict[str, Any] = {}
-                if not isinstance(type_, type):
-                    raise TypeError(f"Cannot map type {type_}")
-                elif issubclass(type_, InnerDoc):
+                if isinstance(type_, type) and issubclass(type_, InnerDoc):
                     # object or nested field
                     field = Nested if multi else Object
                     field_args = [type_]

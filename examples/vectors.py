@@ -47,7 +47,7 @@ import argparse
 import json
 import os
 from datetime import datetime
-from typing import List, Optional, cast
+from typing import Any, List, Optional, cast
 from urllib.request import urlopen
 
 import nltk  # type: ignore
@@ -71,32 +71,34 @@ MODEL_NAME = "all-MiniLM-L6-v2"
 # initialize sentence tokenizer
 nltk.download("punkt", quiet=True)
 
+# this will be the embedding model
+embedding_model: Any = None
+
 
 class Passage(InnerDoc):
-    content: M[str]
-    embedding: M[List[float]] = mapped_field(DenseVector())
+    content: str
+    embedding: List[float] = mapped_field(DenseVector())
 
 
 class WorkplaceDoc(Document):
     class Index:
         name = "workplace_documents"
 
-    name: M[str]
-    summary: M[str]
-    content: M[str]
-    created: M[datetime]
-    updated: M[Optional[datetime]]
-    url: M[str] = mapped_field(Keyword(required=True))
-    category: M[str] = mapped_field(Keyword(required=True))
+    name: str
+    summary: str
+    content: str
+    created: datetime
+    updated: Optional[datetime]
+    url: str = mapped_field(Keyword(required=True))
+    category: str = mapped_field(Keyword(required=True))
     passages: M[List[Passage]] = mapped_field(default=[])
-
-    _model = None
 
     @classmethod
     def get_embedding(cls, input: str) -> List[float]:
-        if cls._model is None:
-            cls._model = SentenceTransformer(MODEL_NAME)
-        return cast(List[float], list(cls._model.encode(input)))
+        global embedding_model
+        if embedding_model is None:
+            embedding_model = SentenceTransformer(MODEL_NAME)
+        return cast(List[float], list(embedding_model.encode(input)))
 
     def clean(self) -> None:
         # split the content into sentences

@@ -21,6 +21,7 @@ import os
 import re
 import time
 from datetime import datetime
+from typing import Any, AsyncGenerator, Dict, Generator, Tuple, cast
 from unittest import SkipTest, TestCase
 from unittest.mock import AsyncMock, Mock
 
@@ -31,6 +32,7 @@ from elasticsearch.exceptions import ConnectionError
 from elasticsearch.helpers import bulk
 from pytest import fixture, skip
 
+from elasticsearch_dsl import Search
 from elasticsearch_dsl.async_connections import add_connection as add_async_connection
 from elasticsearch_dsl.async_connections import connections as async_connections
 from elasticsearch_dsl.connections import add_connection, connections
@@ -51,16 +53,12 @@ else:
     ELASTICSEARCH_URL = "http://localhost:9200"
 
 
-def get_test_client(wait=True, **kwargs):
+def get_test_client(wait: bool = True, **kwargs: Any) -> Elasticsearch:
     # construct kwargs from the environment
-    kw = {"request_timeout": 30}
+    kw: Dict[str, Any] = {"request_timeout": 30}
 
     if "PYTHON_CONNECTION_CLASS" in os.environ:
-        from elasticsearch import connection
-
-        kw["connection_class"] = getattr(
-            connection, os.environ["PYTHON_CONNECTION_CLASS"]
-        )
+        kw["node_class"] = os.environ["PYTHON_CONNECTION_CLASS"]
 
     kw.update(kwargs)
     client = Elasticsearch(ELASTICSEARCH_URL, **kw)
@@ -78,16 +76,12 @@ def get_test_client(wait=True, **kwargs):
     raise SkipTest("Elasticsearch failed to start.")
 
 
-async def get_async_test_client(wait=True, **kwargs):
+async def get_async_test_client(wait: bool = True, **kwargs: Any) -> AsyncElasticsearch:
     # construct kwargs from the environment
-    kw = {"request_timeout": 30}
+    kw: Dict[str, Any] = {"request_timeout": 30}
 
     if "PYTHON_CONNECTION_CLASS" in os.environ:
-        from elasticsearch import connection
-
-        kw["connection_class"] = getattr(
-            connection, os.environ["PYTHON_CONNECTION_CLASS"]
-        )
+        kw["node_class"] = os.environ["PYTHON_CONNECTION_CLASS"]
 
     kw.update(kwargs)
     client = AsyncElasticsearch(ELASTICSEARCH_URL, **kw)
@@ -107,35 +101,35 @@ async def get_async_test_client(wait=True, **kwargs):
 
 
 class ElasticsearchTestCase(TestCase):
+    client: Elasticsearch
+
     @staticmethod
-    def _get_client():
+    def _get_client() -> Elasticsearch:
         return get_test_client()
 
     @classmethod
-    def setup_class(cls):
+    def setup_class(cls) -> None:
         cls.client = cls._get_client()
 
-    def teardown_method(self, _):
+    def teardown_method(self, _: Any) -> None:
         # Hidden indices expanded in wildcards in ES 7.7
         expand_wildcards = ["open", "closed"]
         if self.es_version() >= (7, 7):
             expand_wildcards.append("hidden")
 
         self.client.indices.delete_data_stream(
-            name="*", ignore=404, expand_wildcards=expand_wildcards
+            name="*", expand_wildcards=expand_wildcards
         )
-        self.client.indices.delete(
-            index="*", ignore=404, expand_wildcards=expand_wildcards
-        )
-        self.client.indices.delete_template(name="*", ignore=404)
+        self.client.indices.delete(index="*", expand_wildcards=expand_wildcards)
+        self.client.indices.delete_template(name="*")
 
-    def es_version(self):
+    def es_version(self) -> Tuple[int, ...]:
         if not hasattr(self, "_es_version"):
-            self._es_version = _get_version(client.info()["version"]["number"])
+            self._es_version = _get_version(self.client.info()["version"]["number"])
         return self._es_version
 
 
-def _get_version(version_string):
+def _get_version(version_string: str) -> Tuple[int, ...]:
     if "." not in version_string:
         return ()
     version = version_string.strip().split(".")
@@ -143,7 +137,7 @@ def _get_version(version_string):
 
 
 @fixture(scope="session")
-def client():
+def client() -> Elasticsearch:
     try:
         connection = get_test_client(wait="WAIT_FOR_ES" in os.environ)
         add_connection("default", connection)
@@ -153,7 +147,7 @@ def client():
 
 
 @pytest_asyncio.fixture
-async def async_client():
+async def async_client() -> AsyncGenerator[AsyncElasticsearch, None]:
     try:
         connection = await get_async_test_client(wait="WAIT_FOR_ES" in os.environ)
         add_async_connection("default", connection)
@@ -164,17 +158,16 @@ async def async_client():
 
 
 @fixture(scope="session")
-def es_version(client):
+def es_version(client: Elasticsearch) -> Generator[Tuple[int, ...], None, None]:
     info = client.info()
-    print(info)
     yield tuple(
         int(x)
-        for x in re.match(r"^([0-9.]+)", info["version"]["number"]).group(1).split(".")
+        for x in re.match(r"^([0-9.]+)", info["version"]["number"]).group(1).split(".")  # type: ignore
     )
 
 
 @fixture
-def write_client(client):
+def write_client(client: Elasticsearch) -> Generator[Elasticsearch, None, None]:
     yield client
     for index_name in client.indices.get(index="test-*", expand_wildcards="all"):
         client.indices.delete(index=index_name)
@@ -182,24 +175,30 @@ def write_client(client):
 
 
 @pytest_asyncio.fixture
-async def async_write_client(write_client, async_client):
+async def async_write_client(
+    write_client: Elasticsearch, async_client: AsyncElasticsearch
+) -> AsyncGenerator[AsyncElasticsearch, None]:
     yield async_client
 
 
 @fixture
-def mock_client(dummy_response):
+def mock_client(
+    dummy_response: ObjectApiResponse[Any],
+) -> Generator[Elasticsearch, None, None]:
     client = Mock()
     client.search.return_value = dummy_response
     client.update_by_query.return_value = dummy_response
     add_connection("mock", client)
 
     yield client
-    connections._conn = {}
+    connections._conns = {}
     connections._kwargs = {}
 
 
 @fixture
-def async_mock_client(dummy_response):
+def async_mock_client(
+    dummy_response: ObjectApiResponse[Any],
+) -> Generator[Elasticsearch, None, None]:
     client = Mock()
     client.search = AsyncMock(return_value=dummy_response)
     client.indices = AsyncMock()
@@ -208,12 +207,12 @@ def async_mock_client(dummy_response):
     add_async_connection("mock", client)
 
     yield client
-    async_connections._conn = {}
+    async_connections._conns = {}
     async_connections._kwargs = {}
 
 
 @fixture(scope="session")
-def data_client(client):
+def data_client(client: Elasticsearch) -> Generator[Elasticsearch, None, None]:
     # create mappings
     create_git_index(client, "git")
     create_flat_git_index(client, "flat-git")
@@ -226,12 +225,14 @@ def data_client(client):
 
 
 @pytest_asyncio.fixture
-async def async_data_client(data_client, async_client):
+async def async_data_client(
+    data_client: Elasticsearch, async_client: AsyncElasticsearch
+) -> AsyncGenerator[AsyncElasticsearch, None]:
     yield async_client
 
 
 @fixture
-def dummy_response():
+def dummy_response() -> ObjectApiResponse[Any]:
     return ObjectApiResponse(
         meta=None,
         body={
@@ -287,9 +288,7 @@ def dummy_response():
 
 
 @fixture
-def aggs_search():
-    from elasticsearch_dsl import Search
-
+def aggs_search() -> Search:
     s = Search(index="flat-git")
     s.aggs.bucket("popular_files", "terms", field="files", size=2).metric(
         "line_stats", "stats", field="stats.lines"
@@ -302,7 +301,7 @@ def aggs_search():
 
 
 @fixture
-def aggs_data():
+def aggs_data() -> Dict[str, Any]:
     return {
         "took": 4,
         "timed_out": False,
@@ -437,7 +436,7 @@ def aggs_data():
     }
 
 
-def make_pr(pr_module):
+def make_pr(pr_module: Any) -> Any:
     return pr_module.PullRequest(
         _id=42,
         comments=[
@@ -458,23 +457,25 @@ def make_pr(pr_module):
 
 
 @fixture
-def pull_request(write_client):
+def pull_request(write_client: Elasticsearch) -> sync_document.PullRequest:
     sync_document.PullRequest.init()
-    pr = make_pr(sync_document)
+    pr = cast(sync_document.PullRequest, make_pr(sync_document))
     pr.save(refresh=True)
     return pr
 
 
 @pytest_asyncio.fixture
-async def async_pull_request(async_write_client):
+async def async_pull_request(
+    async_write_client: AsyncElasticsearch,
+) -> async_document.PullRequest:
     await async_document.PullRequest.init()
-    pr = make_pr(async_document)
+    pr = cast(async_document.PullRequest, make_pr(async_document))
     await pr.save(refresh=True)
     return pr
 
 
 @fixture
-def setup_ubq_tests(client) -> str:
+def setup_ubq_tests(client: Elasticsearch) -> str:
     index = "test-git"
     create_git_index(client, index)
     bulk(client, TEST_GIT_DATA, raise_on_error=True, refresh=True)

@@ -16,7 +16,16 @@
 #  under the License.
 
 import contextlib
-from typing import Any, AsyncIterator, Dict, Iterator, List, Optional, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncIterator,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    cast,
+)
 
 from elasticsearch.exceptions import ApiError
 from elasticsearch.helpers import async_scan
@@ -68,6 +77,7 @@ class AsyncSearch(SearchBase[_R]):
             query=cast(Optional[Dict[str, Any]], d.get("query", None)),
             **self._params,
         )
+
         return cast(int, resp["count"])
 
     async def execute(self, ignore_cache: bool = False) -> Response[_R]:
@@ -174,6 +184,10 @@ class AsyncMultiSearch(MultiSearchBase[_R]):
     """
 
     _using: AsyncUsingType
+
+    if TYPE_CHECKING:
+
+        def add(self, search: AsyncSearch[_R]) -> Self: ...  # type: ignore[override]
 
     async def execute(
         self, ignore_cache: bool = False, raise_on_error: bool = True

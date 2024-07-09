@@ -16,11 +16,11 @@
 #  under the License.
 
 from datetime import datetime
+from typing import Any
 
 from pytest import raises
 
 from elasticsearch_dsl import (
-    Boolean,
     Date,
     Document,
     InnerDoc,
@@ -28,15 +28,16 @@ from elasticsearch_dsl import (
     Nested,
     Object,
     Text,
+    mapped_field,
 )
 from elasticsearch_dsl.exceptions import ValidationException
 
 
 class Author(InnerDoc):
-    name = Text(required=True)
-    email = Text(required=True)
+    name: str
+    email: str
 
-    def clean(self):
+    def clean(self) -> None:
         if not self.name:
             raise ValidationException("name is missing")
         if not self.email:
@@ -52,11 +53,11 @@ class BlogPost(Document):
 
 
 class BlogPostWithStatus(Document):
-    published = Boolean(required=True)
+    published: bool = mapped_field(init=False)
 
 
 class AutoNowDate(Date):
-    def clean(self, data):
+    def clean(self, data: Any) -> Any:
         if data is None:
             data = datetime.now()
         return super().clean(data)
@@ -67,15 +68,15 @@ class Log(Document):
     data = Text()
 
 
-def test_required_int_can_be_0():
+def test_required_int_can_be_0() -> None:
     class DT(Document):
         i = Integer(required=True)
 
     dt = DT(i=0)
-    assert dt.full_clean() is None
+    dt.full_clean()
 
 
-def test_required_field_cannot_be_empty_list():
+def test_required_field_cannot_be_empty_list() -> None:
     class DT(Document):
         i = Integer(required=True)
 
@@ -84,7 +85,7 @@ def test_required_field_cannot_be_empty_list():
         dt.full_clean()
 
 
-def test_validation_works_for_lists_of_values():
+def test_validation_works_for_lists_of_values() -> None:
     class DT(Document):
         i = Date(required=True)
 
@@ -93,24 +94,24 @@ def test_validation_works_for_lists_of_values():
         dt.full_clean()
 
     dt = DT(i=[datetime.now(), datetime.now()])
-    assert None is dt.full_clean()
+    dt.full_clean()
 
 
-def test_field_with_custom_clean():
+def test_field_with_custom_clean() -> None:
     l = Log()
     l.full_clean()
 
     assert isinstance(l.timestamp, datetime)
 
 
-def test_empty_object():
+def test_empty_object() -> None:
     d = BlogPost(authors=[{"name": "Honza", "email": "honza@elastic.co"}])
-    d.inner = {}
+    d.inner = {}  # type: ignore[assignment]
 
     d.full_clean()
 
 
-def test_missing_required_field_raises_validation_exception():
+def test_missing_required_field_raises_validation_exception() -> None:
     d = BlogPost()
     with raises(ValidationException):
         d.full_clean()
@@ -125,7 +126,7 @@ def test_missing_required_field_raises_validation_exception():
     d.full_clean()
 
 
-def test_boolean_doesnt_treat_false_as_empty():
+def test_boolean_doesnt_treat_false_as_empty() -> None:
     d = BlogPostWithStatus()
     with raises(ValidationException):
         d.full_clean()
@@ -135,26 +136,26 @@ def test_boolean_doesnt_treat_false_as_empty():
     d.full_clean()
 
 
-def test_custom_validation_on_nested_gets_run():
+def test_custom_validation_on_nested_gets_run() -> None:
     d = BlogPost(authors=[Author(name="Honza", email="king@example.com")], created=None)
 
-    assert isinstance(d.authors[0], Author)
+    assert isinstance(d.authors[0], Author)  # type: ignore[index]
 
     with raises(ValidationException):
         d.full_clean()
 
 
-def test_accessing_known_fields_returns_empty_value():
+def test_accessing_known_fields_returns_empty_value() -> None:
     d = BlogPost()
 
     assert [] == d.authors
 
     d.authors.append({})
-    assert None is d.authors[0].name
+    assert None is d.authors[0].name  # type: ignore[index]
     assert None is d.authors[0].email
 
 
-def test_empty_values_are_not_serialized():
+def test_empty_values_are_not_serialized() -> None:
     d = BlogPost(authors=[{"name": "Honza", "email": "honza@elastic.co"}], created=None)
 
     d.full_clean()

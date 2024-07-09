@@ -18,6 +18,7 @@
 from datetime import datetime
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from elasticsearch_dsl import Q
 
@@ -41,7 +42,7 @@ nick = User(
 
 
 @pytest.fixture
-def question(write_client):
+def question(write_client: Elasticsearch) -> Question:
     setup()
     assert write_client.indices.exists_template(name="base")
 
@@ -54,16 +55,19 @@ def question(write_client):
         body="""
         I want to use elasticsearch, how do I do it from Python?
         """,
+        created=None,
+        question_answer=None,
+        comments=[],
     )
     q.save()
     return q
 
 
 @pytest.mark.sync
-def test_comment(write_client, question):
+def test_comment(write_client: Elasticsearch, question: Question) -> None:
     question.add_comment(nick, "Just use elasticsearch-py")
 
-    q = Question.get(1)
+    q = Question.get(1)  # type: ignore[arg-type]
     assert isinstance(q, Question)
     assert 1 == len(q.comments)
 
@@ -73,7 +77,7 @@ def test_comment(write_client, question):
 
 
 @pytest.mark.sync
-def test_question_answer(write_client, question):
+def test_question_answer(write_client: Elasticsearch, question: Question) -> None:
     a = question.add_answer(honza, "Just use `elasticsearch-py`!")
 
     assert isinstance(a, Answer)
