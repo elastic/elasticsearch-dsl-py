@@ -17,7 +17,7 @@
 
 
 import pytest
-from elasticsearch import ApiError
+from elasticsearch import ApiError, Elasticsearch
 from pytest import raises
 
 from elasticsearch_dsl import Date, Document, Keyword, MultiSearch, Q, Search, Text
@@ -32,7 +32,7 @@ class Repository(Document):
     tags = Keyword()
 
     @classmethod
-    def search(cls):
+    def search(cls) -> Search["Repository"]:  # type: ignore[override]
         return super().search().filter("term", commit_repo="repo")
 
     class Index:
@@ -45,7 +45,9 @@ class Commit(Document):
 
 
 @pytest.mark.sync
-def test_filters_aggregation_buckets_are_accessible(data_client):
+def test_filters_aggregation_buckets_are_accessible(
+    data_client: Elasticsearch,
+) -> None:
     has_tests_query = Q("term", files="test_elasticsearch_dsl")
     s = Commit.search()[0:0]
     s.aggs.bucket("top_authors", "terms", field="author.name.raw").bucket(
@@ -68,7 +70,9 @@ def test_filters_aggregation_buckets_are_accessible(data_client):
 
 
 @pytest.mark.sync
-def test_top_hits_are_wrapped_in_response(data_client):
+def test_top_hits_are_wrapped_in_response(
+    data_client: Elasticsearch,
+) -> None:
     s = Commit.search()[0:0]
     s.aggs.bucket("top_authors", "terms", field="author.name.raw").metric(
         "top_commits", "top_hits", size=5
@@ -85,7 +89,9 @@ def test_top_hits_are_wrapped_in_response(data_client):
 
 
 @pytest.mark.sync
-def test_inner_hits_are_wrapped_in_response(data_client):
+def test_inner_hits_are_wrapped_in_response(
+    data_client: Elasticsearch,
+) -> None:
     s = Search(index="git")[0:1].query(
         "has_parent", parent_type="repo", inner_hits={}, query=Q("match_all")
     )
@@ -99,7 +105,7 @@ def test_inner_hits_are_wrapped_in_response(data_client):
 
 
 @pytest.mark.sync
-def test_scan_respects_doc_types(data_client):
+def test_scan_respects_doc_types(data_client: Elasticsearch) -> None:
     repos = [repo for repo in Repository.search().scan()]
 
     assert 1 == len(repos)
@@ -108,7 +114,9 @@ def test_scan_respects_doc_types(data_client):
 
 
 @pytest.mark.sync
-def test_scan_iterates_through_all_docs(data_client):
+def test_scan_iterates_through_all_docs(
+    data_client: Elasticsearch,
+) -> None:
     s = Search(index="flat-git")
 
     commits = [commit for commit in s.scan()]
@@ -118,7 +126,7 @@ def test_scan_iterates_through_all_docs(data_client):
 
 
 @pytest.mark.sync
-def test_search_after(data_client):
+def test_search_after(data_client: Elasticsearch) -> None:
     page_size = 7
     s = Search(index="flat-git")[:page_size].sort("authored_date")
     commits = []
@@ -127,14 +135,14 @@ def test_search_after(data_client):
         commits += r.hits
         if len(r.hits) < page_size:
             break
-        s = r.search_after()
+        s = s.search_after()
 
     assert 52 == len(commits)
     assert {d["_id"] for d in FLAT_DATA} == {c.meta.id for c in commits}
 
 
 @pytest.mark.sync
-def test_search_after_no_search(data_client):
+def test_search_after_no_search(data_client: Elasticsearch) -> None:
     s = Search(index="flat-git")
     with raises(
         ValueError, match="A search must be executed before using search_after"
@@ -148,7 +156,7 @@ def test_search_after_no_search(data_client):
 
 
 @pytest.mark.sync
-def test_search_after_no_sort(data_client):
+def test_search_after_no_sort(data_client: Elasticsearch) -> None:
     s = Search(index="flat-git")
     r = s.execute()
     with raises(
@@ -158,11 +166,11 @@ def test_search_after_no_sort(data_client):
 
 
 @pytest.mark.sync
-def test_search_after_no_results(data_client):
+def test_search_after_no_results(data_client: Elasticsearch) -> None:
     s = Search(index="flat-git")[:100].sort("authored_date")
     r = s.execute()
     assert 52 == len(r.hits)
-    s = r.search_after()
+    s = s.search_after()
     r = s.execute()
     assert 0 == len(r.hits)
     with raises(
@@ -172,7 +180,7 @@ def test_search_after_no_results(data_client):
 
 
 @pytest.mark.sync
-def test_point_in_time(data_client):
+def test_point_in_time(data_client: Elasticsearch) -> None:
     page_size = 7
     commits = []
     with Search(index="flat-git")[:page_size].point_in_time(keep_alive="30s") as s:
@@ -182,7 +190,7 @@ def test_point_in_time(data_client):
             commits += r.hits
             if len(r.hits) < page_size:
                 break
-            s = r.search_after()
+            s = s.search_after()
             assert pit_id == s._extra["pit"]["id"]
             assert "30s" == s._extra["pit"]["keep_alive"]
 
@@ -191,7 +199,7 @@ def test_point_in_time(data_client):
 
 
 @pytest.mark.sync
-def test_iterate(data_client):
+def test_iterate(data_client: Elasticsearch) -> None:
     s = Search(index="flat-git")
 
     commits = [commit for commit in s.iterate()]
@@ -201,7 +209,7 @@ def test_iterate(data_client):
 
 
 @pytest.mark.sync
-def test_response_is_cached(data_client):
+def test_response_is_cached(data_client: Elasticsearch) -> None:
     s = Repository.search()
     repos = [repo for repo in s]
 
@@ -210,11 +218,11 @@ def test_response_is_cached(data_client):
 
 
 @pytest.mark.sync
-def test_multi_search(data_client):
+def test_multi_search(data_client: Elasticsearch) -> None:
     s1 = Repository.search()
-    s2 = Search(index="flat-git")
+    s2 = Search[Repository](index="flat-git")
 
-    ms = MultiSearch()
+    ms = MultiSearch[Repository]()
     ms = ms.add(s1).add(s2)
 
     r1, r2 = ms.execute()
@@ -223,17 +231,17 @@ def test_multi_search(data_client):
     assert isinstance(r1[0], Repository)
     assert r1._search is s1
 
-    assert 52 == r2.hits.total.value
+    assert 52 == r2.hits.total.value  # type: ignore[attr-defined]
     assert r2._search is s2
 
 
 @pytest.mark.sync
-def test_multi_missing(data_client):
+def test_multi_missing(data_client: Elasticsearch) -> None:
     s1 = Repository.search()
-    s2 = Search(index="flat-git")
-    s3 = Search(index="does_not_exist")
+    s2 = Search[Repository](index="flat-git")
+    s3 = Search[Repository](index="does_not_exist")
 
-    ms = MultiSearch()
+    ms = MultiSearch[Repository]()
     ms = ms.add(s1).add(s2).add(s3)
 
     with raises(ApiError):
@@ -245,14 +253,16 @@ def test_multi_missing(data_client):
     assert isinstance(r1[0], Repository)
     assert r1._search is s1
 
-    assert 52 == r2.hits.total.value
+    assert 52 == r2.hits.total.value  # type: ignore[attr-defined]
     assert r2._search is s2
 
     assert r3 is None
 
 
 @pytest.mark.sync
-def test_raw_subfield_can_be_used_in_aggs(data_client):
+def test_raw_subfield_can_be_used_in_aggs(
+    data_client: Elasticsearch,
+) -> None:
     s = Search(index="git")[0:0]
     s.aggs.bucket("authors", "terms", field="author.name.raw", size=1)
 

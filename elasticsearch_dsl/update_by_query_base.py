@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import Any, Dict, Type, cast
+from typing import Any, Dict, Type
 
 from typing_extensions import Self
 
@@ -26,7 +26,7 @@ from .utils import _R, recursive_to_dict
 
 
 class UpdateByQueryBase(Request[_R]):
-    query = ProxyDescriptor["UpdateByQueryBase[_R]"]("query")
+    query = ProxyDescriptor[Self]("query")
 
     def __init__(self, **kwargs: Any):
         """
@@ -46,10 +46,10 @@ class UpdateByQueryBase(Request[_R]):
         self._query_proxy = QueryProxy(self, "query")
 
     def filter(self, *args: Any, **kwargs: Any) -> Self:
-        return cast(Self, self.query(Bool(filter=[Q(*args, **kwargs)])))
+        return self.query(Bool(filter=[Q(*args, **kwargs)]))
 
     def exclude(self, *args: Any, **kwargs: Any) -> Self:
-        return cast(Self, self.query(Bool(filter=[~Q(*args, **kwargs)])))
+        return self.query(Bool(filter=[~Q(*args, **kwargs)]))
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> Self:

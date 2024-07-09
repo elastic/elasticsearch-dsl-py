@@ -16,12 +16,15 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from elasticsearch_dsl import analyzer, token_filter, tokenizer
 
 
 @pytest.mark.sync
-def test_simulate_with_just__builtin_tokenizer(client):
+def test_simulate_with_just__builtin_tokenizer(
+    client: Elasticsearch,
+) -> None:
     a = analyzer("my-analyzer", tokenizer="keyword")
     tokens = (a.simulate("Hello World!", using=client)).tokens
 
@@ -30,7 +33,7 @@ def test_simulate_with_just__builtin_tokenizer(client):
 
 
 @pytest.mark.sync
-def test_simulate_complex(client):
+def test_simulate_complex(client: Elasticsearch) -> None:
     a = analyzer(
         "my-analyzer",
         tokenizer=tokenizer("split_words", "simple_pattern_split", pattern=":"),
@@ -44,7 +47,7 @@ def test_simulate_complex(client):
 
 
 @pytest.mark.sync
-def test_simulate_builtin(client):
+def test_simulate_builtin(client: Elasticsearch) -> None:
     a = analyzer("my-analyzer", "english")
     tokens = (a.simulate("fixes running")).tokens
 

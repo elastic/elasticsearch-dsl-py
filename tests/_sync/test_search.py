@@ -16,61 +16,62 @@
 #  under the License.
 
 from copy import deepcopy
+from typing import Any
 
 import pytest
 from pytest import raises
 
-from elasticsearch_dsl import A, Document, EmptySearch, Q, Search, query
+from elasticsearch_dsl import Document, EmptySearch, Q, Search, query
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 
-def test_expand__to_dot_is_respected():
+def test_expand__to_dot_is_respected() -> None:
     s = Search().query("match", a__b=42, _expand__to_dot=False)
 
     assert {"query": {"match": {"a__b": 42}}} == s.to_dict()
 
 
 @pytest.mark.sync
-def test_execute_uses_cache():
+def test_execute_uses_cache() -> None:
     s = Search()
     r = object()
-    s._response = r
+    s._response = r  # type: ignore[assignment]
 
     assert r is s.execute()
 
 
 @pytest.mark.sync
-def test_cache_can_be_ignored(mock_client):
+def test_cache_can_be_ignored(mock_client: Any) -> None:
     s = Search(using="mock")
     r = object()
-    s._response = r
+    s._response = r  # type: ignore[assignment]
     s.execute(ignore_cache=True)
 
     mock_client.search.assert_called_once_with(index=None, body={})
 
 
 @pytest.mark.sync
-def test_iter_iterates_over_hits():
+def test_iter_iterates_over_hits() -> None:
     s = Search()
-    s._response = [1, 2, 3]
+    s._response = [1, 2, 3]  # type: ignore[assignment]
 
     assert [1, 2, 3] == [hit for hit in s]
 
 
-def test_cache_isnt_cloned():
+def test_cache_isnt_cloned() -> None:
     s = Search()
-    s._response = object()
+    s._response = object()  # type: ignore[assignment]
 
     assert not hasattr(s._clone(), "_response")
 
 
-def test_search_starts_with_no_query():
+def test_search_starts_with_no_query() -> None:
     s = Search()
 
     assert s.query._proxied is None
 
 
-def test_search_query_combines_query():
+def test_search_query_combines_query() -> None:
     s = Search()
 
     s2 = s.query("match", f=42)
@@ -82,19 +83,19 @@ def test_search_query_combines_query():
     assert s3.query._proxied == query.Bool(must=[query.Match(f=42), query.Match(f=43)])
 
 
-def test_query_can_be_assigned_to():
+def test_query_can_be_assigned_to() -> None:
     s = Search()
 
     q = Q("match", title="python")
-    s.query = q
+    s.query = q  # type: ignore
 
     assert s.query._proxied is q
 
 
-def test_query_can_be_wrapped():
+def test_query_can_be_wrapped() -> None:
     s = Search().query("match", title="python")
 
-    s.query = Q("function_score", query=s.query, field_value_factor={"field": "rating"})
+    s.query = Q("function_score", query=s.query, field_value_factor={"field": "rating"})  # type: ignore
 
     assert {
         "query": {
@@ -106,29 +107,29 @@ def test_query_can_be_wrapped():
     } == s.to_dict()
 
 
-def test_using():
+def test_using() -> None:
     o = object()
     o2 = object()
     s = Search(using=o)
     assert s._using is o
-    s2 = s.using(o2)
+    s2 = s.using(o2)  # type: ignore[arg-type]
     assert s._using is o
     assert s2._using is o2
 
 
-def test_methods_are_proxied_to_the_query():
+def test_methods_are_proxied_to_the_query() -> None:
     s = Search().query("match_all")
 
     assert s.query.to_dict() == {"match_all": {}}
 
 
-def test_query_always_returns_search():
+def test_query_always_returns_search() -> None:
     s = Search()
 
     assert isinstance(s.query("match", f=42), Search)
 
 
-def test_source_copied_on_clone():
+def test_source_copied_on_clone() -> None:
     s = Search().source(False)
     assert s._clone()._source == s._source
     assert s._clone()._source is False
@@ -142,7 +143,7 @@ def test_source_copied_on_clone():
     assert s3._clone()._source == ["some", "fields"]
 
 
-def test_copy_clones():
+def test_copy_clones() -> None:
     from copy import copy
 
     s1 = Search().source(["some", "fields"])
@@ -152,7 +153,7 @@ def test_copy_clones():
     assert s1 is not s2
 
 
-def test_aggs_allow_two_metric():
+def test_aggs_allow_two_metric() -> None:
     s = Search()
 
     s.aggs.metric("a", "max", field="a").metric("b", "max", field="b")
@@ -162,7 +163,7 @@ def test_aggs_allow_two_metric():
     }
 
 
-def test_aggs_get_copied_on_change():
+def test_aggs_get_copied_on_change() -> None:
     s = Search().query("match_all")
     s.aggs.bucket("per_tag", "terms", field="f").metric(
         "max_score", "max", field="score"
@@ -175,7 +176,7 @@ def test_aggs_get_copied_on_change():
     s4 = s3._clone()
     s4.aggs.metric("max_score", "max", field="score")
 
-    d = {
+    d: Any = {
         "query": {"match_all": {}},
         "aggs": {
             "per_tag": {
@@ -194,7 +195,7 @@ def test_aggs_get_copied_on_change():
     assert d == s4.to_dict()
 
 
-def test_search_index():
+def test_search_index() -> None:
     s = Search(index="i")
     assert s._index == ["i"]
     s = s.index("i2")
@@ -225,7 +226,7 @@ def test_search_index():
     assert s2._index == ["i", "i2", "i3", "i4", "i5"]
 
 
-def test_doc_type_document_class():
+def test_doc_type_document_class() -> None:
     class MyDocument(Document):
         pass
 
@@ -238,15 +239,15 @@ def test_doc_type_document_class():
     assert s._doc_type_map == {}
 
 
-def test_knn():
+def test_knn() -> None:
     s = Search()
 
     with raises(TypeError):
-        s.knn()
+        s.knn()  # type: ignore[call-arg]
     with raises(TypeError):
-        s.knn("field")
+        s.knn("field")  # type: ignore[call-arg]
     with raises(TypeError):
-        s.knn("field", 5)
+        s.knn("field", 5)  # type: ignore[call-arg]
     with raises(ValueError):
         s.knn("field", 5, 100)
     with raises(ValueError):
@@ -294,7 +295,7 @@ def test_knn():
     } == s.to_dict()
 
 
-def test_rank():
+def test_rank() -> None:
     s = Search()
     s.rank(rrf=False)
     assert {} == s.to_dict()
@@ -306,7 +307,7 @@ def test_rank():
     assert {"rank": {"rrf": {"window_size": 50, "rank_constant": 20}}} == s.to_dict()
 
 
-def test_sort():
+def test_sort() -> None:
     s = Search()
     s = s.sort("fielda", "-fieldb")
 
@@ -318,7 +319,7 @@ def test_sort():
     assert Search().to_dict() == s.to_dict()
 
 
-def test_sort_by_score():
+def test_sort_by_score() -> None:
     s = Search()
     s = s.sort("_score")
     assert {"sort": ["_score"]} == s.to_dict()
@@ -328,7 +329,7 @@ def test_sort_by_score():
         s.sort("-_score")
 
 
-def test_collapse():
+def test_collapse() -> None:
     s = Search()
 
     inner_hits = {"name": "most_recent", "size": 5, "sort": [{"@timestamp": "desc"}]}
@@ -360,7 +361,7 @@ def test_collapse():
     assert Search().to_dict() == s.to_dict()
 
 
-def test_slice():
+def test_slice() -> None:
     s = Search()
     assert {"from": 3, "size": 7} == s[3:10].to_dict()
     assert {"size": 5} == s[:5].to_dict()
@@ -383,7 +384,7 @@ def test_slice():
         s[-3:-2]
 
 
-def test_index():
+def test_index() -> None:
     s = Search()
     assert {"from": 3, "size": 1} == s[3].to_dict()
     assert {"from": 3, "size": 1} == s[3][0].to_dict()
@@ -393,7 +394,7 @@ def test_index():
         s[-3]
 
 
-def test_search_to_dict():
+def test_search_to_dict() -> None:
     s = Search()
     assert {} == s.to_dict()
 
@@ -422,7 +423,7 @@ def test_search_to_dict():
     assert {"size": 5, "from": 42} == s.to_dict()
 
 
-def test_complex_example():
+def test_complex_example() -> None:
     s = Search()
     s = (
         s.query("match", title="python")
@@ -475,7 +476,7 @@ def test_complex_example():
     } == s.to_dict()
 
 
-def test_reverse():
+def test_reverse() -> None:
     d = {
         "query": {
             "filtered": {
@@ -525,14 +526,14 @@ def test_reverse():
     assert d == s.to_dict()
 
 
-def test_from_dict_doesnt_need_query():
+def test_from_dict_doesnt_need_query() -> None:
     s = Search.from_dict({"size": 5})
 
     assert {"size": 5} == s.to_dict()
 
 
 @pytest.mark.sync
-def test_params_being_passed_to_search(mock_client):
+def test_params_being_passed_to_search(mock_client: Any) -> None:
     s = Search(using="mock")
     s = s.params(routing="42")
     s.execute()
@@ -540,7 +541,7 @@ def test_params_being_passed_to_search(mock_client):
     mock_client.search.assert_called_once_with(index=None, body={}, routing="42")
 
 
-def test_source():
+def test_source() -> None:
     assert {} == Search().source().to_dict()
 
     assert {
@@ -554,7 +555,7 @@ def test_source():
     ).source(["f1", "f2"]).to_dict()
 
 
-def test_source_on_clone():
+def test_source_on_clone() -> None:
     assert {
         "_source": {"includes": ["foo.bar.*"], "excludes": ["foo.one"]},
         "query": {"bool": {"filter": [{"term": {"title": "python"}}]}},
@@ -567,7 +568,7 @@ def test_source_on_clone():
     } == Search().source(False).filter("term", title="python").to_dict()
 
 
-def test_source_on_clear():
+def test_source_on_clear() -> None:
     assert (
         {}
         == Search()
@@ -577,7 +578,7 @@ def test_source_on_clear():
     )
 
 
-def test_suggest_accepts_global_text():
+def test_suggest_accepts_global_text() -> None:
     s = Search.from_dict(
         {
             "suggest": {
@@ -599,7 +600,7 @@ def test_suggest_accepts_global_text():
     } == s.to_dict()
 
 
-def test_suggest():
+def test_suggest() -> None:
     s = Search()
     s = s.suggest("my_suggestion", "pyhton", term={"field": "title"})
 
@@ -608,7 +609,7 @@ def test_suggest():
     } == s.to_dict()
 
 
-def test_exclude():
+def test_exclude() -> None:
     s = Search()
     s = s.exclude("match", title="python")
 
@@ -622,7 +623,7 @@ def test_exclude():
 
 
 @pytest.mark.sync
-def test_delete_by_query(mock_client):
+def test_delete_by_query(mock_client: Any) -> None:
     s = Search(using="mock", index="i").query("match", lang="java")
     s.delete()
 
@@ -631,7 +632,7 @@ def test_delete_by_query(mock_client):
     )
 
 
-def test_update_from_dict():
+def test_update_from_dict() -> None:
     s = Search()
     s.update_from_dict({"indices_boost": [{"important-documents": 2}]})
     s.update_from_dict({"_source": ["id", "name"]})
@@ -644,7 +645,7 @@ def test_update_from_dict():
     } == s.to_dict()
 
 
-def test_rescore_query_to_dict():
+def test_rescore_query_to_dict() -> None:
     s = Search(index="index-name")
 
     positive_query = Q(
@@ -707,10 +708,10 @@ def test_rescore_query_to_dict():
 
 
 @pytest.mark.sync
-def test_empty_search():
+def test_empty_search() -> None:
     s = EmptySearch(index="index-name")
     s = s.query("match", lang="java")
-    s.aggs.bucket("versions", A("terms", field="version"))
+    s.aggs.bucket("versions", "terms", field="version")
 
     assert s.count() == 0
     assert [hit for hit in s] == []
@@ -718,7 +719,7 @@ def test_empty_search():
     s.delete()  # should not error
 
 
-def test_suggest_completion():
+def test_suggest_completion() -> None:
     s = Search()
     s = s.suggest("my_suggestion", "pyhton", completion={"field": "title"})
 
@@ -729,7 +730,7 @@ def test_suggest_completion():
     } == s.to_dict()
 
 
-def test_suggest_regex_query():
+def test_suggest_regex_query() -> None:
     s = Search()
     s = s.suggest("my_suggestion", regex="py[thon|py]", completion={"field": "title"})
 
@@ -740,19 +741,19 @@ def test_suggest_regex_query():
     } == s.to_dict()
 
 
-def test_suggest_must_pass_text_or_regex():
+def test_suggest_must_pass_text_or_regex() -> None:
     s = Search()
     with raises(ValueError):
         s.suggest("my_suggestion")
 
 
-def test_suggest_can_only_pass_text_or_regex():
+def test_suggest_can_only_pass_text_or_regex() -> None:
     s = Search()
     with raises(ValueError):
         s.suggest("my_suggestion", text="python", regex="py[hton|py]")
 
 
-def test_suggest_regex_must_be_wtih_completion():
+def test_suggest_regex_must_be_wtih_completion() -> None:
     s = Search()
     with raises(ValueError):
         s.suggest("my_suggestion", regex="py[thon|py]")

@@ -16,15 +16,17 @@
 #  under the License.
 
 import os
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from elasticsearch_dsl import (
     Document,
     Keyword,
     Percolator,
     Q,
+    Query,
     Search,
-    Text,
     connections,
+    mapped_field,
 )
 
 
@@ -33,13 +35,18 @@ class BlogPost(Document):
     Blog posts that will be automatically tagged based on percolation queries.
     """
 
-    content = Text()
-    tags = Keyword(multi=True)
+    if TYPE_CHECKING:
+        # definitions here help type checkers understand additional arguments
+        # that are allowed in the constructor
+        _id: int
+
+    content: Optional[str]
+    tags: List[str] = mapped_field(Keyword(), default_factory=list)
 
     class Index:
         name = "test-blogpost"
 
-    def add_tags(self):
+    def add_tags(self) -> None:
         # run a percolation to automatically tag the blog post.
         s = Search(index="test-percolator")
         s = s.query(
@@ -53,9 +60,9 @@ class BlogPost(Document):
         # make sure tags are unique
         self.tags = list(set(self.tags))
 
-    def save(self, **kwargs):
+    def save(self, **kwargs: Any) -> None:  # type: ignore[override]
         self.add_tags()
-        return super().save(**kwargs)
+        super().save(**kwargs)
 
 
 class PercolatorDoc(Document):
@@ -63,22 +70,25 @@ class PercolatorDoc(Document):
     Document class used for storing the percolation queries.
     """
 
+    if TYPE_CHECKING:
+        _id: str
+
     # relevant fields from BlogPost must be also present here for the queries
     # to be able to use them. Another option would be to use document
     # inheritance but save() would have to be reset to normal behavior.
-    content = Text()
+    content: Optional[str]
 
     # the percolator query to be run against the doc
-    query = Percolator()
+    query: Query = mapped_field(Percolator())
     # list of tags to append to a document
-    tags = Keyword(multi=True)
+    tags: List[str] = mapped_field(Keyword(multi=True))
 
     class Index:
         name = "test-percolator"
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-def setup():
+def setup() -> None:
     # create the percolator index if it doesn't exist
     if not PercolatorDoc._index.exists():
         PercolatorDoc.init()
@@ -87,11 +97,12 @@ def setup():
     PercolatorDoc(
         _id="python",
         tags=["programming", "development", "python"],
+        content="",
         query=Q("match", content="python"),
     ).save(refresh=True)
 
 
-def main():
+def main() -> None:
     # initiate the default connection to elasticsearch
     connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 

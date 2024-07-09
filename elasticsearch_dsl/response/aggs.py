@@ -52,7 +52,7 @@ class FieldBucket(Bucket[_R]):
 
 class BucketData(AggResponse[_R]):
     _bucket_class = Bucket
-    _buckets: Union[AttrDict[Any], AttrList]
+    _buckets: Union[AttrDict[Any], AttrList[Any]]
 
     def _wrap_bucket(self, data: Dict[str, Any]) -> Bucket[_R]:
         return self._bucket_class(
@@ -70,11 +70,11 @@ class BucketData(AggResponse[_R]):
 
     def __getitem__(self, key: Any) -> Any:
         if isinstance(key, (int, slice)):
-            return cast(AttrList, self.buckets)[key]
+            return cast(AttrList[Any], self.buckets)[key]
         return super().__getitem__(key)
 
     @property
-    def buckets(self) -> Union[AttrDict[Any], AttrList]:
+    def buckets(self) -> Union[AttrDict[Any], AttrList[Any]]:
         if not hasattr(self, "_buckets"):
             field = getattr(self._meta["aggs"], "field", None)
             if field:

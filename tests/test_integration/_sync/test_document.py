@@ -15,11 +15,18 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+# this file creates several documents using bad or no types because
+# these are still supported and should be kept functional in spite
+# of not having appropriate type hints. For that reason the comment
+# below disables many mypy checks that fails as a result of this.
+# mypy: disable-error-code="assignment, index, arg-type, call-arg, operator, comparison-overlap, attr-defined"
+
 from datetime import datetime
 from ipaddress import ip_address
+from typing import Any
 
 import pytest
-from elasticsearch import ConflictError, NotFoundError
+from elasticsearch import ConflictError, Elasticsearch, NotFoundError
 from pytest import raises
 from pytz import timezone
 
@@ -39,6 +46,7 @@ from elasticsearch_dsl import (
     Object,
     Q,
     RankFeatures,
+    Search,
     Text,
     analyzer,
 )
@@ -67,7 +75,7 @@ class Repository(Document):
     tags = Keyword()
 
     @classmethod
-    def search(cls):
+    def search(cls) -> Search["Repository"]:  # type: ignore[override]
         return super().search().filter("term", commit_repo="repo")
 
     class Index:
@@ -128,7 +136,7 @@ class Tags(Document):
 
 
 @pytest.mark.sync
-def test_serialization(write_client):
+def test_serialization(write_client: Elasticsearch) -> None:
     SerializationDoc.init()
     write_client.index(
         index="test-serialization",
@@ -142,6 +150,7 @@ def test_serialization(write_client):
         },
     )
     sd = SerializationDoc.get(id=42)
+    assert sd is not None
 
     assert sd.i == [1, 2, 3, None]
     assert sd.b == [True, False, True, False, None]
@@ -159,7 +168,7 @@ def test_serialization(write_client):
 
 
 @pytest.mark.sync
-def test_nested_inner_hits_are_wrapped_properly(pull_request):
+def test_nested_inner_hits_are_wrapped_properly(pull_request: Any) -> None:
     history_query = Q(
         "nested",
         path="comments.history",
@@ -188,7 +197,9 @@ def test_nested_inner_hits_are_wrapped_properly(pull_request):
 
 
 @pytest.mark.sync
-def test_nested_inner_hits_are_deserialized_properly(pull_request):
+def test_nested_inner_hits_are_deserialized_properly(
+    pull_request: Any,
+) -> None:
     s = PullRequest.search().query(
         "nested",
         inner_hits={},
@@ -204,7 +215,7 @@ def test_nested_inner_hits_are_deserialized_properly(pull_request):
 
 
 @pytest.mark.sync
-def test_nested_top_hits_are_wrapped_properly(pull_request):
+def test_nested_top_hits_are_wrapped_properly(pull_request: Any) -> None:
     s = PullRequest.search()
     s.aggs.bucket("comments", "nested", path="comments").metric(
         "hits", "top_hits", size=1
@@ -217,7 +228,7 @@ def test_nested_top_hits_are_wrapped_properly(pull_request):
 
 
 @pytest.mark.sync
-def test_update_object_field(write_client):
+def test_update_object_field(write_client: Elasticsearch) -> None:
     Wiki.init()
     w = Wiki(
         owner=User(name="Honza Kral"),
@@ -238,7 +249,7 @@ def test_update_object_field(write_client):
 
 
 @pytest.mark.sync
-def test_update_script(write_client):
+def test_update_script(write_client: Elasticsearch) -> None:
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     w.save()
@@ -249,7 +260,7 @@ def test_update_script(write_client):
 
 
 @pytest.mark.sync
-def test_update_script_with_dict(write_client):
+def test_update_script_with_dict(write_client: Elasticsearch) -> None:
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     w.save()
@@ -267,13 +278,16 @@ def test_update_script_with_dict(write_client):
 
 
 @pytest.mark.sync
-def test_update_retry_on_conflict(write_client):
+def test_update_retry_on_conflict(write_client: Elasticsearch) -> None:
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     w.save()
 
     w1 = Wiki.get(id="elasticsearch-py")
     w2 = Wiki.get(id="elasticsearch-py")
+    assert w1 is not None
+    assert w2 is not None
+
     w1.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
     w2.update(script="ctx._source.views += params.inc", inc=5, retry_on_conflict=1)
 
@@ -283,13 +297,18 @@ def test_update_retry_on_conflict(write_client):
 
 @pytest.mark.sync
 @pytest.mark.parametrize("retry_on_conflict", [None, 0])
-def test_update_conflicting_version(write_client, retry_on_conflict):
+def test_update_conflicting_version(
+    write_client: Elasticsearch, retry_on_conflict: bool
+) -> None:
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     w.save()
 
     w1 = Wiki.get(id="elasticsearch-py")
     w2 = Wiki.get(id="elasticsearch-py")
+    assert w1 is not None
+    assert w2 is not None
+
     w1.update(script="ctx._source.views += params.inc", inc=5)
 
     with raises(ConflictError):
@@ -301,7 +320,9 @@ def test_update_conflicting_version(write_client, retry_on_conflict):
 
 
 @pytest.mark.sync
-def test_save_and_update_return_doc_meta(write_client):
+def test_save_and_update_return_doc_meta(
+    write_client: Elasticsearch,
+) -> None:
     Wiki.init()
     w = Wiki(owner=User(name="Honza Kral"), _id="elasticsearch-py", views=42)
     resp = w.save(return_doc_meta=True)
@@ -334,26 +355,32 @@ def test_save_and_update_return_doc_meta(write_client):
 
 
 @pytest.mark.sync
-def test_init(write_client):
+def test_init(write_client: Elasticsearch) -> None:
     Repository.init(index="test-git")
 
     assert write_client.indices.exists(index="test-git")
 
 
 @pytest.mark.sync
-def test_get_raises_404_on_index_missing(data_client):
+def test_get_raises_404_on_index_missing(
+    data_client: Elasticsearch,
+) -> None:
     with raises(NotFoundError):
         Repository.get("elasticsearch-dsl-php", index="not-there")
 
 
 @pytest.mark.sync
-def test_get_raises_404_on_non_existent_id(data_client):
+def test_get_raises_404_on_non_existent_id(
+    data_client: Elasticsearch,
+) -> None:
     with raises(NotFoundError):
         Repository.get("elasticsearch-dsl-php")
 
 
 @pytest.mark.sync
-def test_get_returns_none_if_404_ignored(data_client):
+def test_get_returns_none_if_404_ignored(
+    data_client: Elasticsearch,
+) -> None:
     assert None is Repository.get(
         "elasticsearch-dsl-php", using=data_client.options(ignore_status=404)
     )
@@ -361,15 +388,15 @@ def test_get_returns_none_if_404_ignored(data_client):
 
 @pytest.mark.sync
 def test_get_returns_none_if_404_ignored_and_index_doesnt_exist(
-    data_client,
-):
+    data_client: Elasticsearch,
+) -> None:
     assert None is Repository.get(
         "42", index="not-there", using=data_client.options(ignore_status=404)
     )
 
 
 @pytest.mark.sync
-def test_get(data_client):
+def test_get(data_client: Elasticsearch) -> None:
     elasticsearch_repo = Repository.get("elasticsearch-dsl-py")
 
     assert isinstance(elasticsearch_repo, Repository)
@@ -378,20 +405,21 @@ def test_get(data_client):
 
 
 @pytest.mark.sync
-def test_exists_return_true(data_client):
+def test_exists_return_true(data_client: Elasticsearch) -> None:
     assert Repository.exists("elasticsearch-dsl-py")
 
 
 @pytest.mark.sync
-def test_exists_false(data_client):
+def test_exists_false(data_client: Elasticsearch) -> None:
     assert not Repository.exists("elasticsearch-dsl-php")
 
 
 @pytest.mark.sync
-def test_get_with_tz_date(data_client):
+def test_get_with_tz_date(data_client: Elasticsearch) -> None:
     first_commit = Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
     )
+    assert first_commit is not None
 
     tzinfo = timezone("Europe/Prague")
     assert (
@@ -401,11 +429,13 @@ def test_get_with_tz_date(data_client):
 
 
 @pytest.mark.sync
-def test_save_with_tz_date(data_client):
+def test_save_with_tz_date(data_client: Elasticsearch) -> None:
     tzinfo = timezone("Europe/Prague")
     first_commit = Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
     )
+    assert first_commit is not None
+
     first_commit.committed_date = tzinfo.localize(
         datetime(2014, 5, 2, 13, 47, 19, 123456)
     )
@@ -414,6 +444,8 @@ def test_save_with_tz_date(data_client):
     first_commit = Commit.get(
         id="3ca6e1e73a071a705b4babd2f581c91a2a3e5037", routing="elasticsearch-dsl-py"
     )
+    assert first_commit is not None
+
     assert (
         tzinfo.localize(datetime(2014, 5, 2, 13, 47, 19, 123456))
         == first_commit.committed_date
@@ -429,48 +461,62 @@ COMMIT_DOCS_WITH_MISSING = [
 
 
 @pytest.mark.sync
-def test_mget(data_client):
+def test_mget(data_client: Elasticsearch) -> None:
     commits = Commit.mget(COMMIT_DOCS_WITH_MISSING)
     assert commits[0] is None
+    assert commits[1] is not None
     assert commits[1].meta.id == "3ca6e1e73a071a705b4babd2f581c91a2a3e5037"
     assert commits[2] is None
+    assert commits[3] is not None
     assert commits[3].meta.id == "eb3e543323f189fd7b698e66295427204fff5755"
 
 
 @pytest.mark.sync
-def test_mget_raises_exception_when_missing_param_is_invalid(data_client):
+def test_mget_raises_exception_when_missing_param_is_invalid(
+    data_client: Elasticsearch,
+) -> None:
     with raises(ValueError):
         Commit.mget(COMMIT_DOCS_WITH_MISSING, missing="raj")
 
 
 @pytest.mark.sync
-def test_mget_raises_404_when_missing_param_is_raise(data_client):
+def test_mget_raises_404_when_missing_param_is_raise(
+    data_client: Elasticsearch,
+) -> None:
     with raises(NotFoundError):
         Commit.mget(COMMIT_DOCS_WITH_MISSING, missing="raise")
 
 
 @pytest.mark.sync
-def test_mget_ignores_missing_docs_when_missing_param_is_skip(data_client):
+def test_mget_ignores_missing_docs_when_missing_param_is_skip(
+    data_client: Elasticsearch,
+) -> None:
     commits = Commit.mget(COMMIT_DOCS_WITH_MISSING, missing="skip")
+    assert commits[0] is not None
     assert commits[0].meta.id == "3ca6e1e73a071a705b4babd2f581c91a2a3e5037"
+    assert commits[1] is not None
     assert commits[1].meta.id == "eb3e543323f189fd7b698e66295427204fff5755"
 
 
 @pytest.mark.sync
-def test_update_works_from_search_response(data_client):
+def test_update_works_from_search_response(
+    data_client: Elasticsearch,
+) -> None:
     elasticsearch_repo = (Repository.search().execute())[0]
 
     elasticsearch_repo.update(owner={"other_name": "elastic"})
     assert "elastic" == elasticsearch_repo.owner.other_name
 
     new_version = Repository.get("elasticsearch-dsl-py")
+    assert new_version is not None
     assert "elastic" == new_version.owner.other_name
     assert "elasticsearch" == new_version.owner.name
 
 
 @pytest.mark.sync
-def test_update(data_client):
+def test_update(data_client: Elasticsearch) -> None:
     elasticsearch_repo = Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
     v = elasticsearch_repo.meta.version
 
     old_seq_no = elasticsearch_repo.meta.seq_no
@@ -483,6 +529,7 @@ def test_update(data_client):
     assert elasticsearch_repo.meta.version == v + 1
 
     new_version = Repository.get("elasticsearch-dsl-py")
+    assert new_version is not None
     assert "testing-update" == new_version.new_field
     assert "elastic" == new_version.owner.new_name
     assert "elasticsearch" == new_version.owner.name
@@ -492,8 +539,9 @@ def test_update(data_client):
 
 
 @pytest.mark.sync
-def test_save_updates_existing_doc(data_client):
+def test_save_updates_existing_doc(data_client: Elasticsearch) -> None:
     elasticsearch_repo = Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
 
     elasticsearch_repo.new_field = "testing-save"
     old_seq_no = elasticsearch_repo.meta.seq_no
@@ -506,7 +554,7 @@ def test_save_updates_existing_doc(data_client):
 
 
 @pytest.mark.sync
-def test_update_empty_field(client):
+def test_update_empty_field(client: Elasticsearch) -> None:
     Tags._index.delete(ignore_unavailable=True)
     Tags.init()
     d = Tags(id="123", tags=["a", "b"])
@@ -519,8 +567,11 @@ def test_update_empty_field(client):
 
 
 @pytest.mark.sync
-def test_save_automatically_uses_seq_no_and_primary_term(data_client):
+def test_save_automatically_uses_seq_no_and_primary_term(
+    data_client: Elasticsearch,
+) -> None:
     elasticsearch_repo = Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
     elasticsearch_repo.meta.seq_no += 1
 
     with raises(ConflictError):
@@ -528,22 +579,27 @@ def test_save_automatically_uses_seq_no_and_primary_term(data_client):
 
 
 @pytest.mark.sync
-def test_delete_automatically_uses_seq_no_and_primary_term(data_client):
+def test_delete_automatically_uses_seq_no_and_primary_term(
+    data_client: Elasticsearch,
+) -> None:
     elasticsearch_repo = Repository.get("elasticsearch-dsl-py")
+    assert elasticsearch_repo is not None
     elasticsearch_repo.meta.seq_no += 1
 
     with raises(ConflictError):
         elasticsearch_repo.delete()
 
 
-def assert_doc_equals(expected, actual):
+def assert_doc_equals(expected: Any, actual: Any) -> None:
     for f in expected:
         assert f in actual
         assert actual[f] == expected[f]
 
 
 @pytest.mark.sync
-def test_can_save_to_different_index(write_client):
+def test_can_save_to_different_index(
+    write_client: Elasticsearch,
+) -> None:
     test_repo = Repository(description="testing", meta={"id": 42})
     assert test_repo.save(index="test-document")
 
@@ -559,7 +615,9 @@ def test_can_save_to_different_index(write_client):
 
 
 @pytest.mark.sync
-def test_save_without_skip_empty_will_include_empty_fields(write_client):
+def test_save_without_skip_empty_will_include_empty_fields(
+    write_client: Elasticsearch,
+) -> None:
     test_repo = Repository(field_1=[], field_2=None, field_3={}, meta={"id": 42})
     assert test_repo.save(index="test-document", skip_empty=False)
 
@@ -575,7 +633,7 @@ def test_save_without_skip_empty_will_include_empty_fields(write_client):
 
 
 @pytest.mark.sync
-def test_delete(write_client):
+def test_delete(write_client: Elasticsearch) -> None:
     write_client.create(
         index="test-document",
         id="elasticsearch-dsl-py",
@@ -597,12 +655,14 @@ def test_delete(write_client):
 
 
 @pytest.mark.sync
-def test_search(data_client):
+def test_search(data_client: Elasticsearch) -> None:
     assert Repository.search().count() == 1
 
 
 @pytest.mark.sync
-def test_search_returns_proper_doc_classes(data_client):
+def test_search_returns_proper_doc_classes(
+    data_client: Elasticsearch,
+) -> None:
     result = Repository.search().execute()
 
     elasticsearch_repo = result.hits[0]
@@ -612,7 +672,7 @@ def test_search_returns_proper_doc_classes(data_client):
 
 
 @pytest.mark.sync
-def test_refresh_mapping(data_client):
+def test_refresh_mapping(data_client: Elasticsearch) -> None:
     class Commit(Document):
         class Index:
             name = "git"
@@ -627,7 +687,7 @@ def test_refresh_mapping(data_client):
 
 
 @pytest.mark.sync
-def test_highlight_in_meta(data_client):
+def test_highlight_in_meta(data_client: Elasticsearch) -> None:
     commit = (
         Commit.search()
         .query("match", description="inverting")

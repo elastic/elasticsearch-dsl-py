@@ -46,16 +46,19 @@ develop_requires = [
     "pytest-asyncio",
     "pytz",
     "coverage",
-    # typing support
-    "types-python-dateutil",
     # the following three are used by the vectors example and its tests
     "nltk",
     "sentence_transformers",
     "tqdm",
-    "types-tqdm",
     # Override Read the Docs default (sphinx<2 and sphinx-rtd-theme<0.5)
     "sphinx>2",
     "sphinx-rtd-theme>0.5",
+    # typing support
+    "mypy",
+    "pyright",
+    "types-python-dateutil",
+    "types-pytz",
+    "types-tqdm",
 ]
 
 setup(

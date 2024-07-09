@@ -18,5 +18,5 @@
 import elasticsearch_dsl
 
 
-def test__all__is_sorted():
+def test__all__is_sorted() -> None:
     assert elasticsearch_dsl.__all__ == sorted(elasticsearch_dsl.__all__)

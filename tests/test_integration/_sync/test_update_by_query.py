@@ -16,13 +16,16 @@
 #  under the License.
 
 import pytest
+from elasticsearch import Elasticsearch
 
 from elasticsearch_dsl import UpdateByQuery
 from elasticsearch_dsl.search import Q
 
 
 @pytest.mark.sync
-def test_update_by_query_no_script(write_client, setup_ubq_tests):
+def test_update_by_query_no_script(
+    write_client: Elasticsearch, setup_ubq_tests: str
+) -> None:
     index = setup_ubq_tests
 
     ubq = (
@@ -42,7 +45,9 @@ def test_update_by_query_no_script(write_client, setup_ubq_tests):
 
 
 @pytest.mark.sync
-def test_update_by_query_with_script(write_client, setup_ubq_tests: str):
+def test_update_by_query_with_script(
+    write_client: Elasticsearch, setup_ubq_tests: str
+) -> None:
     index = setup_ubq_tests
 
     ubq = (
@@ -60,7 +65,9 @@ def test_update_by_query_with_script(write_client, setup_ubq_tests: str):
 
 
 @pytest.mark.sync
-def test_delete_by_query_with_script(write_client, setup_ubq_tests: str):
+def test_delete_by_query_with_script(
+    write_client: Elasticsearch, setup_ubq_tests: str
+) -> None:
     index = setup_ubq_tests
 
     ubq = (

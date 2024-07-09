@@ -39,24 +39,30 @@ import asyncio
 import os
 from datetime import datetime
 from fnmatch import fnmatch
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from elasticsearch_dsl import AsyncDocument, Date, Keyword, Text, async_connections
+from elasticsearch_dsl import AsyncDocument, Keyword, async_connections, mapped_field
 
 ALIAS = "test-blog"
 PATTERN = ALIAS + "-*"
 
 
 class BlogPost(AsyncDocument):
-    title = Text()
-    published = Date()
-    tags = Keyword(multi=True)
-    content = Text()
+    if TYPE_CHECKING:
+        # definitions here help type checkers understand additional arguments
+        # that are allowed in the constructor
+        _id: int
 
-    def is_published(self):
-        return self.published and datetime.now() > self.published
+    title: str
+    tags: List[str] = mapped_field(Keyword())
+    content: str
+    published: Optional[datetime] = mapped_field(default=None)
+
+    def is_published(self) -> bool:
+        return bool(self.published and datetime.now() > self.published)
 
     @classmethod
-    def _matches(cls, hit):
+    def _matches(cls, hit: Dict[str, Any]) -> bool:
         # override _matches to match indices in a pattern instead of just ALIAS
         # hit is the raw dict as returned by elasticsearch
         return fnmatch(hit["_index"], PATTERN)
@@ -69,7 +75,7 @@ class BlogPost(AsyncDocument):
         settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
 
-async def setup():
+async def setup() -> None:
     """
     Create the index template in elasticsearch specifying the mappings and any
     settings to be used. This can be run at any time, ideally at every new code
@@ -86,7 +92,7 @@ async def setup():
         await migrate(move_data=False)
 
 
-async def migrate(move_data=True, update_alias=True):
+async def migrate(move_data: bool = True, update_alias: bool = True) -> None:
     """
     Upgrade function that creates a new index for the data. Optionally it also can
     (and by default will) reindex previous copy of the data into the new index
@@ -126,7 +132,7 @@ async def migrate(move_data=True, update_alias=True):
         )
 
 
-async def main():
+async def main() -> None:
     # initiate the default connection to elasticsearch
     async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
