@@ -18,7 +18,10 @@
 import os
 from typing import Any, Dict, Iterator, List, Optional, Union
 
+from elasticsearch.helpers import bulk
+
 from elasticsearch_dsl import A, Agg, Response, Search, connections
+from tests.test_integration.test_data import DATA, GIT_INDEX
 
 
 def scan_aggs(
@@ -55,8 +58,15 @@ def scan_aggs(
 
 def main() -> None:
     # initiate the default connection to elasticsearch
-    connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    client = connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
 
+    # create the index and populate it with some data
+    # note that the dataset is imported from the library's test suite
+    client.indices.delete(index="git", ignore_unavailable=True)
+    client.indices.create(index="git", **GIT_INDEX)
+    bulk(client, DATA, raise_on_error=True, refresh=True)
+
+    # run some aggregations on the data
     for b in scan_aggs(
         Search(index="git"),
         {"files": A("terms", field="files")},
