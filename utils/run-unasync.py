@@ -64,6 +64,7 @@ def main(check=False):
         "async_connections": "connections",
         "async_scan": "scan",
         "async_simulate": "simulate",
+        "async_bulk": "bulk",
         "async_mock_client": "mock_client",
         "async_client": "client",
         "async_data_client": "data_client",
