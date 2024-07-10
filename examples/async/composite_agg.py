@@ -19,7 +19,10 @@ import asyncio
 import os
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
+from elasticsearch.helpers import async_bulk
+
 from elasticsearch_dsl import A, Agg, AsyncSearch, Response, async_connections
+from tests.test_integration.test_data import DATA, GIT_INDEX
 
 
 async def scan_aggs(
@@ -56,8 +59,17 @@ async def scan_aggs(
 
 async def main() -> None:
     # initiate the default connection to elasticsearch
-    async_connections.create_connection(hosts=[os.environ["ELASTICSEARCH_URL"]])
+    client = async_connections.create_connection(
+        hosts=[os.environ["ELASTICSEARCH_URL"]]
+    )
 
+    # create the index and populate it with some data
+    # note that the dataset is imported from the library's test suite
+    await client.indices.delete(index="git", ignore_unavailable=True)
+    await client.indices.create(index="git", **GIT_INDEX)
+    await async_bulk(client, DATA, raise_on_error=True, refresh=True)
+
+    # run some aggregations on the data
     async for b in scan_aggs(
         AsyncSearch(index="git"),
         {"files": A("terms", field="files")},
