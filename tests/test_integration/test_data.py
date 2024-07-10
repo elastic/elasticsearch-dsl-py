@@ -25,9 +25,6 @@ user_mapping = {
 
 FLAT_GIT_INDEX: Dict[str, Any] = {
     "settings": {
-        # just one shard, no replicas for testing
-        "number_of_shards": 1,
-        "number_of_replicas": 0,
         # custom analyzer for analyzing file paths
         "analysis": {
             "analyzer": {
@@ -58,9 +55,6 @@ FLAT_GIT_INDEX: Dict[str, Any] = {
 
 GIT_INDEX: Dict[str, Any] = {
     "settings": {
-        # just one shard, no replicas for testing
-        "number_of_shards": 1,
-        "number_of_replicas": 0,
         # custom analyzer for analyzing file paths
         "analysis": {
             "analyzer": {
