@@ -23,10 +23,11 @@
 
 from datetime import datetime
 from ipaddress import ip_address
-from typing import Any
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Union
 
 import pytest
 from elasticsearch import ConflictError, Elasticsearch, NotFoundError
+from elasticsearch.helpers.errors import BulkIndexError
 from pytest import raises
 from pytz import timezone
 
@@ -49,6 +50,7 @@ from elasticsearch_dsl import (
     Search,
     Text,
     analyzer,
+    mapped_field,
 )
 from elasticsearch_dsl.utils import AttrList
 
@@ -699,3 +701,91 @@ def test_highlight_in_meta(data_client: Elasticsearch) -> None:
     assert "description" in commit.meta.highlight
     assert isinstance(commit.meta.highlight["description"], AttrList)
     assert len(commit.meta.highlight["description"]) > 0
+
+
+@pytest.mark.sync
+def test_bulk(data_client: Elasticsearch) -> None:
+    class Address(InnerDoc):
+        street: str
+        active: bool
+
+    class Doc(Document):
+        if TYPE_CHECKING:
+            _id: int
+        name: str
+        age: int
+        languages: List[str] = mapped_field(Keyword())
+        addresses: List[Address]
+
+        class Index:
+            name = "bulk-index"
+
+    Doc._index.delete(ignore_unavailable=True)
+    Doc.init()
+
+    def gen1() -> Iterator[Union[Doc, Dict[str, Any]]]:
+        yield Doc(
+            name="Joe",
+            age=33,
+            languages=["en", "fr"],
+            addresses=[
+                Address(street="123 Main St", active=True),
+                Address(street="321 Park Dr.", active=False),
+            ],
+        )
+        yield Doc(name="Susan", age=20, languages=["en"])
+        yield {"_op_type": "create", "_id": "45", "_source": Doc(name="Sarah", age=45)}
+
+    Doc.bulk(gen1(), refresh=True)
+    docs = list(Doc.search().execute())
+    assert len(docs) == 3
+    assert docs[0].to_dict() == {
+        "name": "Joe",
+        "age": 33,
+        "languages": [
+            "en",
+            "fr",
+        ],
+        "addresses": [
+            {
+                "active": True,
+                "street": "123 Main St",
+            },
+            {
+                "active": False,
+                "street": "321 Park Dr.",
+            },
+        ],
+    }
+    assert docs[1].to_dict() == {
+        "name": "Susan",
+        "age": 20,
+        "languages": ["en"],
+    }
+    assert docs[2].to_dict() == {
+        "name": "Sarah",
+        "age": 45,
+    }
+    assert docs[2].meta.id == "45"
+
+    def gen2() -> Iterator[Union[Doc, Dict[str, Any]]]:
+        yield {"_op_type": "create", "_id": "45", "_source": Doc(name="Sarah", age=45)}
+
+    # a "create" action with an existing id should fail
+    with raises(BulkIndexError):
+        Doc.bulk(gen2(), refresh=True)
+
+    def gen3() -> Iterator[Union[Doc, Dict[str, Any]]]:
+        yield Doc(_id="45", name="Sarah", age=45, languages=["es"])
+        yield {"_op_type": "delete", "_id": docs[1].meta.id}
+
+    Doc.bulk(gen3(), refresh=True)
+    with raises(NotFoundError):
+        Doc.get(docs[1].meta.id)
+    doc = Doc.get("45")
+    assert doc is not None
+    assert (doc).to_dict() == {
+        "name": "Sarah",
+        "age": 45,
+        "languages": ["es"],
+    }
