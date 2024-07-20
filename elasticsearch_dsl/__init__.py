@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from . import connections
+from . import async_connections, connections
 from .aggs import A, Agg
 from .analysis import analyzer, char_filter, normalizer, token_filter, tokenizer
 from .document import AsyncDocument, Document
@@ -182,6 +182,7 @@ __all__ = [
     "UpdateByQueryResponse",
     "ValidationException",
     "analyzer",
+    "async_connections",
     "char_filter",
     "connections",
     "construct_field",
