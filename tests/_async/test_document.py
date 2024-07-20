@@ -776,7 +776,11 @@ def test_doc_with_type_hints() -> None:
     }
 
     s = TypedDoc.search().sort(TypedDoc.st, -TypedDoc.dt, +TypedDoc.ob.st)
-    assert s.to_dict() == {"sort": ["st", {"dt": {"order": "desc"}}, "ob.st"]}
+    s.aggs.bucket("terms_agg", "terms", field=TypedDoc.k1)
+    assert s.to_dict() == {
+        "aggs": {"terms_agg": {"terms": {"field": "k1"}}},
+        "sort": ["st", {"dt": {"order": "desc"}}, "ob.st"],
+    }
 
 
 def test_instrumented_field() -> None:
