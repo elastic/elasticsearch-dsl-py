@@ -460,12 +460,12 @@ class Document(DocumentBase, metaclass=IndexMeta):
         :arg actions: a generator that returns document instances to be indexed,
             bulk operation dictionaries.
         :arg using: connection alias to use, defaults to ``'default'``
-        :arg index: elasticsearch index to use, if the ``Document`` is
+        :arg index: Elasticsearch index to use, if the ``Document`` is
             associated with an index this can be omitted.
         :arg validate: set to ``False`` to skip validating the documents
         :arg skip_empty: if set to ``False`` will cause empty values (``None``,
             ``[]``, ``{}``) to be left on the document. Those values will be
-            stripped out otherwise as they make no difference in elasticsearch.
+            stripped out otherwise as they make no difference in Elasticsearch.
 
         Any additional keyword arguments will be passed to
         ``Elasticsearch.bulk`` unchanged.
