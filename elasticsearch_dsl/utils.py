@@ -311,8 +311,12 @@ class DslBase(metaclass=DslMeta):
             _expand__to_dot = EXPAND__TO_DOT
         self._params: Dict[str, Any] = {}
         for pname, pvalue in params.items():
+            # expand "__" to dots
             if "__" in pname and _expand__to_dot:
                 pname = pname.replace("__", ".")
+            # convert instrumented fields to string
+            if type(pvalue).__name__ == "InstrumentedField":
+                pvalue = str(pvalue)
             self._setattr(pname, pvalue)
 
     def _repr_params(self) -> str:
