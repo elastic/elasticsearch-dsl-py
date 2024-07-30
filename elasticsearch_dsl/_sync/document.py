@@ -16,9 +16,20 @@
 #  under the License.
 
 import collections.abc
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
 from elasticsearch.exceptions import NotFoundError, RequestError
+from elasticsearch.helpers import bulk
 from typing_extensions import Self, dataclass_transform
 
 from .._sync.index import Index
@@ -432,3 +443,71 @@ class Document(DocumentBase, metaclass=IndexMeta):
                 setattr(self.meta, k, meta["_" + k])
 
         return meta if return_doc_meta else meta["result"]
+
+    @classmethod
+    def bulk(
+        cls,
+        actions: Iterable[Union[Self, Dict[str, Any]]],
+        using: Optional[UsingType] = None,
+        index: Optional[str] = None,
+        validate: bool = True,
+        skip_empty: bool = True,
+        **kwargs: Any,
+    ) -> Tuple[int, Union[int, List[Any]]]:
+        """
+        Allows to perform multiple indexing operations in a single request.
+
+        :arg actions: a generator that returns document instances to be indexed,
+            bulk operation dictionaries.
+        :arg using: connection alias to use, defaults to ``'default'``
+        :arg index: Elasticsearch index to use, if the ``Document`` is
+            associated with an index this can be omitted.
+        :arg validate: set to ``False`` to skip validating the documents
+        :arg skip_empty: if set to ``False`` will cause empty values (``None``,
+            ``[]``, ``{}``) to be left on the document. Those values will be
+            stripped out otherwise as they make no difference in Elasticsearch.
+
+        Any additional keyword arguments will be passed to
+        ``Elasticsearch.bulk`` unchanged.
+
+        :return: bulk operation results
+        """
+        es = cls._get_connection(using)
+
+        i = cls._default_index(index)
+        assert i is not None
+
+        class Generate:
+            def __init__(
+                self,
+                doc_iterator: Iterable[Union[Document, Dict[str, Any]]],
+            ):
+                self.doc_iterator = doc_iterator.__iter__()
+
+            def __iter__(self) -> Self:
+                return self
+
+            def __next__(self) -> Dict[str, Any]:
+                doc: Optional[Union[Document, Dict[str, Any]]] = (
+                    self.doc_iterator.__next__()
+                )
+
+                if isinstance(doc, dict):
+                    action = doc
+                    doc = None
+                    if "_source" in action and isinstance(action["_source"], Document):
+                        doc = action["_source"]
+                        if validate:  # pragma: no cover
+                            doc.full_clean()
+                        action["_source"] = doc.to_dict(
+                            include_meta=False, skip_empty=skip_empty
+                        )
+                elif doc is not None:
+                    if validate:  # pragma: no cover
+                        doc.full_clean()
+                    action = doc.to_dict(include_meta=True, skip_empty=skip_empty)
+                if "_index" not in action:
+                    action["_index"] = i
+                return action
+
+        return bulk(es, Generate(actions), **kwargs)
