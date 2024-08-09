@@ -3,6 +3,16 @@
 Changelog
 =========
 
+8.15.0 (2024-08-09)
+-------------------
+
+* Added the option to use Python types to declare document fields (`#1845 <https://github.com/elastic/elasticsearch-dsl-py/pull/1845>`_)
+* Added type annotations (`#1533 <https://github.com/elastic/elasticsearch-dsl-py/pull/1533>`_)
+* Added support for bulk document operations with ``Document.bulk()`` (`#1864 <https://github.com/elastic/elasticsearch-dsl-py/pull/1864>`_)
+* Added the ``ConstantKeyword`` field to the top-level package (`#1843 <https://github.com/elastic/elasticsearch-dsl-py/pull/1843>`_)
+* Added ``async_connections`` to the top-level package (`#1865 <https://github.com/elastic/elasticsearch-dsl-py/pull/1865>`_)
+* Added index creation to the aggregations example (`#1862 <https://github.com/elastic/elasticsearch-dsl-py/pull/1862>`_)
+
 8.14.0 (2024-06-10)
 -------------------
 
