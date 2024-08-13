@@ -215,7 +215,11 @@ class AttrDict(Generic[_ValT]):
         del self._d_[key]
 
     def __setattr__(self, name: str, value: _ValT) -> None:
-        if name in self._d_ or not hasattr(self.__class__, name):
+        # the __orig__class__ attribute has to be treated as an exception, as
+        # is it added to an object when it is instantiated with type arguments
+        if (
+            name in self._d_ or not hasattr(self.__class__, name)
+        ) and name != "__orig_class__":
             self._d_[name] = value
         else:
             # there is an attribute on the class (could be property, ..) - don't add it as field
