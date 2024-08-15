@@ -527,6 +527,10 @@ class Shape(Query):
     name = "shape"
 
 
+class Semantic(Query):
+    name = "semantic"
+
+
 class SimpleQueryString(Query):
     name = "simple_query_string"
 
