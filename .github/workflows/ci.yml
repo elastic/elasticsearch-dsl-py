@@ -85,6 +85,14 @@ jobs:
         es-version: [8.0.0, 8.13.0]
 
     steps:
+      - name: Remove irrelevant software to free up disk space
+        run: |
+          df -h
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          df -h
       - name: Checkout Repository
         uses: actions/checkout@v3
       - name: Setup Elasticsearch
