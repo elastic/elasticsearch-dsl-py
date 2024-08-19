@@ -28,23 +28,8 @@ To custom analyzer with ascii folding allow search to work in different language
 import os
 from typing import TYPE_CHECKING, Optional
 
-from elasticsearch_dsl import (
-    Document,
-    SearchAsYouType,
-    analyzer,
-    connections,
-    mapped_field,
-    token_filter,
-)
+from elasticsearch_dsl import Document, SearchAsYouType, connections, mapped_field
 from elasticsearch_dsl.query import MultiMatch
-
-# custom analyzer for names
-ascii_fold = analyzer(
-    "ascii_fold",
-    # we don't want to split O'Brian or Toulouse-Lautrec
-    tokenizer="whitespace",
-    filter=["lowercase", token_filter("ascii_fold", "asciifolding")],
-)
 
 
 class Person(Document):
