@@ -69,7 +69,7 @@ DATASET_URL = "https://raw.githubusercontent.com/elastic/elasticsearch-labs/main
 MODEL_NAME = "all-MiniLM-L6-v2"
 
 # initialize sentence tokenizer
-nltk.download("punkt", quiet=True)
+nltk.download("punkt_tab", quiet=True)
 
 # this will be the embedding model
 embedding_model: Any = None

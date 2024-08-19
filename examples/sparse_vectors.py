@@ -83,7 +83,7 @@ from elasticsearch_dsl import (
 DATASET_URL = "https://raw.githubusercontent.com/elastic/elasticsearch-labs/main/datasets/workplace-documents.json"
 
 # initialize sentence tokenizer
-nltk.download("punkt", quiet=True)
+nltk.download("punkt_tab", quiet=True)
 
 
 class Passage(InnerDoc):
