@@ -3,6 +3,12 @@
 Changelog
 =========
 
+8.15.1 (2024-08-19)
+-------------------
+
+* Added support for the ``semantic_text`` field and ``semantic`` query type (`#1881 <https://github.com/elastic/elasticsearch-dsl-py/pull/1881>`_)
+* Removed extra ``__orig_class__`` attribute in aggregation responses (`#1877 <https://github.com/elastic/elasticsearch-dsl-py/pull/1877>`_)
+
 8.15.0 (2024-08-09)
 -------------------
 
