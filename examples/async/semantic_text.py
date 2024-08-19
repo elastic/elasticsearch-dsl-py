@@ -108,11 +108,9 @@ async def create() -> None:
 
 
 async def search(query: str) -> dsl.AsyncSearch[WorkplaceDoc]:
-    return WorkplaceDoc.search()[:5].query(
-        "semantic",
-        field=WorkplaceDoc.content,
-        query=query,
-    )
+    search = WorkplaceDoc.search()
+    search = search[:5]
+    return search.query(dsl.query.Semantic(field=WorkplaceDoc.content, query=query))
 
 
 def parse_args() -> argparse.Namespace:
