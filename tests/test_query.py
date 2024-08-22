@@ -77,6 +77,15 @@ def test_term_to_dict() -> None:
     assert {"term": {"_type": "article"}} == query.Term(_type="article").to_dict()
 
 
+def test_terms_to_dict() -> None:
+    assert {"terms": {"_type": ["article", "section"]}} == query.Terms(
+        _type=["article", "section"]
+    ).to_dict()
+    assert {"terms": {"_type": ["article", "section"]}} == query.Terms(
+        _type=("article", "section")
+    ).to_dict()
+
+
 def test_bool_to_dict() -> None:
     bool = query.Bool(must=[query.Match(f="value")], should=[])
 
