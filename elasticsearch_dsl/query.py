@@ -550,6 +550,9 @@ class Term(Query):
 class Terms(Query):
     name = "terms"
 
+    def _setattr(self, name: str, value: Any) -> None:
+        super()._setattr(name, list(value))
+
 
 class TermsSet(Query):
     name = "terms_set"
