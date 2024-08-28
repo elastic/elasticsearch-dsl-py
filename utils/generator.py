@@ -62,6 +62,7 @@ class ElasticsearchSchema:
             url = f"https://raw.githubusercontent.com/elastic/elasticsearch-specification/{branch}/output/schema/schema.json"
             try:
                 response = urlopen(url)
+                print(f"Initializing code generation with '{branch}' specification.")
                 break
             except HTTPError:
                 continue
@@ -231,15 +232,15 @@ def generate_query_classes(schema, filename):
                 if p["type"]["singleKey"]:
                     k["kwargs"] = [
                         {
-                            "name": "field",
+                            "name": "_field",
                             "type": add_not_set(key_type),
-                            "doc": [":arg field: Field to use"],
+                            "doc": [":arg _field: The field to use in this query."],
                             "required": False,
                         },
                         {
-                            "name": "value",
+                            "name": "_value",
                             "type": add_not_set(value_type),
-                            "doc": [":arg value: Field value"],
+                            "doc": [":arg _value: The query value for the field."],
                             "required": False,
                         },
                     ]
@@ -247,10 +248,10 @@ def generate_query_classes(schema, filename):
                 else:
                     k["kwargs"] = [
                         {
-                            "name": "fields",
+                            "name": "_fields",
                             "type": f"Optional[Mapping[{key_type}, {value_type}]]",
                             "doc": [
-                                ":arg fields: A dictionary of fields with their values."
+                                ":arg _fields: A dictionary of fields with their values."
                             ],
                             "required": False,
                         },
@@ -269,6 +270,7 @@ def generate_query_classes(schema, filename):
                 classes=classes, parent="Query", interfaces=sorted(schema.interfaces)
             )
         )
+    print(f"Generated {filename}.")
 
 
 def generate_interfaces(schema, interfaces, filename):
@@ -325,6 +327,7 @@ def generate_interfaces(schema, interfaces, filename):
 
     with open(filename, "wt") as f:
         f.write(interfaces_py.render(classes=classes_list))
+    print(f"Generated {filename}.")
 
 
 if __name__ == "__main__":

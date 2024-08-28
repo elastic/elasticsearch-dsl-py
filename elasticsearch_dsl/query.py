@@ -331,20 +331,20 @@ class Common(Query):
     """
     No documentation available.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "common"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.CommonTermsQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.CommonTermsQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -527,20 +527,20 @@ class Fuzzy(Query):
     Returns documents that contain terms similar to the search term, as
     measured by a Levenshtein edit distance.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "fuzzy"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.FuzzyQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.FuzzyQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -781,20 +781,20 @@ class Intervals(Query):
     """
     Returns documents based on the order and proximity of matching terms.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "intervals"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.IntervalsQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.IntervalsQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -850,20 +850,20 @@ class Match(Query):
     Returns documents that match a provided text, number, date or boolean
     value. The provided text is analyzed before matching.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "match"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.MatchQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -900,20 +900,20 @@ class MatchBoolPrefix(Query):
     term except the last is used in a `term` query. The last term is used
     in a prefix query.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "match_bool_prefix"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.MatchBoolPrefixQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchBoolPrefixQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -945,20 +945,20 @@ class MatchPhrase(Query):
     """
     Analyzes the text and creates a phrase query out of the analyzed text.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "match_phrase"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.MatchPhraseQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchPhraseQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -968,20 +968,20 @@ class MatchPhrasePrefix(Query):
     same order as provided. The last term of the provided text is treated
     as a prefix, matching any words that begin with that term.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "match_phrase_prefix"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.MatchPhrasePrefixQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchPhrasePrefixQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -1327,20 +1327,20 @@ class Prefix(Query):
     """
     Returns documents that contain a specific prefix in a provided field.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "prefix"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.PrefixQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.PrefixQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -1475,16 +1475,16 @@ class Range(Query):
     """
     Returns documents that contain terms within a provided range.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "range"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union[
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union[
             "wrappers.Range",
             "wrappers.Range",
             "wrappers.Range",
@@ -1493,8 +1493,8 @@ class Range(Query):
         ] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -1541,20 +1541,20 @@ class Regexp(Query):
     """
     Returns documents that contain terms matching a regular expression.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "regexp"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.RegexpQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.RegexpQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -1884,20 +1884,20 @@ class SpanTerm(Query):
     """
     Matches spans containing a term.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "span_term"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.SpanTermQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.SpanTermQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -1978,20 +1978,20 @@ class Term(Query):
     return a document, the query term must exactly match the queried
     field's value, including whitespace and capitalization.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "term"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.TermQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.TermQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -2021,20 +2021,20 @@ class TermsSet(Query):
     exactly match the field values, including whitespace and
     capitalization.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "terms_set"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.TermsSetQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.TermsSetQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -2044,20 +2044,20 @@ class TextExpansion(Query):
     into a list of token-weight pairs which are then used in a query
     against a sparse vector or rank features field.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "text_expansion"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.TextExpansionQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.TextExpansionQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -2066,20 +2066,20 @@ class WeightedTokens(Query):
     Supports returning text_expansion query results by sending in
     precomputed tokens with the query.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "weighted_tokens"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.WeightedTokensQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.WeightedTokensQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 
@@ -2087,20 +2087,20 @@ class Wildcard(Query):
     """
     Returns documents that contain terms matching a wildcard pattern.
 
-    :arg field: Field to use
-    :arg value: Field value
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     """
 
     name = "wildcard"
 
     def __init__(
         self,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["i.WildcardQuery", "NotSet"] = NOT_SET,
+        _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        _value: Union["i.WildcardQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
 

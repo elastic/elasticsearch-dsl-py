@@ -39,11 +39,11 @@ class {{ k.name }}({{ parent }}):
                 if name in kwargs:
                     functions.append({name: kwargs.pop(name)})
         {% elif k.has_field %}
-        if field != NOT_SET:
-            kwargs[str(field)] = value
+        if _field != NOT_SET:
+            kwargs[str(_field)] = _value
         {% elif k.has_fields %}
         if fields != NOT_SET:
-            for field, value in field.items():
+            for field, value in _fields.items():
                 kwargs[str(field)] = value
         {% endif %}
         super().__init__(
