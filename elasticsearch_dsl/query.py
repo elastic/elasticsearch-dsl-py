@@ -39,12 +39,14 @@ from typing import (
 # from this module so others are liable to do so as well.
 from .function import SF  # noqa: F401
 from .function import ScoreFunction
-from .utils import DslBase, NOT_SET
+from .utils import NOT_SET, DslBase
 
 if TYPE_CHECKING:
+    from elasticsearch_dsl import interfaces as i
+    from elasticsearch_dsl import wrappers
+
     from .document_base import InstrumentedField
     from .utils import NotSet
-    from elasticsearch_dsl import interfaces as i
 
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Mapping[str, Any])
@@ -158,12 +160,13 @@ class Bool(Query):
     :arg should: The clause (query) should appear in the matching
         document.
     """
+
     name = "bool"
     _param_defs = {
-        "filter": {'type': 'query', 'multi': True},
-        "must": {'type': 'query', 'multi': True},
-        "must_not": {'type': 'query', 'multi': True},
-        "should": {'type': 'query', 'multi': True},
+        "filter": {"type": "query", "multi": True},
+        "must": {"type": "query", "multi": True},
+        "must_not": {"type": "query", "multi": True},
+        "should": {"type": "query", "multi": True},
     }
 
     def __init__(
@@ -174,7 +177,7 @@ class Bool(Query):
         must: Union[Query, List[Query], "NotSet"] = NOT_SET,
         must_not: Union[Query, List[Query], "NotSet"] = NOT_SET,
         should: Union[Query, List[Query], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             filter=filter,
@@ -182,7 +185,7 @@ class Bool(Query):
             must=must,
             must_not=must_not,
             should=should,
-            **kwargs
+            **kwargs,
         )
 
     def __add__(self, other: Query) -> "Bool":
@@ -292,7 +295,7 @@ class Bool(Query):
         return q
 
     __rand__ = __and__
-    
+
 
 class Boosting(Query):
     """
@@ -306,25 +309,21 @@ class Boosting(Query):
         decrease the relevance scores of documents matching the `negative`
         query.
     """
+
     name = "boosting"
     _param_defs = {
-        "negative": {'type': 'query'},
-        "positive": {'type': 'query'},
+        "negative": {"type": "query"},
+        "positive": {"type": "query"},
     }
 
     def __init__(
-        self,
-        *,
-        negative: Query,
-        positive: Query,
-        negative_boost: float,
-        **kwargs: Any
+        self, *, negative: Query, positive: Query, negative_boost: float, **kwargs: Any
     ):
         super().__init__(
             negative=negative,
             positive=positive,
             negative_boost=negative_boost,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -335,19 +334,18 @@ class Common(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "common"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.CommonTermsQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class CombinedFields(Query):
@@ -371,6 +369,7 @@ class CombinedFields(Query):
         the analyzer removes all tokens, such as when using a `stop`
         filter.
     """
+
     name = "combined_fields"
 
     def __init__(
@@ -382,7 +381,7 @@ class CombinedFields(Query):
         operator: Union[Literal["or", "and"], "NotSet"] = NOT_SET,
         minimum_should_match: Union[int, str, "NotSet"] = NOT_SET,
         zero_terms_query: Union[Literal["none", "all"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             query=query,
@@ -391,7 +390,7 @@ class CombinedFields(Query):
             operator=operator,
             minimum_should_match=minimum_should_match,
             zero_terms_query=zero_terms_query,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -405,21 +404,14 @@ class ConstantScore(Query):
         scores. To speed up performance, Elasticsearch automatically
         caches frequently used filter queries.
     """
+
     name = "constant_score"
     _param_defs = {
-        "filter": {'type': 'query'},
+        "filter": {"type": "query"},
     }
 
-    def __init__(
-        self,
-        *,
-        filter: Query,
-        **kwargs: Any
-    ):
-        super().__init__(
-            filter=filter,
-            **kwargs
-        )
+    def __init__(self, *, filter: Query, **kwargs: Any):
+        super().__init__(filter=filter, **kwargs)
 
 
 class DisMax(Query):
@@ -437,6 +429,7 @@ class DisMax(Query):
         increase the relevance scores of documents matching multiple query
         clauses.
     """
+
     name = "dis_max"
 
     def __init__(
@@ -444,13 +437,9 @@ class DisMax(Query):
         *,
         queries: List[Query],
         tie_breaker: Union[float, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
-        super().__init__(
-            queries=queries,
-            tie_breaker=tie_breaker,
-            **kwargs
-        )
+        super().__init__(queries=queries, tie_breaker=tie_breaker, **kwargs)
 
 
 class DistanceFeature(Query):
@@ -459,15 +448,11 @@ class DistanceFeature(Query):
     date or point. For example, you can use this query to give more weight
     to documents closer to a certain date or location.
     """
+
     name = "distance_feature"
 
-    def __init__(
-        self,
-        **kwargs: Any
-    ):
-        super().__init__(
-            **kwargs
-        )
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
 
 
 class Exists(Query):
@@ -476,18 +461,11 @@ class Exists(Query):
 
     :arg field: Name of the field you wish to search.
     """
+
     name = "exists"
 
-    def __init__(
-        self,
-        *,
-        field: Union[str, "InstrumentedField"],
-        **kwargs: Any
-    ):
-        super().__init__(
-            field=field,
-            **kwargs
-        )
+    def __init__(self, *, field: Union[str, "InstrumentedField"], **kwargs: Any):
+        super().__init__(field=field, **kwargs)
 
 
 class FunctionScore(Query):
@@ -507,21 +485,26 @@ class FunctionScore(Query):
         score is computed.
     :arg score_mode: Specifies how the computed scores are combined
     """
+
     name = "function_score"
     _param_defs = {
-        "query": {'type': 'query'},
+        "query": {"type": "query"},
     }
 
     def __init__(
         self,
         *,
-        boost_mode: Union[Literal["multiply", "replace", "sum", "avg", "max", "min"], "NotSet"] = NOT_SET,
+        boost_mode: Union[
+            Literal["multiply", "replace", "sum", "avg", "max", "min"], "NotSet"
+        ] = NOT_SET,
         functions: Union[List["i.FunctionScoreContainer"], "NotSet"] = NOT_SET,
         max_boost: Union[float, "NotSet"] = NOT_SET,
         min_score: Union[float, "NotSet"] = NOT_SET,
         query: Union[Query, "NotSet"] = NOT_SET,
-        score_mode: Union[Literal["multiply", "sum", "avg", "first", "max", "min"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        score_mode: Union[
+            Literal["multiply", "sum", "avg", "first", "max", "min"], "NotSet"
+        ] = NOT_SET,
+        **kwargs: Any,
     ):
         if functions is None:
             functions = []
@@ -535,7 +518,7 @@ class FunctionScore(Query):
             min_score=min_score,
             query=query,
             score_mode=score_mode,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -547,19 +530,18 @@ class Fuzzy(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "fuzzy"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.FuzzyQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class GeoBoundingBox(Query):
@@ -574,21 +556,24 @@ class GeoBoundingBox(Query):
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
     """
+
     name = "geo_bounding_box"
 
     def __init__(
         self,
         *,
         type: Union[Literal["memory", "indexed"], "NotSet"] = NOT_SET,
-        validation_method: Union[Literal["coerce", "ignore_malformed", "strict"], "NotSet"] = NOT_SET,
+        validation_method: Union[
+            Literal["coerce", "ignore_malformed", "strict"], "NotSet"
+        ] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             type=type,
             validation_method=validation_method,
             ignore_unmapped=ignore_unmapped,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -610,6 +595,7 @@ class GeoDistance(Query):
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
     """
+
     name = "geo_distance"
 
     def __init__(
@@ -617,16 +603,18 @@ class GeoDistance(Query):
         *,
         distance: str,
         distance_type: Union[Literal["arc", "plane"], "NotSet"] = NOT_SET,
-        validation_method: Union[Literal["coerce", "ignore_malformed", "strict"], "NotSet"] = NOT_SET,
+        validation_method: Union[
+            Literal["coerce", "ignore_malformed", "strict"], "NotSet"
+        ] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             distance=distance,
             distance_type=distance_type,
             validation_method=validation_method,
             ignore_unmapped=ignore_unmapped,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -637,19 +625,22 @@ class GeoPolygon(Query):
     :arg validation_method: None
     :arg ignore_unmapped: None
     """
+
     name = "geo_polygon"
 
     def __init__(
         self,
         *,
-        validation_method: Union[Literal["coerce", "ignore_malformed", "strict"], "NotSet"] = NOT_SET,
+        validation_method: Union[
+            Literal["coerce", "ignore_malformed", "strict"], "NotSet"
+        ] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             validation_method=validation_method,
             ignore_unmapped=ignore_unmapped,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -662,18 +653,13 @@ class GeoShape(Query):
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
     """
+
     name = "geo_shape"
 
     def __init__(
-        self,
-        *,
-        ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        self, *, ignore_unmapped: Union[bool, "NotSet"] = NOT_SET, **kwargs: Any
     ):
-        super().__init__(
-            ignore_unmapped=ignore_unmapped,
-            **kwargs
-        )
+        super().__init__(ignore_unmapped=ignore_unmapped, **kwargs)
 
 
 class HasChild(Query):
@@ -699,9 +685,10 @@ class HasChild(Query):
     :arg score_mode: Indicates how scores for matching child documents
         affect the root parent document’s relevance score.
     """
+
     name = "has_child"
     _param_defs = {
-        "query": {'type': 'query'},
+        "query": {"type": "query"},
     }
 
     def __init__(
@@ -713,8 +700,10 @@ class HasChild(Query):
         inner_hits: Union["i.InnerHits", "NotSet"] = NOT_SET,
         max_children: Union[int, "NotSet"] = NOT_SET,
         min_children: Union[int, "NotSet"] = NOT_SET,
-        score_mode: Union[Literal["none", "avg", "sum", "max", "min"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        score_mode: Union[
+            Literal["none", "avg", "sum", "max", "min"], "NotSet"
+        ] = NOT_SET,
+        **kwargs: Any,
     ):
         super().__init__(
             query=query,
@@ -724,7 +713,7 @@ class HasChild(Query):
             max_children=max_children,
             min_children=min_children,
             score_mode=score_mode,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -746,9 +735,10 @@ class HasParent(Query):
     :arg score: Indicates whether the relevance score of a matching parent
         document is aggregated into its child documents.
     """
+
     name = "has_parent"
     _param_defs = {
-        "query": {'type': 'query'},
+        "query": {"type": "query"},
     }
 
     def __init__(
@@ -759,7 +749,7 @@ class HasParent(Query):
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
         inner_hits: Union["i.InnerHits", "NotSet"] = NOT_SET,
         score: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             parent_type=parent_type,
@@ -767,7 +757,7 @@ class HasParent(Query):
             ignore_unmapped=ignore_unmapped,
             inner_hits=inner_hits,
             score=score,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -778,18 +768,13 @@ class Ids(Query):
 
     :arg values: An array of document IDs.
     """
+
     name = "ids"
 
     def __init__(
-        self,
-        *,
-        values: Union[str, List[str], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        self, *, values: Union[str, List[str], "NotSet"] = NOT_SET, **kwargs: Any
     ):
-        super().__init__(
-            values=values,
-            **kwargs
-        )
+        super().__init__(values=values, **kwargs)
 
 
 class Intervals(Query):
@@ -799,19 +784,18 @@ class Intervals(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "intervals"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.IntervalsQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class Knn(Query):
@@ -831,9 +815,10 @@ class Knn(Query):
     :arg similarity: The minimum similarity for a vector to be considered
         a match
     """
+
     name = "knn"
     _param_defs = {
-        "filter": {'type': 'query', 'multi': True},
+        "filter": {"type": "query", "multi": True},
     }
 
     def __init__(
@@ -846,7 +831,7 @@ class Knn(Query):
         k: Union[int, "NotSet"] = NOT_SET,
         filter: Union[Query, List[Query], "NotSet"] = NOT_SET,
         similarity: Union[float, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             field=field,
@@ -856,7 +841,7 @@ class Knn(Query):
             k=k,
             filter=filter,
             similarity=similarity,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -868,34 +853,29 @@ class Match(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "match"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.MatchQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class MatchAll(Query):
     """
     Matches all documents, giving them all a `_score` of 1.0.
     """
+
     name = "match_all"
 
-    def __init__(
-        self,
-        **kwargs: Any
-    ):
-        super().__init__(
-            **kwargs
-        )
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
 
     def __add__(self, other: "Query") -> "Query":
         return other._clone()
@@ -923,34 +903,29 @@ class MatchBoolPrefix(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "match_bool_prefix"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.MatchBoolPrefixQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class MatchNone(Query):
     """
     Matches no documents.
     """
+
     name = "match_none"
 
-    def __init__(
-        self,
-        **kwargs: Any
-    ):
-        super().__init__(
-            **kwargs
-        )
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
 
     def __add__(self, other: "Query") -> "MatchNone":
         return self
@@ -973,19 +948,18 @@ class MatchPhrase(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "match_phrase"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.MatchPhraseQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class MatchPhrasePrefix(Query):
@@ -997,19 +971,18 @@ class MatchPhrasePrefix(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "match_phrase_prefix"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.MatchPhrasePrefixQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class MoreLikeThis(Query):
@@ -1055,6 +1028,7 @@ class MoreLikeThis(Query):
     :arg version: None
     :arg version_type: None
     """
+
     name = "more_like_this"
 
     def __init__(
@@ -1075,10 +1049,14 @@ class MoreLikeThis(Query):
         min_word_length: Union[int, "NotSet"] = NOT_SET,
         routing: Union[str, "NotSet"] = NOT_SET,
         stop_words: Union[str, List[str], "NotSet"] = NOT_SET,
-        unlike: Union[Union[str, "i.LikeDocument"], List[Union[str, "i.LikeDocument"]], "NotSet"] = NOT_SET,
+        unlike: Union[
+            Union[str, "i.LikeDocument"], List[Union[str, "i.LikeDocument"]], "NotSet"
+        ] = NOT_SET,
         version: Union[int, "NotSet"] = NOT_SET,
-        version_type: Union[Literal["internal", "external", "external_gte", "force"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        version_type: Union[
+            Literal["internal", "external", "external_gte", "force"], "NotSet"
+        ] = NOT_SET,
+        **kwargs: Any,
     ):
         super().__init__(
             like=like,
@@ -1099,7 +1077,7 @@ class MoreLikeThis(Query):
             unlike=unlike,
             version=version,
             version_type=version_type,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1144,6 +1122,7 @@ class MultiMatch(Query):
         the `analyzer` removes all tokens, such as when using a `stop`
         filter.
     """
+
     name = "multi_match"
 
     def __init__(
@@ -1153,7 +1132,11 @@ class MultiMatch(Query):
         analyzer: Union[str, "NotSet"] = NOT_SET,
         auto_generate_synonyms_phrase_query: Union[bool, "NotSet"] = NOT_SET,
         cutoff_frequency: Union[float, "NotSet"] = NOT_SET,
-        fields: Union[Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"] = NOT_SET,
+        fields: Union[
+            Union[str, "InstrumentedField"],
+            List[Union[str, "InstrumentedField"]],
+            "NotSet",
+        ] = NOT_SET,
         fuzziness: Union[str, int, "NotSet"] = NOT_SET,
         fuzzy_rewrite: Union[str, "NotSet"] = NOT_SET,
         fuzzy_transpositions: Union[bool, "NotSet"] = NOT_SET,
@@ -1164,9 +1147,19 @@ class MultiMatch(Query):
         prefix_length: Union[int, "NotSet"] = NOT_SET,
         slop: Union[int, "NotSet"] = NOT_SET,
         tie_breaker: Union[float, "NotSet"] = NOT_SET,
-        type: Union[Literal["best_fields", "most_fields", "cross_fields", "phrase", "phrase_prefix", "bool_prefix"], "NotSet"] = NOT_SET,
+        type: Union[
+            Literal[
+                "best_fields",
+                "most_fields",
+                "cross_fields",
+                "phrase",
+                "phrase_prefix",
+                "bool_prefix",
+            ],
+            "NotSet",
+        ] = NOT_SET,
         zero_terms_query: Union[Literal["all", "none"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             query=query,
@@ -1186,7 +1179,7 @@ class MultiMatch(Query):
             tie_breaker=tie_breaker,
             type=type,
             zero_terms_query=zero_terms_query,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1203,9 +1196,10 @@ class Nested(Query):
     :arg score_mode: How scores for matching child objects affect the root
         parent document’s relevance score.
     """
+
     name = "nested"
     _param_defs = {
-        "query": {'type': 'query'},
+        "query": {"type": "query"},
     }
 
     def __init__(
@@ -1215,8 +1209,10 @@ class Nested(Query):
         query: Query,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
         inner_hits: Union["i.InnerHits", "NotSet"] = NOT_SET,
-        score_mode: Union[Literal["none", "avg", "sum", "max", "min"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        score_mode: Union[
+            Literal["none", "avg", "sum", "max", "min"], "NotSet"
+        ] = NOT_SET,
+        **kwargs: Any,
     ):
         super().__init__(
             path=path,
@@ -1224,7 +1220,7 @@ class Nested(Query):
             ignore_unmapped=ignore_unmapped,
             inner_hits=inner_hits,
             score_mode=score_mode,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1237,6 +1233,7 @@ class ParentId(Query):
         and not return any documents instead of an error.
     :arg type: Name of the child relationship mapped for the `join` field.
     """
+
     name = "parent_id"
 
     def __init__(
@@ -1245,14 +1242,9 @@ class ParentId(Query):
         id: Union[str, "NotSet"] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
         type: Union[str, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
-        super().__init__(
-            id=id,
-            ignore_unmapped=ignore_unmapped,
-            type=type,
-            **kwargs
-        )
+        super().__init__(id=id, ignore_unmapped=ignore_unmapped, type=type, **kwargs)
 
 
 class Percolate(Query):
@@ -1271,6 +1263,7 @@ class Percolate(Query):
     :arg routing: Routing used to fetch document to percolate.
     :arg version: The expected version of a stored document to percolate.
     """
+
     name = "percolate"
 
     def __init__(
@@ -1285,7 +1278,7 @@ class Percolate(Query):
         preference: Union[str, "NotSet"] = NOT_SET,
         routing: Union[str, "NotSet"] = NOT_SET,
         version: Union[int, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             field=field,
@@ -1297,7 +1290,7 @@ class Percolate(Query):
             preference=preference,
             routing=routing,
             version=version,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1313,9 +1306,10 @@ class Pinned(Query):
     :arg docs: Documents listed in the order they are to appear in
         results. Required if `ids` is not specified.
     """
+
     name = "pinned"
     _param_defs = {
-        "organic": {'type': 'query'},
+        "organic": {"type": "query"},
     }
 
     def __init__(
@@ -1324,14 +1318,9 @@ class Pinned(Query):
         organic: Query,
         ids: Union[List[str], "NotSet"] = NOT_SET,
         docs: Union[List["i.PinnedDoc"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
-        super().__init__(
-            organic=organic,
-            ids=ids,
-            docs=docs,
-            **kwargs
-        )
+        super().__init__(organic=organic, ids=ids, docs=docs, **kwargs)
 
 
 class Prefix(Query):
@@ -1341,19 +1330,18 @@ class Prefix(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "prefix"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.PrefixQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class QueryString(Query):
@@ -1410,6 +1398,7 @@ class QueryString(Query):
         zone used to convert date values in the query string to UTC.
     :arg type: Determines how the query matches and scores documents.
     """
+
     name = "query_string"
 
     def __init__(
@@ -1439,8 +1428,18 @@ class QueryString(Query):
         rewrite: Union[str, "NotSet"] = NOT_SET,
         tie_breaker: Union[float, "NotSet"] = NOT_SET,
         time_zone: Union[str, "NotSet"] = NOT_SET,
-        type: Union[Literal["best_fields", "most_fields", "cross_fields", "phrase", "phrase_prefix", "bool_prefix"], "NotSet"] = NOT_SET,
-        **kwargs: Any
+        type: Union[
+            Literal[
+                "best_fields",
+                "most_fields",
+                "cross_fields",
+                "phrase",
+                "phrase_prefix",
+                "bool_prefix",
+            ],
+            "NotSet",
+        ] = NOT_SET,
+        **kwargs: Any,
     ):
         super().__init__(
             query=query,
@@ -1468,7 +1467,7 @@ class QueryString(Query):
             tie_breaker=tie_breaker,
             time_zone=time_zone,
             type=type,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1479,19 +1478,24 @@ class Range(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "range"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        value: Union["wrappers.Range", "wrappers.Range", "wrappers.Range", "wrappers.Range", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        value: Union[
+            "wrappers.Range",
+            "wrappers.Range",
+            "wrappers.Range",
+            "wrappers.Range",
+            "NotSet",
+        ] = NOT_SET,
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class RankFeature(Query):
@@ -1510,6 +1514,7 @@ class RankFeature(Query):
     :arg sigmoid: Sigmoid function used to boost relevance scores based on
         the value of the rank feature `field`.
     """
+
     name = "rank_feature"
 
     def __init__(
@@ -1520,7 +1525,7 @@ class RankFeature(Query):
         log: Union["i.RankFeatureFunctionLogarithm", "NotSet"] = NOT_SET,
         linear: Union["i.RankFeatureFunctionLinear", "NotSet"] = NOT_SET,
         sigmoid: Union["i.RankFeatureFunctionSigmoid", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             field=field,
@@ -1528,7 +1533,7 @@ class RankFeature(Query):
             log=log,
             linear=linear,
             sigmoid=sigmoid,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1539,19 +1544,18 @@ class Regexp(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "regexp"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.RegexpQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class Rule(Query):
@@ -1562,9 +1566,10 @@ class Rule(Query):
     :arg match_criteria: None
     :arg organic: None
     """
+
     name = "rule"
     _param_defs = {
-        "organic": {'type': 'query'},
+        "organic": {"type": "query"},
     }
 
     def __init__(
@@ -1573,13 +1578,13 @@ class Rule(Query):
         ruleset_ids: List[str],
         match_criteria: Any,
         organic: Query,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             ruleset_ids=ruleset_ids,
             match_criteria=match_criteria,
             organic=organic,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1591,18 +1596,11 @@ class Script(Query):
     :arg script: Contains a script to run as a query. This script must
         return a boolean value, `true` or `false`.
     """
+
     name = "script"
 
-    def __init__(
-        self,
-        *,
-        script: "i.Script",
-        **kwargs: Any
-    ):
-        super().__init__(
-            script=script,
-            **kwargs
-        )
+    def __init__(self, *, script: "i.Script", **kwargs: Any):
+        super().__init__(script=script, **kwargs)
 
 
 class ScriptScore(Query):
@@ -1616,9 +1614,10 @@ class ScriptScore(Query):
     :arg min_score: Documents with a score lower than this floating point
         number are excluded from the search results.
     """
+
     name = "script_score"
     _param_defs = {
-        "query": {'type': 'query'},
+        "query": {"type": "query"},
     }
 
     def __init__(
@@ -1627,14 +1626,9 @@ class ScriptScore(Query):
         query: Query,
         script: "i.Script",
         min_score: Union[float, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
-        super().__init__(
-            query=query,
-            script=script,
-            min_score=min_score,
-            **kwargs
-        )
+        super().__init__(query=query, script=script, min_score=min_score, **kwargs)
 
 
 class Semantic(Query):
@@ -1645,20 +1639,11 @@ class Semantic(Query):
     :arg field: The field to query, which must be a semantic_text field
         type
     """
+
     name = "semantic"
 
-    def __init__(
-        self,
-        *,
-        query: str,
-        field: str,
-        **kwargs: Any
-    ):
-        super().__init__(
-            query=query,
-            field=field,
-            **kwargs
-        )
+    def __init__(self, *, query: str, field: str, **kwargs: Any):
+        super().__init__(query=query, field=field, **kwargs)
 
 
 class Shape(Query):
@@ -1668,18 +1653,13 @@ class Shape(Query):
     :arg ignore_unmapped: When set to `true` the query ignores an unmapped
         field and will not match any documents.
     """
+
     name = "shape"
 
     def __init__(
-        self,
-        *,
-        ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        self, *, ignore_unmapped: Union[bool, "NotSet"] = NOT_SET, **kwargs: Any
     ):
-        super().__init__(
-            ignore_unmapped=ignore_unmapped,
-            **kwargs
-        )
+        super().__init__(ignore_unmapped=ignore_unmapped, **kwargs)
 
 
 class SimpleQueryString(Query):
@@ -1718,6 +1698,7 @@ class SimpleQueryString(Query):
     :arg quote_field_suffix: Suffix appended to quoted text in the query
         string.
     """
+
     name = "simple_query_string"
 
     def __init__(
@@ -1729,14 +1710,14 @@ class SimpleQueryString(Query):
         auto_generate_synonyms_phrase_query: Union[bool, "NotSet"] = NOT_SET,
         default_operator: Union[Literal["and", "or"], "NotSet"] = NOT_SET,
         fields: Union[List[Union[str, "InstrumentedField"]], "NotSet"] = NOT_SET,
-        flags: Union["PipeSeparatedFlags", "NotSet"] = NOT_SET,
+        flags: Union["i.PipeSeparatedFlags", "NotSet"] = NOT_SET,
         fuzzy_max_expansions: Union[int, "NotSet"] = NOT_SET,
         fuzzy_prefix_length: Union[int, "NotSet"] = NOT_SET,
         fuzzy_transpositions: Union[bool, "NotSet"] = NOT_SET,
         lenient: Union[bool, "NotSet"] = NOT_SET,
         minimum_should_match: Union[int, str, "NotSet"] = NOT_SET,
         quote_field_suffix: Union[str, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             query=query,
@@ -1752,7 +1733,7 @@ class SimpleQueryString(Query):
             lenient=lenient,
             minimum_should_match=minimum_should_match,
             quote_field_suffix=quote_field_suffix,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -1765,20 +1746,11 @@ class SpanContaining(Query):
     :arg big: Can be any span query. Matching spans from `big` that
         contain matches from `little` are returned.
     """
+
     name = "span_containing"
 
-    def __init__(
-        self,
-        *,
-        little: "i.SpanQuery",
-        big: "i.SpanQuery",
-        **kwargs: Any
-    ):
-        super().__init__(
-            little=little,
-            big=big,
-            **kwargs
-        )
+    def __init__(self, *, little: "i.SpanQuery", big: "i.SpanQuery", **kwargs: Any):
+        super().__init__(little=little, big=big, **kwargs)
 
 
 class SpanFieldMasking(Query):
@@ -1789,6 +1761,7 @@ class SpanFieldMasking(Query):
     :arg query: None
     :arg field: None
     """
+
     name = "span_field_masking"
 
     def __init__(
@@ -1796,13 +1769,9 @@ class SpanFieldMasking(Query):
         *,
         query: "i.SpanQuery",
         field: Union[str, "InstrumentedField"],
-        **kwargs: Any
+        **kwargs: Any,
     ):
-        super().__init__(
-            query=query,
-            field=field,
-            **kwargs
-        )
+        super().__init__(query=query, field=field, **kwargs)
 
 
 class SpanFirst(Query):
@@ -1812,20 +1781,11 @@ class SpanFirst(Query):
     :arg match: Can be any other span type query.
     :arg end: Controls the maximum end position permitted in a match.
     """
+
     name = "span_first"
 
-    def __init__(
-        self,
-        *,
-        match: "i.SpanQuery",
-        end: int,
-        **kwargs: Any
-    ):
-        super().__init__(
-            match=match,
-            end=end,
-            **kwargs
-        )
+    def __init__(self, *, match: "i.SpanQuery", end: int, **kwargs: Any):
+        super().__init__(match=match, end=end, **kwargs)
 
 
 class SpanMulti(Query):
@@ -1837,21 +1797,14 @@ class SpanMulti(Query):
     :arg match: Should be a multi term query (one of `wildcard`, `fuzzy`,
         `prefix`, `range`, or `regexp` query).
     """
+
     name = "span_multi"
     _param_defs = {
-        "match": {'type': 'query'},
+        "match": {"type": "query"},
     }
 
-    def __init__(
-        self,
-        *,
-        match: Query,
-        **kwargs: Any
-    ):
-        super().__init__(
-            match=match,
-            **kwargs
-        )
+    def __init__(self, *, match: Query, **kwargs: Any):
+        super().__init__(match=match, **kwargs)
 
 
 class SpanNear(Query):
@@ -1865,6 +1818,7 @@ class SpanNear(Query):
     :arg slop: Controls the maximum number of intervening unmatched
         positions permitted.
     """
+
     name = "span_near"
 
     def __init__(
@@ -1873,14 +1827,9 @@ class SpanNear(Query):
         clauses: List["i.SpanQuery"],
         in_order: Union[bool, "NotSet"] = NOT_SET,
         slop: Union[int, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
-        super().__init__(
-            clauses=clauses,
-            in_order=in_order,
-            slop=slop,
-            **kwargs
-        )
+        super().__init__(clauses=clauses, in_order=in_order, slop=slop, **kwargs)
 
 
 class SpanNot(Query):
@@ -1900,6 +1849,7 @@ class SpanNot(Query):
     :arg pre: The number of tokens before the include span that can’t have
         overlap with the exclude span.
     """
+
     name = "span_not"
 
     def __init__(
@@ -1910,15 +1860,10 @@ class SpanNot(Query):
         dist: Union[int, "NotSet"] = NOT_SET,
         post: Union[int, "NotSet"] = NOT_SET,
         pre: Union[int, "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
-            exclude=exclude,
-            include=include,
-            dist=dist,
-            post=post,
-            pre=pre,
-            **kwargs
+            exclude=exclude, include=include, dist=dist, post=post, pre=pre, **kwargs
         )
 
 
@@ -1928,18 +1873,11 @@ class SpanOr(Query):
 
     :arg clauses: Array of one or more other span type queries.
     """
+
     name = "span_or"
 
-    def __init__(
-        self,
-        *,
-        clauses: List["i.SpanQuery"],
-        **kwargs: Any
-    ):
-        super().__init__(
-            clauses=clauses,
-            **kwargs
-        )
+    def __init__(self, *, clauses: List["i.SpanQuery"], **kwargs: Any):
+        super().__init__(clauses=clauses, **kwargs)
 
 
 class SpanTerm(Query):
@@ -1949,19 +1887,18 @@ class SpanTerm(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "span_term"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.SpanTermQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class SpanWithin(Query):
@@ -1973,20 +1910,11 @@ class SpanWithin(Query):
     :arg big: Can be any span query. Matching spans from `little` that are
         enclosed within `big` are returned.
     """
+
     name = "span_within"
 
-    def __init__(
-        self,
-        *,
-        little: "i.SpanQuery",
-        big: "i.SpanQuery",
-        **kwargs: Any
-    ):
-        super().__init__(
-            little=little,
-            big=big,
-            **kwargs
-        )
+    def __init__(self, *, little: "i.SpanQuery", big: "i.SpanQuery", **kwargs: Any):
+        super().__init__(little=little, big=big, **kwargs)
 
 
 class SparseVector(Query):
@@ -2019,6 +1947,7 @@ class SparseVector(Query):
         true. If prune is set to true but pruning_config is not specified,
         default values will be used.
     """
+
     name = "sparse_vector"
 
     def __init__(
@@ -2030,7 +1959,7 @@ class SparseVector(Query):
         query: Union[str, "NotSet"] = NOT_SET,
         prune: Union[bool, "NotSet"] = NOT_SET,
         pruning_config: Union["i.TokenPruningConfig", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             field=field,
@@ -2039,7 +1968,7 @@ class SparseVector(Query):
             query=query,
             prune=prune,
             pruning_config=pruning_config,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -2052,19 +1981,18 @@ class Term(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "term"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.TermQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class Terms(Query):
@@ -2073,15 +2001,11 @@ class Terms(Query):
     field. To return a document, one or more terms must exactly match a
     field value, including whitespace and capitalization.
     """
+
     name = "terms"
 
-    def __init__(
-        self,
-        **kwargs: Any
-    ):
-        super().__init__(
-            **kwargs
-        )
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
 
     def _setattr(self, name: str, value: Any) -> None:
         # here we convert any iterables that are not strings to lists
@@ -2100,19 +2024,18 @@ class TermsSet(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "terms_set"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.TermsSetQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class TextExpansion(Query):
@@ -2124,19 +2047,18 @@ class TextExpansion(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "text_expansion"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.TextExpansionQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class WeightedTokens(Query):
@@ -2147,19 +2069,18 @@ class WeightedTokens(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "weighted_tokens"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.WeightedTokensQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class Wildcard(Query):
@@ -2169,19 +2090,18 @@ class Wildcard(Query):
     :arg field: Field to use
     :arg value: Field value
     """
+
     name = "wildcard"
 
     def __init__(
         self,
         field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         value: Union["i.WildcardQuery", "NotSet"] = NOT_SET,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if field != NOT_SET:
             kwargs[str(field)] = value
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
 
 
 class Wrapper(Query):
@@ -2191,18 +2111,11 @@ class Wrapper(Query):
     :arg query: A base64 encoded query. The binary data format can be any
         of JSON, YAML, CBOR or SMILE encodings
     """
+
     name = "wrapper"
 
-    def __init__(
-        self,
-        *,
-        query: str,
-        **kwargs: Any
-    ):
-        super().__init__(
-            query=query,
-            **kwargs
-        )
+    def __init__(self, *, query: str, **kwargs: Any):
+        super().__init__(query=query, **kwargs)
 
 
 class Type(Query):
@@ -2211,17 +2124,8 @@ class Type(Query):
 
     :arg value: None
     """
+
     name = "type"
 
-    def __init__(
-        self,
-        *,
-        value: str,
-        **kwargs: Any
-    ):
-        super().__init__(
-            value=value,
-            **kwargs
-        )
-
-
+    def __init__(self, *, value: str, **kwargs: Any):
+        super().__init__(value=value, **kwargs)

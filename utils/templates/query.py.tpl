@@ -44,7 +44,7 @@ from .utils import DslBase, NOT_SET
 if TYPE_CHECKING:
     from .document_base import InstrumentedField
     from .utils import NotSet
-    from elasticsearch_dsl import interfaces as i
+    from elasticsearch_dsl import interfaces as i, wrappers
 
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Mapping[str, Any])

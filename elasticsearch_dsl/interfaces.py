@@ -1,9 +1,25 @@
-from typing import TYPE_CHECKING, Any, List, Literal, Mapping, TypedDict, Union
-from elasticsearch_dsl.search_base import InstrumentedField
-from elasticsearch_dsl.utils import AttrDict
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
 
-if TYPE_CHECKING:
-    from elasticsearch_dsl import analysis, function, wrappers
+from typing import Any, List, Literal, Mapping, TypedDict, Union
+
+from elasticsearch_dsl import Query, analysis, function
+from elasticsearch_dsl import interfaces as i
+from elasticsearch_dsl.search_base import InstrumentedField
 
 PipeSeparatedFlags = str
 
@@ -13,17 +29,25 @@ class QueryBase(TypedDict):
     _name: str
 
 
-class FuzzyQuery(QueryBase):
+class TermQuery(QueryBase):
+    value: Union[int, float, str, bool, None, Any]
+    case_insensitive: bool
+
+
+class MatchPhrasePrefixQuery(QueryBase):
+    analyzer: str
     max_expansions: int
-    prefix_length: int
-    rewrite: str
-    transpositions: bool
-    fuzziness: Union[str, int]
-    value: Union[str, float, bool]
+    query: str
+    slop: int
+    zero_terms_query: Literal["all", "none"]
 
 
-class SpanTermQuery(QueryBase):
-    value: str
+class RankFeatureFunction(TypedDict):
+    pass
+
+
+class RankFeatureFunctionLogarithm(RankFeatureFunction):
+    scaling_factor: float
 
 
 class CommonTermsQuery(QueryBase):
@@ -35,64 +59,36 @@ class CommonTermsQuery(QueryBase):
     query: str
 
 
-class RankFeatureFunction(TypedDict):
-    pass
-
-
-class RankFeatureFunctionSaturation(RankFeatureFunction):
-    pivot: float
-
-
-class MatchPhraseQuery(QueryBase):
-    analyzer: str
-    query: str
-    slop: int
-    zero_terms_query: Literal["all", "none"]
+class PrefixQuery(QueryBase):
+    rewrite: str
+    value: str
+    case_insensitive: bool
 
 
 class FunctionScoreContainer(TypedDict):
-    exp: Union["function.UntypedDecayFunction", "function.DateDecayFunction", "function.NumericDecayFunction", "function.GeoDecayFunction"]
-    gauss: Union["function.UntypedDecayFunction", "function.DateDecayFunction", "function.NumericDecayFunction", "function.GeoDecayFunction"]
-    linear: Union["function.UntypedDecayFunction", "function.DateDecayFunction", "function.NumericDecayFunction", "function.GeoDecayFunction"]
+    exp: Union[
+        "function.UntypedDecayFunction",
+        "function.DateDecayFunction",
+        "function.NumericDecayFunction",
+        "function.GeoDecayFunction",
+    ]
+    gauss: Union[
+        "function.UntypedDecayFunction",
+        "function.DateDecayFunction",
+        "function.NumericDecayFunction",
+        "function.GeoDecayFunction",
+    ]
+    linear: Union[
+        "function.UntypedDecayFunction",
+        "function.DateDecayFunction",
+        "function.NumericDecayFunction",
+        "function.GeoDecayFunction",
+    ]
     field_value_factor: "function.FieldValueFactorScoreFunction"
     random_score: "function.RandomScoreFunction"
     script_score: "function.ScriptScoreFunction"
     filter: Query
     weight: float
-
-
-class InnerHits(TypedDict):
-    name: str
-    size: int
-    from: int
-    collapse: "i.FieldCollapse"
-    docvalue_fields: List["i.FieldAndFormat"]
-    explain: bool
-    highlight: "i.Highlight"
-    ignore_unmapped: bool
-    script_fields: Mapping[Union[str, "InstrumentedField"], "i.ScriptField"]
-    seq_no_primary_term: bool
-    fields: Union[Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]]
-    sort: Union[Union[Union[str, "InstrumentedField"], "i.SortOptions"], List[Union[Union[str, "InstrumentedField"], "i.SortOptions"]]]
-    _source: Union[bool, "i.SourceFilter"]
-    stored_fields: Union[Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]]
-    track_scores: bool
-    version: bool
-
-
-class WildcardQuery(QueryBase):
-    case_insensitive: bool
-    rewrite: str
-    value: str
-    wildcard: str
-
-
-class RegexpQuery(QueryBase):
-    case_insensitive: bool
-    flags: str
-    max_determinized_states: int
-    rewrite: str
-    value: str
 
 
 class LikeDocument(TypedDict):
@@ -106,97 +102,33 @@ class LikeDocument(TypedDict):
     version_type: Literal["internal", "external", "external_gte", "force"]
 
 
-class TermsSetQuery(QueryBase):
-    minimum_should_match_field: Union[str, "InstrumentedField"]
-    minimum_should_match_script: "i.Script"
-    terms: List[str]
-
-
-class SpanQuery(TypedDict):
-    span_containing: "i.SpanContainingQuery"
-    span_field_masking: "i.SpanFieldMaskingQuery"
-    span_first: "i.SpanFirstQuery"
-    span_gap: Mapping[Union[str, "InstrumentedField"], int]
-    span_multi: "i.SpanMultiTermQuery"
-    span_near: "i.SpanNearQuery"
-    span_not: "i.SpanNotQuery"
-    span_or: "i.SpanOrQuery"
-    span_term: Mapping[Union[str, "InstrumentedField"], "i.SpanTermQuery"]
-    span_within: "i.SpanWithinQuery"
-
-
-class PrefixQuery(QueryBase):
-    rewrite: str
-    value: str
-    case_insensitive: bool
-
-
 class TokenPruningConfig(TypedDict):
     tokens_freq_ratio_threshold: int
     tokens_weight_threshold: float
     only_score_pruned_tokens: bool
 
 
-class RankFeatureFunctionLinear(RankFeatureFunction):
-    pass
+class WildcardQuery(QueryBase):
+    case_insensitive: bool
+    rewrite: str
+    value: str
+    wildcard: str
 
 
-class TextExpansionQuery(QueryBase):
-    model_id: str
-    model_text: str
+class WeightedTokensQuery(QueryBase):
+    tokens: Mapping[str, float]
     pruning_config: "i.TokenPruningConfig"
 
 
-class MatchBoolPrefixQuery(QueryBase):
-    analyzer: str
-    fuzziness: Union[str, int]
-    fuzzy_rewrite: str
-    fuzzy_transpositions: bool
-    max_expansions: int
-    minimum_should_match: Union[int, str]
-    operator: Literal["and", "or"]
-    prefix_length: int
-    query: str
-
-
-class Script(TypedDict):
-    source: str
-    id: str
-    params: Mapping[str, Any]
-    lang: Literal["painless", "expression", "mustache", "java"]
-    options: Mapping[str, str]
-
-
-class PinnedDoc(TypedDict):
-    _id: str
-    _index: str
-
-
-class QueryVectorBuilder(TypedDict):
-    text_embedding: "i.TextEmbedding"
-
-
-class RankFeatureFunctionSigmoid(RankFeatureFunction):
+class RankFeatureFunctionSaturation(RankFeatureFunction):
     pivot: float
-    exponent: float
 
 
-class IntervalsQuery(QueryBase):
-    all_of: "i.IntervalsAllOf"
-    any_of: "i.IntervalsAnyOf"
-    fuzzy: "i.IntervalsFuzzy"
-    match: "i.IntervalsMatch"
-    prefix: "i.IntervalsPrefix"
-    wildcard: "i.IntervalsWildcard"
-
-
-class RankFeatureFunctionLogarithm(RankFeatureFunction):
-    scaling_factor: float
-
-
-class TermQuery(QueryBase):
-    value: Union[int, float, str, bool, None, Any]
-    case_insensitive: bool
+class MatchPhraseQuery(QueryBase):
+    analyzer: str
+    query: str
+    slop: int
+    zero_terms_query: Literal["all", "none"]
 
 
 class MatchQuery(QueryBase):
@@ -215,33 +147,142 @@ class MatchQuery(QueryBase):
     zero_terms_query: Literal["all", "none"]
 
 
-class WeightedTokensQuery(QueryBase):
-    tokens: Mapping[str, float]
+class QueryVectorBuilder(TypedDict):
+    text_embedding: "i.TextEmbedding"
+
+
+class PinnedDoc(TypedDict):
+    _id: str
+    _index: str
+
+
+class Script(TypedDict):
+    source: str
+    id: str
+    params: Mapping[str, Any]
+    lang: Literal["painless", "expression", "mustache", "java"]
+    options: Mapping[str, str]
+
+
+class RankFeatureFunctionLinear(RankFeatureFunction):
+    pass
+
+
+class MatchBoolPrefixQuery(QueryBase):
+    analyzer: str
+    fuzziness: Union[str, int]
+    fuzzy_rewrite: str
+    fuzzy_transpositions: bool
+    max_expansions: int
+    minimum_should_match: Union[int, str]
+    operator: Literal["and", "or"]
+    prefix_length: int
+    query: str
+
+
+class InnerHits(TypedDict):
+    name: str
+    size: int
+    from_: int
+    collapse: "i.FieldCollapse"
+    docvalue_fields: List["i.FieldAndFormat"]
+    explain: bool
+    highlight: "i.Highlight"
+    ignore_unmapped: bool
+    script_fields: Mapping[Union[str, "InstrumentedField"], "i.ScriptField"]
+    seq_no_primary_term: bool
+    fields: Union[
+        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]
+    ]
+    sort: Union[
+        Union[Union[str, "InstrumentedField"], "i.SortOptions"],
+        List[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
+    ]
+    _source: Union[bool, "i.SourceFilter"]
+    stored_fields: Union[
+        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]
+    ]
+    track_scores: bool
+    version: bool
+
+
+class RegexpQuery(QueryBase):
+    case_insensitive: bool
+    flags: str
+    max_determinized_states: int
+    rewrite: str
+    value: str
+
+
+class RankFeatureFunctionSigmoid(RankFeatureFunction):
+    pivot: float
+    exponent: float
+
+
+class FuzzyQuery(QueryBase):
+    max_expansions: int
+    prefix_length: int
+    rewrite: str
+    transpositions: bool
+    fuzziness: Union[str, int]
+    value: Union[str, float, bool]
+
+
+class IntervalsQuery(QueryBase):
+    all_of: "i.IntervalsAllOf"
+    any_of: "i.IntervalsAnyOf"
+    fuzzy: "i.IntervalsFuzzy"
+    match: "i.IntervalsMatch"
+    prefix: "i.IntervalsPrefix"
+    wildcard: "i.IntervalsWildcard"
+
+
+class SpanTermQuery(QueryBase):
+    value: str
+
+
+class TermsSetQuery(QueryBase):
+    minimum_should_match_field: Union[str, "InstrumentedField"]
+    minimum_should_match_script: "i.Script"
+    terms: List[str]
+
+
+class TextExpansionQuery(QueryBase):
+    model_id: str
+    model_text: str
     pruning_config: "i.TokenPruningConfig"
 
 
-class MatchPhrasePrefixQuery(QueryBase):
-    analyzer: str
-    max_expansions: int
-    query: str
-    slop: int
-    zero_terms_query: Literal["all", "none"]
+class SpanQuery(TypedDict):
+    span_containing: "i.SpanContainingQuery"
+    span_field_masking: "i.SpanFieldMaskingQuery"
+    span_first: "i.SpanFirstQuery"
+    span_gap: Mapping[Union[str, "InstrumentedField"], int]
+    span_multi: "i.SpanMultiTermQuery"
+    span_near: "i.SpanNearQuery"
+    span_not: "i.SpanNotQuery"
+    span_or: "i.SpanOrQuery"
+    span_term: Mapping[Union[str, "InstrumentedField"], "i.SpanTermQuery"]
+    span_within: "i.SpanWithinQuery"
 
 
-class ScriptField(TypedDict):
-    script: "i.Script"
-    ignore_failure: bool
+class TextEmbedding(TypedDict):
+    model_id: str
+    model_text: str
 
 
-class SourceFilter(TypedDict):
-    excludes: Union[Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]]
-    includes: Union[Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]]
+class SortOptions(TypedDict):
+    _score: "i.ScoreSort"
+    _doc: "i.ScoreSort"
+    _geo_distance: "i.GeoDistanceSort"
+    _script: "i.ScriptSort"
 
 
-class FieldAndFormat(TypedDict):
+class FieldCollapse(TypedDict):
     field: Union[str, "InstrumentedField"]
-    format: str
-    include_unmapped: bool
+    inner_hits: Union["i.InnerHits", List["i.InnerHits"]]
+    max_concurrent_group_searches: int
+    collapse: "i.FieldCollapse"
 
 
 class HighlightBase(TypedDict):
@@ -273,65 +314,38 @@ class Highlight(HighlightBase):
     fields: Mapping[Union[str, "InstrumentedField"], "i.HighlightField"]
 
 
-class FieldCollapse(TypedDict):
+class ScriptField(TypedDict):
+    script: "i.Script"
+    ignore_failure: bool
+
+
+class FieldAndFormat(TypedDict):
     field: Union[str, "InstrumentedField"]
-    inner_hits: Union["i.InnerHits", List["i.InnerHits"]]
-    max_concurrent_group_searches: int
-    collapse: "i.FieldCollapse"
+    format: str
+    include_unmapped: bool
 
 
-class SortOptions(TypedDict):
-    _score: "i.ScoreSort"
-    _doc: "i.ScoreSort"
-    _geo_distance: "i.GeoDistanceSort"
-    _script: "i.ScriptSort"
+class SourceFilter(TypedDict):
+    excludes: Union[
+        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]
+    ]
+    includes: Union[
+        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]
+    ]
 
 
-class SpanMultiTermQuery(QueryBase):
-    match: Query
+class IntervalsAnyOf(TypedDict):
+    intervals: List["i.IntervalsContainer"]
+    filter: "i.IntervalsFilter"
 
 
-class SpanNotQuery(QueryBase):
-    dist: int
-    exclude: "i.SpanQuery"
-    include: "i.SpanQuery"
-    post: int
-    pre: int
-
-
-class SpanWithinQuery(QueryBase):
-    big: "i.SpanQuery"
-    little: "i.SpanQuery"
-
-
-class SpanFirstQuery(QueryBase):
-    end: int
-    match: "i.SpanQuery"
-
-
-class SpanOrQuery(QueryBase):
-    clauses: List["i.SpanQuery"]
-
-
-class SpanNearQuery(QueryBase):
-    clauses: List["i.SpanQuery"]
-    in_order: bool
-    slop: int
-
-
-class SpanFieldMaskingQuery(QueryBase):
-    field: Union[str, "InstrumentedField"]
-    query: "i.SpanQuery"
-
-
-class SpanContainingQuery(QueryBase):
-    big: "i.SpanQuery"
-    little: "i.SpanQuery"
-
-
-class TextEmbedding(TypedDict):
-    model_id: str
-    model_text: str
+class IntervalsMatch(TypedDict):
+    analyzer: str
+    max_gaps: int
+    ordered: bool
+    query: str
+    use_field: Union[str, "InstrumentedField"]
+    filter: "i.IntervalsFilter"
 
 
 class IntervalsWildcard(TypedDict):
@@ -340,8 +354,16 @@ class IntervalsWildcard(TypedDict):
     use_field: Union[str, "InstrumentedField"]
 
 
-class IntervalsAnyOf(TypedDict):
+class IntervalsPrefix(TypedDict):
+    analyzer: str
+    prefix: str
+    use_field: Union[str, "InstrumentedField"]
+
+
+class IntervalsAllOf(TypedDict):
     intervals: List["i.IntervalsContainer"]
+    max_gaps: int
+    ordered: bool
     filter: "i.IntervalsFilter"
 
 
@@ -354,32 +376,46 @@ class IntervalsFuzzy(TypedDict):
     use_field: Union[str, "InstrumentedField"]
 
 
-class IntervalsPrefix(TypedDict):
-    analyzer: str
-    prefix: str
-    use_field: Union[str, "InstrumentedField"]
+class SpanFirstQuery(QueryBase):
+    end: int
+    match: "i.SpanQuery"
 
 
-class IntervalsMatch(TypedDict):
-    analyzer: str
-    max_gaps: int
-    ordered: bool
-    query: str
-    use_field: Union[str, "InstrumentedField"]
-    filter: "i.IntervalsFilter"
+class SpanMultiTermQuery(QueryBase):
+    match: Query
 
 
-class IntervalsAllOf(TypedDict):
-    intervals: List["i.IntervalsContainer"]
-    max_gaps: int
-    ordered: bool
-    filter: "i.IntervalsFilter"
+class SpanNearQuery(QueryBase):
+    clauses: List["i.SpanQuery"]
+    in_order: bool
+    slop: int
 
 
-class HighlightField(HighlightBase):
-    fragment_offset: int
-    matched_fields: Union[Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]]
-    analyzer: Union["analysis.CustomAnalyzer", "analysis.FingerprintAnalyzer", "analysis.KeywordAnalyzer", "analysis.LanguageAnalyzer", "analysis.NoriAnalyzer", "analysis.PatternAnalyzer", "analysis.SimpleAnalyzer", "analysis.StandardAnalyzer", "analysis.StopAnalyzer", "analysis.WhitespaceAnalyzer", "analysis.IcuAnalyzer", "analysis.KuromojiAnalyzer", "analysis.SnowballAnalyzer", "analysis.DutchAnalyzer"]
+class SpanContainingQuery(QueryBase):
+    big: "i.SpanQuery"
+    little: "i.SpanQuery"
+
+
+class SpanNotQuery(QueryBase):
+    dist: int
+    exclude: "i.SpanQuery"
+    include: "i.SpanQuery"
+    post: int
+    pre: int
+
+
+class SpanOrQuery(QueryBase):
+    clauses: List["i.SpanQuery"]
+
+
+class SpanFieldMaskingQuery(QueryBase):
+    field: Union[str, "InstrumentedField"]
+    query: "i.SpanQuery"
+
+
+class SpanWithinQuery(QueryBase):
+    big: "i.SpanQuery"
+    little: "i.SpanQuery"
 
 
 class GeoDistanceSort(TypedDict):
@@ -391,6 +427,10 @@ class GeoDistanceSort(TypedDict):
     nested: "i.NestedSortValue"
 
 
+class ScoreSort(TypedDict):
+    order: Literal["asc", "desc"]
+
+
 class ScriptSort(TypedDict):
     order: Literal["asc", "desc"]
     script: "i.Script"
@@ -399,8 +439,27 @@ class ScriptSort(TypedDict):
     nested: "i.NestedSortValue"
 
 
-class ScoreSort(TypedDict):
-    order: Literal["asc", "desc"]
+class HighlightField(HighlightBase):
+    fragment_offset: int
+    matched_fields: Union[
+        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]]
+    ]
+    analyzer: Union[
+        "analysis.CustomAnalyzer",
+        "analysis.FingerprintAnalyzer",
+        "analysis.KeywordAnalyzer",
+        "analysis.LanguageAnalyzer",
+        "analysis.NoriAnalyzer",
+        "analysis.PatternAnalyzer",
+        "analysis.SimpleAnalyzer",
+        "analysis.StandardAnalyzer",
+        "analysis.StopAnalyzer",
+        "analysis.WhitespaceAnalyzer",
+        "analysis.IcuAnalyzer",
+        "analysis.KuromojiAnalyzer",
+        "analysis.SnowballAnalyzer",
+        "analysis.DutchAnalyzer",
+    ]
 
 
 class IntervalsFilter(TypedDict):
@@ -429,5 +488,3 @@ class NestedSortValue(TypedDict):
     max_children: int
     nested: "i.NestedSortValue"
     path: Union[str, "InstrumentedField"]
-
-

@@ -1,9 +1,28 @@
-from elasticsearch_dsl import VERSION
+#  Licensed to Elasticsearch B.V. under one or more contributor
+#  license agreements. See the NOTICE file distributed with
+#  this work for additional information regarding copyright
+#  ownership. Elasticsearch B.V. licenses this file to you under
+#  the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
 import json
 import textwrap
-from urllib.request import urlopen
 from urllib.error import HTTPError
+from urllib.request import urlopen
+
 from jinja2 import Environment, PackageLoader, select_autoescape
+
+from elasticsearch_dsl import VERSION
 
 jinja_env = Environment(
     loader=PackageLoader("utils"),
@@ -13,6 +32,8 @@ jinja_env = Environment(
 )
 query_py = jinja_env.get_template("query.py.tpl")
 interfaces_py = jinja_env.get_template("interfaces.py.tpl")
+
+RESERVED = {"from": "from_"}
 
 
 def wrapped_doc(text, width=70, initial_indent="", subsequent_indent=""):
@@ -122,7 +143,7 @@ class ElasticsearchSchema:
                 == {"name": "T", "namespace": "_spec_utils.PipeSeparatedFlags"}
             ):
                 self.interfaces.add("PipeSeparatedFlags")
-                return '"PipeSeparatedFlags"', None
+                return '"i.PipeSeparatedFlags"', None
             else:
                 types = [self.get_python_type(t) for t in schema_type["items"]]
                 return "Union[" + ", ".join([type_ for type_, _ in types]) + "]", None
@@ -180,7 +201,7 @@ def generate_query_classes(schema, filename):
                     if arg["required"] is False:
                         k["kwargs"].append(
                             {
-                                "name": arg["name"],
+                                "name": RESERVED.get(arg["name"], arg["name"]),
                                 "type": type_,
                                 "doc": doc,
                                 "required": False,
@@ -194,7 +215,7 @@ def generate_query_classes(schema, filename):
                         k["kwargs"].insert(
                             i,
                             {
-                                "name": arg["name"],
+                                "name": RESERVED.get(arg["name"], arg["name"]),
                                 "type": type_,
                                 "doc": doc,
                                 "required": True,
@@ -274,7 +295,9 @@ def generate_interfaces(schema, interfaces, filename):
         schema.reset_interfaces()
         for p in type_["properties"]:
             type_, param = schema.get_python_type(p["type"])
-            k["properties"].append({"name": p["name"], "type": type_})
+            k["properties"].append(
+                {"name": RESERVED.get(p["name"], p["name"]), "type": type_}
+            )
         for new_interface in schema.interfaces:
             if new_interface not in interfaces:
                 interfaces.append(new_interface)

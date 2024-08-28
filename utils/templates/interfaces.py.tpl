@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING, Any, List, Literal, Mapping, TypedDict, Union
+from typing import Any, List, Literal, Mapping, TypedDict, Union
 from elasticsearch_dsl.search_base import InstrumentedField
-from elasticsearch_dsl.utils import AttrDict
-
-if TYPE_CHECKING:
-    from elasticsearch_dsl import analysis, function, wrappers
+from elasticsearch_dsl import analysis, function, interfaces as i, Query
 
 PipeSeparatedFlags = str
 
