@@ -40,6 +40,7 @@ async_requires = [
 develop_requires = [
     "elasticsearch[async]",
     "unasync",
+    "jinja2",
     "pytest",
     "pytest-cov",
     "pytest-mock",

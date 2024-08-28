@@ -97,6 +97,13 @@ def _recursive_to_dict(value: Any) -> Any:
         return value
 
 
+class NotSet:
+    pass
+
+
+NOT_SET = NotSet()
+
+
 class AttrList(Generic[_ValT]):
     def __init__(
         self, l: List[_ValT], obj_wrapper: Optional[Callable[[_ValT], Any]] = None
@@ -328,6 +335,8 @@ class DslBase(metaclass=DslMeta):
             _expand__to_dot = EXPAND__TO_DOT
         self._params: Dict[str, Any] = {}
         for pname, pvalue in params.items():
+            if pvalue == NOT_SET:
+                continue
             # expand "__" to dots
             if "__" in pname and _expand__to_dot:
                 pname = pname.replace("__", ".")
