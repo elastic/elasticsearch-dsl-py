@@ -101,7 +101,7 @@ def test_exclude() -> None:
 def test_reverse() -> None:
     d = {
         "query": {
-            "filtered": {
+            "bool": {
                 "filter": {
                     "bool": {
                         "should": [
@@ -110,13 +110,15 @@ def test_reverse() -> None:
                         ]
                     }
                 },
-                "query": {
-                    "bool": {
-                        "must": [{"match": {"title": "python"}}],
-                        "must_not": [{"match": {"title": "ruby"}}],
-                        "minimum_should_match": 2,
+                "must": [
+                    {
+                        "bool": {
+                            "must": [{"match": {"title": "python"}}],
+                            "must_not": [{"match": {"title": "ruby"}}],
+                            "minimum_should_match": 2,
+                        }
                     }
-                },
+                ],
             }
         },
         "script": {
@@ -131,6 +133,7 @@ def test_reverse() -> None:
     ubq = UpdateByQuery.from_dict(d)
 
     assert d == d2
+    d["query"]["bool"]["filter"] = [d["query"]["bool"]["filter"]]
     assert d == ubq.to_dict()
 
 

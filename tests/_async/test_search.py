@@ -479,7 +479,7 @@ def test_complex_example() -> None:
 def test_reverse() -> None:
     d = {
         "query": {
-            "filtered": {
+            "bool": {
                 "filter": {
                     "bool": {
                         "should": [
@@ -488,13 +488,15 @@ def test_reverse() -> None:
                         ]
                     }
                 },
-                "query": {
-                    "bool": {
-                        "must": [{"match": {"title": "python"}}],
-                        "must_not": [{"match": {"title": "ruby"}}],
-                        "minimum_should_match": 2,
+                "must": [
+                    {
+                        "bool": {
+                            "must": [{"match": {"title": "python"}}],
+                            "must_not": [{"match": {"title": "ruby"}}],
+                            "minimum_should_match": 2,
+                        }
                     }
-                },
+                ],
             }
         },
         "post_filter": {"bool": {"must": [{"terms": {"tags": ["prague", "czech"]}}]}},
@@ -523,6 +525,7 @@ def test_reverse() -> None:
     # make sure we haven't modified anything in place
     assert d == d2
     assert {"size": 5} == s._extra
+    d["query"]["bool"]["filter"] = [d["query"]["bool"]["filter"]]
     assert d == s.to_dict()
 
 
