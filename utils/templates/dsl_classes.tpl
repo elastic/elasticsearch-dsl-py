@@ -19,6 +19,10 @@ class {{ k.name }}({{ parent }}):
         {% for param in k.params %}
         "{{ param.name }}": {{ param.param }},
         {% endfor %}
+        {% if k.name == "FunctionScore" %}
+        "filter": {"type": "query"},
+        "functions": {"type": "score_function", "multi": True},
+        {% endif %}
     }
     {% endif %}
 
@@ -28,12 +32,12 @@ class {{ k.name }}({{ parent }}):
         *,
         {% endif %}
         {% for kwarg in k.kwargs %}
-        {{ kwarg.name }}: {{ kwarg.type }}{% if not kwarg.required %} = NOT_SET{% endif %},
+        {{ kwarg.name }}: {{ kwarg.type }} = NOT_SET,
         {% endfor %}
         **kwargs: Any
     ):
         {% if k.name == "FunctionScore" %}
-        if functions is None:
+        if functions == NOT_SET:
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
@@ -45,9 +49,18 @@ class {{ k.name }}({{ parent }}):
         if fields != NOT_SET:
             for field, value in _fields.items():
                 kwargs[str(field)] = value
+        {% elif k.has_type_alias %}
+        {% for kwarg in k.kwargs %}
+        {% if loop.index == 1 %}
+        if {{ kwarg.name }} != NOT_SET:
+        {% else %}
+        elif {{ kwarg.name }} != NOT_SET:
+        {% endif %}
+            kwargs = {{ kwarg.name }}
+        {% endfor %}
         {% endif %}
         super().__init__(
-            {% if not k.has_field and not k.has_fields %}
+            {% if not k.has_field and not k.has_fields and not k.has_type_alias %}
             {% for kwarg in k.kwargs %}
             {{ kwarg.name }}={{ kwarg.name }},
             {% endfor %}

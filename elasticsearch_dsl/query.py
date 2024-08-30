@@ -23,6 +23,7 @@ from typing import (
     Any,
     Callable,
     ClassVar,
+    Dict,
     List,
     Literal,
     Mapping,
@@ -302,12 +303,12 @@ class Boosting(Query):
     Returns documents matching a `positive` query while reducing the
     relevance score of documents that also match a `negative` query.
 
-    :arg negative: Query used to decrease the relevance score of matching
-        documents.
-    :arg positive: Any returned documents must match this query.
-    :arg negative_boost: Floating point number between 0 and 1.0 used to
-        decrease the relevance scores of documents matching the `negative`
-        query.
+    :arg negative: (required)Query used to decrease the relevance score of
+        matching documents.
+    :arg positive: (required)Any returned documents must match this query.
+    :arg negative_boost: (required)Floating point number between 0 and 1.0
+        used to decrease the relevance scores of documents matching the
+        `negative` query.
     """
 
     name = "boosting"
@@ -317,7 +318,12 @@ class Boosting(Query):
     }
 
     def __init__(
-        self, *, negative: Query, positive: Query, negative_boost: float, **kwargs: Any
+        self,
+        *,
+        negative: Union[Query, "NotSet"] = NOT_SET,
+        positive: Union[Query, "NotSet"] = NOT_SET,
+        negative_boost: Union[float, "NotSet"] = NOT_SET,
+        **kwargs: Any,
     ):
         super().__init__(
             negative=negative,
@@ -353,12 +359,12 @@ class CombinedFields(Query):
     The `combined_fields` query supports searching multiple text fields as
     if their contents had been indexed into one combined field.
 
-    :arg query: Text to search for in the provided `fields`. The
+    :arg query: (required)Text to search for in the provided `fields`. The
         `combined_fields` query analyzes the provided text before
         performing a search.
-    :arg fields: List of fields to search. Field wildcard patterns are
-        allowed. Only `text` fields are supported, and they must all have
-        the same search `analyzer`.
+    :arg fields: (required)List of fields to search. Field wildcard
+        patterns are allowed. Only `text` fields are supported, and they
+        must all have the same search `analyzer`.
     :arg auto_generate_synonyms_phrase_query: If true, match phrase
         queries are automatically created for multi-term synonyms.
     :arg operator: Boolean logic used to interpret text in the query
@@ -375,8 +381,8 @@ class CombinedFields(Query):
     def __init__(
         self,
         *,
-        query: str,
-        fields: List[Union[str, "InstrumentedField"]],
+        query: Union[str, "NotSet"] = NOT_SET,
+        fields: Union[List[Union[str, "InstrumentedField"]], "NotSet"] = NOT_SET,
         auto_generate_synonyms_phrase_query: Union[bool, "NotSet"] = NOT_SET,
         operator: Union[Literal["or", "and"], "NotSet"] = NOT_SET,
         minimum_should_match: Union[int, str, "NotSet"] = NOT_SET,
@@ -399,10 +405,10 @@ class ConstantScore(Query):
     Wraps a filter query and returns every matching document with a
     relevance score equal to the `boost` parameter value.
 
-    :arg filter: Filter query you wish to run. Any returned documents must
-        match this query. Filter queries do not calculate relevance
-        scores. To speed up performance, Elasticsearch automatically
-        caches frequently used filter queries.
+    :arg filter: (required)Filter query you wish to run. Any returned
+        documents must match this query. Filter queries do not calculate
+        relevance scores. To speed up performance, Elasticsearch
+        automatically caches frequently used filter queries.
     """
 
     name = "constant_score"
@@ -410,7 +416,7 @@ class ConstantScore(Query):
         "filter": {"type": "query"},
     }
 
-    def __init__(self, *, filter: Query, **kwargs: Any):
+    def __init__(self, *, filter: Union[Query, "NotSet"] = NOT_SET, **kwargs: Any):
         super().__init__(filter=filter, **kwargs)
 
 
@@ -422,20 +428,23 @@ class DisMax(Query):
     relevance score from any matching clause, plus a tie breaking
     increment for any additional matching subqueries.
 
-    :arg queries: One or more query clauses. Returned documents must match
-        one or more of these queries. If a document matches multiple
-        queries, Elasticsearch uses the highest relevance score.
+    :arg queries: (required)One or more query clauses. Returned documents
+        must match one or more of these queries. If a document matches
+        multiple queries, Elasticsearch uses the highest relevance score.
     :arg tie_breaker: Floating point number between 0 and 1.0 used to
         increase the relevance scores of documents matching multiple query
         clauses.
     """
 
     name = "dis_max"
+    _param_defs = {
+        "queries": {"type": "query", "multi": True},
+    }
 
     def __init__(
         self,
         *,
-        queries: List[Query],
+        queries: Union[List[Query], "NotSet"] = NOT_SET,
         tie_breaker: Union[float, "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
@@ -447,11 +456,28 @@ class DistanceFeature(Query):
     Boosts the relevance score of documents closer to a provided origin
     date or point. For example, you can use this query to give more weight
     to documents closer to a certain date or location.
+
+    :arg untyped: An instance of ``UntypedDistanceFeatureQuery``.
+    :arg geo: An instance of ``GeoDistanceFeatureQuery``.
+    :arg date: An instance of ``DateDistanceFeatureQuery``.
     """
 
     name = "distance_feature"
 
-    def __init__(self, **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        untyped: Union["i.UntypedDistanceFeatureQuery", "NotSet"] = NOT_SET,
+        geo: Union["i.GeoDistanceFeatureQuery", "NotSet"] = NOT_SET,
+        date: Union["i.DateDistanceFeatureQuery", "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if untyped != NOT_SET:
+            kwargs = untyped
+        elif geo != NOT_SET:
+            kwargs = geo
+        elif date != NOT_SET:
+            kwargs = date
         super().__init__(**kwargs)
 
 
@@ -459,12 +485,17 @@ class Exists(Query):
     """
     Returns documents that contain an indexed value for a field.
 
-    :arg field: Name of the field you wish to search.
+    :arg field: (required)Name of the field you wish to search.
     """
 
     name = "exists"
 
-    def __init__(self, *, field: Union[str, "InstrumentedField"], **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(field=field, **kwargs)
 
 
@@ -489,6 +520,8 @@ class FunctionScore(Query):
     name = "function_score"
     _param_defs = {
         "query": {"type": "query"},
+        "filter": {"type": "query"},
+        "functions": {"type": "score_function", "multi": True},
     }
 
     def __init__(
@@ -497,7 +530,9 @@ class FunctionScore(Query):
         boost_mode: Union[
             Literal["multiply", "replace", "sum", "avg", "max", "min"], "NotSet"
         ] = NOT_SET,
-        functions: Union[List["i.FunctionScoreContainer"], "NotSet"] = NOT_SET,
+        functions: Union[
+            List["i.FunctionScoreContainer"], Dict[str, Any], "NotSet"
+        ] = NOT_SET,
         max_boost: Union[float, "NotSet"] = NOT_SET,
         min_score: Union[float, "NotSet"] = NOT_SET,
         query: Union[Query, "NotSet"] = NOT_SET,
@@ -506,7 +541,7 @@ class FunctionScore(Query):
         ] = NOT_SET,
         **kwargs: Any,
     ):
-        if functions is None:
+        if functions == NOT_SET:
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
@@ -548,7 +583,7 @@ class GeoBoundingBox(Query):
     """
     Matches geo_point and geo_shape values that intersect a bounding box.
 
-    :arg type: None
+    :arg type: No documentation available.
     :arg validation_method: Set to `IGNORE_MALFORMED` to accept geo points
         with invalid latitude or longitude. Set to `COERCE` to also try to
         infer correct latitude or longitude.
@@ -582,9 +617,9 @@ class GeoDistance(Query):
     Matches `geo_point` and `geo_shape` values within a given distance of
     a geopoint.
 
-    :arg distance: The radius of the circle centred on the specified
-        location. Points which fall into this circle are considered to be
-        matches.
+    :arg distance: (required)The radius of the circle centred on the
+        specified location. Points which fall into this circle are
+        considered to be matches.
     :arg distance_type: How to compute the distance. Set to `plane` for a
         faster calculation that's inaccurate on long distances and close
         to the poles.
@@ -601,7 +636,7 @@ class GeoDistance(Query):
     def __init__(
         self,
         *,
-        distance: str,
+        distance: Union[str, "NotSet"] = NOT_SET,
         distance_type: Union[Literal["arc", "plane"], "NotSet"] = NOT_SET,
         validation_method: Union[
             Literal["coerce", "ignore_malformed", "strict"], "NotSet"
@@ -622,8 +657,8 @@ class GeoPolygon(Query):
     """
     No documentation available.
 
-    :arg validation_method: None
-    :arg ignore_unmapped: None
+    :arg validation_method: No documentation available.
+    :arg ignore_unmapped: No documentation available.
     """
 
     name = "geo_polygon"
@@ -667,10 +702,11 @@ class HasChild(Query):
     Returns parent documents whose joined child documents match a provided
     query.
 
-    :arg query: Query you wish to run on child documents of the `type`
-        field. If a child document matches the search, the query returns
-        the parent document.
-    :arg type: Name of the child relationship mapped for the `join` field.
+    :arg query: (required)Query you wish to run on child documents of the
+        `type` field. If a child document matches the search, the query
+        returns the parent document.
+    :arg type: (required)Name of the child relationship mapped for the
+        `join` field.
     :arg ignore_unmapped: Indicates whether to ignore an unmapped `type`
         and not return any documents instead of an error.
     :arg inner_hits: If defined, each search hit will contain inner hits.
@@ -694,10 +730,10 @@ class HasChild(Query):
     def __init__(
         self,
         *,
-        query: Query,
-        type: str,
+        query: Union[Query, "NotSet"] = NOT_SET,
+        type: Union[str, "NotSet"] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        inner_hits: Union["i.InnerHits", "NotSet"] = NOT_SET,
+        inner_hits: Union["i.InnerHits", Dict[str, Any], "NotSet"] = NOT_SET,
         max_children: Union[int, "NotSet"] = NOT_SET,
         min_children: Union[int, "NotSet"] = NOT_SET,
         score_mode: Union[
@@ -722,9 +758,9 @@ class HasParent(Query):
     Returns child documents whose joined parent document matches a
     provided query.
 
-    :arg parent_type: Name of the parent relationship mapped for the
-        `join` field.
-    :arg query: Query you wish to run on parent documents of the
+    :arg parent_type: (required)Name of the parent relationship mapped for
+        the `join` field.
+    :arg query: (required)Query you wish to run on parent documents of the
         `parent_type` field. If a parent document matches the search, the
         query returns its child documents.
     :arg ignore_unmapped: Indicates whether to ignore an unmapped
@@ -744,10 +780,10 @@ class HasParent(Query):
     def __init__(
         self,
         *,
-        parent_type: str,
-        query: Query,
+        parent_type: Union[str, "NotSet"] = NOT_SET,
+        query: Union[Query, "NotSet"] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        inner_hits: Union["i.InnerHits", "NotSet"] = NOT_SET,
+        inner_hits: Union["i.InnerHits", Dict[str, Any], "NotSet"] = NOT_SET,
         score: Union[bool, "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
@@ -804,7 +840,7 @@ class Knn(Query):
     similarity metric. knn query finds nearest vectors through approximate
     search on indexed dense_vectors.
 
-    :arg field: The name of the vector field to search against
+    :arg field: (required)The name of the vector field to search against
     :arg query_vector: The query vector
     :arg query_vector_builder: The query vector builder. You must provide
         a query_vector_builder or query_vector, but not both.
@@ -824,9 +860,11 @@ class Knn(Query):
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField"],
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         query_vector: Union[List[float], "NotSet"] = NOT_SET,
-        query_vector_builder: Union["i.QueryVectorBuilder", "NotSet"] = NOT_SET,
+        query_vector_builder: Union[
+            "i.QueryVectorBuilder", Dict[str, Any], "NotSet"
+        ] = NOT_SET,
         num_candidates: Union[int, "NotSet"] = NOT_SET,
         k: Union[int, "NotSet"] = NOT_SET,
         filter: Union[Query, List[Query], "NotSet"] = NOT_SET,
@@ -989,8 +1027,8 @@ class MoreLikeThis(Query):
     """
     Returns documents that are "like" a given set of documents.
 
-    :arg like: Specifies free form text and/or a single or multiple
-        documents for which you want to find similar documents.
+    :arg like: (required)Specifies free form text and/or a single or
+        multiple documents for which you want to find similar documents.
     :arg analyzer: The analyzer that is used to analyze the free form
         text. Defaults to the analyzer associated with the first field in
         fields.
@@ -1020,13 +1058,13 @@ class MoreLikeThis(Query):
         are ignored from the input document.
     :arg min_word_length: The minimum word length below which the terms
         are ignored.
-    :arg routing: None
+    :arg routing: No documentation available.
     :arg stop_words: An array of stop words. Any word in this set is
         ignored.
     :arg unlike: Used in combination with `like` to exclude documents that
         match a set of terms.
-    :arg version: None
-    :arg version_type: None
+    :arg version: No documentation available.
+    :arg version_type: No documentation available.
     """
 
     name = "more_like_this"
@@ -1034,7 +1072,12 @@ class MoreLikeThis(Query):
     def __init__(
         self,
         *,
-        like: Union[Union[str, "i.LikeDocument"], List[Union[str, "i.LikeDocument"]]],
+        like: Union[
+            Union[str, "i.LikeDocument"],
+            List[Union[str, "i.LikeDocument"]],
+            Dict[str, Any],
+            "NotSet",
+        ] = NOT_SET,
         analyzer: Union[str, "NotSet"] = NOT_SET,
         boost_terms: Union[float, "NotSet"] = NOT_SET,
         fail_on_unsupported_field: Union[bool, "NotSet"] = NOT_SET,
@@ -1050,7 +1093,10 @@ class MoreLikeThis(Query):
         routing: Union[str, "NotSet"] = NOT_SET,
         stop_words: Union[str, List[str], "NotSet"] = NOT_SET,
         unlike: Union[
-            Union[str, "i.LikeDocument"], List[Union[str, "i.LikeDocument"]], "NotSet"
+            Union[str, "i.LikeDocument"],
+            List[Union[str, "i.LikeDocument"]],
+            Dict[str, Any],
+            "NotSet",
         ] = NOT_SET,
         version: Union[int, "NotSet"] = NOT_SET,
         version_type: Union[
@@ -1087,13 +1133,13 @@ class MultiMatch(Query):
     value across multiple fields. The provided text is analyzed before
     matching.
 
-    :arg query: Text, number, boolean value or date you wish to find in
-        the provided field.
+    :arg query: (required)Text, number, boolean value or date you wish to
+        find in the provided field.
     :arg analyzer: Analyzer used to convert the text in the query value
         into tokens.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
         queries are automatically created for multi-term synonyms.
-    :arg cutoff_frequency: None
+    :arg cutoff_frequency: No documentation available.
     :arg fields: The fields to be queried. Defaults to the
         `index.query.default_field` index settings, which in turn defaults
         to `*`.
@@ -1128,7 +1174,7 @@ class MultiMatch(Query):
     def __init__(
         self,
         *,
-        query: str,
+        query: Union[str, "NotSet"] = NOT_SET,
         analyzer: Union[str, "NotSet"] = NOT_SET,
         auto_generate_synonyms_phrase_query: Union[bool, "NotSet"] = NOT_SET,
         cutoff_frequency: Union[float, "NotSet"] = NOT_SET,
@@ -1188,8 +1234,9 @@ class Nested(Query):
     Wraps another query to search nested fields. If an object matches the
     search, the nested query returns the root parent document.
 
-    :arg path: Path to the nested object you wish to search.
-    :arg query: Query you wish to run on nested objects in the path.
+    :arg path: (required)Path to the nested object you wish to search.
+    :arg query: (required)Query you wish to run on nested objects in the
+        path.
     :arg ignore_unmapped: Indicates whether to ignore an unmapped path and
         not return any documents instead of an error.
     :arg inner_hits: If defined, each search hit will contain inner hits.
@@ -1205,10 +1252,10 @@ class Nested(Query):
     def __init__(
         self,
         *,
-        path: Union[str, "InstrumentedField"],
-        query: Query,
+        path: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        query: Union[Query, "NotSet"] = NOT_SET,
         ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        inner_hits: Union["i.InnerHits", "NotSet"] = NOT_SET,
+        inner_hits: Union["i.InnerHits", Dict[str, Any], "NotSet"] = NOT_SET,
         score_mode: Union[
             Literal["none", "avg", "sum", "max", "min"], "NotSet"
         ] = NOT_SET,
@@ -1251,8 +1298,8 @@ class Percolate(Query):
     """
     Matches queries stored in an index.
 
-    :arg field: Field that holds the indexed queries. The field must use
-        the `percolator` mapping type.
+    :arg field: (required)Field that holds the indexed queries. The field
+        must use the `percolator` mapping type.
     :arg document: The source of the document being percolated.
     :arg documents: An array of sources of the documents being percolated.
     :arg id: The ID of a stored document to percolate.
@@ -1269,7 +1316,7 @@ class Percolate(Query):
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField"],
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         document: Any = NOT_SET,
         documents: Union[List[Any], "NotSet"] = NOT_SET,
         id: Union[str, "NotSet"] = NOT_SET,
@@ -1299,8 +1346,8 @@ class Pinned(Query):
     Promotes selected documents to rank higher than those matching a given
     query.
 
-    :arg organic: Any choice of query used to rank documents which will be
-        ranked below the "pinned" documents.
+    :arg organic: (required)Any choice of query used to rank documents
+        which will be ranked below the "pinned" documents.
     :arg ids: Document IDs listed in the order they are to appear in
         results. Required if `docs` is not specified.
     :arg docs: Documents listed in the order they are to appear in
@@ -1315,9 +1362,9 @@ class Pinned(Query):
     def __init__(
         self,
         *,
-        organic: Query,
+        organic: Union[Query, "NotSet"] = NOT_SET,
         ids: Union[List[str], "NotSet"] = NOT_SET,
-        docs: Union[List["i.PinnedDoc"], "NotSet"] = NOT_SET,
+        docs: Union[List["i.PinnedDoc"], Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
         super().__init__(organic=organic, ids=ids, docs=docs, **kwargs)
@@ -1349,7 +1396,8 @@ class QueryString(Query):
     Returns documents based on a provided query string, using a parser
     with a strict syntax.
 
-    :arg query: Query string you wish to parse and use for search.
+    :arg query: (required)Query string you wish to parse and use for
+        search.
     :arg allow_leading_wildcard: If `true`, the wildcard characters `*`
         and `?` are allowed as the first character of the query string.
     :arg analyzer: Analyzer used to convert text in the query string into
@@ -1366,7 +1414,7 @@ class QueryString(Query):
         the query string if no operators are specified.
     :arg enable_position_increments: If `true`, enable position increments
         in queries constructed from a `query_string` search.
-    :arg escape: None
+    :arg escape: No documentation available.
     :arg fields: Array of fields to search. Supports wildcards (`*`).
     :arg fuzziness: Maximum edit distance allowed for fuzzy matching.
     :arg fuzzy_max_expansions: Maximum number of terms to which the query
@@ -1404,7 +1452,7 @@ class QueryString(Query):
     def __init__(
         self,
         *,
-        query: str,
+        query: Union[str, "NotSet"] = NOT_SET,
         allow_leading_wildcard: Union[bool, "NotSet"] = NOT_SET,
         analyzer: Union[str, "NotSet"] = NOT_SET,
         analyze_wildcard: Union[bool, "NotSet"] = NOT_SET,
@@ -1503,8 +1551,8 @@ class RankFeature(Query):
     Boosts the relevance score of documents based on the numeric value of
     a `rank_feature` or `rank_features` field.
 
-    :arg field: `rank_feature` or `rank_features` field used to boost
-        relevance scores.
+    :arg field: (required)`rank_feature` or `rank_features` field used to
+        boost relevance scores.
     :arg saturation: Saturation function used to boost relevance scores
         based on the value of the rank feature `field`.
     :arg log: Logarithmic function used to boost relevance scores based on
@@ -1520,11 +1568,19 @@ class RankFeature(Query):
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField"],
-        saturation: Union["i.RankFeatureFunctionSaturation", "NotSet"] = NOT_SET,
-        log: Union["i.RankFeatureFunctionLogarithm", "NotSet"] = NOT_SET,
-        linear: Union["i.RankFeatureFunctionLinear", "NotSet"] = NOT_SET,
-        sigmoid: Union["i.RankFeatureFunctionSigmoid", "NotSet"] = NOT_SET,
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        saturation: Union[
+            "i.RankFeatureFunctionSaturation", Dict[str, Any], "NotSet"
+        ] = NOT_SET,
+        log: Union[
+            "i.RankFeatureFunctionLogarithm", Dict[str, Any], "NotSet"
+        ] = NOT_SET,
+        linear: Union[
+            "i.RankFeatureFunctionLinear", Dict[str, Any], "NotSet"
+        ] = NOT_SET,
+        sigmoid: Union[
+            "i.RankFeatureFunctionSigmoid", Dict[str, Any], "NotSet"
+        ] = NOT_SET,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1562,9 +1618,9 @@ class Rule(Query):
     """
     No documentation available.
 
-    :arg ruleset_ids: None
-    :arg match_criteria: None
-    :arg organic: None
+    :arg ruleset_ids: (required)No documentation available.
+    :arg match_criteria: (required)No documentation available.
+    :arg organic: (required)No documentation available.
     """
 
     name = "rule"
@@ -1575,9 +1631,9 @@ class Rule(Query):
     def __init__(
         self,
         *,
-        ruleset_ids: List[str],
-        match_criteria: Any,
-        organic: Query,
+        ruleset_ids: Union[List[str], "NotSet"] = NOT_SET,
+        match_criteria: Any = NOT_SET,
+        organic: Union[Query, "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1593,13 +1649,18 @@ class Script(Query):
     Filters documents based on a provided script. The script query is
     typically used in a filter context.
 
-    :arg script: Contains a script to run as a query. This script must
-        return a boolean value, `true` or `false`.
+    :arg script: (required)Contains a script to run as a query. This
+        script must return a boolean value, `true` or `false`.
     """
 
     name = "script"
 
-    def __init__(self, *, script: "i.Script", **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(script=script, **kwargs)
 
 
@@ -1607,9 +1668,9 @@ class ScriptScore(Query):
     """
     Uses a script to provide a custom score for returned documents.
 
-    :arg query: Query used to return documents.
-    :arg script: Script used to compute the score of documents returned by
-        the query. Important: final relevance scores from the
+    :arg query: (required)Query used to return documents.
+    :arg script: (required)Script used to compute the score of documents
+        returned by the query. Important: final relevance scores from the
         `script_score` query cannot be negative.
     :arg min_score: Documents with a score lower than this floating point
         number are excluded from the search results.
@@ -1623,8 +1684,8 @@ class ScriptScore(Query):
     def __init__(
         self,
         *,
-        query: Query,
-        script: "i.Script",
+        query: Union[Query, "NotSet"] = NOT_SET,
+        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
         min_score: Union[float, "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
@@ -1635,14 +1696,20 @@ class Semantic(Query):
     """
     A semantic query to semantic_text field types
 
-    :arg query: The query text
-    :arg field: The field to query, which must be a semantic_text field
-        type
+    :arg query: (required)The query text
+    :arg field: (required)The field to query, which must be a
+        semantic_text field type
     """
 
     name = "semantic"
 
-    def __init__(self, *, query: str, field: str, **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        query: Union[str, "NotSet"] = NOT_SET,
+        field: Union[str, "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(query=query, field=field, **kwargs)
 
 
@@ -1667,8 +1734,8 @@ class SimpleQueryString(Query):
     Returns documents based on a provided query string, using a parser
     with a limited but fault-tolerant syntax.
 
-    :arg query: Query string in the simple query string syntax you wish to
-        parse and use for search.
+    :arg query: (required)Query string in the simple query string syntax
+        you wish to parse and use for search.
     :arg analyzer: Analyzer used to convert text in the query string into
         tokens.
     :arg analyze_wildcard: If `true`, the query attempts to analyze
@@ -1704,13 +1771,13 @@ class SimpleQueryString(Query):
     def __init__(
         self,
         *,
-        query: str,
+        query: Union[str, "NotSet"] = NOT_SET,
         analyzer: Union[str, "NotSet"] = NOT_SET,
         analyze_wildcard: Union[bool, "NotSet"] = NOT_SET,
         auto_generate_synonyms_phrase_query: Union[bool, "NotSet"] = NOT_SET,
         default_operator: Union[Literal["and", "or"], "NotSet"] = NOT_SET,
         fields: Union[List[Union[str, "InstrumentedField"]], "NotSet"] = NOT_SET,
-        flags: Union["i.PipeSeparatedFlags", "NotSet"] = NOT_SET,
+        flags: Union["i.PipeSeparatedFlags", Dict[str, Any], "NotSet"] = NOT_SET,
         fuzzy_max_expansions: Union[int, "NotSet"] = NOT_SET,
         fuzzy_prefix_length: Union[int, "NotSet"] = NOT_SET,
         fuzzy_transpositions: Union[bool, "NotSet"] = NOT_SET,
@@ -1741,15 +1808,21 @@ class SpanContaining(Query):
     """
     Returns matches which enclose another span query.
 
-    :arg little: Can be any span query. Matching spans from `big` that
-        contain matches from `little` are returned.
-    :arg big: Can be any span query. Matching spans from `big` that
-        contain matches from `little` are returned.
+    :arg little: (required)Can be any span query. Matching spans from
+        `big` that contain matches from `little` are returned.
+    :arg big: (required)Can be any span query. Matching spans from `big`
+        that contain matches from `little` are returned.
     """
 
     name = "span_containing"
 
-    def __init__(self, *, little: "i.SpanQuery", big: "i.SpanQuery", **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        little: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        big: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(little=little, big=big, **kwargs)
 
 
@@ -1758,8 +1831,8 @@ class SpanFieldMasking(Query):
     Wrapper to allow span queries to participate in composite single-field
     span queries by _lying_ about their search field.
 
-    :arg query: None
-    :arg field: None
+    :arg query: (required)No documentation available.
+    :arg field: (required)No documentation available.
     """
 
     name = "span_field_masking"
@@ -1767,8 +1840,8 @@ class SpanFieldMasking(Query):
     def __init__(
         self,
         *,
-        query: "i.SpanQuery",
-        field: Union[str, "InstrumentedField"],
+        query: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
         super().__init__(query=query, field=field, **kwargs)
@@ -1778,13 +1851,20 @@ class SpanFirst(Query):
     """
     Matches spans near the beginning of a field.
 
-    :arg match: Can be any other span type query.
-    :arg end: Controls the maximum end position permitted in a match.
+    :arg match: (required)Can be any other span type query.
+    :arg end: (required)Controls the maximum end position permitted in a
+        match.
     """
 
     name = "span_first"
 
-    def __init__(self, *, match: "i.SpanQuery", end: int, **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        match: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        end: Union[int, "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(match=match, end=end, **kwargs)
 
 
@@ -1794,8 +1874,8 @@ class SpanMulti(Query):
     `prefix`, `range`, or `regexp` query) as a `span` query, so it can be
     nested.
 
-    :arg match: Should be a multi term query (one of `wildcard`, `fuzzy`,
-        `prefix`, `range`, or `regexp` query).
+    :arg match: (required)Should be a multi term query (one of `wildcard`,
+        `fuzzy`, `prefix`, `range`, or `regexp` query).
     """
 
     name = "span_multi"
@@ -1803,7 +1883,7 @@ class SpanMulti(Query):
         "match": {"type": "query"},
     }
 
-    def __init__(self, *, match: Query, **kwargs: Any):
+    def __init__(self, *, match: Union[Query, "NotSet"] = NOT_SET, **kwargs: Any):
         super().__init__(match=match, **kwargs)
 
 
@@ -1813,7 +1893,7 @@ class SpanNear(Query):
     maximum number of intervening unmatched positions, as well as whether
     matches are required to be in-order.
 
-    :arg clauses: Array of one or more other span type queries.
+    :arg clauses: (required)Array of one or more other span type queries.
     :arg in_order: Controls whether matches are required to be in-order.
     :arg slop: Controls the maximum number of intervening unmatched
         positions permitted.
@@ -1824,7 +1904,7 @@ class SpanNear(Query):
     def __init__(
         self,
         *,
-        clauses: List["i.SpanQuery"],
+        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"] = NOT_SET,
         in_order: Union[bool, "NotSet"] = NOT_SET,
         slop: Union[int, "NotSet"] = NOT_SET,
         **kwargs: Any,
@@ -1838,9 +1918,9 @@ class SpanNot(Query):
     within x tokens before (controlled by the parameter `pre`) or y tokens
     after (controlled by the parameter `post`) another span query.
 
-    :arg exclude: Span query whose matches must not overlap those
-        returned.
-    :arg include: Span query whose matches are filtered.
+    :arg exclude: (required)Span query whose matches must not overlap
+        those returned.
+    :arg include: (required)Span query whose matches are filtered.
     :arg dist: The number of tokens from within the include span that
         can’t have overlap with the exclude span. Equivalent to setting
         both `pre` and `post`.
@@ -1855,8 +1935,8 @@ class SpanNot(Query):
     def __init__(
         self,
         *,
-        exclude: "i.SpanQuery",
-        include: "i.SpanQuery",
+        exclude: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        include: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         dist: Union[int, "NotSet"] = NOT_SET,
         post: Union[int, "NotSet"] = NOT_SET,
         pre: Union[int, "NotSet"] = NOT_SET,
@@ -1871,12 +1951,17 @@ class SpanOr(Query):
     """
     Matches the union of its span clauses.
 
-    :arg clauses: Array of one or more other span type queries.
+    :arg clauses: (required)Array of one or more other span type queries.
     """
 
     name = "span_or"
 
-    def __init__(self, *, clauses: List["i.SpanQuery"], **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(clauses=clauses, **kwargs)
 
 
@@ -1905,15 +1990,21 @@ class SpanWithin(Query):
     """
     Returns matches which are enclosed inside another span query.
 
-    :arg little: Can be any span query. Matching spans from `little` that
-        are enclosed within `big` are returned.
-    :arg big: Can be any span query. Matching spans from `little` that are
-        enclosed within `big` are returned.
+    :arg little: (required)Can be any span query. Matching spans from
+        `little` that are enclosed within `big` are returned.
+    :arg big: (required)Can be any span query. Matching spans from
+        `little` that are enclosed within `big` are returned.
     """
 
     name = "span_within"
 
-    def __init__(self, *, little: "i.SpanQuery", big: "i.SpanQuery", **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        little: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        big: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
         super().__init__(little=little, big=big, **kwargs)
 
 
@@ -1923,9 +2014,9 @@ class SparseVector(Query):
     convert a query into a list of token-weight pairs, queries against a
     sparse vector field.
 
-    :arg field: The name of the field that contains the token-weight pairs
-        to be searched against. This field must be a mapped sparse_vector
-        field.
+    :arg field: (required)The name of the field that contains the token-
+        weight pairs to be searched against. This field must be a mapped
+        sparse_vector field.
     :arg query_vector: Dictionary of precomputed sparse vectors and their
         associated weights. Only one of inference_id or query_vector may
         be supplied in a request.
@@ -1953,12 +2044,14 @@ class SparseVector(Query):
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField"],
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
         query_vector: Union[Mapping[str, float], "NotSet"] = NOT_SET,
         inference_id: Union[str, "NotSet"] = NOT_SET,
         query: Union[str, "NotSet"] = NOT_SET,
         prune: Union[bool, "NotSet"] = NOT_SET,
-        pruning_config: Union["i.TokenPruningConfig", "NotSet"] = NOT_SET,
+        pruning_config: Union[
+            "i.TokenPruningConfig", Dict[str, Any], "NotSet"
+        ] = NOT_SET,
         **kwargs: Any,
     ):
         super().__init__(
@@ -2108,13 +2201,13 @@ class Wrapper(Query):
     """
     A query that accepts any other query as base64 encoded string.
 
-    :arg query: A base64 encoded query. The binary data format can be any
-        of JSON, YAML, CBOR or SMILE encodings
+    :arg query: (required)A base64 encoded query. The binary data format
+        can be any of JSON, YAML, CBOR or SMILE encodings
     """
 
     name = "wrapper"
 
-    def __init__(self, *, query: str, **kwargs: Any):
+    def __init__(self, *, query: Union[str, "NotSet"] = NOT_SET, **kwargs: Any):
         super().__init__(query=query, **kwargs)
 
 
@@ -2122,10 +2215,10 @@ class Type(Query):
     """
     No documentation available.
 
-    :arg value: None
+    :arg value: (required)No documentation available.
     """
 
     name = "type"
 
-    def __init__(self, *, value: str, **kwargs: Any):
+    def __init__(self, *, value: Union[str, "NotSet"] = NOT_SET, **kwargs: Any):
         super().__init__(value=value, **kwargs)

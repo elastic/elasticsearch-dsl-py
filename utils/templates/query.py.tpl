@@ -23,6 +23,7 @@ from typing import (
     Any,
     Callable,
     ClassVar,
+    Dict,
     List,
     Literal,
     Mapping,

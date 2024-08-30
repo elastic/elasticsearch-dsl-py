@@ -46,6 +46,15 @@ def wrapped_doc(text, width=70, initial_indent="", subsequent_indent=""):
     )
 
 
+def add_dict_type(type_):
+    """Add Dict[str, Any] to a Python type hint."""
+    if type_.startswith("Union["):
+        type_ = f"{type_[:-1]}, Dict[str, Any]]"
+    else:
+        type_ = f"Union[{type_}, Dict[str, Any]]"
+    return type_
+
+
 def add_not_set(type_):
     """Add NotSet to a Python type hint."""
     if type_.startswith("Union["):
@@ -118,7 +127,7 @@ class ElasticsearchSchema:
 
         elif schema_type["kind"] == "array_of":
             type_, param = self.get_python_type(schema_type["value"])
-            return f"List[{type_}]", None
+            return f"List[{type_}]", {**param, "multi": True} if param else None
 
         elif schema_type["kind"] == "dictionary_of":
             key_type, key_param = self.get_python_type(schema_type["key"])
@@ -164,11 +173,11 @@ class ElasticsearchSchema:
                 if schema_type["name"]["name"].endswith("RangeQuery"):
                     return '"wrappers.Range"', None
                 elif schema_type["name"]["name"].endswith("Function"):
-                    return f"\"function.{schema_type['name']['name']}\"", None
+                    return f"\"f.{schema_type['name']['name']}\"", None
             elif schema_type["name"]["namespace"] == "_types.analysis" and schema_type[
                 "name"
             ]["name"].endswith("Analyzer"):
-                return f"\"analysis.{schema_type['name']['name']}\"", None
+                return f"\"a.{schema_type['name']['name']}\"", None
             self.interfaces.add(schema_type["name"]["name"])
             return f"\"i.{schema_type['name']['name']}\"", None
         elif schema_type["kind"] == "user_defined_value":
@@ -176,108 +185,129 @@ class ElasticsearchSchema:
 
         raise RuntimeError(f"Cannot find Python type for {schema_type}")
 
+    def argument_to_python_type(self, arg):
+        try:
+            type_, param = schema.get_python_type(arg["type"])
+        except RuntimeError:
+            type_ = "Any"
+            param = None
+        if type_ != "Any":
+            if "i." in type_:
+                type_ = add_dict_type(type_)
+            type_ = add_not_set(type_)
+        required = "(required)" if arg["required"] else ""
+        doc = wrapped_doc(
+            f":arg {arg['name']}: {required}{arg.get('description', 'No documentation available.')}",
+            subsequent_indent="    ",
+        )
+        kwarg = {
+            "name": RESERVED.get(arg["name"], arg["name"]),
+            "type": type_,
+            "doc": doc,
+            "required": arg["required"],
+        }
+        if param is not None:
+            param = {"name": arg["name"], "param": param}
+        return kwarg, param
 
-def generate_query_classes(schema, filename):
-    classes = []
-    query_container = schema.find_type("QueryContainer", "_types.query_dsl")
-    for p in query_container["properties"]:
+    def instance_of_to_python_class(self, p, k):
+        instance = schema.find_type(
+            p["type"]["type"]["name"], p["type"]["type"]["namespace"]
+        )
+        if instance["kind"] == "interface":
+            k["kwargs"] = []
+            k["params"] = []
+            for p in instance["properties"]:
+                kwarg, param = self.argument_to_python_type(p)
+                if kwarg["required"]:
+                    i = 0
+                    for i in range(len(k["kwargs"])):
+                        if k["kwargs"][i]["required"] is False:
+                            break
+                    k["kwargs"].insert(i, kwarg)
+                else:
+                    k["kwargs"].append(kwarg)
+                if param:
+                    k["params"].append(param)
+        elif instance["kind"] == "type_alias":
+            if (
+                "codegenNames" in instance
+                and instance["type"]["kind"] == "union_of"
+                and len(instance["type"]["items"]) == len(instance["codegenNames"])
+            ):
+                k["kwargs"] = []
+                for name, type_ in zip(
+                    instance["codegenNames"], instance["type"]["items"]
+                ):
+                    python_type, _ = self.get_python_type(type_)
+                    k["kwargs"].append(
+                        {
+                            "name": name,
+                            "type": f'Union[{python_type}, "NotSet"]',
+                            "doc": [
+                                f":arg {name}: An instance of ``{python_type[3:-1]}``."
+                            ],
+                            "required": False,
+                        }
+                    )
+                    k["has_type_alias"] = True
+            else:
+                raise RuntimeError("Cannot generate code for non-enum type aliases")
+        else:
+            raise RuntimeError(
+                f"Cannot generate code for instances of kind '{instance['kind']}'"
+            )
+        return k
+
+    def dictionary_of_to_python_class(self, p, k):
+        key_type, _ = schema.get_python_type(p["type"]["key"])
+        if "InstrumentedField" in key_type:
+            value_type, _ = schema.get_python_type(p["type"]["value"])
+            if p["type"]["singleKey"]:
+                k["kwargs"] = [
+                    {
+                        "name": "_field",
+                        "type": add_not_set(key_type),
+                        "doc": [":arg _field: The field to use in this query."],
+                        "required": False,
+                    },
+                    {
+                        "name": "_value",
+                        "type": add_not_set(value_type),
+                        "doc": [":arg _value: The query value for the field."],
+                        "required": False,
+                    },
+                ]
+                k["has_field"] = True
+            else:
+                k["kwargs"] = [
+                    {
+                        "name": "_fields",
+                        "type": f"Optional[Mapping[{key_type}, {value_type}]]",
+                        "doc": [
+                            ":arg _fields: A dictionary of fields with their values."
+                        ],
+                        "required": False,
+                    },
+                ]
+                k["has_fields"] = True
+        else:
+            raise RuntimeError(f"Cannot generate code for type {p['type']}")
+        return k
+
+    def property_to_python_class(self, p):
         k = {"schema": p, "name": "".join([w.title() for w in p["name"].split("_")])}
         k["docstring"] = wrapped_doc(p.get("description"))
         kind = p["type"]["kind"]
         if kind == "instance_of":
-            instance = schema.find_type(
-                p["type"]["type"]["name"], p["type"]["type"]["namespace"]
-            )
-            if instance["kind"] == "interface":
-                k["kwargs"] = []
-                k["params"] = []
-                for arg in instance["properties"]:
-                    type_, param = schema.get_python_type(arg["type"])
-                    if arg["required"] is False and type_ != "Any":
-                        type_ = add_not_set(type_)
-                    doc = wrapped_doc(
-                        f":arg {arg['name']}: {arg.get('description')}",
-                        subsequent_indent="    ",
-                    )
-                    if arg["required"] is False:
-                        k["kwargs"].append(
-                            {
-                                "name": RESERVED.get(arg["name"], arg["name"]),
-                                "type": type_,
-                                "doc": doc,
-                                "required": False,
-                            }
-                        )
-                    else:
-                        i = 0
-                        for i in range(len(k["kwargs"])):
-                            if k["kwargs"][i]["required"] is False:
-                                break
-                        k["kwargs"].insert(
-                            i,
-                            {
-                                "name": RESERVED.get(arg["name"], arg["name"]),
-                                "type": type_,
-                                "doc": doc,
-                                "required": True,
-                            },
-                        )
-                    if param is not None:
-                        k["params"].append({"name": arg["name"], "param": param})
-
+            k = self.instance_of_to_python_class(p, k)
         elif kind == "dictionary_of":
-            key_type, _ = schema.get_python_type(p["type"]["key"])
-            if "InstrumentedField" in key_type:
-                value_type, _ = schema.get_python_type(p["type"]["value"])
-                if p["type"]["singleKey"]:
-                    k["kwargs"] = [
-                        {
-                            "name": "_field",
-                            "type": add_not_set(key_type),
-                            "doc": [":arg _field: The field to use in this query."],
-                            "required": False,
-                        },
-                        {
-                            "name": "_value",
-                            "type": add_not_set(value_type),
-                            "doc": [":arg _value: The query value for the field."],
-                            "required": False,
-                        },
-                    ]
-                    k["has_field"] = True
-                else:
-                    k["kwargs"] = [
-                        {
-                            "name": "_fields",
-                            "type": f"Optional[Mapping[{key_type}, {value_type}]]",
-                            "doc": [
-                                ":arg _fields: A dictionary of fields with their values."
-                            ],
-                            "required": False,
-                        },
-                    ]
-                    k["has_fields"] = True
-            else:
-                raise RuntimeError(f"Cannot generate code for type {p['type']}")
-
+            k = self.dictionary_of_to_python_class(p, k)
         else:
             raise RuntimeError(f"Cannot generate code for type {p['type']}")
-        classes.append(k)
+        return k
 
-    with open(filename, "wt") as f:
-        f.write(
-            query_py.render(
-                classes=classes, parent="Query", interfaces=sorted(schema.interfaces)
-            )
-        )
-    print(f"Generated {filename}.")
-
-
-def generate_interfaces(schema, interfaces, filename):
-    classes = {}
-    for interface in interfaces:
-        if interface == "PipeSeparatedFlags":
-            continue  # handled as a special case
+    def interface_to_python_class(self, interface, interfaces):
         type_ = schema.find_type(interface)
         if type_["kind"] != "interface":
             raise RuntimeError(f"Type {interface} is not an interface")
@@ -294,12 +324,35 @@ def generate_interfaces(schema, interfaces, filename):
         else:
             parent = None
         k = {"name": interface, "parent": parent, "properties": []}
-        schema.reset_interfaces()
-        for p in type_["properties"]:
-            type_, param = schema.get_python_type(p["type"])
-            k["properties"].append(
-                {"name": RESERVED.get(p["name"], p["name"]), "type": type_}
+        for arg in type_["properties"]:
+            arg_type, _ = schema.argument_to_python_type(arg)
+            k["properties"].append(arg_type)
+        return k
+
+
+def generate_query_classes(schema, filename):
+    classes = []
+    query_container = schema.find_type("QueryContainer", "_types.query_dsl")
+    for p in query_container["properties"]:
+        k = schema.property_to_python_class(p)
+        classes.append(k)
+
+    with open(filename, "wt") as f:
+        f.write(
+            query_py.render(
+                classes=classes, parent="Query", interfaces=sorted(schema.interfaces)
             )
+        )
+    print(f"Generated {filename}.")
+
+
+def generate_interfaces(schema, interfaces, filename):
+    classes = {}
+    for interface in interfaces:
+        if interface == "PipeSeparatedFlags":
+            continue  # handled as a special case
+        schema.reset_interfaces()
+        k = schema.interface_to_python_class(interface, interfaces)
         for new_interface in schema.interfaces:
             if new_interface not in interfaces:
                 interfaces.append(new_interface)
