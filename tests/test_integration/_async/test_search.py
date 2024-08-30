@@ -113,6 +113,27 @@ async def test_inner_hits_are_wrapped_in_response(
 
 
 @pytest.mark.asyncio
+async def test_inner_hits_are_serialized_to_dict(
+    async_data_client: AsyncElasticsearch,
+) -> None:
+    s = AsyncSearch(index="git")[0:1].query(
+        "has_parent", parent_type="repo", inner_hits={}, query=Q("match_all")
+    )
+    response = await s.execute()
+    d = response.to_dict(recursive=True)
+    assert isinstance(d, dict)
+    assert isinstance(d["hits"]["hits"][0]["inner_hits"]["repo"], dict)
+
+    # iterating over the results changes the format of the internal AttrDict
+    for hit in response:
+        pass
+
+    d = response.to_dict(recursive=True)
+    assert isinstance(d, dict)
+    assert isinstance(d["hits"]["hits"][0]["inner_hits"]["repo"], dict)
+
+
+@pytest.mark.asyncio
 async def test_scan_respects_doc_types(async_data_client: AsyncElasticsearch) -> None:
     repos = [repo async for repo in Repository.search().scan()]
 
