@@ -401,4 +401,4 @@ if __name__ == "__main__":
     schema = ElasticsearchSchema()
     generate_query_classes(schema, "elasticsearch_dsl/query.py")
     interfaces = schema.interfaces
-    generate_interfaces(schema, list(interfaces), "elasticsearch_dsl/interfaces.py")
+    generate_interfaces(schema, sorted(interfaces), "elasticsearch_dsl/interfaces.py")

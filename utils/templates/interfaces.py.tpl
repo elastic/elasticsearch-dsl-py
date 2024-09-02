@@ -16,6 +16,10 @@ class {{ k.name }}({% if k.parent %}{{ k.parent }}{% else %}AttrDict[Any]{% endi
     {% endfor %}
     {% endfor %}
     """
+    {% for p in k.properties %}
+    {{ p.name }}: {{ p.type }}
+    {% endfor %}
+
     def __init__(
         self,
         *,
@@ -25,7 +29,7 @@ class {{ k.name }}({% if k.parent %}{{ k.parent }}{% else %}AttrDict[Any]{% endi
         **kwargs: Any
     ):
         {% for p in k.properties %}
-        if {{ p.name }} != NOT_SET:
+        if not isinstance({{ p.name }}, NotSet):
             {% if "InstrumentedField" in p.type %}
             kwargs["{{ p.name }}"] = str({{ p.name }})
             {% else %}
