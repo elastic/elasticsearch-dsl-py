@@ -102,14 +102,16 @@ def test_reverse() -> None:
     d = {
         "query": {
             "bool": {
-                "filter": {
-                    "bool": {
-                        "should": [
-                            {"term": {"category": "meetup"}},
-                            {"term": {"category": "conference"}},
-                        ]
+                "filter": [
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"category": "meetup"}},
+                                {"term": {"category": "conference"}},
+                            ]
+                        }
                     }
-                },
+                ],
                 "must": [
                     {
                         "bool": {
@@ -133,7 +135,6 @@ def test_reverse() -> None:
     ubq = UpdateByQuery.from_dict(d)
 
     assert d == d2
-    d["query"]["bool"]["filter"] = [d["query"]["bool"]["filter"]]
     assert d == ubq.to_dict()
 
 

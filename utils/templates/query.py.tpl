@@ -40,11 +40,10 @@ from typing import (
 # from this module so others are liable to do so as well.
 from .function import SF  # noqa: F401
 from .function import ScoreFunction
-from .utils import DslBase, NOT_SET
+from .utils import DslBase, NotSet, NOT_SET
 
 if TYPE_CHECKING:
     from .document_base import InstrumentedField
-    from .utils import NotSet
     from elasticsearch_dsl import interfaces as i, wrappers
 
 _T = TypeVar("_T")

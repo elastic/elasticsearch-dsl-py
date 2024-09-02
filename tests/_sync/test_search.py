@@ -480,14 +480,16 @@ def test_reverse() -> None:
     d = {
         "query": {
             "bool": {
-                "filter": {
-                    "bool": {
-                        "should": [
-                            {"term": {"category": "meetup"}},
-                            {"term": {"category": "conference"}},
-                        ]
+                "filter": [
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"category": "meetup"}},
+                                {"term": {"category": "conference"}},
+                            ]
+                        }
                     }
-                },
+                ],
                 "must": [
                     {
                         "bool": {
@@ -525,7 +527,6 @@ def test_reverse() -> None:
     # make sure we haven't modified anything in place
     assert d == d2
     assert {"size": 5} == s._extra
-    d["query"]["bool"]["filter"] = [d["query"]["bool"]["filter"]]
     assert d == s.to_dict()
 
 

@@ -37,26 +37,26 @@ class {{ k.name }}({{ parent }}):
         **kwargs: Any
     ):
         {% if k.name == "FunctionScore" %}
-        if functions == NOT_SET:
+        if isinstance(functions, NotSet):
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
-                    functions.append({name: kwargs.pop(name)})
+                    functions.append({name: kwargs.pop(name)})  # type: ignore
         {% elif k.has_field %}
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         {% elif k.has_fields %}
-        if fields != NOT_SET:
+        if not isinstance(fields, NotSet):
             for field, value in _fields.items():
                 kwargs[str(field)] = value
         {% elif k.has_type_alias %}
         {% for kwarg in k.kwargs %}
         {% if loop.index == 1 %}
-        if {{ kwarg.name }} != NOT_SET:
+        if not isinstance({{ kwarg.name }}, NotSet):
         {% else %}
-        elif {{ kwarg.name }} != NOT_SET:
+        elif not isinstance({{ kwarg.name }}, NotSet):
         {% endif %}
-            kwargs = {{ kwarg.name }}
+            kwargs = cast(Dict[str, Any], {{ kwarg.name }}.to_dict() if hasattr({{ kwarg.name }}, "to_dict") else {{ kwarg.name }})
         {% endfor %}
         {% endif %}
         super().__init__(

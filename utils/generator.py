@@ -127,6 +127,8 @@ class ElasticsearchSchema:
 
         elif schema_type["kind"] == "array_of":
             type_, param = self.get_python_type(schema_type["value"])
+            if type_.startswith("Union["):
+                types = type_[6:-1].split(",")
             return f"List[{type_}]", {**param, "multi": True} if param else None
 
         elif schema_type["kind"] == "dictionary_of":
@@ -142,8 +144,9 @@ class ElasticsearchSchema:
                 and schema_type["items"][0] == schema_type["items"][1]["value"]
             ):
                 type_, param = self.get_python_type(schema_type["items"][0])
-                return f"Union[{type_}, List[{type_}]]", (
-                    {"type": param["type"], "multi": True} if param else None
+                return (
+                    f"Union[{type_}, List[{type_}]]",
+                    ({"type": param["type"], "multi": True} if param else None),
                 )
             elif (
                 len(schema_type["items"]) == 2
@@ -155,7 +158,11 @@ class ElasticsearchSchema:
                 self.interfaces.add("PipeSeparatedFlags")
                 return '"i.PipeSeparatedFlags"', None
             else:
-                types = [self.get_python_type(t) for t in schema_type["items"]]
+                types = list(
+                    dict.fromkeys(
+                        [self.get_python_type(t) for t in schema_type["items"]]
+                    )
+                )
                 return "Union[" + ", ".join([type_ for type_, _ in types]) + "]", None
 
         elif schema_type["kind"] == "enum":
@@ -171,13 +178,20 @@ class ElasticsearchSchema:
         elif schema_type["kind"] == "interface":
             if schema_type["name"]["namespace"] == "_types.query_dsl":
                 if schema_type["name"]["name"].endswith("RangeQuery"):
-                    return '"wrappers.Range"', None
+                    return '"wrappers.Range[Any]"', None
+                elif schema_type["name"]["name"].endswith("ScoreFunction"):
+                    name = schema_type["name"]["name"][:-8]
+                    if name == "FieldValueFactorScore":
+                        name = "FieldValueFactor"  # naming exception
+                    return f'"f.{name}"', None
+                elif schema_type["name"]["name"].endswith("DecayFunction"):
+                    return '"f.DecayFunction"', None
                 elif schema_type["name"]["name"].endswith("Function"):
                     return f"\"f.{schema_type['name']['name']}\"", None
             elif schema_type["name"]["namespace"] == "_types.analysis" and schema_type[
                 "name"
             ]["name"].endswith("Analyzer"):
-                return f"\"a.{schema_type['name']['name']}\"", None
+                return "str", None
             self.interfaces.add(schema_type["name"]["name"])
             return f"\"i.{schema_type['name']['name']}\"", None
         elif schema_type["kind"] == "user_defined_value":
@@ -273,7 +287,7 @@ class ElasticsearchSchema:
                     },
                     {
                         "name": "_value",
-                        "type": add_not_set(value_type),
+                        "type": add_not_set(add_dict_type(value_type)),
                         "doc": [":arg _value: The query value for the field."],
                         "required": False,
                     },

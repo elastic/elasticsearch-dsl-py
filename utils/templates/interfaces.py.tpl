@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Mapping, Union
 from elasticsearch_dsl.document_base import InstrumentedField
-from elasticsearch_dsl import analysis as a, function as f, interfaces as i, Query
+from elasticsearch_dsl import function as f, interfaces as i, Query
 from elasticsearch_dsl.utils import AttrDict, NotSet, NOT_SET
 
 PipeSeparatedFlags = str

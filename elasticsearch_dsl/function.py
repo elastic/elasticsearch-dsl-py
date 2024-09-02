@@ -17,9 +17,18 @@
 
 import collections.abc
 from copy import deepcopy
-from typing import Any, ClassVar, Dict, MutableMapping, Optional, Union, overload
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    Literal,
+    MutableMapping,
+    Optional,
+    Union,
+    overload,
+)
 
-from .utils import DslBase
+from .utils import NOT_SET, AttrDict, DslBase, NotSet
 
 
 @overload
@@ -137,3 +146,29 @@ class Gauss(ScoreFunction):
 
 class Exp(ScoreFunction):
     name = "exp"
+
+
+class DecayFunction(AttrDict[Any]):
+    def __init__(
+        self,
+        *,
+        decay: Union[float, "NotSet"] = NOT_SET,
+        offset: Any = NOT_SET,
+        scale: Any = NOT_SET,
+        origin: Any = NOT_SET,
+        multi_value_mode: Union[
+            Literal["min", "max", "avg", "sum"], "NotSet"
+        ] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(decay, NotSet):
+            kwargs["decay"] = decay
+        if not isinstance(offset, NotSet):
+            kwargs["offset"] = offset
+        if not isinstance(scale, NotSet):
+            kwargs["offset"] = scale
+        if not isinstance(origin, NotSet):
+            kwargs["offset"] = origin
+        if not isinstance(multi_value_mode, NotSet):
+            kwargs["offset"] = multi_value_mode
+        super().__init__(kwargs)

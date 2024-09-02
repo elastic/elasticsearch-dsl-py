@@ -40,14 +40,13 @@ from typing import (
 # from this module so others are liable to do so as well.
 from .function import SF  # noqa: F401
 from .function import ScoreFunction
-from .utils import NOT_SET, DslBase
+from .utils import NOT_SET, DslBase, NotSet
 
 if TYPE_CHECKING:
     from elasticsearch_dsl import interfaces as i
     from elasticsearch_dsl import wrappers
 
     from .document_base import InstrumentedField
-    from .utils import NotSet
 
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Mapping[str, Any])
@@ -346,10 +345,10 @@ class Common(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.CommonTermsQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.CommonTermsQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -472,12 +471,19 @@ class DistanceFeature(Query):
         date: Union["i.DateDistanceFeatureQuery", "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if untyped != NOT_SET:
-            kwargs = untyped
-        elif geo != NOT_SET:
-            kwargs = geo
-        elif date != NOT_SET:
-            kwargs = date
+        if not isinstance(untyped, NotSet):
+            kwargs = cast(
+                Dict[str, Any],
+                untyped.to_dict() if hasattr(untyped, "to_dict") else untyped,
+            )
+        elif not isinstance(geo, NotSet):
+            kwargs = cast(
+                Dict[str, Any], geo.to_dict() if hasattr(geo, "to_dict") else geo
+            )
+        elif not isinstance(date, NotSet):
+            kwargs = cast(
+                Dict[str, Any], date.to_dict() if hasattr(date, "to_dict") else date
+            )
         super().__init__(**kwargs)
 
 
@@ -541,11 +547,11 @@ class FunctionScore(Query):
         ] = NOT_SET,
         **kwargs: Any,
     ):
-        if functions == NOT_SET:
+        if isinstance(functions, NotSet):
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
-                    functions.append({name: kwargs.pop(name)})
+                    functions.append({name: kwargs.pop(name)})  # type: ignore
         super().__init__(
             boost_mode=boost_mode,
             functions=functions,
@@ -571,10 +577,10 @@ class Fuzzy(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.FuzzyQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.FuzzyQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -826,10 +832,10 @@ class Intervals(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.IntervalsQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.IntervalsQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -897,10 +903,10 @@ class Match(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.MatchQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -947,10 +953,10 @@ class MatchBoolPrefix(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.MatchBoolPrefixQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchBoolPrefixQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -992,10 +998,10 @@ class MatchPhrase(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.MatchPhraseQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchPhraseQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1015,10 +1021,10 @@ class MatchPhrasePrefix(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.MatchPhrasePrefixQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.MatchPhrasePrefixQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1383,10 +1389,10 @@ class Prefix(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.PrefixQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.PrefixQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1532,16 +1538,10 @@ class Range(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union[
-            "wrappers.Range",
-            "wrappers.Range",
-            "wrappers.Range",
-            "wrappers.Range",
-            "NotSet",
-        ] = NOT_SET,
+        _value: Union["wrappers.Range[Any]", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1606,10 +1606,10 @@ class Regexp(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.RegexpQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.RegexpQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1978,10 +1978,10 @@ class SpanTerm(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.SpanTermQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.SpanTermQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2080,10 +2080,10 @@ class Term(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.TermQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.TermQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2123,10 +2123,10 @@ class TermsSet(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.TermsSetQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.TermsSetQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2146,10 +2146,10 @@ class TextExpansion(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.TextExpansionQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.TextExpansionQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2168,10 +2168,10 @@ class WeightedTokens(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.WeightedTokensQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.WeightedTokensQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2189,10 +2189,10 @@ class Wildcard(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        _value: Union["i.WildcardQuery", "NotSet"] = NOT_SET,
+        _value: Union["i.WildcardQuery", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if _field != NOT_SET:
+        if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
