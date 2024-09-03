@@ -21,7 +21,15 @@ from typing import Any
 import pytest
 from pytest import raises
 
-from elasticsearch_dsl import AsyncEmptySearch, AsyncSearch, Document, Q, query
+from elasticsearch_dsl import (
+    AsyncEmptySearch,
+    AsyncSearch,
+    Document,
+    Q,
+    interfaces,
+    query,
+    wrappers,
+)
 from elasticsearch_dsl.exceptions import IllegalOperation
 
 
@@ -528,6 +536,74 @@ def test_reverse() -> None:
     assert d == d2
     assert {"size": 5} == s._extra
     assert d == s.to_dict()
+
+
+def test_code_generated_classes() -> None:
+    s = AsyncSearch()
+    s = (
+        s.query(query.Match("title", interfaces.MatchQuery(query="python")))
+        .query(~query.Match("title", interfaces.MatchQuery(query="ruby")))
+        .query(
+            query.Knn(
+                field="title",
+                query_vector=[1.0, 2.0, 3.0],
+                num_candidates=10,
+                k=3,
+                filter=query.Range("year", wrappers.Range(gt="2004")),
+            )
+        )
+        .filter(
+            query.Term("category", interfaces.TermQuery(value="meetup"))
+            | query.Term("category", interfaces.TermQuery(value="conference"))
+        )
+        .collapse("user_id")
+        .post_filter(query.Terms(tags=["prague", "czech"]))
+        .script_fields(more_attendees="doc['attendees'].value + 42")
+    )
+    assert {
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"category": {"value": "meetup"}}},
+                                {"term": {"category": {"value": "conference"}}},
+                            ]
+                        }
+                    }
+                ],
+                "must": [
+                    {"match": {"title": {"query": "python"}}},
+                    {
+                        "knn": {
+                            "field": "title",
+                            "filter": [
+                                {
+                                    "range": {
+                                        "year": {
+                                            "gt": "2004",
+                                        },
+                                    },
+                                },
+                            ],
+                            "k": 3,
+                            "num_candidates": 10,
+                            "query_vector": [
+                                1.0,
+                                2.0,
+                                3.0,
+                            ],
+                        },
+                    },
+                ],
+                "must_not": [{"match": {"title": {"query": "ruby"}}}],
+            }
+        },
+        "post_filter": {"terms": {"tags": ["prague", "czech"]}},
+        "collapse": {"field": "user_id"},
+        "script_fields": {"more_attendees": {"script": "doc['attendees'].value + 42"}},
+    } == s.to_dict()
 
 
 def test_from_dict_doesnt_need_query() -> None:
