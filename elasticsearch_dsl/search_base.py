@@ -37,13 +37,13 @@ from typing import (
 from typing_extensions import Self, TypeVar
 
 from .aggs import A, Agg, AggBase
+from .document_base import InstrumentedField
 from .exceptions import IllegalOperation
 from .query import Bool, Q, Query
 from .response import Hit, Response
 from .utils import _R, AnyUsingType, AttrDict, DslBase, recursive_to_dict
 
 if TYPE_CHECKING:
-    from .document_base import InstrumentedField
     from .field import Field, Object
 
 
@@ -714,10 +714,10 @@ class SearchBase(Request[_R]):
                 Dict[str, List[Union[str, "InstrumentedField"]]],
             ]
         ) -> Union[str, List[str], Dict[str, List[str]]]:
-            if isinstance(fields, list):
-                return [str(f) for f in fields]
-            elif isinstance(fields, dict):
+            if isinstance(fields, dict):
                 return {k: ensure_strings(v) for k, v in fields.items()}
+            elif not isinstance(fields, (str, InstrumentedField)):
+                return [str(f) for f in fields]
             else:
                 return str(fields)
 
