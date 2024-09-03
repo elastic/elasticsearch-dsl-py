@@ -546,7 +546,7 @@ def test_source() -> None:
 
     assert {
         "_source": {"includes": ["foo.bar.*"], "excludes": ["foo.one"]}
-    } == Search().source(includes=["foo.bar.*"], excludes=["foo.one"]).to_dict()
+    } == Search().source(includes=["foo.bar.*"], excludes=("foo.one",)).to_dict()
 
     assert {"_source": False} == Search().source(False).to_dict()
 

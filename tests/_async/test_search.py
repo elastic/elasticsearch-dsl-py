@@ -546,7 +546,7 @@ def test_source() -> None:
 
     assert {
         "_source": {"includes": ["foo.bar.*"], "excludes": ["foo.one"]}
-    } == AsyncSearch().source(includes=["foo.bar.*"], excludes=["foo.one"]).to_dict()
+    } == AsyncSearch().source(includes=["foo.bar.*"], excludes=("foo.one",)).to_dict()
 
     assert {"_source": False} == AsyncSearch().source(False).to_dict()
 
