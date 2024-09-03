@@ -717,6 +717,10 @@ class SearchBase(Request[_R]):
             if isinstance(fields, dict):
                 return {k: ensure_strings(v) for k, v in fields.items()}
             elif not isinstance(fields, (str, InstrumentedField)):
+                # we assume that if `fields` is not a any of [dict, str,
+                # InstrumentedField] then it is an iterable of strings or
+                # InstrumentedFields, so we convert them to a plain list of
+                # strings
                 return [str(f) for f in fields]
             else:
                 return str(fields)
