@@ -60,7 +60,7 @@ class CommonTermsQuery(QueryBase):
     :arg high_freq_operator: No documentation available.
     :arg low_freq_operator: No documentation available.
     :arg minimum_should_match: No documentation available.
-    :arg query: (required)No documentation available.
+    :arg query: (required) No documentation available.
     """
 
     analyzer: Union[str, "NotSet"]
@@ -94,52 +94,6 @@ class CommonTermsQuery(QueryBase):
         if not isinstance(query, NotSet):
             kwargs["query"] = query
         super().__init__(**kwargs)
-
-
-class DistanceFeatureQueryBase(QueryBase):
-    """
-    :arg origin: (required)Date or point of origin used to calculate
-        distances. If the `field` value is a `date` or `date_nanos` field,
-        the `origin` value must be a date. Date Math, such as `now-1h`, is
-        supported. If the field value is a `geo_point` field, the `origin`
-        value must be a geopoint.
-    :arg pivot: (required)Distance from the `origin` at which relevance
-        scores receive half of the `boost` value. If the `field` value is
-        a `date` or `date_nanos` field, the `pivot` value must be a time
-        unit, such as `1h` or `10d`. If the `field` value is a `geo_point`
-        field, the `pivot` value must be a distance unit, such as `1km` or
-        `12m`.
-    :arg field: (required)Name of the field used to calculate distances.
-        This field must meet the following criteria: be a `date`,
-        `date_nanos` or `geo_point` field; have an `index` mapping
-        parameter value of `true`, which is the default; have an
-        `doc_values` mapping parameter value of `true`, which is the
-        default.
-    """
-
-    origin: Any
-    pivot: Any
-    field: Union[str, "InstrumentedField", "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        origin: Any = NOT_SET,
-        pivot: Any = NOT_SET,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(origin, NotSet):
-            kwargs["origin"] = origin
-        if not isinstance(pivot, NotSet):
-            kwargs["pivot"] = pivot
-        if not isinstance(field, NotSet):
-            kwargs["field"] = str(field)
-        super().__init__(**kwargs)
-
-
-class DateDistanceFeatureQuery(DistanceFeatureQueryBase):
-    pass
 
 
 class FunctionScoreContainer(AttrDict[Any]):
@@ -218,7 +172,7 @@ class FuzzyQuery(QueryBase):
     :arg transpositions: Indicates whether edits include transpositions of
         two adjacent characters (for example `ab` to `ba`).
     :arg fuzziness: Maximum edit distance allowed for matching.
-    :arg value: (required)Term you wish to find in the provided field.
+    :arg value: (required) Term you wish to find in the provided field.
     """
 
     max_expansions: Union[int, "NotSet"]
@@ -252,10 +206,6 @@ class FuzzyQuery(QueryBase):
         if not isinstance(value, NotSet):
             kwargs["value"] = value
         super().__init__(**kwargs)
-
-
-class GeoDistanceFeatureQuery(DistanceFeatureQueryBase):
-    pass
 
 
 class InnerHits(AttrDict[Any]):
@@ -515,7 +465,7 @@ class MatchBoolPrefixQuery(QueryBase):
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching. Can be applied to the term subqueries constructed
         for all terms but the final term.
-    :arg query: (required)Terms you wish to find in the provided field.
+    :arg query: (required) Terms you wish to find in the provided field.
         The last term is used in a prefix query.
     """
 
@@ -570,7 +520,7 @@ class MatchPhrasePrefixQuery(QueryBase):
         tokens.
     :arg max_expansions: Maximum number of terms to which the last
         provided term of the query value will expand.
-    :arg query: (required)Text you wish to find in the provided field.
+    :arg query: (required) Text you wish to find in the provided field.
     :arg slop: Maximum number of positions allowed between matching
         tokens.
     :arg zero_terms_query: Indicates whether no documents are returned if
@@ -611,7 +561,7 @@ class MatchPhraseQuery(QueryBase):
     """
     :arg analyzer: Analyzer used to convert the text in the query value
         into tokens.
-    :arg query: (required)Query terms that are analyzed and turned into a
+    :arg query: (required) Query terms that are analyzed and turned into a
         phrase query.
     :arg slop: Maximum number of positions allowed between matching
         tokens.
@@ -667,7 +617,7 @@ class MatchQuery(QueryBase):
         value.
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching.
-    :arg query: (required)Text, number, boolean value or date you wish to
+    :arg query: (required) Text, number, boolean value or date you wish to
         find in the provided field.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
@@ -739,8 +689,8 @@ class MatchQuery(QueryBase):
 
 class PinnedDoc(AttrDict[Any]):
     """
-    :arg _id: (required)The unique document ID.
-    :arg _index: (required)The index that contains the document.
+    :arg _id: (required) The unique document ID.
+    :arg _index: (required) The index that contains the document.
     """
 
     _id: Union[str, "NotSet"]
@@ -763,7 +713,7 @@ class PinnedDoc(AttrDict[Any]):
 class PrefixQuery(QueryBase):
     """
     :arg rewrite: Method used to rewrite the query.
-    :arg value: (required)Beginning characters of terms you wish to find
+    :arg value: (required) Beginning characters of terms you wish to find
         in the provided field.
     :arg case_insensitive: Allows ASCII case insensitive matching of the
         value with the indexed field values when set to `true`. Default is
@@ -820,7 +770,7 @@ class RankFeatureFunctionLinear(RankFeatureFunction):
 
 class RankFeatureFunctionLogarithm(RankFeatureFunction):
     """
-    :arg scaling_factor: (required)Configurable scaling factor.
+    :arg scaling_factor: (required) Configurable scaling factor.
     """
 
     scaling_factor: Union[float, "NotSet"]
@@ -849,9 +799,9 @@ class RankFeatureFunctionSaturation(RankFeatureFunction):
 
 class RankFeatureFunctionSigmoid(RankFeatureFunction):
     """
-    :arg pivot: (required)Configurable pivot value so that the result will
-        be less than 0.5.
-    :arg exponent: (required)Configurable Exponent.
+    :arg pivot: (required) Configurable pivot value so that the result
+        will be less than 0.5.
+    :arg exponent: (required) Configurable Exponent.
     """
 
     pivot: Union[float, "NotSet"]
@@ -881,8 +831,8 @@ class RegexpQuery(QueryBase):
     :arg max_determinized_states: Maximum number of automaton states
         required for the query.
     :arg rewrite: Method used to rewrite the query.
-    :arg value: (required)Regular expression for terms you wish to find in
-        the provided field.
+    :arg value: (required) Regular expression for terms you wish to find
+        in the provided field.
     """
 
     case_insensitive: Union[bool, "NotSet"]
@@ -1046,7 +996,7 @@ class SpanQuery(AttrDict[Any]):
 
 class SpanTermQuery(QueryBase):
     """
-    :arg value: (required)No documentation available.
+    :arg value: (required) No documentation available.
     """
 
     value: Union[str, "NotSet"]
@@ -1059,7 +1009,7 @@ class SpanTermQuery(QueryBase):
 
 class TermQuery(QueryBase):
     """
-    :arg value: (required)Term you wish to find in the provided field.
+    :arg value: (required) Term you wish to find in the provided field.
     :arg case_insensitive: Allows ASCII case insensitive matching of the
         value with the indexed field values when set to `true`. When
         `false`, the case sensitivity of matching depends on the
@@ -1089,7 +1039,7 @@ class TermsSetQuery(QueryBase):
         of matching terms required to return a document.
     :arg minimum_should_match_script: Custom script containing the number
         of matching terms required to return a document.
-    :arg terms: (required)Array of terms you wish to find in the provided
+    :arg terms: (required) Array of terms you wish to find in the provided
         field.
     """
 
@@ -1118,8 +1068,8 @@ class TermsSetQuery(QueryBase):
 
 class TextExpansionQuery(QueryBase):
     """
-    :arg model_id: (required)The text expansion NLP model to use
-    :arg model_text: (required)The query text
+    :arg model_id: (required) The text expansion NLP model to use
+    :arg model_text: (required) The query text
     :arg pruning_config: Token pruning configurations
     """
 
@@ -1178,13 +1128,9 @@ class TokenPruningConfig(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class UntypedDistanceFeatureQuery(DistanceFeatureQueryBase):
-    pass
-
-
 class WeightedTokensQuery(QueryBase):
     """
-    :arg tokens: (required)The tokens representing this query
+    :arg tokens: (required) The tokens representing this query
     :arg pruning_config: Token pruning configurations
     """
 
@@ -1245,33 +1191,10 @@ class WildcardQuery(QueryBase):
         super().__init__(**kwargs)
 
 
-class ScriptField(AttrDict[Any]):
-    """
-    :arg script: (required)No documentation available.
-    :arg ignore_failure: No documentation available.
-    """
-
-    script: Union["i.Script", Dict[str, Any], "NotSet"]
-    ignore_failure: Union[bool, "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
-        ignore_failure: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(script, NotSet):
-            kwargs["script"] = script
-        if not isinstance(ignore_failure, NotSet):
-            kwargs["ignore_failure"] = ignore_failure
-        super().__init__(kwargs)
-
-
 class FieldAndFormat(AttrDict[Any]):
     """
-    :arg field: (required)Wildcard pattern. The request returns values for
-        field names matching this pattern.
+    :arg field: (required) Wildcard pattern. The request returns values
+        for field names matching this pattern.
     :arg format: Format in which the values are returned.
     :arg include_unmapped: No documentation available.
     """
@@ -1297,36 +1220,39 @@ class FieldAndFormat(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class SortOptions(AttrDict[Any]):
+class FieldCollapse(AttrDict[Any]):
     """
-    :arg _score: No documentation available.
-    :arg _doc: No documentation available.
-    :arg _geo_distance: No documentation available.
-    :arg _script: No documentation available.
+    :arg field: (required) The field to collapse the result set on
+    :arg inner_hits: The number of inner hits and their sort order
+    :arg max_concurrent_group_searches: The number of concurrent requests
+        allowed to retrieve the inner_hits per group
+    :arg collapse: No documentation available.
     """
 
-    _score: Union["i.ScoreSort", Dict[str, Any], "NotSet"]
-    _doc: Union["i.ScoreSort", Dict[str, Any], "NotSet"]
-    _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "NotSet"]
-    _script: Union["i.ScriptSort", Dict[str, Any], "NotSet"]
+    field: Union[str, "InstrumentedField", "NotSet"]
+    inner_hits: Union["i.InnerHits", List["i.InnerHits"], Dict[str, Any], "NotSet"]
+    max_concurrent_group_searches: Union[int, "NotSet"]
+    collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"]
 
     def __init__(
         self,
         *,
-        _score: Union["i.ScoreSort", Dict[str, Any], "NotSet"] = NOT_SET,
-        _doc: Union["i.ScoreSort", Dict[str, Any], "NotSet"] = NOT_SET,
-        _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "NotSet"] = NOT_SET,
-        _script: Union["i.ScriptSort", Dict[str, Any], "NotSet"] = NOT_SET,
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        inner_hits: Union[
+            "i.InnerHits", List["i.InnerHits"], Dict[str, Any], "NotSet"
+        ] = NOT_SET,
+        max_concurrent_group_searches: Union[int, "NotSet"] = NOT_SET,
+        collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if not isinstance(_score, NotSet):
-            kwargs["_score"] = _score
-        if not isinstance(_doc, NotSet):
-            kwargs["_doc"] = _doc
-        if not isinstance(_geo_distance, NotSet):
-            kwargs["_geo_distance"] = _geo_distance
-        if not isinstance(_script, NotSet):
-            kwargs["_script"] = _script
+        if not isinstance(field, NotSet):
+            kwargs["field"] = str(field)
+        if not isinstance(inner_hits, NotSet):
+            kwargs["inner_hits"] = inner_hits
+        if not isinstance(max_concurrent_group_searches, NotSet):
+            kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
+        if not isinstance(collapse, NotSet):
+            kwargs["collapse"] = collapse
         super().__init__(kwargs)
 
 
@@ -1491,7 +1417,7 @@ class HighlightBase(AttrDict[Any]):
 class Highlight(HighlightBase):
     """
     :arg encoder: No documentation available.
-    :arg fields: (required)No documentation available.
+    :arg fields: (required) No documentation available.
     """
 
     encoder: Union[Literal["default", "html"], "NotSet"]
@@ -1519,39 +1445,59 @@ class Highlight(HighlightBase):
         super().__init__(**kwargs)
 
 
-class FieldCollapse(AttrDict[Any]):
+class ScriptField(AttrDict[Any]):
     """
-    :arg field: (required)The field to collapse the result set on
-    :arg inner_hits: The number of inner hits and their sort order
-    :arg max_concurrent_group_searches: The number of concurrent requests
-        allowed to retrieve the inner_hits per group
-    :arg collapse: No documentation available.
+    :arg script: (required) No documentation available.
+    :arg ignore_failure: No documentation available.
     """
 
-    field: Union[str, "InstrumentedField", "NotSet"]
-    inner_hits: Union["i.InnerHits", List["i.InnerHits"], Dict[str, Any], "NotSet"]
-    max_concurrent_group_searches: Union[int, "NotSet"]
-    collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"]
+    script: Union["i.Script", Dict[str, Any], "NotSet"]
+    ignore_failure: Union[bool, "NotSet"]
 
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        inner_hits: Union[
-            "i.InnerHits", List["i.InnerHits"], Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        max_concurrent_group_searches: Union[int, "NotSet"] = NOT_SET,
-        collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"] = NOT_SET,
+        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
+        ignore_failure: Union[bool, "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if not isinstance(field, NotSet):
-            kwargs["field"] = str(field)
-        if not isinstance(inner_hits, NotSet):
-            kwargs["inner_hits"] = inner_hits
-        if not isinstance(max_concurrent_group_searches, NotSet):
-            kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
-        if not isinstance(collapse, NotSet):
-            kwargs["collapse"] = collapse
+        if not isinstance(script, NotSet):
+            kwargs["script"] = script
+        if not isinstance(ignore_failure, NotSet):
+            kwargs["ignore_failure"] = ignore_failure
+        super().__init__(kwargs)
+
+
+class SortOptions(AttrDict[Any]):
+    """
+    :arg _score: No documentation available.
+    :arg _doc: No documentation available.
+    :arg _geo_distance: No documentation available.
+    :arg _script: No documentation available.
+    """
+
+    _score: Union["i.ScoreSort", Dict[str, Any], "NotSet"]
+    _doc: Union["i.ScoreSort", Dict[str, Any], "NotSet"]
+    _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "NotSet"]
+    _script: Union["i.ScriptSort", Dict[str, Any], "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        _score: Union["i.ScoreSort", Dict[str, Any], "NotSet"] = NOT_SET,
+        _doc: Union["i.ScoreSort", Dict[str, Any], "NotSet"] = NOT_SET,
+        _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "NotSet"] = NOT_SET,
+        _script: Union["i.ScriptSort", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(_score, NotSet):
+            kwargs["_score"] = _score
+        if not isinstance(_doc, NotSet):
+            kwargs["_doc"] = _doc
+        if not isinstance(_geo_distance, NotSet):
+            kwargs["_geo_distance"] = _geo_distance
+        if not isinstance(_script, NotSet):
+            kwargs["_script"] = _script
         super().__init__(kwargs)
 
 
@@ -1590,67 +1536,11 @@ class SourceFilter(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class IntervalsPrefix(AttrDict[Any]):
-    """
-    :arg analyzer: Analyzer used to analyze the `prefix`.
-    :arg prefix: (required)Beginning characters of terms you wish to find
-        in the top-level field.
-    :arg use_field: If specified, match intervals from this field rather
-        than the top-level field. The `prefix` is normalized using the
-        search analyzer from this field, unless `analyzer` is specified
-        separately.
-    """
-
-    analyzer: Union[str, "NotSet"]
-    prefix: Union[str, "NotSet"]
-    use_field: Union[str, "InstrumentedField", "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        prefix: Union[str, "NotSet"] = NOT_SET,
-        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(analyzer, NotSet):
-            kwargs["analyzer"] = analyzer
-        if not isinstance(prefix, NotSet):
-            kwargs["prefix"] = prefix
-        if not isinstance(use_field, NotSet):
-            kwargs["use_field"] = str(use_field)
-        super().__init__(kwargs)
-
-
-class IntervalsAnyOf(AttrDict[Any]):
-    """
-    :arg intervals: (required)An array of rules to match.
-    :arg filter: Rule used to filter returned intervals.
-    """
-
-    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "NotSet"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        intervals: Union[
-            List["i.IntervalsContainer"], Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(intervals, NotSet):
-            kwargs["intervals"] = intervals
-        if not isinstance(filter, NotSet):
-            kwargs["filter"] = filter
-        super().__init__(kwargs)
-
-
 class IntervalsAllOf(AttrDict[Any]):
     """
-    :arg intervals: (required)An array of rules to combine. All rules must
-        produce a match in a document for the overall source to match.
+    :arg intervals: (required) An array of rules to combine. All rules
+        must produce a match in a document for the overall source to
+        match.
     :arg max_gaps: Maximum number of positions between the matching terms.
         Intervals produced by the rules further apart than this are not
         considered matches.
@@ -1686,13 +1576,38 @@ class IntervalsAllOf(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class IntervalsAnyOf(AttrDict[Any]):
+    """
+    :arg intervals: (required) An array of rules to match.
+    :arg filter: Rule used to filter returned intervals.
+    """
+
+    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "NotSet"]
+    filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        intervals: Union[
+            List["i.IntervalsContainer"], Dict[str, Any], "NotSet"
+        ] = NOT_SET,
+        filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(intervals, NotSet):
+            kwargs["intervals"] = intervals
+        if not isinstance(filter, NotSet):
+            kwargs["filter"] = filter
+        super().__init__(kwargs)
+
+
 class IntervalsFuzzy(AttrDict[Any]):
     """
     :arg analyzer: Analyzer used to normalize the term.
     :arg fuzziness: Maximum edit distance allowed for matching.
     :arg prefix_length: Number of beginning characters left unchanged when
         creating expansions.
-    :arg term: (required)The term to match.
+    :arg term: (required) The term to match.
     :arg transpositions: Indicates whether edits include transpositions of
         two adjacent characters (for example, `ab` to `ba`).
     :arg use_field: If specified, match intervals from this field rather
@@ -1734,38 +1649,6 @@ class IntervalsFuzzy(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class IntervalsWildcard(AttrDict[Any]):
-    """
-    :arg analyzer: Analyzer used to analyze the `pattern`. Defaults to the
-        top-level field's analyzer.
-    :arg pattern: (required)Wildcard pattern used to find matching terms.
-    :arg use_field: If specified, match intervals from this field rather
-        than the top-level field. The `pattern` is normalized using the
-        search analyzer from this field, unless `analyzer` is specified
-        separately.
-    """
-
-    analyzer: Union[str, "NotSet"]
-    pattern: Union[str, "NotSet"]
-    use_field: Union[str, "InstrumentedField", "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        pattern: Union[str, "NotSet"] = NOT_SET,
-        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(analyzer, NotSet):
-            kwargs["analyzer"] = analyzer
-        if not isinstance(pattern, NotSet):
-            kwargs["pattern"] = pattern
-        if not isinstance(use_field, NotSet):
-            kwargs["use_field"] = str(use_field)
-        super().__init__(kwargs)
-
-
 class IntervalsMatch(AttrDict[Any]):
     """
     :arg analyzer: Analyzer used to analyze terms in the query.
@@ -1773,7 +1656,7 @@ class IntervalsMatch(AttrDict[Any]):
         Terms further apart than this are not considered matches.
     :arg ordered: If `true`, matching terms must appear in their specified
         order.
-    :arg query: (required)Text you wish to find in the provided field.
+    :arg query: (required) Text you wish to find in the provided field.
     :arg use_field: If specified, match intervals from this field rather
         than the top-level field. The `term` is normalized using the
         search analyzer from this field, unless `analyzer` is specified
@@ -1814,10 +1697,74 @@ class IntervalsMatch(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class IntervalsPrefix(AttrDict[Any]):
+    """
+    :arg analyzer: Analyzer used to analyze the `prefix`.
+    :arg prefix: (required) Beginning characters of terms you wish to find
+        in the top-level field.
+    :arg use_field: If specified, match intervals from this field rather
+        than the top-level field. The `prefix` is normalized using the
+        search analyzer from this field, unless `analyzer` is specified
+        separately.
+    """
+
+    analyzer: Union[str, "NotSet"]
+    prefix: Union[str, "NotSet"]
+    use_field: Union[str, "InstrumentedField", "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        analyzer: Union[str, "NotSet"] = NOT_SET,
+        prefix: Union[str, "NotSet"] = NOT_SET,
+        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(analyzer, NotSet):
+            kwargs["analyzer"] = analyzer
+        if not isinstance(prefix, NotSet):
+            kwargs["prefix"] = prefix
+        if not isinstance(use_field, NotSet):
+            kwargs["use_field"] = str(use_field)
+        super().__init__(kwargs)
+
+
+class IntervalsWildcard(AttrDict[Any]):
+    """
+    :arg analyzer: Analyzer used to analyze the `pattern`. Defaults to the
+        top-level field's analyzer.
+    :arg pattern: (required) Wildcard pattern used to find matching terms.
+    :arg use_field: If specified, match intervals from this field rather
+        than the top-level field. The `pattern` is normalized using the
+        search analyzer from this field, unless `analyzer` is specified
+        separately.
+    """
+
+    analyzer: Union[str, "NotSet"]
+    pattern: Union[str, "NotSet"]
+    use_field: Union[str, "InstrumentedField", "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        analyzer: Union[str, "NotSet"] = NOT_SET,
+        pattern: Union[str, "NotSet"] = NOT_SET,
+        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(analyzer, NotSet):
+            kwargs["analyzer"] = analyzer
+        if not isinstance(pattern, NotSet):
+            kwargs["pattern"] = pattern
+        if not isinstance(use_field, NotSet):
+            kwargs["use_field"] = str(use_field)
+        super().__init__(kwargs)
+
+
 class TextEmbedding(AttrDict[Any]):
     """
-    :arg model_id: (required)No documentation available.
-    :arg model_text: (required)No documentation available.
+    :arg model_id: (required) No documentation available.
+    :arg model_text: (required) No documentation available.
     """
 
     model_id: Union[str, "NotSet"]
@@ -1837,35 +1784,11 @@ class TextEmbedding(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class SpanFirstQuery(QueryBase):
-    """
-    :arg end: (required)Controls the maximum end position permitted in a
-        match.
-    :arg match: (required)Can be any other span type query.
-    """
-
-    end: Union[int, "NotSet"]
-    match: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        end: Union[int, "NotSet"] = NOT_SET,
-        match: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(end, NotSet):
-            kwargs["end"] = end
-        if not isinstance(match, NotSet):
-            kwargs["match"] = match
-        super().__init__(**kwargs)
-
-
 class SpanContainingQuery(QueryBase):
     """
-    :arg big: (required)Can be any span query. Matching spans from `big`
+    :arg big: (required) Can be any span query. Matching spans from `big`
         that contain matches from `little` are returned.
-    :arg little: (required)Can be any span query. Matching spans from
+    :arg little: (required) Can be any span query. Matching spans from
         `big` that contain matches from `little` are returned.
     """
 
@@ -1888,8 +1811,8 @@ class SpanContainingQuery(QueryBase):
 
 class SpanFieldMaskingQuery(QueryBase):
     """
-    :arg field: (required)No documentation available.
-    :arg query: (required)No documentation available.
+    :arg field: (required) No documentation available.
+    :arg query: (required) No documentation available.
     """
 
     field: Union[str, "InstrumentedField", "NotSet"]
@@ -1909,10 +1832,34 @@ class SpanFieldMaskingQuery(QueryBase):
         super().__init__(**kwargs)
 
 
+class SpanFirstQuery(QueryBase):
+    """
+    :arg end: (required) Controls the maximum end position permitted in a
+        match.
+    :arg match: (required) Can be any other span type query.
+    """
+
+    end: Union[int, "NotSet"]
+    match: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        end: Union[int, "NotSet"] = NOT_SET,
+        match: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(end, NotSet):
+            kwargs["end"] = end
+        if not isinstance(match, NotSet):
+            kwargs["match"] = match
+        super().__init__(**kwargs)
+
+
 class SpanMultiTermQuery(QueryBase):
     """
-    :arg match: (required)Should be a multi term query (one of `wildcard`,
-        `fuzzy`, `prefix`, `range`, or `regexp` query).
+    :arg match: (required) Should be a multi term query (one of
+        `wildcard`, `fuzzy`, `prefix`, `range`, or `regexp` query).
     """
 
     match: Union[Query, "NotSet"]
@@ -1925,7 +1872,7 @@ class SpanMultiTermQuery(QueryBase):
 
 class SpanNearQuery(QueryBase):
     """
-    :arg clauses: (required)Array of one or more other span type queries.
+    :arg clauses: (required) Array of one or more other span type queries.
     :arg in_order: Controls whether matches are required to be in-order.
     :arg slop: Controls the maximum number of intervening unmatched
         positions permitted.
@@ -1952,57 +1899,14 @@ class SpanNearQuery(QueryBase):
         super().__init__(**kwargs)
 
 
-class SpanWithinQuery(QueryBase):
-    """
-    :arg big: (required)Can be any span query. Matching spans from
-        `little` that are enclosed within `big` are returned.
-    :arg little: (required)Can be any span query. Matching spans from
-        `little` that are enclosed within `big` are returned.
-    """
-
-    big: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-    little: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        big: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        little: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(big, NotSet):
-            kwargs["big"] = big
-        if not isinstance(little, NotSet):
-            kwargs["little"] = little
-        super().__init__(**kwargs)
-
-
-class SpanOrQuery(QueryBase):
-    """
-    :arg clauses: (required)Array of one or more other span type queries.
-    """
-
-    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(clauses, NotSet):
-            kwargs["clauses"] = clauses
-        super().__init__(**kwargs)
-
-
 class SpanNotQuery(QueryBase):
     """
     :arg dist: The number of tokens from within the include span that
         can’t have overlap with the exclude span. Equivalent to setting
         both `pre` and `post`.
-    :arg exclude: (required)Span query whose matches must not overlap
+    :arg exclude: (required) Span query whose matches must not overlap
         those returned.
-    :arg include: (required)Span query whose matches are filtered.
+    :arg include: (required) Span query whose matches are filtered.
     :arg post: The number of tokens after the include span that can’t have
         overlap with the exclude span.
     :arg pre: The number of tokens before the include span that can’t have
@@ -2038,57 +1942,81 @@ class SpanNotQuery(QueryBase):
         super().__init__(**kwargs)
 
 
-class ScriptSort(AttrDict[Any]):
+class SpanOrQuery(QueryBase):
     """
-    :arg order: No documentation available.
-    :arg script: (required)No documentation available.
-    :arg type: No documentation available.
-    :arg mode: No documentation available.
-    :arg nested: No documentation available.
+    :arg clauses: (required) Array of one or more other span type queries.
     """
 
-    order: Union[Literal["asc", "desc"], "NotSet"]
-    script: Union["i.Script", Dict[str, Any], "NotSet"]
-    type: Union[Literal["string", "number", "version"], "NotSet"]
-    mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"]
+    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"]
 
     def __init__(
         self,
         *,
-        order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET,
-        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
-        type: Union[Literal["string", "number", "version"], "NotSet"] = NOT_SET,
-        mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"] = NOT_SET,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"] = NOT_SET,
+        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if not isinstance(order, NotSet):
-            kwargs["order"] = order
-        if not isinstance(script, NotSet):
-            kwargs["script"] = script
-        if not isinstance(type, NotSet):
-            kwargs["type"] = type
-        if not isinstance(mode, NotSet):
-            kwargs["mode"] = mode
-        if not isinstance(nested, NotSet):
-            kwargs["nested"] = nested
-        super().__init__(kwargs)
+        if not isinstance(clauses, NotSet):
+            kwargs["clauses"] = clauses
+        super().__init__(**kwargs)
 
 
-class ScoreSort(AttrDict[Any]):
+class SpanWithinQuery(QueryBase):
     """
-    :arg order: No documentation available.
+    :arg big: (required) Can be any span query. Matching spans from
+        `little` that are enclosed within `big` are returned.
+    :arg little: (required) Can be any span query. Matching spans from
+        `little` that are enclosed within `big` are returned.
     """
 
-    order: Union[Literal["asc", "desc"], "NotSet"]
+    big: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
+    little: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
 
     def __init__(
-        self, *, order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET, **kwargs: Any
+        self,
+        *,
+        big: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        little: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
     ):
-        if not isinstance(order, NotSet):
-            kwargs["order"] = order
-        super().__init__(kwargs)
+        if not isinstance(big, NotSet):
+            kwargs["big"] = big
+        if not isinstance(little, NotSet):
+            kwargs["little"] = little
+        super().__init__(**kwargs)
+
+
+class HighlightField(HighlightBase):
+    """
+    :arg fragment_offset: No documentation available.
+    :arg matched_fields: No documentation available.
+    :arg analyzer: No documentation available.
+    """
+
+    fragment_offset: Union[int, "NotSet"]
+    matched_fields: Union[
+        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
+    ]
+    analyzer: Union[str, Dict[str, Any], "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        fragment_offset: Union[int, "NotSet"] = NOT_SET,
+        matched_fields: Union[
+            Union[str, "InstrumentedField"],
+            List[Union[str, "InstrumentedField"]],
+            "NotSet",
+        ] = NOT_SET,
+        analyzer: Union[str, Dict[str, Any], "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(fragment_offset, NotSet):
+            kwargs["fragment_offset"] = fragment_offset
+        if not isinstance(matched_fields, NotSet):
+            kwargs["matched_fields"] = str(matched_fields)
+        if not isinstance(analyzer, NotSet):
+            kwargs["analyzer"] = analyzer
+        super().__init__(**kwargs)
 
 
 class GeoDistanceSort(AttrDict[Any]):
@@ -2136,38 +2064,57 @@ class GeoDistanceSort(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class HighlightField(HighlightBase):
+class ScoreSort(AttrDict[Any]):
     """
-    :arg fragment_offset: No documentation available.
-    :arg matched_fields: No documentation available.
-    :arg analyzer: No documentation available.
+    :arg order: No documentation available.
     """
 
-    fragment_offset: Union[int, "NotSet"]
-    matched_fields: Union[
-        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
-    ]
-    analyzer: Union[str, "NotSet"]
+    order: Union[Literal["asc", "desc"], "NotSet"]
+
+    def __init__(
+        self, *, order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET, **kwargs: Any
+    ):
+        if not isinstance(order, NotSet):
+            kwargs["order"] = order
+        super().__init__(kwargs)
+
+
+class ScriptSort(AttrDict[Any]):
+    """
+    :arg order: No documentation available.
+    :arg script: (required) No documentation available.
+    :arg type: No documentation available.
+    :arg mode: No documentation available.
+    :arg nested: No documentation available.
+    """
+
+    order: Union[Literal["asc", "desc"], "NotSet"]
+    script: Union["i.Script", Dict[str, Any], "NotSet"]
+    type: Union[Literal["string", "number", "version"], "NotSet"]
+    mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"]
+    nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"]
 
     def __init__(
         self,
         *,
-        fragment_offset: Union[int, "NotSet"] = NOT_SET,
-        matched_fields: Union[
-            Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
-            "NotSet",
-        ] = NOT_SET,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
+        order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET,
+        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
+        type: Union[Literal["string", "number", "version"], "NotSet"] = NOT_SET,
+        mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"] = NOT_SET,
+        nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"] = NOT_SET,
         **kwargs: Any,
     ):
-        if not isinstance(fragment_offset, NotSet):
-            kwargs["fragment_offset"] = fragment_offset
-        if not isinstance(matched_fields, NotSet):
-            kwargs["matched_fields"] = str(matched_fields)
-        if not isinstance(analyzer, NotSet):
-            kwargs["analyzer"] = analyzer
-        super().__init__(**kwargs)
+        if not isinstance(order, NotSet):
+            kwargs["order"] = order
+        if not isinstance(script, NotSet):
+            kwargs["script"] = script
+        if not isinstance(type, NotSet):
+            kwargs["type"] = type
+        if not isinstance(mode, NotSet):
+            kwargs["mode"] = mode
+        if not isinstance(nested, NotSet):
+            kwargs["nested"] = nested
+        super().__init__(kwargs)
 
 
 class IntervalsContainer(AttrDict[Any]):
@@ -2292,7 +2239,7 @@ class NestedSortValue(AttrDict[Any]):
     :arg filter: No documentation available.
     :arg max_children: No documentation available.
     :arg nested: No documentation available.
-    :arg path: (required)No documentation available.
+    :arg path: (required) No documentation available.
     """
 
     filter: Union[Query, "NotSet"]

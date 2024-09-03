@@ -148,16 +148,16 @@ class {{ k.name }}({{ parent }}):
     {% for line in k.docstring %}
     {{ line }}
     {% endfor %}
-    {% if k.kwargs %}
+    {% if k.args %}
 
-    {% for kwarg in k.kwargs %}
+    {% for kwarg in k.args %}
     {% for line in kwarg.doc %}
     {{ line }}
     {% endfor %}
     {% endfor %}
     {% endif %}
     """
-    name = "{{ k.schema.name }}"
+    name = "{{ k.property_name }}"
     {% if k.params %}
     _param_defs = {
         {% for param in k.params %}
@@ -172,11 +172,11 @@ class {{ k.name }}({{ parent }}):
 
     def __init__(
         self,
-        {% if k.kwargs and not k.has_field and not k.has_fields %}
+        {% if k.args and not k.is_single_field and not k.is_multi_field %}
         *,
         {% endif %}
-        {% for kwarg in k.kwargs %}
-        {{ kwarg.name }}: {{ kwarg.type }} = NOT_SET,
+        {% for arg in k.args %}
+        {{ arg.name }}: {{ arg.type }} = NOT_SET,
         {% endfor %}
         **kwargs: Any
     ):
@@ -186,27 +186,18 @@ class {{ k.name }}({{ parent }}):
             for name in ScoreFunction._classes:
                 if name in kwargs:
                     functions.append({name: kwargs.pop(name)})  # type: ignore
-        {% elif k.has_field %}
+        {% elif k.is_single_field %}
         if not isinstance(_field, NotSet):
             kwargs[str(_field)] = _value
-        {% elif k.has_fields %}
+        {% elif k.is_multi_field %}
         if not isinstance(fields, NotSet):
             for field, value in _fields.items():
                 kwargs[str(field)] = value
-        {% elif k.has_type_alias %}
-        {% for kwarg in k.kwargs %}
-        {% if loop.index == 1 %}
-        if not isinstance({{ kwarg.name }}, NotSet):
-        {% else %}
-        elif not isinstance({{ kwarg.name }}, NotSet):
-        {% endif %}
-            kwargs = cast(Dict[str, Any], {{ kwarg.name }}.to_dict() if hasattr({{ kwarg.name }}, "to_dict") else {{ kwarg.name }})
-        {% endfor %}
         {% endif %}
         super().__init__(
-            {% if not k.has_field and not k.has_fields and not k.has_type_alias %}
-            {% for kwarg in k.kwargs %}
-            {{ kwarg.name }}={{ kwarg.name }},
+            {% if not k.is_single_field and not k.is_multi_field %}
+            {% for arg in k.args %}
+            {{ arg.name }}={{ arg.name }},
             {% endfor %}
             {% endif %}
             **kwargs
@@ -351,7 +342,7 @@ EMPTY_QUERY = MatchAll()
         return q
 
     __rand__ = __and__
-    
+
     {% elif k.name == "Terms" %}
     def _setattr(self, name: str, value: Any) -> None:
         super()._setattr(name, list(value))

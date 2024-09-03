@@ -302,12 +302,13 @@ class Boosting(Query):
     Returns documents matching a `positive` query while reducing the
     relevance score of documents that also match a `negative` query.
 
-    :arg negative: (required)Query used to decrease the relevance score of
-        matching documents.
-    :arg positive: (required)Any returned documents must match this query.
-    :arg negative_boost: (required)Floating point number between 0 and 1.0
-        used to decrease the relevance scores of documents matching the
-        `negative` query.
+    :arg negative: (required) Query used to decrease the relevance score
+        of matching documents.
+    :arg positive: (required) Any returned documents must match this
+        query.
+    :arg negative_boost: (required) Floating point number between 0 and
+        1.0 used to decrease the relevance scores of documents matching
+        the `negative` query.
     """
 
     name = "boosting"
@@ -358,10 +359,10 @@ class CombinedFields(Query):
     The `combined_fields` query supports searching multiple text fields as
     if their contents had been indexed into one combined field.
 
-    :arg query: (required)Text to search for in the provided `fields`. The
-        `combined_fields` query analyzes the provided text before
+    :arg query: (required) Text to search for in the provided `fields`.
+        The `combined_fields` query analyzes the provided text before
         performing a search.
-    :arg fields: (required)List of fields to search. Field wildcard
+    :arg fields: (required) List of fields to search. Field wildcard
         patterns are allowed. Only `text` fields are supported, and they
         must all have the same search `analyzer`.
     :arg auto_generate_synonyms_phrase_query: If true, match phrase
@@ -404,7 +405,7 @@ class ConstantScore(Query):
     Wraps a filter query and returns every matching document with a
     relevance score equal to the `boost` parameter value.
 
-    :arg filter: (required)Filter query you wish to run. Any returned
+    :arg filter: (required) Filter query you wish to run. Any returned
         documents must match this query. Filter queries do not calculate
         relevance scores. To speed up performance, Elasticsearch
         automatically caches frequently used filter queries.
@@ -427,7 +428,7 @@ class DisMax(Query):
     relevance score from any matching clause, plus a tie breaking
     increment for any additional matching subqueries.
 
-    :arg queries: (required)One or more query clauses. Returned documents
+    :arg queries: (required) One or more query clauses. Returned documents
         must match one or more of these queries. If a document matches
         multiple queries, Elasticsearch uses the highest relevance score.
     :arg tie_breaker: Floating point number between 0 and 1.0 used to
@@ -456,9 +457,23 @@ class DistanceFeature(Query):
     date or point. For example, you can use this query to give more weight
     to documents closer to a certain date or location.
 
-    :arg untyped: An instance of ``UntypedDistanceFeatureQuery``.
-    :arg geo: An instance of ``GeoDistanceFeatureQuery``.
-    :arg date: An instance of ``DateDistanceFeatureQuery``.
+    :arg pivot: (required) Distance from the `origin` at which relevance
+        scores receive half of the `boost` value. If the `field` value is
+        a `date` or `date_nanos` field, the `pivot` value must be a time
+        unit, such as `1h` or `10d`. If the `field` value is a `geo_point`
+        field, the `pivot` value must be a distance unit, such as `1km` or
+        `12m`.
+    :arg field: (required) Name of the field used to calculate distances.
+        This field must meet the following criteria: be a `date`,
+        `date_nanos` or `geo_point` field; have an `index` mapping
+        parameter value of `true`, which is the default; have an
+        `doc_values` mapping parameter value of `true`, which is the
+        default.
+    :arg origin: (required) Date or point of origin used to calculate
+        distances. If the `field` value is a `date` or `date_nanos` field,
+        the `origin` value must be a date. Date Math, such as `now-1h`, is
+        supported. If the field value is a `geo_point` field, the `origin`
+        value must be a geopoint.
     """
 
     name = "distance_feature"
@@ -466,32 +481,19 @@ class DistanceFeature(Query):
     def __init__(
         self,
         *,
-        untyped: Union["i.UntypedDistanceFeatureQuery", "NotSet"] = NOT_SET,
-        geo: Union["i.GeoDistanceFeatureQuery", "NotSet"] = NOT_SET,
-        date: Union["i.DateDistanceFeatureQuery", "NotSet"] = NOT_SET,
+        pivot: Any = NOT_SET,
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        origin: Any = NOT_SET,
         **kwargs: Any,
     ):
-        if not isinstance(untyped, NotSet):
-            kwargs = cast(
-                Dict[str, Any],
-                untyped.to_dict() if hasattr(untyped, "to_dict") else untyped,
-            )
-        elif not isinstance(geo, NotSet):
-            kwargs = cast(
-                Dict[str, Any], geo.to_dict() if hasattr(geo, "to_dict") else geo
-            )
-        elif not isinstance(date, NotSet):
-            kwargs = cast(
-                Dict[str, Any], date.to_dict() if hasattr(date, "to_dict") else date
-            )
-        super().__init__(**kwargs)
+        super().__init__(pivot=pivot, field=field, origin=origin, **kwargs)
 
 
 class Exists(Query):
     """
     Returns documents that contain an indexed value for a field.
 
-    :arg field: (required)Name of the field you wish to search.
+    :arg field: (required) Name of the field you wish to search.
     """
 
     name = "exists"
@@ -623,7 +625,7 @@ class GeoDistance(Query):
     Matches `geo_point` and `geo_shape` values within a given distance of
     a geopoint.
 
-    :arg distance: (required)The radius of the circle centred on the
+    :arg distance: (required) The radius of the circle centred on the
         specified location. Points which fall into this circle are
         considered to be matches.
     :arg distance_type: How to compute the distance. Set to `plane` for a
@@ -708,10 +710,10 @@ class HasChild(Query):
     Returns parent documents whose joined child documents match a provided
     query.
 
-    :arg query: (required)Query you wish to run on child documents of the
+    :arg query: (required) Query you wish to run on child documents of the
         `type` field. If a child document matches the search, the query
         returns the parent document.
-    :arg type: (required)Name of the child relationship mapped for the
+    :arg type: (required) Name of the child relationship mapped for the
         `join` field.
     :arg ignore_unmapped: Indicates whether to ignore an unmapped `type`
         and not return any documents instead of an error.
@@ -764,11 +766,11 @@ class HasParent(Query):
     Returns child documents whose joined parent document matches a
     provided query.
 
-    :arg parent_type: (required)Name of the parent relationship mapped for
-        the `join` field.
-    :arg query: (required)Query you wish to run on parent documents of the
-        `parent_type` field. If a parent document matches the search, the
-        query returns its child documents.
+    :arg parent_type: (required) Name of the parent relationship mapped
+        for the `join` field.
+    :arg query: (required) Query you wish to run on parent documents of
+        the `parent_type` field. If a parent document matches the search,
+        the query returns its child documents.
     :arg ignore_unmapped: Indicates whether to ignore an unmapped
         `parent_type` and not return any documents instead of an error.
         You can use this parameter to query multiple indices that may not
@@ -846,7 +848,7 @@ class Knn(Query):
     similarity metric. knn query finds nearest vectors through approximate
     search on indexed dense_vectors.
 
-    :arg field: (required)The name of the vector field to search against
+    :arg field: (required) The name of the vector field to search against
     :arg query_vector: The query vector
     :arg query_vector_builder: The query vector builder. You must provide
         a query_vector_builder or query_vector, but not both.
@@ -1033,7 +1035,7 @@ class MoreLikeThis(Query):
     """
     Returns documents that are "like" a given set of documents.
 
-    :arg like: (required)Specifies free form text and/or a single or
+    :arg like: (required) Specifies free form text and/or a single or
         multiple documents for which you want to find similar documents.
     :arg analyzer: The analyzer that is used to analyze the free form
         text. Defaults to the analyzer associated with the first field in
@@ -1139,7 +1141,7 @@ class MultiMatch(Query):
     value across multiple fields. The provided text is analyzed before
     matching.
 
-    :arg query: (required)Text, number, boolean value or date you wish to
+    :arg query: (required) Text, number, boolean value or date you wish to
         find in the provided field.
     :arg analyzer: Analyzer used to convert the text in the query value
         into tokens.
@@ -1240,8 +1242,8 @@ class Nested(Query):
     Wraps another query to search nested fields. If an object matches the
     search, the nested query returns the root parent document.
 
-    :arg path: (required)Path to the nested object you wish to search.
-    :arg query: (required)Query you wish to run on nested objects in the
+    :arg path: (required) Path to the nested object you wish to search.
+    :arg query: (required) Query you wish to run on nested objects in the
         path.
     :arg ignore_unmapped: Indicates whether to ignore an unmapped path and
         not return any documents instead of an error.
@@ -1304,7 +1306,7 @@ class Percolate(Query):
     """
     Matches queries stored in an index.
 
-    :arg field: (required)Field that holds the indexed queries. The field
+    :arg field: (required) Field that holds the indexed queries. The field
         must use the `percolator` mapping type.
     :arg document: The source of the document being percolated.
     :arg documents: An array of sources of the documents being percolated.
@@ -1352,7 +1354,7 @@ class Pinned(Query):
     Promotes selected documents to rank higher than those matching a given
     query.
 
-    :arg organic: (required)Any choice of query used to rank documents
+    :arg organic: (required) Any choice of query used to rank documents
         which will be ranked below the "pinned" documents.
     :arg ids: Document IDs listed in the order they are to appear in
         results. Required if `docs` is not specified.
@@ -1402,7 +1404,7 @@ class QueryString(Query):
     Returns documents based on a provided query string, using a parser
     with a strict syntax.
 
-    :arg query: (required)Query string you wish to parse and use for
+    :arg query: (required) Query string you wish to parse and use for
         search.
     :arg allow_leading_wildcard: If `true`, the wildcard characters `*`
         and `?` are allowed as the first character of the query string.
@@ -1551,7 +1553,7 @@ class RankFeature(Query):
     Boosts the relevance score of documents based on the numeric value of
     a `rank_feature` or `rank_features` field.
 
-    :arg field: (required)`rank_feature` or `rank_features` field used to
+    :arg field: (required) `rank_feature` or `rank_features` field used to
         boost relevance scores.
     :arg saturation: Saturation function used to boost relevance scores
         based on the value of the rank feature `field`.
@@ -1618,9 +1620,9 @@ class Rule(Query):
     """
     No documentation available.
 
-    :arg ruleset_ids: (required)No documentation available.
-    :arg match_criteria: (required)No documentation available.
-    :arg organic: (required)No documentation available.
+    :arg ruleset_ids: (required) No documentation available.
+    :arg match_criteria: (required) No documentation available.
+    :arg organic: (required) No documentation available.
     """
 
     name = "rule"
@@ -1649,7 +1651,7 @@ class Script(Query):
     Filters documents based on a provided script. The script query is
     typically used in a filter context.
 
-    :arg script: (required)Contains a script to run as a query. This
+    :arg script: (required) Contains a script to run as a query. This
         script must return a boolean value, `true` or `false`.
     """
 
@@ -1668,8 +1670,8 @@ class ScriptScore(Query):
     """
     Uses a script to provide a custom score for returned documents.
 
-    :arg query: (required)Query used to return documents.
-    :arg script: (required)Script used to compute the score of documents
+    :arg query: (required) Query used to return documents.
+    :arg script: (required) Script used to compute the score of documents
         returned by the query. Important: final relevance scores from the
         `script_score` query cannot be negative.
     :arg min_score: Documents with a score lower than this floating point
@@ -1696,8 +1698,8 @@ class Semantic(Query):
     """
     A semantic query to semantic_text field types
 
-    :arg query: (required)The query text
-    :arg field: (required)The field to query, which must be a
+    :arg query: (required) The query text
+    :arg field: (required) The field to query, which must be a
         semantic_text field type
     """
 
@@ -1734,7 +1736,7 @@ class SimpleQueryString(Query):
     Returns documents based on a provided query string, using a parser
     with a limited but fault-tolerant syntax.
 
-    :arg query: (required)Query string in the simple query string syntax
+    :arg query: (required) Query string in the simple query string syntax
         you wish to parse and use for search.
     :arg analyzer: Analyzer used to convert text in the query string into
         tokens.
@@ -1808,9 +1810,9 @@ class SpanContaining(Query):
     """
     Returns matches which enclose another span query.
 
-    :arg little: (required)Can be any span query. Matching spans from
+    :arg little: (required) Can be any span query. Matching spans from
         `big` that contain matches from `little` are returned.
-    :arg big: (required)Can be any span query. Matching spans from `big`
+    :arg big: (required) Can be any span query. Matching spans from `big`
         that contain matches from `little` are returned.
     """
 
@@ -1831,8 +1833,8 @@ class SpanFieldMasking(Query):
     Wrapper to allow span queries to participate in composite single-field
     span queries by _lying_ about their search field.
 
-    :arg query: (required)No documentation available.
-    :arg field: (required)No documentation available.
+    :arg query: (required) No documentation available.
+    :arg field: (required) No documentation available.
     """
 
     name = "span_field_masking"
@@ -1851,8 +1853,8 @@ class SpanFirst(Query):
     """
     Matches spans near the beginning of a field.
 
-    :arg match: (required)Can be any other span type query.
-    :arg end: (required)Controls the maximum end position permitted in a
+    :arg match: (required) Can be any other span type query.
+    :arg end: (required) Controls the maximum end position permitted in a
         match.
     """
 
@@ -1874,8 +1876,8 @@ class SpanMulti(Query):
     `prefix`, `range`, or `regexp` query) as a `span` query, so it can be
     nested.
 
-    :arg match: (required)Should be a multi term query (one of `wildcard`,
-        `fuzzy`, `prefix`, `range`, or `regexp` query).
+    :arg match: (required) Should be a multi term query (one of
+        `wildcard`, `fuzzy`, `prefix`, `range`, or `regexp` query).
     """
 
     name = "span_multi"
@@ -1893,7 +1895,7 @@ class SpanNear(Query):
     maximum number of intervening unmatched positions, as well as whether
     matches are required to be in-order.
 
-    :arg clauses: (required)Array of one or more other span type queries.
+    :arg clauses: (required) Array of one or more other span type queries.
     :arg in_order: Controls whether matches are required to be in-order.
     :arg slop: Controls the maximum number of intervening unmatched
         positions permitted.
@@ -1918,9 +1920,9 @@ class SpanNot(Query):
     within x tokens before (controlled by the parameter `pre`) or y tokens
     after (controlled by the parameter `post`) another span query.
 
-    :arg exclude: (required)Span query whose matches must not overlap
+    :arg exclude: (required) Span query whose matches must not overlap
         those returned.
-    :arg include: (required)Span query whose matches are filtered.
+    :arg include: (required) Span query whose matches are filtered.
     :arg dist: The number of tokens from within the include span that
         can’t have overlap with the exclude span. Equivalent to setting
         both `pre` and `post`.
@@ -1951,7 +1953,7 @@ class SpanOr(Query):
     """
     Matches the union of its span clauses.
 
-    :arg clauses: (required)Array of one or more other span type queries.
+    :arg clauses: (required) Array of one or more other span type queries.
     """
 
     name = "span_or"
@@ -1990,9 +1992,9 @@ class SpanWithin(Query):
     """
     Returns matches which are enclosed inside another span query.
 
-    :arg little: (required)Can be any span query. Matching spans from
+    :arg little: (required) Can be any span query. Matching spans from
         `little` that are enclosed within `big` are returned.
-    :arg big: (required)Can be any span query. Matching spans from
+    :arg big: (required) Can be any span query. Matching spans from
         `little` that are enclosed within `big` are returned.
     """
 
@@ -2014,7 +2016,7 @@ class SparseVector(Query):
     convert a query into a list of token-weight pairs, queries against a
     sparse vector field.
 
-    :arg field: (required)The name of the field that contains the token-
+    :arg field: (required) The name of the field that contains the token-
         weight pairs to be searched against. This field must be a mapped
         sparse_vector field.
     :arg query_vector: Dictionary of precomputed sparse vectors and their
@@ -2201,7 +2203,7 @@ class Wrapper(Query):
     """
     A query that accepts any other query as base64 encoded string.
 
-    :arg query: (required)A base64 encoded query. The binary data format
+    :arg query: (required) A base64 encoded query. The binary data format
         can be any of JSON, YAML, CBOR or SMILE encodings
     """
 
@@ -2215,7 +2217,7 @@ class Type(Query):
     """
     No documentation available.
 
-    :arg value: (required)No documentation available.
+    :arg value: (required) No documentation available.
     """
 
     name = "type"
