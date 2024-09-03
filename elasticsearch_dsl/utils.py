@@ -86,6 +86,17 @@ def _wrap(val: Any, obj_wrapper: Optional[Callable[[Any], Any]] = None) -> Any:
     return val
 
 
+def _recursive_to_dict(value: Any) -> Any:
+    if hasattr(value, "to_dict"):
+        return value.to_dict()
+    elif isinstance(value, dict) or isinstance(value, AttrDict):
+        return {k: _recursive_to_dict(v) for k, v in value.items()}
+    elif isinstance(value, list) or isinstance(value, AttrList):
+        return [recursive_to_dict(elem) for elem in value]
+    else:
+        return value
+
+
 class AttrList(Generic[_ValT]):
     def __init__(
         self, l: List[_ValT], obj_wrapper: Optional[Callable[[_ValT], Any]] = None
@@ -228,8 +239,10 @@ class AttrDict(Generic[_ValT]):
     def __iter__(self) -> Iterator[str]:
         return iter(self._d_)
 
-    def to_dict(self) -> Dict[str, _ValT]:
-        return self._d_
+    def to_dict(self, recursive: bool = False) -> Dict[str, _ValT]:
+        return cast(
+            Dict[str, _ValT], _recursive_to_dict(self._d_) if recursive else self._d_
+        )
 
     def keys(self) -> Iterable[str]:
         return self._d_.keys()
