@@ -3,6 +3,14 @@
 Changelog
 =========
 
+8.15.2 (2024-09-04)
+-------------------
+
+* Added support for any iterables to The ``Terms`` query (`#1887 <https://github.com/elastic/elasticsearch-dsl-py/pull/1887>`_)
+* Added back support for tuples and other iterables to ``Search.source()`` method (`#1895 <https://github.com/elastic/elasticsearch-dsl-py/pull/1895>`_)
+* Added recursive option to ``AttrDict.to_dict()`` (`#1892 <https://github.com/elastic/elasticsearch-dsl-py/pull/1892>`_)
+* Removed unused analyzer from search as you type example (`#1883 <https://github.com/elastic/elasticsearch-dsl-py/pull/1883>`_)
+
 8.15.1 (2024-08-19)
 -------------------
 
