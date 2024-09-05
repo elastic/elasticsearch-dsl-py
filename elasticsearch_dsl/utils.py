@@ -35,6 +35,7 @@ from typing import (
     cast,
 )
 
+from elastic_transport.client_utils import DEFAULT
 from typing_extensions import Self, TypeAlias, TypeVar
 
 from .exceptions import UnknownDslObject, ValidationException
@@ -95,13 +96,6 @@ def _recursive_to_dict(value: Any) -> Any:
         return [recursive_to_dict(elem) for elem in value]
     else:
         return value
-
-
-class NotSet:
-    pass
-
-
-NOT_SET = NotSet()
 
 
 class AttrList(Generic[_ValT]):
@@ -336,7 +330,7 @@ class DslBase(metaclass=DslMeta):
             _expand__to_dot = EXPAND__TO_DOT
         self._params: Dict[str, Any] = {}
         for pname, pvalue in params.items():
-            if isinstance(pvalue, NotSet):
+            if pvalue == DEFAULT:
                 continue
             # expand "__" to dots
             if "__" in pname and _expand__to_dot:

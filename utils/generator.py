@@ -63,11 +63,11 @@ def add_dict_type(type_):
 
 
 def add_not_set(type_):
-    """Add NotSet to a Python type hint."""
+    """Add DefaultType to a Python type hint."""
     if type_.startswith("Union["):
-        type_ = f'{type_[:-1]}, "NotSet"]'
+        type_ = f'{type_[:-1]}, "DefaultType"]'
     else:
-        type_ = f'Union[{type_}, "NotSet"]'
+        type_ = f'Union[{type_}, "DefaultType"]'
     return type_
 
 

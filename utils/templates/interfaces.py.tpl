@@ -16,9 +16,12 @@
 #  under the License.
 
 from typing import Any, Dict, List, Literal, Mapping, Union
+
+from elastic_transport.client_utils import DEFAULT, DefaultType
+
 from elasticsearch_dsl.document_base import InstrumentedField
 from elasticsearch_dsl import function as f, interfaces as i, Query
-from elasticsearch_dsl.utils import AttrDict, NotSet, NOT_SET
+from elasticsearch_dsl.utils import AttrDict
 
 PipeSeparatedFlags = str
 
@@ -41,12 +44,12 @@ class {{ k.name }}({% if k.parent %}{{ k.parent }}{% else %}AttrDict[Any]{% endi
         self,
         *,
         {% for arg in k.args %}
-        {{ arg.name }}: {{ arg.type }} = NOT_SET,
+        {{ arg.name }}: {{ arg.type }} = DEFAULT,
         {% endfor %}
         **kwargs: Any
     ):
         {% for arg in k.args %}
-        if not isinstance({{ arg.name }}, NotSet):
+        if {{ arg.name }} != DEFAULT:
             {% if "InstrumentedField" in arg.type %}
             kwargs["{{ arg.name }}"] = str({{ arg.name }})
             {% else %}

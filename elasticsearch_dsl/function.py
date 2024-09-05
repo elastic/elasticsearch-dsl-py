@@ -28,7 +28,9 @@ from typing import (
     overload,
 )
 
-from .utils import NOT_SET, AttrDict, DslBase, NotSet
+from elastic_transport.client_utils import DEFAULT, DefaultType
+
+from .utils import AttrDict, DslBase
 
 
 @overload
@@ -152,23 +154,23 @@ class DecayFunction(AttrDict[Any]):
     def __init__(
         self,
         *,
-        decay: Union[float, "NotSet"] = NOT_SET,
-        offset: Any = NOT_SET,
-        scale: Any = NOT_SET,
-        origin: Any = NOT_SET,
+        decay: Union[float, "DefaultType"] = DEFAULT,
+        offset: Any = DEFAULT,
+        scale: Any = DEFAULT,
+        origin: Any = DEFAULT,
         multi_value_mode: Union[
-            Literal["min", "max", "avg", "sum"], "NotSet"
-        ] = NOT_SET,
+            Literal["min", "max", "avg", "sum"], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(decay, NotSet):
+        if decay != DEFAULT:
             kwargs["decay"] = decay
-        if not isinstance(offset, NotSet):
+        if offset != DEFAULT:
             kwargs["offset"] = offset
-        if not isinstance(scale, NotSet):
-            kwargs["offset"] = scale
-        if not isinstance(origin, NotSet):
-            kwargs["offset"] = origin
-        if not isinstance(multi_value_mode, NotSet):
-            kwargs["offset"] = multi_value_mode
+        if scale != DEFAULT:
+            kwargs["scale"] = scale
+        if origin != DEFAULT:
+            kwargs["origin"] = origin
+        if multi_value_mode != DEFAULT:
+            kwargs["multi_value_mode"] = multi_value_mode
         super().__init__(kwargs)

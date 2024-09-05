@@ -36,13 +36,16 @@ from typing import (
     overload,
 )
 
+from elastic_transport.client_utils import DEFAULT
+
 # 'SF' looks unused but the test suite assumes it's available
 # from this module so others are liable to do so as well.
 from .function import SF  # noqa: F401
 from .function import ScoreFunction
-from .utils import DslBase, NotSet, NOT_SET
+from .utils import DslBase
 
 if TYPE_CHECKING:
+    from elastic_transport.client_utils import DefaultType
     from .document_base import InstrumentedField
     from elasticsearch_dsl import interfaces as i, wrappers
 
@@ -176,21 +179,21 @@ class {{ k.name }}({{ parent }}):
         *,
         {% endif %}
         {% for arg in k.args %}
-        {{ arg.name }}: {{ arg.type }} = NOT_SET,
+        {{ arg.name }}: {{ arg.type }} = DEFAULT,
         {% endfor %}
         **kwargs: Any
     ):
         {% if k.name == "FunctionScore" %}
-        if isinstance(functions, NotSet):
+        if functions == DEFAULT:
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
                     functions.append({name: kwargs.pop(name)})  # type: ignore
         {% elif k.is_single_field %}
-        if not isinstance(_field, NotSet):
+        if _field != DEFAULT:
             kwargs[str(_field)] = _value
         {% elif k.is_multi_field %}
-        if not isinstance(fields, NotSet):
+        if _fields != DEFAULT:
             for field, value in _fields.items():
                 kwargs[str(field)] = value
         {% endif %}

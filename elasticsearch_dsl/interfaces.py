@@ -17,11 +17,13 @@
 
 from typing import Any, Dict, List, Literal, Mapping, Union
 
+from elastic_transport.client_utils import DEFAULT, DefaultType
+
 from elasticsearch_dsl import Query
 from elasticsearch_dsl import function as f
 from elasticsearch_dsl import interfaces as i
 from elasticsearch_dsl.document_base import InstrumentedField
-from elasticsearch_dsl.utils import NOT_SET, AttrDict, NotSet
+from elasticsearch_dsl.utils import AttrDict
 
 PipeSeparatedFlags = str
 
@@ -36,19 +38,19 @@ class QueryBase(AttrDict[Any]):
     :arg _name: No documentation available.
     """
 
-    boost: Union[float, "NotSet"]
-    _name: Union[str, "NotSet"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        boost: Union[float, "NotSet"] = NOT_SET,
-        _name: Union[str, "NotSet"] = NOT_SET,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(boost, NotSet):
+        if boost != DEFAULT:
             kwargs["boost"] = boost
-        if not isinstance(_name, NotSet):
+        if _name != DEFAULT:
             kwargs["_name"] = _name
         super().__init__(kwargs)
 
@@ -63,35 +65,35 @@ class CommonTermsQuery(QueryBase):
     :arg query: (required) No documentation available.
     """
 
-    analyzer: Union[str, "NotSet"]
-    cutoff_frequency: Union[float, "NotSet"]
-    high_freq_operator: Union[Literal["and", "or"], "NotSet"]
-    low_freq_operator: Union[Literal["and", "or"], "NotSet"]
-    minimum_should_match: Union[int, str, "NotSet"]
-    query: Union[str, "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    cutoff_frequency: Union[float, "DefaultType"]
+    high_freq_operator: Union[Literal["and", "or"], "DefaultType"]
+    low_freq_operator: Union[Literal["and", "or"], "DefaultType"]
+    minimum_should_match: Union[int, str, "DefaultType"]
+    query: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        cutoff_frequency: Union[float, "NotSet"] = NOT_SET,
-        high_freq_operator: Union[Literal["and", "or"], "NotSet"] = NOT_SET,
-        low_freq_operator: Union[Literal["and", "or"], "NotSet"] = NOT_SET,
-        minimum_should_match: Union[int, str, "NotSet"] = NOT_SET,
-        query: Union[str, "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        cutoff_frequency: Union[float, "DefaultType"] = DEFAULT,
+        high_freq_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
+        low_freq_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
+        minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
+        query: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(cutoff_frequency, NotSet):
+        if cutoff_frequency != DEFAULT:
             kwargs["cutoff_frequency"] = cutoff_frequency
-        if not isinstance(high_freq_operator, NotSet):
+        if high_freq_operator != DEFAULT:
             kwargs["high_freq_operator"] = high_freq_operator
-        if not isinstance(low_freq_operator, NotSet):
+        if low_freq_operator != DEFAULT:
             kwargs["low_freq_operator"] = low_freq_operator
-        if not isinstance(minimum_should_match, NotSet):
+        if minimum_should_match != DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
         super().__init__(**kwargs)
 
@@ -121,43 +123,43 @@ class FunctionScoreContainer(AttrDict[Any]):
     :arg weight: No documentation available.
     """
 
-    exp: Union["f.DecayFunction", "NotSet"]
-    gauss: Union["f.DecayFunction", "NotSet"]
-    linear: Union["f.DecayFunction", "NotSet"]
-    field_value_factor: Union["f.FieldValueFactor", "NotSet"]
-    random_score: Union["f.RandomScore", "NotSet"]
-    script_score: Union["f.ScriptScore", "NotSet"]
-    filter: Union[Query, "NotSet"]
-    weight: Union[float, "NotSet"]
+    exp: Union["f.DecayFunction", "DefaultType"]
+    gauss: Union["f.DecayFunction", "DefaultType"]
+    linear: Union["f.DecayFunction", "DefaultType"]
+    field_value_factor: Union["f.FieldValueFactor", "DefaultType"]
+    random_score: Union["f.RandomScore", "DefaultType"]
+    script_score: Union["f.ScriptScore", "DefaultType"]
+    filter: Union[Query, "DefaultType"]
+    weight: Union[float, "DefaultType"]
 
     def __init__(
         self,
         *,
-        exp: Union["f.DecayFunction", "NotSet"] = NOT_SET,
-        gauss: Union["f.DecayFunction", "NotSet"] = NOT_SET,
-        linear: Union["f.DecayFunction", "NotSet"] = NOT_SET,
-        field_value_factor: Union["f.FieldValueFactor", "NotSet"] = NOT_SET,
-        random_score: Union["f.RandomScore", "NotSet"] = NOT_SET,
-        script_score: Union["f.ScriptScore", "NotSet"] = NOT_SET,
-        filter: Union[Query, "NotSet"] = NOT_SET,
-        weight: Union[float, "NotSet"] = NOT_SET,
+        exp: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
+        gauss: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
+        linear: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
+        field_value_factor: Union["f.FieldValueFactor", "DefaultType"] = DEFAULT,
+        random_score: Union["f.RandomScore", "DefaultType"] = DEFAULT,
+        script_score: Union["f.ScriptScore", "DefaultType"] = DEFAULT,
+        filter: Union[Query, "DefaultType"] = DEFAULT,
+        weight: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(exp, NotSet):
+        if exp != DEFAULT:
             kwargs["exp"] = exp
-        if not isinstance(gauss, NotSet):
+        if gauss != DEFAULT:
             kwargs["gauss"] = gauss
-        if not isinstance(linear, NotSet):
+        if linear != DEFAULT:
             kwargs["linear"] = linear
-        if not isinstance(field_value_factor, NotSet):
+        if field_value_factor != DEFAULT:
             kwargs["field_value_factor"] = field_value_factor
-        if not isinstance(random_score, NotSet):
+        if random_score != DEFAULT:
             kwargs["random_score"] = random_score
-        if not isinstance(script_score, NotSet):
+        if script_score != DEFAULT:
             kwargs["script_score"] = script_score
-        if not isinstance(filter, NotSet):
+        if filter != DEFAULT:
             kwargs["filter"] = filter
-        if not isinstance(weight, NotSet):
+        if weight != DEFAULT:
             kwargs["weight"] = weight
         super().__init__(kwargs)
 
@@ -175,35 +177,35 @@ class FuzzyQuery(QueryBase):
     :arg value: (required) Term you wish to find in the provided field.
     """
 
-    max_expansions: Union[int, "NotSet"]
-    prefix_length: Union[int, "NotSet"]
-    rewrite: Union[str, "NotSet"]
-    transpositions: Union[bool, "NotSet"]
-    fuzziness: Union[str, int, "NotSet"]
-    value: Union[str, float, bool, "NotSet"]
+    max_expansions: Union[int, "DefaultType"]
+    prefix_length: Union[int, "DefaultType"]
+    rewrite: Union[str, "DefaultType"]
+    transpositions: Union[bool, "DefaultType"]
+    fuzziness: Union[str, int, "DefaultType"]
+    value: Union[str, float, bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        max_expansions: Union[int, "NotSet"] = NOT_SET,
-        prefix_length: Union[int, "NotSet"] = NOT_SET,
-        rewrite: Union[str, "NotSet"] = NOT_SET,
-        transpositions: Union[bool, "NotSet"] = NOT_SET,
-        fuzziness: Union[str, int, "NotSet"] = NOT_SET,
-        value: Union[str, float, bool, "NotSet"] = NOT_SET,
+        max_expansions: Union[int, "DefaultType"] = DEFAULT,
+        prefix_length: Union[int, "DefaultType"] = DEFAULT,
+        rewrite: Union[str, "DefaultType"] = DEFAULT,
+        transpositions: Union[bool, "DefaultType"] = DEFAULT,
+        fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
+        value: Union[str, float, bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(max_expansions, NotSet):
+        if max_expansions != DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if not isinstance(prefix_length, NotSet):
+        if prefix_length != DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if not isinstance(rewrite, NotSet):
+        if rewrite != DEFAULT:
             kwargs["rewrite"] = rewrite
-        if not isinstance(transpositions, NotSet):
+        if transpositions != DEFAULT:
             kwargs["transpositions"] = transpositions
-        if not isinstance(fuzziness, NotSet):
+        if fuzziness != DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if not isinstance(value, NotSet):
+        if value != DEFAULT:
             kwargs["value"] = value
         super().__init__(**kwargs)
 
@@ -231,107 +233,111 @@ class InnerHits(AttrDict[Any]):
     :arg version: No documentation available.
     """
 
-    name: Union[str, "NotSet"]
-    size: Union[int, "NotSet"]
-    from_: Union[int, "NotSet"]
-    collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"]
-    docvalue_fields: Union[List["i.FieldAndFormat"], Dict[str, Any], "NotSet"]
-    explain: Union[bool, "NotSet"]
-    highlight: Union["i.Highlight", Dict[str, Any], "NotSet"]
-    ignore_unmapped: Union[bool, "NotSet"]
+    name: Union[str, "DefaultType"]
+    size: Union[int, "DefaultType"]
+    from_: Union[int, "DefaultType"]
+    collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"]
+    docvalue_fields: Union[List["i.FieldAndFormat"], Dict[str, Any], "DefaultType"]
+    explain: Union[bool, "DefaultType"]
+    highlight: Union["i.Highlight", Dict[str, Any], "DefaultType"]
+    ignore_unmapped: Union[bool, "DefaultType"]
     script_fields: Union[
         Mapping[Union[str, "InstrumentedField"], "i.ScriptField"],
         Dict[str, Any],
-        "NotSet",
+        "DefaultType",
     ]
-    seq_no_primary_term: Union[bool, "NotSet"]
+    seq_no_primary_term: Union[bool, "DefaultType"]
     fields: Union[
-        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
+        Union[str, "InstrumentedField"],
+        List[Union[str, "InstrumentedField"]],
+        "DefaultType",
     ]
     sort: Union[
         Union[Union[str, "InstrumentedField"], "i.SortOptions"],
         List[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
         Dict[str, Any],
-        "NotSet",
+        "DefaultType",
     ]
-    _source: Union[bool, "i.SourceFilter", Dict[str, Any], "NotSet"]
+    _source: Union[bool, "i.SourceFilter", Dict[str, Any], "DefaultType"]
     stored_fields: Union[
-        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
+        Union[str, "InstrumentedField"],
+        List[Union[str, "InstrumentedField"]],
+        "DefaultType",
     ]
-    track_scores: Union[bool, "NotSet"]
-    version: Union[bool, "NotSet"]
+    track_scores: Union[bool, "DefaultType"]
+    version: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        name: Union[str, "NotSet"] = NOT_SET,
-        size: Union[int, "NotSet"] = NOT_SET,
-        from_: Union[int, "NotSet"] = NOT_SET,
-        collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"] = NOT_SET,
+        name: Union[str, "DefaultType"] = DEFAULT,
+        size: Union[int, "DefaultType"] = DEFAULT,
+        from_: Union[int, "DefaultType"] = DEFAULT,
+        collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
         docvalue_fields: Union[
-            List["i.FieldAndFormat"], Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        explain: Union[bool, "NotSet"] = NOT_SET,
-        highlight: Union["i.Highlight", Dict[str, Any], "NotSet"] = NOT_SET,
-        ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
+            List["i.FieldAndFormat"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        explain: Union[bool, "DefaultType"] = DEFAULT,
+        highlight: Union["i.Highlight", Dict[str, Any], "DefaultType"] = DEFAULT,
+        ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         script_fields: Union[
             Mapping[Union[str, "InstrumentedField"], "i.ScriptField"],
             Dict[str, Any],
-            "NotSet",
-        ] = NOT_SET,
-        seq_no_primary_term: Union[bool, "NotSet"] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
+        seq_no_primary_term: Union[bool, "DefaultType"] = DEFAULT,
         fields: Union[
             Union[str, "InstrumentedField"],
             List[Union[str, "InstrumentedField"]],
-            "NotSet",
-        ] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
         sort: Union[
             Union[Union[str, "InstrumentedField"], "i.SortOptions"],
             List[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
             Dict[str, Any],
-            "NotSet",
-        ] = NOT_SET,
-        _source: Union[bool, "i.SourceFilter", Dict[str, Any], "NotSet"] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
+        _source: Union[bool, "i.SourceFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         stored_fields: Union[
             Union[str, "InstrumentedField"],
             List[Union[str, "InstrumentedField"]],
-            "NotSet",
-        ] = NOT_SET,
-        track_scores: Union[bool, "NotSet"] = NOT_SET,
-        version: Union[bool, "NotSet"] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
+        track_scores: Union[bool, "DefaultType"] = DEFAULT,
+        version: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(name, NotSet):
+        if name != DEFAULT:
             kwargs["name"] = name
-        if not isinstance(size, NotSet):
+        if size != DEFAULT:
             kwargs["size"] = size
-        if not isinstance(from_, NotSet):
+        if from_ != DEFAULT:
             kwargs["from_"] = from_
-        if not isinstance(collapse, NotSet):
+        if collapse != DEFAULT:
             kwargs["collapse"] = collapse
-        if not isinstance(docvalue_fields, NotSet):
+        if docvalue_fields != DEFAULT:
             kwargs["docvalue_fields"] = docvalue_fields
-        if not isinstance(explain, NotSet):
+        if explain != DEFAULT:
             kwargs["explain"] = explain
-        if not isinstance(highlight, NotSet):
+        if highlight != DEFAULT:
             kwargs["highlight"] = highlight
-        if not isinstance(ignore_unmapped, NotSet):
+        if ignore_unmapped != DEFAULT:
             kwargs["ignore_unmapped"] = ignore_unmapped
-        if not isinstance(script_fields, NotSet):
+        if script_fields != DEFAULT:
             kwargs["script_fields"] = str(script_fields)
-        if not isinstance(seq_no_primary_term, NotSet):
+        if seq_no_primary_term != DEFAULT:
             kwargs["seq_no_primary_term"] = seq_no_primary_term
-        if not isinstance(fields, NotSet):
+        if fields != DEFAULT:
             kwargs["fields"] = str(fields)
-        if not isinstance(sort, NotSet):
+        if sort != DEFAULT:
             kwargs["sort"] = str(sort)
-        if not isinstance(_source, NotSet):
+        if _source != DEFAULT:
             kwargs["_source"] = _source
-        if not isinstance(stored_fields, NotSet):
+        if stored_fields != DEFAULT:
             kwargs["stored_fields"] = str(stored_fields)
-        if not isinstance(track_scores, NotSet):
+        if track_scores != DEFAULT:
             kwargs["track_scores"] = track_scores
-        if not isinstance(version, NotSet):
+        if version != DEFAULT:
             kwargs["version"] = version
         super().__init__(kwargs)
 
@@ -348,35 +354,35 @@ class IntervalsQuery(QueryBase):
     :arg wildcard: Matches terms using a wildcard pattern.
     """
 
-    all_of: Union["i.IntervalsAllOf", Dict[str, Any], "NotSet"]
-    any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "NotSet"]
-    fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "NotSet"]
-    match: Union["i.IntervalsMatch", Dict[str, Any], "NotSet"]
-    prefix: Union["i.IntervalsPrefix", Dict[str, Any], "NotSet"]
-    wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "NotSet"]
+    all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"]
+    any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"]
+    fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"]
+    match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"]
+    prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"]
+    wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        all_of: Union["i.IntervalsAllOf", Dict[str, Any], "NotSet"] = NOT_SET,
-        any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "NotSet"] = NOT_SET,
-        fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "NotSet"] = NOT_SET,
-        match: Union["i.IntervalsMatch", Dict[str, Any], "NotSet"] = NOT_SET,
-        prefix: Union["i.IntervalsPrefix", Dict[str, Any], "NotSet"] = NOT_SET,
-        wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "NotSet"] = NOT_SET,
+        all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"] = DEFAULT,
+        match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
+        prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
+        wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(all_of, NotSet):
+        if all_of != DEFAULT:
             kwargs["all_of"] = all_of
-        if not isinstance(any_of, NotSet):
+        if any_of != DEFAULT:
             kwargs["any_of"] = any_of
-        if not isinstance(fuzzy, NotSet):
+        if fuzzy != DEFAULT:
             kwargs["fuzzy"] = fuzzy
-        if not isinstance(match, NotSet):
+        if match != DEFAULT:
             kwargs["match"] = match
-        if not isinstance(prefix, NotSet):
+        if prefix != DEFAULT:
             kwargs["prefix"] = prefix
-        if not isinstance(wildcard, NotSet):
+        if wildcard != DEFAULT:
             kwargs["wildcard"] = wildcard
         super().__init__(**kwargs)
 
@@ -394,48 +400,50 @@ class LikeDocument(AttrDict[Any]):
     """
 
     doc: Any
-    fields: Union[List[Union[str, "InstrumentedField"]], "NotSet"]
-    _id: Union[str, "NotSet"]
-    _index: Union[str, "NotSet"]
-    per_field_analyzer: Union[Mapping[Union[str, "InstrumentedField"], str], "NotSet"]
-    routing: Union[str, "NotSet"]
-    version: Union[int, "NotSet"]
+    fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"]
+    _id: Union[str, "DefaultType"]
+    _index: Union[str, "DefaultType"]
+    per_field_analyzer: Union[
+        Mapping[Union[str, "InstrumentedField"], str], "DefaultType"
+    ]
+    routing: Union[str, "DefaultType"]
+    version: Union[int, "DefaultType"]
     version_type: Union[
-        Literal["internal", "external", "external_gte", "force"], "NotSet"
+        Literal["internal", "external", "external_gte", "force"], "DefaultType"
     ]
 
     def __init__(
         self,
         *,
-        doc: Any = NOT_SET,
-        fields: Union[List[Union[str, "InstrumentedField"]], "NotSet"] = NOT_SET,
-        _id: Union[str, "NotSet"] = NOT_SET,
-        _index: Union[str, "NotSet"] = NOT_SET,
+        doc: Any = DEFAULT,
+        fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"] = DEFAULT,
+        _id: Union[str, "DefaultType"] = DEFAULT,
+        _index: Union[str, "DefaultType"] = DEFAULT,
         per_field_analyzer: Union[
-            Mapping[Union[str, "InstrumentedField"], str], "NotSet"
-        ] = NOT_SET,
-        routing: Union[str, "NotSet"] = NOT_SET,
-        version: Union[int, "NotSet"] = NOT_SET,
+            Mapping[Union[str, "InstrumentedField"], str], "DefaultType"
+        ] = DEFAULT,
+        routing: Union[str, "DefaultType"] = DEFAULT,
+        version: Union[int, "DefaultType"] = DEFAULT,
         version_type: Union[
-            Literal["internal", "external", "external_gte", "force"], "NotSet"
-        ] = NOT_SET,
+            Literal["internal", "external", "external_gte", "force"], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(doc, NotSet):
+        if doc != DEFAULT:
             kwargs["doc"] = doc
-        if not isinstance(fields, NotSet):
+        if fields != DEFAULT:
             kwargs["fields"] = str(fields)
-        if not isinstance(_id, NotSet):
+        if _id != DEFAULT:
             kwargs["_id"] = _id
-        if not isinstance(_index, NotSet):
+        if _index != DEFAULT:
             kwargs["_index"] = _index
-        if not isinstance(per_field_analyzer, NotSet):
+        if per_field_analyzer != DEFAULT:
             kwargs["per_field_analyzer"] = str(per_field_analyzer)
-        if not isinstance(routing, NotSet):
+        if routing != DEFAULT:
             kwargs["routing"] = routing
-        if not isinstance(version, NotSet):
+        if version != DEFAULT:
             kwargs["version"] = version
-        if not isinstance(version_type, NotSet):
+        if version_type != DEFAULT:
             kwargs["version_type"] = version_type
         super().__init__(kwargs)
 
@@ -469,47 +477,47 @@ class MatchBoolPrefixQuery(QueryBase):
         The last term is used in a prefix query.
     """
 
-    analyzer: Union[str, "NotSet"]
-    fuzziness: Union[str, int, "NotSet"]
-    fuzzy_rewrite: Union[str, "NotSet"]
-    fuzzy_transpositions: Union[bool, "NotSet"]
-    max_expansions: Union[int, "NotSet"]
-    minimum_should_match: Union[int, str, "NotSet"]
-    operator: Union[Literal["and", "or"], "NotSet"]
-    prefix_length: Union[int, "NotSet"]
-    query: Union[str, "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    fuzziness: Union[str, int, "DefaultType"]
+    fuzzy_rewrite: Union[str, "DefaultType"]
+    fuzzy_transpositions: Union[bool, "DefaultType"]
+    max_expansions: Union[int, "DefaultType"]
+    minimum_should_match: Union[int, str, "DefaultType"]
+    operator: Union[Literal["and", "or"], "DefaultType"]
+    prefix_length: Union[int, "DefaultType"]
+    query: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        fuzziness: Union[str, int, "NotSet"] = NOT_SET,
-        fuzzy_rewrite: Union[str, "NotSet"] = NOT_SET,
-        fuzzy_transpositions: Union[bool, "NotSet"] = NOT_SET,
-        max_expansions: Union[int, "NotSet"] = NOT_SET,
-        minimum_should_match: Union[int, str, "NotSet"] = NOT_SET,
-        operator: Union[Literal["and", "or"], "NotSet"] = NOT_SET,
-        prefix_length: Union[int, "NotSet"] = NOT_SET,
-        query: Union[str, "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
+        fuzzy_rewrite: Union[str, "DefaultType"] = DEFAULT,
+        fuzzy_transpositions: Union[bool, "DefaultType"] = DEFAULT,
+        max_expansions: Union[int, "DefaultType"] = DEFAULT,
+        minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
+        operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
+        prefix_length: Union[int, "DefaultType"] = DEFAULT,
+        query: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(fuzziness, NotSet):
+        if fuzziness != DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if not isinstance(fuzzy_rewrite, NotSet):
+        if fuzzy_rewrite != DEFAULT:
             kwargs["fuzzy_rewrite"] = fuzzy_rewrite
-        if not isinstance(fuzzy_transpositions, NotSet):
+        if fuzzy_transpositions != DEFAULT:
             kwargs["fuzzy_transpositions"] = fuzzy_transpositions
-        if not isinstance(max_expansions, NotSet):
+        if max_expansions != DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if not isinstance(minimum_should_match, NotSet):
+        if minimum_should_match != DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if not isinstance(operator, NotSet):
+        if operator != DEFAULT:
             kwargs["operator"] = operator
-        if not isinstance(prefix_length, NotSet):
+        if prefix_length != DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
         super().__init__(**kwargs)
 
@@ -528,31 +536,31 @@ class MatchPhrasePrefixQuery(QueryBase):
         filter.
     """
 
-    analyzer: Union[str, "NotSet"]
-    max_expansions: Union[int, "NotSet"]
-    query: Union[str, "NotSet"]
-    slop: Union[int, "NotSet"]
-    zero_terms_query: Union[Literal["all", "none"], "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    max_expansions: Union[int, "DefaultType"]
+    query: Union[str, "DefaultType"]
+    slop: Union[int, "DefaultType"]
+    zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        max_expansions: Union[int, "NotSet"] = NOT_SET,
-        query: Union[str, "NotSet"] = NOT_SET,
-        slop: Union[int, "NotSet"] = NOT_SET,
-        zero_terms_query: Union[Literal["all", "none"], "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        max_expansions: Union[int, "DefaultType"] = DEFAULT,
+        query: Union[str, "DefaultType"] = DEFAULT,
+        slop: Union[int, "DefaultType"] = DEFAULT,
+        zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(max_expansions, NotSet):
+        if max_expansions != DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
-        if not isinstance(slop, NotSet):
+        if slop != DEFAULT:
             kwargs["slop"] = slop
-        if not isinstance(zero_terms_query, NotSet):
+        if zero_terms_query != DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
         super().__init__(**kwargs)
 
@@ -570,27 +578,27 @@ class MatchPhraseQuery(QueryBase):
         filter.
     """
 
-    analyzer: Union[str, "NotSet"]
-    query: Union[str, "NotSet"]
-    slop: Union[int, "NotSet"]
-    zero_terms_query: Union[Literal["all", "none"], "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    query: Union[str, "DefaultType"]
+    slop: Union[int, "DefaultType"]
+    zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        query: Union[str, "NotSet"] = NOT_SET,
-        slop: Union[int, "NotSet"] = NOT_SET,
-        zero_terms_query: Union[Literal["all", "none"], "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        query: Union[str, "DefaultType"] = DEFAULT,
+        slop: Union[int, "DefaultType"] = DEFAULT,
+        zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
-        if not isinstance(slop, NotSet):
+        if slop != DEFAULT:
             kwargs["slop"] = slop
-        if not isinstance(zero_terms_query, NotSet):
+        if zero_terms_query != DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
         super().__init__(**kwargs)
 
@@ -624,65 +632,65 @@ class MatchQuery(QueryBase):
         filter.
     """
 
-    analyzer: Union[str, "NotSet"]
-    auto_generate_synonyms_phrase_query: Union[bool, "NotSet"]
-    cutoff_frequency: Union[float, "NotSet"]
-    fuzziness: Union[str, int, "NotSet"]
-    fuzzy_rewrite: Union[str, "NotSet"]
-    fuzzy_transpositions: Union[bool, "NotSet"]
-    lenient: Union[bool, "NotSet"]
-    max_expansions: Union[int, "NotSet"]
-    minimum_should_match: Union[int, str, "NotSet"]
-    operator: Union[Literal["and", "or"], "NotSet"]
-    prefix_length: Union[int, "NotSet"]
-    query: Union[str, float, bool, "NotSet"]
-    zero_terms_query: Union[Literal["all", "none"], "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    auto_generate_synonyms_phrase_query: Union[bool, "DefaultType"]
+    cutoff_frequency: Union[float, "DefaultType"]
+    fuzziness: Union[str, int, "DefaultType"]
+    fuzzy_rewrite: Union[str, "DefaultType"]
+    fuzzy_transpositions: Union[bool, "DefaultType"]
+    lenient: Union[bool, "DefaultType"]
+    max_expansions: Union[int, "DefaultType"]
+    minimum_should_match: Union[int, str, "DefaultType"]
+    operator: Union[Literal["and", "or"], "DefaultType"]
+    prefix_length: Union[int, "DefaultType"]
+    query: Union[str, float, bool, "DefaultType"]
+    zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        auto_generate_synonyms_phrase_query: Union[bool, "NotSet"] = NOT_SET,
-        cutoff_frequency: Union[float, "NotSet"] = NOT_SET,
-        fuzziness: Union[str, int, "NotSet"] = NOT_SET,
-        fuzzy_rewrite: Union[str, "NotSet"] = NOT_SET,
-        fuzzy_transpositions: Union[bool, "NotSet"] = NOT_SET,
-        lenient: Union[bool, "NotSet"] = NOT_SET,
-        max_expansions: Union[int, "NotSet"] = NOT_SET,
-        minimum_should_match: Union[int, str, "NotSet"] = NOT_SET,
-        operator: Union[Literal["and", "or"], "NotSet"] = NOT_SET,
-        prefix_length: Union[int, "NotSet"] = NOT_SET,
-        query: Union[str, float, bool, "NotSet"] = NOT_SET,
-        zero_terms_query: Union[Literal["all", "none"], "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        auto_generate_synonyms_phrase_query: Union[bool, "DefaultType"] = DEFAULT,
+        cutoff_frequency: Union[float, "DefaultType"] = DEFAULT,
+        fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
+        fuzzy_rewrite: Union[str, "DefaultType"] = DEFAULT,
+        fuzzy_transpositions: Union[bool, "DefaultType"] = DEFAULT,
+        lenient: Union[bool, "DefaultType"] = DEFAULT,
+        max_expansions: Union[int, "DefaultType"] = DEFAULT,
+        minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
+        operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
+        prefix_length: Union[int, "DefaultType"] = DEFAULT,
+        query: Union[str, float, bool, "DefaultType"] = DEFAULT,
+        zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(auto_generate_synonyms_phrase_query, NotSet):
+        if auto_generate_synonyms_phrase_query != DEFAULT:
             kwargs["auto_generate_synonyms_phrase_query"] = (
                 auto_generate_synonyms_phrase_query
             )
-        if not isinstance(cutoff_frequency, NotSet):
+        if cutoff_frequency != DEFAULT:
             kwargs["cutoff_frequency"] = cutoff_frequency
-        if not isinstance(fuzziness, NotSet):
+        if fuzziness != DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if not isinstance(fuzzy_rewrite, NotSet):
+        if fuzzy_rewrite != DEFAULT:
             kwargs["fuzzy_rewrite"] = fuzzy_rewrite
-        if not isinstance(fuzzy_transpositions, NotSet):
+        if fuzzy_transpositions != DEFAULT:
             kwargs["fuzzy_transpositions"] = fuzzy_transpositions
-        if not isinstance(lenient, NotSet):
+        if lenient != DEFAULT:
             kwargs["lenient"] = lenient
-        if not isinstance(max_expansions, NotSet):
+        if max_expansions != DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if not isinstance(minimum_should_match, NotSet):
+        if minimum_should_match != DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if not isinstance(operator, NotSet):
+        if operator != DEFAULT:
             kwargs["operator"] = operator
-        if not isinstance(prefix_length, NotSet):
+        if prefix_length != DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
-        if not isinstance(zero_terms_query, NotSet):
+        if zero_terms_query != DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
         super().__init__(**kwargs)
 
@@ -693,19 +701,19 @@ class PinnedDoc(AttrDict[Any]):
     :arg _index: (required) The index that contains the document.
     """
 
-    _id: Union[str, "NotSet"]
-    _index: Union[str, "NotSet"]
+    _id: Union[str, "DefaultType"]
+    _index: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        _id: Union[str, "NotSet"] = NOT_SET,
-        _index: Union[str, "NotSet"] = NOT_SET,
+        _id: Union[str, "DefaultType"] = DEFAULT,
+        _index: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(_id, NotSet):
+        if _id != DEFAULT:
             kwargs["_id"] = _id
-        if not isinstance(_index, NotSet):
+        if _index != DEFAULT:
             kwargs["_index"] = _index
         super().__init__(kwargs)
 
@@ -721,23 +729,23 @@ class PrefixQuery(QueryBase):
         the underlying field’s mapping.
     """
 
-    rewrite: Union[str, "NotSet"]
-    value: Union[str, "NotSet"]
-    case_insensitive: Union[bool, "NotSet"]
+    rewrite: Union[str, "DefaultType"]
+    value: Union[str, "DefaultType"]
+    case_insensitive: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        rewrite: Union[str, "NotSet"] = NOT_SET,
-        value: Union[str, "NotSet"] = NOT_SET,
-        case_insensitive: Union[bool, "NotSet"] = NOT_SET,
+        rewrite: Union[str, "DefaultType"] = DEFAULT,
+        value: Union[str, "DefaultType"] = DEFAULT,
+        case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(rewrite, NotSet):
+        if rewrite != DEFAULT:
             kwargs["rewrite"] = rewrite
-        if not isinstance(value, NotSet):
+        if value != DEFAULT:
             kwargs["value"] = value
-        if not isinstance(case_insensitive, NotSet):
+        if case_insensitive != DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
         super().__init__(**kwargs)
 
@@ -747,15 +755,17 @@ class QueryVectorBuilder(AttrDict[Any]):
     :arg text_embedding: No documentation available.
     """
 
-    text_embedding: Union["i.TextEmbedding", Dict[str, Any], "NotSet"]
+    text_embedding: Union["i.TextEmbedding", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        text_embedding: Union["i.TextEmbedding", Dict[str, Any], "NotSet"] = NOT_SET,
+        text_embedding: Union[
+            "i.TextEmbedding", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(text_embedding, NotSet):
+        if text_embedding != DEFAULT:
             kwargs["text_embedding"] = text_embedding
         super().__init__(kwargs)
 
@@ -773,12 +783,12 @@ class RankFeatureFunctionLogarithm(RankFeatureFunction):
     :arg scaling_factor: (required) Configurable scaling factor.
     """
 
-    scaling_factor: Union[float, "NotSet"]
+    scaling_factor: Union[float, "DefaultType"]
 
     def __init__(
-        self, *, scaling_factor: Union[float, "NotSet"] = NOT_SET, **kwargs: Any
+        self, *, scaling_factor: Union[float, "DefaultType"] = DEFAULT, **kwargs: Any
     ):
-        if not isinstance(scaling_factor, NotSet):
+        if scaling_factor != DEFAULT:
             kwargs["scaling_factor"] = scaling_factor
         super().__init__(**kwargs)
 
@@ -789,10 +799,10 @@ class RankFeatureFunctionSaturation(RankFeatureFunction):
         than 0.5.
     """
 
-    pivot: Union[float, "NotSet"]
+    pivot: Union[float, "DefaultType"]
 
-    def __init__(self, *, pivot: Union[float, "NotSet"] = NOT_SET, **kwargs: Any):
-        if not isinstance(pivot, NotSet):
+    def __init__(self, *, pivot: Union[float, "DefaultType"] = DEFAULT, **kwargs: Any):
+        if pivot != DEFAULT:
             kwargs["pivot"] = pivot
         super().__init__(**kwargs)
 
@@ -804,19 +814,19 @@ class RankFeatureFunctionSigmoid(RankFeatureFunction):
     :arg exponent: (required) Configurable Exponent.
     """
 
-    pivot: Union[float, "NotSet"]
-    exponent: Union[float, "NotSet"]
+    pivot: Union[float, "DefaultType"]
+    exponent: Union[float, "DefaultType"]
 
     def __init__(
         self,
         *,
-        pivot: Union[float, "NotSet"] = NOT_SET,
-        exponent: Union[float, "NotSet"] = NOT_SET,
+        pivot: Union[float, "DefaultType"] = DEFAULT,
+        exponent: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(pivot, NotSet):
+        if pivot != DEFAULT:
             kwargs["pivot"] = pivot
-        if not isinstance(exponent, NotSet):
+        if exponent != DEFAULT:
             kwargs["exponent"] = exponent
         super().__init__(**kwargs)
 
@@ -835,31 +845,31 @@ class RegexpQuery(QueryBase):
         in the provided field.
     """
 
-    case_insensitive: Union[bool, "NotSet"]
-    flags: Union[str, "NotSet"]
-    max_determinized_states: Union[int, "NotSet"]
-    rewrite: Union[str, "NotSet"]
-    value: Union[str, "NotSet"]
+    case_insensitive: Union[bool, "DefaultType"]
+    flags: Union[str, "DefaultType"]
+    max_determinized_states: Union[int, "DefaultType"]
+    rewrite: Union[str, "DefaultType"]
+    value: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        case_insensitive: Union[bool, "NotSet"] = NOT_SET,
-        flags: Union[str, "NotSet"] = NOT_SET,
-        max_determinized_states: Union[int, "NotSet"] = NOT_SET,
-        rewrite: Union[str, "NotSet"] = NOT_SET,
-        value: Union[str, "NotSet"] = NOT_SET,
+        case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
+        flags: Union[str, "DefaultType"] = DEFAULT,
+        max_determinized_states: Union[int, "DefaultType"] = DEFAULT,
+        rewrite: Union[str, "DefaultType"] = DEFAULT,
+        value: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(case_insensitive, NotSet):
+        if case_insensitive != DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
-        if not isinstance(flags, NotSet):
+        if flags != DEFAULT:
             kwargs["flags"] = flags
-        if not isinstance(max_determinized_states, NotSet):
+        if max_determinized_states != DEFAULT:
             kwargs["max_determinized_states"] = max_determinized_states
-        if not isinstance(rewrite, NotSet):
+        if rewrite != DEFAULT:
             kwargs["rewrite"] = rewrite
-        if not isinstance(value, NotSet):
+        if value != DEFAULT:
             kwargs["value"] = value
         super().__init__(**kwargs)
 
@@ -875,33 +885,33 @@ class Script(AttrDict[Any]):
     :arg options: No documentation available.
     """
 
-    source: Union[str, "NotSet"]
-    id: Union[str, "NotSet"]
-    params: Union[Mapping[str, Any], "NotSet"]
-    lang: Union[Literal["painless", "expression", "mustache", "java"], "NotSet"]
-    options: Union[Mapping[str, str], "NotSet"]
+    source: Union[str, "DefaultType"]
+    id: Union[str, "DefaultType"]
+    params: Union[Mapping[str, Any], "DefaultType"]
+    lang: Union[Literal["painless", "expression", "mustache", "java"], "DefaultType"]
+    options: Union[Mapping[str, str], "DefaultType"]
 
     def __init__(
         self,
         *,
-        source: Union[str, "NotSet"] = NOT_SET,
-        id: Union[str, "NotSet"] = NOT_SET,
-        params: Union[Mapping[str, Any], "NotSet"] = NOT_SET,
+        source: Union[str, "DefaultType"] = DEFAULT,
+        id: Union[str, "DefaultType"] = DEFAULT,
+        params: Union[Mapping[str, Any], "DefaultType"] = DEFAULT,
         lang: Union[
-            Literal["painless", "expression", "mustache", "java"], "NotSet"
-        ] = NOT_SET,
-        options: Union[Mapping[str, str], "NotSet"] = NOT_SET,
+            Literal["painless", "expression", "mustache", "java"], "DefaultType"
+        ] = DEFAULT,
+        options: Union[Mapping[str, str], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(source, NotSet):
+        if source != DEFAULT:
             kwargs["source"] = source
-        if not isinstance(id, NotSet):
+        if id != DEFAULT:
             kwargs["id"] = id
-        if not isinstance(params, NotSet):
+        if params != DEFAULT:
             kwargs["params"] = params
-        if not isinstance(lang, NotSet):
+        if lang != DEFAULT:
             kwargs["lang"] = lang
-        if not isinstance(options, NotSet):
+        if options != DEFAULT:
             kwargs["options"] = options
         super().__init__(kwargs)
 
@@ -931,65 +941,69 @@ class SpanQuery(AttrDict[Any]):
         other span queries.
     """
 
-    span_containing: Union["i.SpanContainingQuery", Dict[str, Any], "NotSet"]
-    span_field_masking: Union["i.SpanFieldMaskingQuery", Dict[str, Any], "NotSet"]
-    span_first: Union["i.SpanFirstQuery", Dict[str, Any], "NotSet"]
-    span_gap: Union[Mapping[Union[str, "InstrumentedField"], int], "NotSet"]
-    span_multi: Union["i.SpanMultiTermQuery", Dict[str, Any], "NotSet"]
-    span_near: Union["i.SpanNearQuery", Dict[str, Any], "NotSet"]
-    span_not: Union["i.SpanNotQuery", Dict[str, Any], "NotSet"]
-    span_or: Union["i.SpanOrQuery", Dict[str, Any], "NotSet"]
+    span_containing: Union["i.SpanContainingQuery", Dict[str, Any], "DefaultType"]
+    span_field_masking: Union["i.SpanFieldMaskingQuery", Dict[str, Any], "DefaultType"]
+    span_first: Union["i.SpanFirstQuery", Dict[str, Any], "DefaultType"]
+    span_gap: Union[Mapping[Union[str, "InstrumentedField"], int], "DefaultType"]
+    span_multi: Union["i.SpanMultiTermQuery", Dict[str, Any], "DefaultType"]
+    span_near: Union["i.SpanNearQuery", Dict[str, Any], "DefaultType"]
+    span_not: Union["i.SpanNotQuery", Dict[str, Any], "DefaultType"]
+    span_or: Union["i.SpanOrQuery", Dict[str, Any], "DefaultType"]
     span_term: Union[
         Mapping[Union[str, "InstrumentedField"], "i.SpanTermQuery"],
         Dict[str, Any],
-        "NotSet",
+        "DefaultType",
     ]
-    span_within: Union["i.SpanWithinQuery", Dict[str, Any], "NotSet"]
+    span_within: Union["i.SpanWithinQuery", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         span_containing: Union[
-            "i.SpanContainingQuery", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
+            "i.SpanContainingQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         span_field_masking: Union[
-            "i.SpanFieldMaskingQuery", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        span_first: Union["i.SpanFirstQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+            "i.SpanFieldMaskingQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        span_first: Union["i.SpanFirstQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         span_gap: Union[
-            Mapping[Union[str, "InstrumentedField"], int], "NotSet"
-        ] = NOT_SET,
-        span_multi: Union["i.SpanMultiTermQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        span_near: Union["i.SpanNearQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        span_not: Union["i.SpanNotQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        span_or: Union["i.SpanOrQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+            Mapping[Union[str, "InstrumentedField"], int], "DefaultType"
+        ] = DEFAULT,
+        span_multi: Union[
+            "i.SpanMultiTermQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        span_near: Union["i.SpanNearQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        span_not: Union["i.SpanNotQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        span_or: Union["i.SpanOrQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         span_term: Union[
             Mapping[Union[str, "InstrumentedField"], "i.SpanTermQuery"],
             Dict[str, Any],
-            "NotSet",
-        ] = NOT_SET,
-        span_within: Union["i.SpanWithinQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
+        span_within: Union[
+            "i.SpanWithinQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(span_containing, NotSet):
+        if span_containing != DEFAULT:
             kwargs["span_containing"] = span_containing
-        if not isinstance(span_field_masking, NotSet):
+        if span_field_masking != DEFAULT:
             kwargs["span_field_masking"] = span_field_masking
-        if not isinstance(span_first, NotSet):
+        if span_first != DEFAULT:
             kwargs["span_first"] = span_first
-        if not isinstance(span_gap, NotSet):
+        if span_gap != DEFAULT:
             kwargs["span_gap"] = str(span_gap)
-        if not isinstance(span_multi, NotSet):
+        if span_multi != DEFAULT:
             kwargs["span_multi"] = span_multi
-        if not isinstance(span_near, NotSet):
+        if span_near != DEFAULT:
             kwargs["span_near"] = span_near
-        if not isinstance(span_not, NotSet):
+        if span_not != DEFAULT:
             kwargs["span_not"] = span_not
-        if not isinstance(span_or, NotSet):
+        if span_or != DEFAULT:
             kwargs["span_or"] = span_or
-        if not isinstance(span_term, NotSet):
+        if span_term != DEFAULT:
             kwargs["span_term"] = str(span_term)
-        if not isinstance(span_within, NotSet):
+        if span_within != DEFAULT:
             kwargs["span_within"] = span_within
         super().__init__(kwargs)
 
@@ -999,10 +1013,10 @@ class SpanTermQuery(QueryBase):
     :arg value: (required) No documentation available.
     """
 
-    value: Union[str, "NotSet"]
+    value: Union[str, "DefaultType"]
 
-    def __init__(self, *, value: Union[str, "NotSet"] = NOT_SET, **kwargs: Any):
-        if not isinstance(value, NotSet):
+    def __init__(self, *, value: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
+        if value != DEFAULT:
             kwargs["value"] = value
         super().__init__(**kwargs)
 
@@ -1016,19 +1030,19 @@ class TermQuery(QueryBase):
         underlying field’s mapping.
     """
 
-    value: Union[int, float, str, bool, None, Any, "NotSet"]
-    case_insensitive: Union[bool, "NotSet"]
+    value: Union[int, float, str, bool, None, Any, "DefaultType"]
+    case_insensitive: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        value: Union[int, float, str, bool, None, Any, "NotSet"] = NOT_SET,
-        case_insensitive: Union[bool, "NotSet"] = NOT_SET,
+        value: Union[int, float, str, bool, None, Any, "DefaultType"] = DEFAULT,
+        case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(value, NotSet):
+        if value != DEFAULT:
             kwargs["value"] = value
-        if not isinstance(case_insensitive, NotSet):
+        if case_insensitive != DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
         super().__init__(**kwargs)
 
@@ -1043,25 +1057,27 @@ class TermsSetQuery(QueryBase):
         field.
     """
 
-    minimum_should_match_field: Union[str, "InstrumentedField", "NotSet"]
-    minimum_should_match_script: Union["i.Script", Dict[str, Any], "NotSet"]
-    terms: Union[List[str], "NotSet"]
+    minimum_should_match_field: Union[str, "InstrumentedField", "DefaultType"]
+    minimum_should_match_script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    terms: Union[List[str], "DefaultType"]
 
     def __init__(
         self,
         *,
-        minimum_should_match_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        minimum_should_match_field: Union[
+            str, "InstrumentedField", "DefaultType"
+        ] = DEFAULT,
         minimum_should_match_script: Union[
-            "i.Script", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        terms: Union[List[str], "NotSet"] = NOT_SET,
+            "i.Script", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        terms: Union[List[str], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(minimum_should_match_field, NotSet):
+        if minimum_should_match_field != DEFAULT:
             kwargs["minimum_should_match_field"] = str(minimum_should_match_field)
-        if not isinstance(minimum_should_match_script, NotSet):
+        if minimum_should_match_script != DEFAULT:
             kwargs["minimum_should_match_script"] = minimum_should_match_script
-        if not isinstance(terms, NotSet):
+        if terms != DEFAULT:
             kwargs["terms"] = terms
         super().__init__(**kwargs)
 
@@ -1073,25 +1089,25 @@ class TextExpansionQuery(QueryBase):
     :arg pruning_config: Token pruning configurations
     """
 
-    model_id: Union[str, "NotSet"]
-    model_text: Union[str, "NotSet"]
-    pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "NotSet"]
+    model_id: Union[str, "DefaultType"]
+    model_text: Union[str, "DefaultType"]
+    pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        model_id: Union[str, "NotSet"] = NOT_SET,
-        model_text: Union[str, "NotSet"] = NOT_SET,
+        model_id: Union[str, "DefaultType"] = DEFAULT,
+        model_text: Union[str, "DefaultType"] = DEFAULT,
         pruning_config: Union[
-            "i.TokenPruningConfig", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
+            "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(model_id, NotSet):
+        if model_id != DEFAULT:
             kwargs["model_id"] = model_id
-        if not isinstance(model_text, NotSet):
+        if model_text != DEFAULT:
             kwargs["model_text"] = model_text
-        if not isinstance(pruning_config, NotSet):
+        if pruning_config != DEFAULT:
             kwargs["pruning_config"] = pruning_config
         super().__init__(**kwargs)
 
@@ -1107,23 +1123,23 @@ class TokenPruningConfig(AttrDict[Any]):
         only scoring kept tokens.
     """
 
-    tokens_freq_ratio_threshold: Union[int, "NotSet"]
-    tokens_weight_threshold: Union[float, "NotSet"]
-    only_score_pruned_tokens: Union[bool, "NotSet"]
+    tokens_freq_ratio_threshold: Union[int, "DefaultType"]
+    tokens_weight_threshold: Union[float, "DefaultType"]
+    only_score_pruned_tokens: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        tokens_freq_ratio_threshold: Union[int, "NotSet"] = NOT_SET,
-        tokens_weight_threshold: Union[float, "NotSet"] = NOT_SET,
-        only_score_pruned_tokens: Union[bool, "NotSet"] = NOT_SET,
+        tokens_freq_ratio_threshold: Union[int, "DefaultType"] = DEFAULT,
+        tokens_weight_threshold: Union[float, "DefaultType"] = DEFAULT,
+        only_score_pruned_tokens: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(tokens_freq_ratio_threshold, NotSet):
+        if tokens_freq_ratio_threshold != DEFAULT:
             kwargs["tokens_freq_ratio_threshold"] = tokens_freq_ratio_threshold
-        if not isinstance(tokens_weight_threshold, NotSet):
+        if tokens_weight_threshold != DEFAULT:
             kwargs["tokens_weight_threshold"] = tokens_weight_threshold
-        if not isinstance(only_score_pruned_tokens, NotSet):
+        if only_score_pruned_tokens != DEFAULT:
             kwargs["only_score_pruned_tokens"] = only_score_pruned_tokens
         super().__init__(kwargs)
 
@@ -1134,21 +1150,21 @@ class WeightedTokensQuery(QueryBase):
     :arg pruning_config: Token pruning configurations
     """
 
-    tokens: Union[Mapping[str, float], "NotSet"]
-    pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "NotSet"]
+    tokens: Union[Mapping[str, float], "DefaultType"]
+    pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        tokens: Union[Mapping[str, float], "NotSet"] = NOT_SET,
+        tokens: Union[Mapping[str, float], "DefaultType"] = DEFAULT,
         pruning_config: Union[
-            "i.TokenPruningConfig", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
+            "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(tokens, NotSet):
+        if tokens != DEFAULT:
             kwargs["tokens"] = tokens
-        if not isinstance(pruning_config, NotSet):
+        if pruning_config != DEFAULT:
             kwargs["pruning_config"] = pruning_config
         super().__init__(**kwargs)
 
@@ -1166,27 +1182,27 @@ class WildcardQuery(QueryBase):
         provided field. Required, when value is not set.
     """
 
-    case_insensitive: Union[bool, "NotSet"]
-    rewrite: Union[str, "NotSet"]
-    value: Union[str, "NotSet"]
-    wildcard: Union[str, "NotSet"]
+    case_insensitive: Union[bool, "DefaultType"]
+    rewrite: Union[str, "DefaultType"]
+    value: Union[str, "DefaultType"]
+    wildcard: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        case_insensitive: Union[bool, "NotSet"] = NOT_SET,
-        rewrite: Union[str, "NotSet"] = NOT_SET,
-        value: Union[str, "NotSet"] = NOT_SET,
-        wildcard: Union[str, "NotSet"] = NOT_SET,
+        case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
+        rewrite: Union[str, "DefaultType"] = DEFAULT,
+        value: Union[str, "DefaultType"] = DEFAULT,
+        wildcard: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(case_insensitive, NotSet):
+        if case_insensitive != DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
-        if not isinstance(rewrite, NotSet):
+        if rewrite != DEFAULT:
             kwargs["rewrite"] = rewrite
-        if not isinstance(value, NotSet):
+        if value != DEFAULT:
             kwargs["value"] = value
-        if not isinstance(wildcard, NotSet):
+        if wildcard != DEFAULT:
             kwargs["wildcard"] = wildcard
         super().__init__(**kwargs)
 
@@ -1200,29 +1216,29 @@ class FieldCollapse(AttrDict[Any]):
     :arg collapse: No documentation available.
     """
 
-    field: Union[str, "InstrumentedField", "NotSet"]
-    inner_hits: Union["i.InnerHits", List["i.InnerHits"], Dict[str, Any], "NotSet"]
-    max_concurrent_group_searches: Union[int, "NotSet"]
-    collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"]
+    field: Union[str, "InstrumentedField", "DefaultType"]
+    inner_hits: Union["i.InnerHits", List["i.InnerHits"], Dict[str, Any], "DefaultType"]
+    max_concurrent_group_searches: Union[int, "DefaultType"]
+    collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         inner_hits: Union[
-            "i.InnerHits", List["i.InnerHits"], Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        max_concurrent_group_searches: Union[int, "NotSet"] = NOT_SET,
-        collapse: Union["i.FieldCollapse", Dict[str, Any], "NotSet"] = NOT_SET,
+            "i.InnerHits", List["i.InnerHits"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        max_concurrent_group_searches: Union[int, "DefaultType"] = DEFAULT,
+        collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(field, NotSet):
+        if field != DEFAULT:
             kwargs["field"] = str(field)
-        if not isinstance(inner_hits, NotSet):
+        if inner_hits != DEFAULT:
             kwargs["inner_hits"] = inner_hits
-        if not isinstance(max_concurrent_group_searches, NotSet):
+        if max_concurrent_group_searches != DEFAULT:
             kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
-        if not isinstance(collapse, NotSet):
+        if collapse != DEFAULT:
             kwargs["collapse"] = collapse
         super().__init__(kwargs)
 
@@ -1235,23 +1251,23 @@ class FieldAndFormat(AttrDict[Any]):
     :arg include_unmapped: No documentation available.
     """
 
-    field: Union[str, "InstrumentedField", "NotSet"]
-    format: Union[str, "NotSet"]
-    include_unmapped: Union[bool, "NotSet"]
+    field: Union[str, "InstrumentedField", "DefaultType"]
+    format: Union[str, "DefaultType"]
+    include_unmapped: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        format: Union[str, "NotSet"] = NOT_SET,
-        include_unmapped: Union[bool, "NotSet"] = NOT_SET,
+        field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        format: Union[str, "DefaultType"] = DEFAULT,
+        include_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(field, NotSet):
+        if field != DEFAULT:
             kwargs["field"] = str(field)
-        if not isinstance(format, NotSet):
+        if format != DEFAULT:
             kwargs["format"] = format
-        if not isinstance(include_unmapped, NotSet):
+        if include_unmapped != DEFAULT:
             kwargs["include_unmapped"] = include_unmapped
         super().__init__(kwargs)
 
@@ -1319,97 +1335,97 @@ class HighlightBase(AttrDict[Any]):
     :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
-    type: Union[Literal["plain", "fvh", "unified"], "NotSet"]
-    boundary_chars: Union[str, "NotSet"]
-    boundary_max_scan: Union[int, "NotSet"]
-    boundary_scanner: Union[Literal["chars", "sentence", "word"], "NotSet"]
-    boundary_scanner_locale: Union[str, "NotSet"]
-    force_source: Union[bool, "NotSet"]
-    fragmenter: Union[Literal["simple", "span"], "NotSet"]
-    fragment_size: Union[int, "NotSet"]
-    highlight_filter: Union[bool, "NotSet"]
-    highlight_query: Union[Query, "NotSet"]
-    max_fragment_length: Union[int, "NotSet"]
-    max_analyzed_offset: Union[int, "NotSet"]
-    no_match_size: Union[int, "NotSet"]
-    number_of_fragments: Union[int, "NotSet"]
-    options: Union[Mapping[str, Any], "NotSet"]
-    order: Union[Literal["score"], "NotSet"]
-    phrase_limit: Union[int, "NotSet"]
-    post_tags: Union[List[str], "NotSet"]
-    pre_tags: Union[List[str], "NotSet"]
-    require_field_match: Union[bool, "NotSet"]
-    tags_schema: Union[Literal["styled"], "NotSet"]
+    type: Union[Literal["plain", "fvh", "unified"], "DefaultType"]
+    boundary_chars: Union[str, "DefaultType"]
+    boundary_max_scan: Union[int, "DefaultType"]
+    boundary_scanner: Union[Literal["chars", "sentence", "word"], "DefaultType"]
+    boundary_scanner_locale: Union[str, "DefaultType"]
+    force_source: Union[bool, "DefaultType"]
+    fragmenter: Union[Literal["simple", "span"], "DefaultType"]
+    fragment_size: Union[int, "DefaultType"]
+    highlight_filter: Union[bool, "DefaultType"]
+    highlight_query: Union[Query, "DefaultType"]
+    max_fragment_length: Union[int, "DefaultType"]
+    max_analyzed_offset: Union[int, "DefaultType"]
+    no_match_size: Union[int, "DefaultType"]
+    number_of_fragments: Union[int, "DefaultType"]
+    options: Union[Mapping[str, Any], "DefaultType"]
+    order: Union[Literal["score"], "DefaultType"]
+    phrase_limit: Union[int, "DefaultType"]
+    post_tags: Union[List[str], "DefaultType"]
+    pre_tags: Union[List[str], "DefaultType"]
+    require_field_match: Union[bool, "DefaultType"]
+    tags_schema: Union[Literal["styled"], "DefaultType"]
 
     def __init__(
         self,
         *,
-        type: Union[Literal["plain", "fvh", "unified"], "NotSet"] = NOT_SET,
-        boundary_chars: Union[str, "NotSet"] = NOT_SET,
-        boundary_max_scan: Union[int, "NotSet"] = NOT_SET,
+        type: Union[Literal["plain", "fvh", "unified"], "DefaultType"] = DEFAULT,
+        boundary_chars: Union[str, "DefaultType"] = DEFAULT,
+        boundary_max_scan: Union[int, "DefaultType"] = DEFAULT,
         boundary_scanner: Union[
-            Literal["chars", "sentence", "word"], "NotSet"
-        ] = NOT_SET,
-        boundary_scanner_locale: Union[str, "NotSet"] = NOT_SET,
-        force_source: Union[bool, "NotSet"] = NOT_SET,
-        fragmenter: Union[Literal["simple", "span"], "NotSet"] = NOT_SET,
-        fragment_size: Union[int, "NotSet"] = NOT_SET,
-        highlight_filter: Union[bool, "NotSet"] = NOT_SET,
-        highlight_query: Union[Query, "NotSet"] = NOT_SET,
-        max_fragment_length: Union[int, "NotSet"] = NOT_SET,
-        max_analyzed_offset: Union[int, "NotSet"] = NOT_SET,
-        no_match_size: Union[int, "NotSet"] = NOT_SET,
-        number_of_fragments: Union[int, "NotSet"] = NOT_SET,
-        options: Union[Mapping[str, Any], "NotSet"] = NOT_SET,
-        order: Union[Literal["score"], "NotSet"] = NOT_SET,
-        phrase_limit: Union[int, "NotSet"] = NOT_SET,
-        post_tags: Union[List[str], "NotSet"] = NOT_SET,
-        pre_tags: Union[List[str], "NotSet"] = NOT_SET,
-        require_field_match: Union[bool, "NotSet"] = NOT_SET,
-        tags_schema: Union[Literal["styled"], "NotSet"] = NOT_SET,
+            Literal["chars", "sentence", "word"], "DefaultType"
+        ] = DEFAULT,
+        boundary_scanner_locale: Union[str, "DefaultType"] = DEFAULT,
+        force_source: Union[bool, "DefaultType"] = DEFAULT,
+        fragmenter: Union[Literal["simple", "span"], "DefaultType"] = DEFAULT,
+        fragment_size: Union[int, "DefaultType"] = DEFAULT,
+        highlight_filter: Union[bool, "DefaultType"] = DEFAULT,
+        highlight_query: Union[Query, "DefaultType"] = DEFAULT,
+        max_fragment_length: Union[int, "DefaultType"] = DEFAULT,
+        max_analyzed_offset: Union[int, "DefaultType"] = DEFAULT,
+        no_match_size: Union[int, "DefaultType"] = DEFAULT,
+        number_of_fragments: Union[int, "DefaultType"] = DEFAULT,
+        options: Union[Mapping[str, Any], "DefaultType"] = DEFAULT,
+        order: Union[Literal["score"], "DefaultType"] = DEFAULT,
+        phrase_limit: Union[int, "DefaultType"] = DEFAULT,
+        post_tags: Union[List[str], "DefaultType"] = DEFAULT,
+        pre_tags: Union[List[str], "DefaultType"] = DEFAULT,
+        require_field_match: Union[bool, "DefaultType"] = DEFAULT,
+        tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(type, NotSet):
+        if type != DEFAULT:
             kwargs["type"] = type
-        if not isinstance(boundary_chars, NotSet):
+        if boundary_chars != DEFAULT:
             kwargs["boundary_chars"] = boundary_chars
-        if not isinstance(boundary_max_scan, NotSet):
+        if boundary_max_scan != DEFAULT:
             kwargs["boundary_max_scan"] = boundary_max_scan
-        if not isinstance(boundary_scanner, NotSet):
+        if boundary_scanner != DEFAULT:
             kwargs["boundary_scanner"] = boundary_scanner
-        if not isinstance(boundary_scanner_locale, NotSet):
+        if boundary_scanner_locale != DEFAULT:
             kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if not isinstance(force_source, NotSet):
+        if force_source != DEFAULT:
             kwargs["force_source"] = force_source
-        if not isinstance(fragmenter, NotSet):
+        if fragmenter != DEFAULT:
             kwargs["fragmenter"] = fragmenter
-        if not isinstance(fragment_size, NotSet):
+        if fragment_size != DEFAULT:
             kwargs["fragment_size"] = fragment_size
-        if not isinstance(highlight_filter, NotSet):
+        if highlight_filter != DEFAULT:
             kwargs["highlight_filter"] = highlight_filter
-        if not isinstance(highlight_query, NotSet):
+        if highlight_query != DEFAULT:
             kwargs["highlight_query"] = highlight_query
-        if not isinstance(max_fragment_length, NotSet):
+        if max_fragment_length != DEFAULT:
             kwargs["max_fragment_length"] = max_fragment_length
-        if not isinstance(max_analyzed_offset, NotSet):
+        if max_analyzed_offset != DEFAULT:
             kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if not isinstance(no_match_size, NotSet):
+        if no_match_size != DEFAULT:
             kwargs["no_match_size"] = no_match_size
-        if not isinstance(number_of_fragments, NotSet):
+        if number_of_fragments != DEFAULT:
             kwargs["number_of_fragments"] = number_of_fragments
-        if not isinstance(options, NotSet):
+        if options != DEFAULT:
             kwargs["options"] = options
-        if not isinstance(order, NotSet):
+        if order != DEFAULT:
             kwargs["order"] = order
-        if not isinstance(phrase_limit, NotSet):
+        if phrase_limit != DEFAULT:
             kwargs["phrase_limit"] = phrase_limit
-        if not isinstance(post_tags, NotSet):
+        if post_tags != DEFAULT:
             kwargs["post_tags"] = post_tags
-        if not isinstance(pre_tags, NotSet):
+        if pre_tags != DEFAULT:
             kwargs["pre_tags"] = pre_tags
-        if not isinstance(require_field_match, NotSet):
+        if require_field_match != DEFAULT:
             kwargs["require_field_match"] = require_field_match
-        if not isinstance(tags_schema, NotSet):
+        if tags_schema != DEFAULT:
             kwargs["tags_schema"] = tags_schema
         super().__init__(kwargs)
 
@@ -1420,27 +1436,27 @@ class Highlight(HighlightBase):
     :arg fields: (required) No documentation available.
     """
 
-    encoder: Union[Literal["default", "html"], "NotSet"]
+    encoder: Union[Literal["default", "html"], "DefaultType"]
     fields: Union[
         Mapping[Union[str, "InstrumentedField"], "i.HighlightField"],
         Dict[str, Any],
-        "NotSet",
+        "DefaultType",
     ]
 
     def __init__(
         self,
         *,
-        encoder: Union[Literal["default", "html"], "NotSet"] = NOT_SET,
+        encoder: Union[Literal["default", "html"], "DefaultType"] = DEFAULT,
         fields: Union[
             Mapping[Union[str, "InstrumentedField"], "i.HighlightField"],
             Dict[str, Any],
-            "NotSet",
-        ] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(encoder, NotSet):
+        if encoder != DEFAULT:
             kwargs["encoder"] = encoder
-        if not isinstance(fields, NotSet):
+        if fields != DEFAULT:
             kwargs["fields"] = str(fields)
         super().__init__(**kwargs)
 
@@ -1451,19 +1467,19 @@ class ScriptField(AttrDict[Any]):
     :arg ignore_failure: No documentation available.
     """
 
-    script: Union["i.Script", Dict[str, Any], "NotSet"]
-    ignore_failure: Union[bool, "NotSet"]
+    script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    ignore_failure: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
-        ignore_failure: Union[bool, "NotSet"] = NOT_SET,
+        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        ignore_failure: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(script, NotSet):
+        if script != DEFAULT:
             kwargs["script"] = script
-        if not isinstance(ignore_failure, NotSet):
+        if ignore_failure != DEFAULT:
             kwargs["ignore_failure"] = ignore_failure
         super().__init__(kwargs)
 
@@ -1476,27 +1492,29 @@ class SortOptions(AttrDict[Any]):
     :arg _script: No documentation available.
     """
 
-    _score: Union["i.ScoreSort", Dict[str, Any], "NotSet"]
-    _doc: Union["i.ScoreSort", Dict[str, Any], "NotSet"]
-    _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "NotSet"]
-    _script: Union["i.ScriptSort", Dict[str, Any], "NotSet"]
+    _score: Union["i.ScoreSort", Dict[str, Any], "DefaultType"]
+    _doc: Union["i.ScoreSort", Dict[str, Any], "DefaultType"]
+    _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "DefaultType"]
+    _script: Union["i.ScriptSort", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        _score: Union["i.ScoreSort", Dict[str, Any], "NotSet"] = NOT_SET,
-        _doc: Union["i.ScoreSort", Dict[str, Any], "NotSet"] = NOT_SET,
-        _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "NotSet"] = NOT_SET,
-        _script: Union["i.ScriptSort", Dict[str, Any], "NotSet"] = NOT_SET,
+        _score: Union["i.ScoreSort", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _doc: Union["i.ScoreSort", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _geo_distance: Union[
+            "i.GeoDistanceSort", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        _script: Union["i.ScriptSort", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(_score, NotSet):
+        if _score != DEFAULT:
             kwargs["_score"] = _score
-        if not isinstance(_doc, NotSet):
+        if _doc != DEFAULT:
             kwargs["_doc"] = _doc
-        if not isinstance(_geo_distance, NotSet):
+        if _geo_distance != DEFAULT:
             kwargs["_geo_distance"] = _geo_distance
-        if not isinstance(_script, NotSet):
+        if _script != DEFAULT:
             kwargs["_script"] = _script
         super().__init__(kwargs)
 
@@ -1508,10 +1526,14 @@ class SourceFilter(AttrDict[Any]):
     """
 
     excludes: Union[
-        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
+        Union[str, "InstrumentedField"],
+        List[Union[str, "InstrumentedField"]],
+        "DefaultType",
     ]
     includes: Union[
-        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
+        Union[str, "InstrumentedField"],
+        List[Union[str, "InstrumentedField"]],
+        "DefaultType",
     ]
 
     def __init__(
@@ -1520,18 +1542,18 @@ class SourceFilter(AttrDict[Any]):
         excludes: Union[
             Union[str, "InstrumentedField"],
             List[Union[str, "InstrumentedField"]],
-            "NotSet",
-        ] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
         includes: Union[
             Union[str, "InstrumentedField"],
             List[Union[str, "InstrumentedField"]],
-            "NotSet",
-        ] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(excludes, NotSet):
+        if excludes != DEFAULT:
             kwargs["excludes"] = str(excludes)
-        if not isinstance(includes, NotSet):
+        if includes != DEFAULT:
             kwargs["includes"] = str(includes)
         super().__init__(kwargs)
 
@@ -1549,29 +1571,29 @@ class IntervalsAllOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "NotSet"]
-    max_gaps: Union[int, "NotSet"]
-    ordered: Union[bool, "NotSet"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"]
+    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
+    max_gaps: Union[int, "DefaultType"]
+    ordered: Union[bool, "DefaultType"]
+    filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         intervals: Union[
-            List["i.IntervalsContainer"], Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        max_gaps: Union[int, "NotSet"] = NOT_SET,
-        ordered: Union[bool, "NotSet"] = NOT_SET,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"] = NOT_SET,
+            List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        max_gaps: Union[int, "DefaultType"] = DEFAULT,
+        ordered: Union[bool, "DefaultType"] = DEFAULT,
+        filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(intervals, NotSet):
+        if intervals != DEFAULT:
             kwargs["intervals"] = intervals
-        if not isinstance(max_gaps, NotSet):
+        if max_gaps != DEFAULT:
             kwargs["max_gaps"] = max_gaps
-        if not isinstance(ordered, NotSet):
+        if ordered != DEFAULT:
             kwargs["ordered"] = ordered
-        if not isinstance(filter, NotSet):
+        if filter != DEFAULT:
             kwargs["filter"] = filter
         super().__init__(kwargs)
 
@@ -1582,21 +1604,21 @@ class IntervalsAnyOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "NotSet"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"]
+    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
+    filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         intervals: Union[
-            List["i.IntervalsContainer"], Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"] = NOT_SET,
+            List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(intervals, NotSet):
+        if intervals != DEFAULT:
             kwargs["intervals"] = intervals
-        if not isinstance(filter, NotSet):
+        if filter != DEFAULT:
             kwargs["filter"] = filter
         super().__init__(kwargs)
 
@@ -1616,35 +1638,35 @@ class IntervalsFuzzy(AttrDict[Any]):
         separately.
     """
 
-    analyzer: Union[str, "NotSet"]
-    fuzziness: Union[str, int, "NotSet"]
-    prefix_length: Union[int, "NotSet"]
-    term: Union[str, "NotSet"]
-    transpositions: Union[bool, "NotSet"]
-    use_field: Union[str, "InstrumentedField", "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    fuzziness: Union[str, int, "DefaultType"]
+    prefix_length: Union[int, "DefaultType"]
+    term: Union[str, "DefaultType"]
+    transpositions: Union[bool, "DefaultType"]
+    use_field: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        fuzziness: Union[str, int, "NotSet"] = NOT_SET,
-        prefix_length: Union[int, "NotSet"] = NOT_SET,
-        term: Union[str, "NotSet"] = NOT_SET,
-        transpositions: Union[bool, "NotSet"] = NOT_SET,
-        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
+        prefix_length: Union[int, "DefaultType"] = DEFAULT,
+        term: Union[str, "DefaultType"] = DEFAULT,
+        transpositions: Union[bool, "DefaultType"] = DEFAULT,
+        use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(fuzziness, NotSet):
+        if fuzziness != DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if not isinstance(prefix_length, NotSet):
+        if prefix_length != DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if not isinstance(term, NotSet):
+        if term != DEFAULT:
             kwargs["term"] = term
-        if not isinstance(transpositions, NotSet):
+        if transpositions != DEFAULT:
             kwargs["transpositions"] = transpositions
-        if not isinstance(use_field, NotSet):
+        if use_field != DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
 
@@ -1664,35 +1686,35 @@ class IntervalsMatch(AttrDict[Any]):
     :arg filter: An optional interval filter.
     """
 
-    analyzer: Union[str, "NotSet"]
-    max_gaps: Union[int, "NotSet"]
-    ordered: Union[bool, "NotSet"]
-    query: Union[str, "NotSet"]
-    use_field: Union[str, "InstrumentedField", "NotSet"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    max_gaps: Union[int, "DefaultType"]
+    ordered: Union[bool, "DefaultType"]
+    query: Union[str, "DefaultType"]
+    use_field: Union[str, "InstrumentedField", "DefaultType"]
+    filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        max_gaps: Union[int, "NotSet"] = NOT_SET,
-        ordered: Union[bool, "NotSet"] = NOT_SET,
-        query: Union[str, "NotSet"] = NOT_SET,
-        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        max_gaps: Union[int, "DefaultType"] = DEFAULT,
+        ordered: Union[bool, "DefaultType"] = DEFAULT,
+        query: Union[str, "DefaultType"] = DEFAULT,
+        use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(max_gaps, NotSet):
+        if max_gaps != DEFAULT:
             kwargs["max_gaps"] = max_gaps
-        if not isinstance(ordered, NotSet):
+        if ordered != DEFAULT:
             kwargs["ordered"] = ordered
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
-        if not isinstance(use_field, NotSet):
+        if use_field != DEFAULT:
             kwargs["use_field"] = str(use_field)
-        if not isinstance(filter, NotSet):
+        if filter != DEFAULT:
             kwargs["filter"] = filter
         super().__init__(kwargs)
 
@@ -1708,23 +1730,23 @@ class IntervalsPrefix(AttrDict[Any]):
         separately.
     """
 
-    analyzer: Union[str, "NotSet"]
-    prefix: Union[str, "NotSet"]
-    use_field: Union[str, "InstrumentedField", "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    prefix: Union[str, "DefaultType"]
+    use_field: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        prefix: Union[str, "NotSet"] = NOT_SET,
-        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        prefix: Union[str, "DefaultType"] = DEFAULT,
+        use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(prefix, NotSet):
+        if prefix != DEFAULT:
             kwargs["prefix"] = prefix
-        if not isinstance(use_field, NotSet):
+        if use_field != DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
 
@@ -1740,23 +1762,23 @@ class IntervalsWildcard(AttrDict[Any]):
         separately.
     """
 
-    analyzer: Union[str, "NotSet"]
-    pattern: Union[str, "NotSet"]
-    use_field: Union[str, "InstrumentedField", "NotSet"]
+    analyzer: Union[str, "DefaultType"]
+    pattern: Union[str, "DefaultType"]
+    use_field: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "NotSet"] = NOT_SET,
-        pattern: Union[str, "NotSet"] = NOT_SET,
-        use_field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
+        pattern: Union[str, "DefaultType"] = DEFAULT,
+        use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
-        if not isinstance(pattern, NotSet):
+        if pattern != DEFAULT:
             kwargs["pattern"] = pattern
-        if not isinstance(use_field, NotSet):
+        if use_field != DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
 
@@ -1767,19 +1789,19 @@ class TextEmbedding(AttrDict[Any]):
     :arg model_text: (required) No documentation available.
     """
 
-    model_id: Union[str, "NotSet"]
-    model_text: Union[str, "NotSet"]
+    model_id: Union[str, "DefaultType"]
+    model_text: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        model_id: Union[str, "NotSet"] = NOT_SET,
-        model_text: Union[str, "NotSet"] = NOT_SET,
+        model_id: Union[str, "DefaultType"] = DEFAULT,
+        model_text: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(model_id, NotSet):
+        if model_id != DEFAULT:
             kwargs["model_id"] = model_id
-        if not isinstance(model_text, NotSet):
+        if model_text != DEFAULT:
             kwargs["model_text"] = model_text
         super().__init__(kwargs)
 
@@ -1792,19 +1814,19 @@ class SpanContainingQuery(QueryBase):
         `big` that contain matches from `little` are returned.
     """
 
-    big: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-    little: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
+    big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        big: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        little: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(big, NotSet):
+        if big != DEFAULT:
             kwargs["big"] = big
-        if not isinstance(little, NotSet):
+        if little != DEFAULT:
             kwargs["little"] = little
         super().__init__(**kwargs)
 
@@ -1815,19 +1837,19 @@ class SpanFieldMaskingQuery(QueryBase):
     :arg query: (required) No documentation available.
     """
 
-    field: Union[str, "InstrumentedField", "NotSet"]
-    query: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
+    field: Union[str, "InstrumentedField", "DefaultType"]
+    query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        query: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(field, NotSet):
+        if field != DEFAULT:
             kwargs["field"] = str(field)
-        if not isinstance(query, NotSet):
+        if query != DEFAULT:
             kwargs["query"] = query
         super().__init__(**kwargs)
 
@@ -1839,19 +1861,19 @@ class SpanFirstQuery(QueryBase):
     :arg match: (required) Can be any other span type query.
     """
 
-    end: Union[int, "NotSet"]
-    match: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
+    end: Union[int, "DefaultType"]
+    match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        end: Union[int, "NotSet"] = NOT_SET,
-        match: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        end: Union[int, "DefaultType"] = DEFAULT,
+        match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(end, NotSet):
+        if end != DEFAULT:
             kwargs["end"] = end
-        if not isinstance(match, NotSet):
+        if match != DEFAULT:
             kwargs["match"] = match
         super().__init__(**kwargs)
 
@@ -1862,10 +1884,10 @@ class SpanMultiTermQuery(QueryBase):
         `wildcard`, `fuzzy`, `prefix`, `range`, or `regexp` query).
     """
 
-    match: Union[Query, "NotSet"]
+    match: Union[Query, "DefaultType"]
 
-    def __init__(self, *, match: Union[Query, "NotSet"] = NOT_SET, **kwargs: Any):
-        if not isinstance(match, NotSet):
+    def __init__(self, *, match: Union[Query, "DefaultType"] = DEFAULT, **kwargs: Any):
+        if match != DEFAULT:
             kwargs["match"] = match
         super().__init__(**kwargs)
 
@@ -1878,23 +1900,23 @@ class SpanNearQuery(QueryBase):
         positions permitted.
     """
 
-    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"]
-    in_order: Union[bool, "NotSet"]
-    slop: Union[int, "NotSet"]
+    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"]
+    in_order: Union[bool, "DefaultType"]
+    slop: Union[int, "DefaultType"]
 
     def __init__(
         self,
         *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"] = NOT_SET,
-        in_order: Union[bool, "NotSet"] = NOT_SET,
-        slop: Union[int, "NotSet"] = NOT_SET,
+        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        in_order: Union[bool, "DefaultType"] = DEFAULT,
+        slop: Union[int, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(clauses, NotSet):
+        if clauses != DEFAULT:
             kwargs["clauses"] = clauses
-        if not isinstance(in_order, NotSet):
+        if in_order != DEFAULT:
             kwargs["in_order"] = in_order
-        if not isinstance(slop, NotSet):
+        if slop != DEFAULT:
             kwargs["slop"] = slop
         super().__init__(**kwargs)
 
@@ -1913,31 +1935,31 @@ class SpanNotQuery(QueryBase):
         overlap with the exclude span.
     """
 
-    dist: Union[int, "NotSet"]
-    exclude: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-    include: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-    post: Union[int, "NotSet"]
-    pre: Union[int, "NotSet"]
+    dist: Union[int, "DefaultType"]
+    exclude: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    post: Union[int, "DefaultType"]
+    pre: Union[int, "DefaultType"]
 
     def __init__(
         self,
         *,
-        dist: Union[int, "NotSet"] = NOT_SET,
-        exclude: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        include: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        post: Union[int, "NotSet"] = NOT_SET,
-        pre: Union[int, "NotSet"] = NOT_SET,
+        dist: Union[int, "DefaultType"] = DEFAULT,
+        exclude: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        post: Union[int, "DefaultType"] = DEFAULT,
+        pre: Union[int, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(dist, NotSet):
+        if dist != DEFAULT:
             kwargs["dist"] = dist
-        if not isinstance(exclude, NotSet):
+        if exclude != DEFAULT:
             kwargs["exclude"] = exclude
-        if not isinstance(include, NotSet):
+        if include != DEFAULT:
             kwargs["include"] = include
-        if not isinstance(post, NotSet):
+        if post != DEFAULT:
             kwargs["post"] = post
-        if not isinstance(pre, NotSet):
+        if pre != DEFAULT:
             kwargs["pre"] = pre
         super().__init__(**kwargs)
 
@@ -1947,15 +1969,15 @@ class SpanOrQuery(QueryBase):
     :arg clauses: (required) Array of one or more other span type queries.
     """
 
-    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"]
+    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "NotSet"] = NOT_SET,
+        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(clauses, NotSet):
+        if clauses != DEFAULT:
             kwargs["clauses"] = clauses
         super().__init__(**kwargs)
 
@@ -1968,19 +1990,19 @@ class SpanWithinQuery(QueryBase):
         `little` that are enclosed within `big` are returned.
     """
 
-    big: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
-    little: Union["i.SpanQuery", Dict[str, Any], "NotSet"]
+    big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        big: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
-        little: Union["i.SpanQuery", Dict[str, Any], "NotSet"] = NOT_SET,
+        big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(big, NotSet):
+        if big != DEFAULT:
             kwargs["big"] = big
-        if not isinstance(little, NotSet):
+        if little != DEFAULT:
             kwargs["little"] = little
         super().__init__(**kwargs)
 
@@ -1992,29 +2014,31 @@ class HighlightField(HighlightBase):
     :arg analyzer: No documentation available.
     """
 
-    fragment_offset: Union[int, "NotSet"]
+    fragment_offset: Union[int, "DefaultType"]
     matched_fields: Union[
-        Union[str, "InstrumentedField"], List[Union[str, "InstrumentedField"]], "NotSet"
+        Union[str, "InstrumentedField"],
+        List[Union[str, "InstrumentedField"]],
+        "DefaultType",
     ]
-    analyzer: Union[str, Dict[str, Any], "NotSet"]
+    analyzer: Union[str, Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        fragment_offset: Union[int, "NotSet"] = NOT_SET,
+        fragment_offset: Union[int, "DefaultType"] = DEFAULT,
         matched_fields: Union[
             Union[str, "InstrumentedField"],
             List[Union[str, "InstrumentedField"]],
-            "NotSet",
-        ] = NOT_SET,
-        analyzer: Union[str, Dict[str, Any], "NotSet"] = NOT_SET,
+            "DefaultType",
+        ] = DEFAULT,
+        analyzer: Union[str, Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(fragment_offset, NotSet):
+        if fragment_offset != DEFAULT:
             kwargs["fragment_offset"] = fragment_offset
-        if not isinstance(matched_fields, NotSet):
+        if matched_fields != DEFAULT:
             kwargs["matched_fields"] = str(matched_fields)
-        if not isinstance(analyzer, NotSet):
+        if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
         super().__init__(**kwargs)
 
@@ -2024,12 +2048,15 @@ class ScoreSort(AttrDict[Any]):
     :arg order: No documentation available.
     """
 
-    order: Union[Literal["asc", "desc"], "NotSet"]
+    order: Union[Literal["asc", "desc"], "DefaultType"]
 
     def __init__(
-        self, *, order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET, **kwargs: Any
+        self,
+        *,
+        order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
+        **kwargs: Any,
     ):
-        if not isinstance(order, NotSet):
+        if order != DEFAULT:
             kwargs["order"] = order
         super().__init__(kwargs)
 
@@ -2044,37 +2071,41 @@ class GeoDistanceSort(AttrDict[Any]):
     :arg nested: No documentation available.
     """
 
-    mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"]
-    distance_type: Union[Literal["arc", "plane"], "NotSet"]
-    ignore_unmapped: Union[bool, "NotSet"]
-    order: Union[Literal["asc", "desc"], "NotSet"]
-    unit: Union[Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], "NotSet"]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"]
+    mode: Union[Literal["min", "max", "sum", "avg", "median"], "DefaultType"]
+    distance_type: Union[Literal["arc", "plane"], "DefaultType"]
+    ignore_unmapped: Union[bool, "DefaultType"]
+    order: Union[Literal["asc", "desc"], "DefaultType"]
+    unit: Union[
+        Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], "DefaultType"
+    ]
+    nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"] = NOT_SET,
-        distance_type: Union[Literal["arc", "plane"], "NotSet"] = NOT_SET,
-        ignore_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET,
+        mode: Union[
+            Literal["min", "max", "sum", "avg", "median"], "DefaultType"
+        ] = DEFAULT,
+        distance_type: Union[Literal["arc", "plane"], "DefaultType"] = DEFAULT,
+        ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
+        order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
         unit: Union[
-            Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], "NotSet"
-        ] = NOT_SET,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"] = NOT_SET,
+            Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], "DefaultType"
+        ] = DEFAULT,
+        nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(mode, NotSet):
+        if mode != DEFAULT:
             kwargs["mode"] = mode
-        if not isinstance(distance_type, NotSet):
+        if distance_type != DEFAULT:
             kwargs["distance_type"] = distance_type
-        if not isinstance(ignore_unmapped, NotSet):
+        if ignore_unmapped != DEFAULT:
             kwargs["ignore_unmapped"] = ignore_unmapped
-        if not isinstance(order, NotSet):
+        if order != DEFAULT:
             kwargs["order"] = order
-        if not isinstance(unit, NotSet):
+        if unit != DEFAULT:
             kwargs["unit"] = unit
-        if not isinstance(nested, NotSet):
+        if nested != DEFAULT:
             kwargs["nested"] = nested
         super().__init__(kwargs)
 
@@ -2088,31 +2119,33 @@ class ScriptSort(AttrDict[Any]):
     :arg nested: No documentation available.
     """
 
-    order: Union[Literal["asc", "desc"], "NotSet"]
-    script: Union["i.Script", Dict[str, Any], "NotSet"]
-    type: Union[Literal["string", "number", "version"], "NotSet"]
-    mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"]
+    order: Union[Literal["asc", "desc"], "DefaultType"]
+    script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    type: Union[Literal["string", "number", "version"], "DefaultType"]
+    mode: Union[Literal["min", "max", "sum", "avg", "median"], "DefaultType"]
+    nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET,
-        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
-        type: Union[Literal["string", "number", "version"], "NotSet"] = NOT_SET,
-        mode: Union[Literal["min", "max", "sum", "avg", "median"], "NotSet"] = NOT_SET,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"] = NOT_SET,
+        order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
+        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        type: Union[Literal["string", "number", "version"], "DefaultType"] = DEFAULT,
+        mode: Union[
+            Literal["min", "max", "sum", "avg", "median"], "DefaultType"
+        ] = DEFAULT,
+        nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(order, NotSet):
+        if order != DEFAULT:
             kwargs["order"] = order
-        if not isinstance(script, NotSet):
+        if script != DEFAULT:
             kwargs["script"] = script
-        if not isinstance(type, NotSet):
+        if type != DEFAULT:
             kwargs["type"] = type
-        if not isinstance(mode, NotSet):
+        if mode != DEFAULT:
             kwargs["mode"] = mode
-        if not isinstance(nested, NotSet):
+        if nested != DEFAULT:
             kwargs["nested"] = nested
         super().__init__(kwargs)
 
@@ -2128,35 +2161,35 @@ class IntervalsContainer(AttrDict[Any]):
     :arg wildcard: Matches terms using a wildcard pattern.
     """
 
-    all_of: Union["i.IntervalsAllOf", Dict[str, Any], "NotSet"]
-    any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "NotSet"]
-    fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "NotSet"]
-    match: Union["i.IntervalsMatch", Dict[str, Any], "NotSet"]
-    prefix: Union["i.IntervalsPrefix", Dict[str, Any], "NotSet"]
-    wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "NotSet"]
+    all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"]
+    any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"]
+    fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"]
+    match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"]
+    prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"]
+    wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        all_of: Union["i.IntervalsAllOf", Dict[str, Any], "NotSet"] = NOT_SET,
-        any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "NotSet"] = NOT_SET,
-        fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "NotSet"] = NOT_SET,
-        match: Union["i.IntervalsMatch", Dict[str, Any], "NotSet"] = NOT_SET,
-        prefix: Union["i.IntervalsPrefix", Dict[str, Any], "NotSet"] = NOT_SET,
-        wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "NotSet"] = NOT_SET,
+        all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"] = DEFAULT,
+        match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
+        prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
+        wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(all_of, NotSet):
+        if all_of != DEFAULT:
             kwargs["all_of"] = all_of
-        if not isinstance(any_of, NotSet):
+        if any_of != DEFAULT:
             kwargs["any_of"] = any_of
-        if not isinstance(fuzzy, NotSet):
+        if fuzzy != DEFAULT:
             kwargs["fuzzy"] = fuzzy
-        if not isinstance(match, NotSet):
+        if match != DEFAULT:
             kwargs["match"] = match
-        if not isinstance(prefix, NotSet):
+        if prefix != DEFAULT:
             kwargs["prefix"] = prefix
-        if not isinstance(wildcard, NotSet):
+        if wildcard != DEFAULT:
             kwargs["wildcard"] = wildcard
         super().__init__(kwargs)
 
@@ -2183,53 +2216,59 @@ class IntervalsFilter(AttrDict[Any]):
         must return a boolean value: `true` or `false`.
     """
 
-    after: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    before: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    contained_by: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    containing: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    not_contained_by: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    not_containing: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    not_overlapping: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    overlapping: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"]
-    script: Union["i.Script", Dict[str, Any], "NotSet"]
+    after: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    before: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    contained_by: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    containing: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    not_contained_by: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    not_containing: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    not_overlapping: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    overlapping: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    script: Union["i.Script", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        after: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"] = NOT_SET,
-        before: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"] = NOT_SET,
-        contained_by: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"] = NOT_SET,
-        containing: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"] = NOT_SET,
+        after: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"] = DEFAULT,
+        before: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"] = DEFAULT,
+        contained_by: Union[
+            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        containing: Union[
+            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         not_contained_by: Union[
-            "i.IntervalsContainer", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
+            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         not_containing: Union[
-            "i.IntervalsContainer", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
+            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         not_overlapping: Union[
-            "i.IntervalsContainer", Dict[str, Any], "NotSet"
-        ] = NOT_SET,
-        overlapping: Union["i.IntervalsContainer", Dict[str, Any], "NotSet"] = NOT_SET,
-        script: Union["i.Script", Dict[str, Any], "NotSet"] = NOT_SET,
+            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        overlapping: Union[
+            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(after, NotSet):
+        if after != DEFAULT:
             kwargs["after"] = after
-        if not isinstance(before, NotSet):
+        if before != DEFAULT:
             kwargs["before"] = before
-        if not isinstance(contained_by, NotSet):
+        if contained_by != DEFAULT:
             kwargs["contained_by"] = contained_by
-        if not isinstance(containing, NotSet):
+        if containing != DEFAULT:
             kwargs["containing"] = containing
-        if not isinstance(not_contained_by, NotSet):
+        if not_contained_by != DEFAULT:
             kwargs["not_contained_by"] = not_contained_by
-        if not isinstance(not_containing, NotSet):
+        if not_containing != DEFAULT:
             kwargs["not_containing"] = not_containing
-        if not isinstance(not_overlapping, NotSet):
+        if not_overlapping != DEFAULT:
             kwargs["not_overlapping"] = not_overlapping
-        if not isinstance(overlapping, NotSet):
+        if overlapping != DEFAULT:
             kwargs["overlapping"] = overlapping
-        if not isinstance(script, NotSet):
+        if script != DEFAULT:
             kwargs["script"] = script
         super().__init__(kwargs)
 
@@ -2242,26 +2281,26 @@ class NestedSortValue(AttrDict[Any]):
     :arg path: (required) No documentation available.
     """
 
-    filter: Union[Query, "NotSet"]
-    max_children: Union[int, "NotSet"]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"]
-    path: Union[str, "InstrumentedField", "NotSet"]
+    filter: Union[Query, "DefaultType"]
+    max_children: Union[int, "DefaultType"]
+    nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"]
+    path: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
-        filter: Union[Query, "NotSet"] = NOT_SET,
-        max_children: Union[int, "NotSet"] = NOT_SET,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "NotSet"] = NOT_SET,
-        path: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        filter: Union[Query, "DefaultType"] = DEFAULT,
+        max_children: Union[int, "DefaultType"] = DEFAULT,
+        nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
+        path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if not isinstance(filter, NotSet):
+        if filter != DEFAULT:
             kwargs["filter"] = filter
-        if not isinstance(max_children, NotSet):
+        if max_children != DEFAULT:
             kwargs["max_children"] = max_children
-        if not isinstance(nested, NotSet):
+        if nested != DEFAULT:
             kwargs["nested"] = nested
-        if not isinstance(path, NotSet):
+        if path != DEFAULT:
             kwargs["path"] = str(path)
         super().__init__(kwargs)
