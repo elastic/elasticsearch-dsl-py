@@ -1191,35 +1191,6 @@ class WildcardQuery(QueryBase):
         super().__init__(**kwargs)
 
 
-class FieldAndFormat(AttrDict[Any]):
-    """
-    :arg field: (required) Wildcard pattern. The request returns values
-        for field names matching this pattern.
-    :arg format: Format in which the values are returned.
-    :arg include_unmapped: No documentation available.
-    """
-
-    field: Union[str, "InstrumentedField", "NotSet"]
-    format: Union[str, "NotSet"]
-    include_unmapped: Union[bool, "NotSet"]
-
-    def __init__(
-        self,
-        *,
-        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
-        format: Union[str, "NotSet"] = NOT_SET,
-        include_unmapped: Union[bool, "NotSet"] = NOT_SET,
-        **kwargs: Any,
-    ):
-        if not isinstance(field, NotSet):
-            kwargs["field"] = str(field)
-        if not isinstance(format, NotSet):
-            kwargs["format"] = format
-        if not isinstance(include_unmapped, NotSet):
-            kwargs["include_unmapped"] = include_unmapped
-        super().__init__(kwargs)
-
-
 class FieldCollapse(AttrDict[Any]):
     """
     :arg field: (required) The field to collapse the result set on
@@ -1253,6 +1224,35 @@ class FieldCollapse(AttrDict[Any]):
             kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
         if not isinstance(collapse, NotSet):
             kwargs["collapse"] = collapse
+        super().__init__(kwargs)
+
+
+class FieldAndFormat(AttrDict[Any]):
+    """
+    :arg field: (required) Wildcard pattern. The request returns values
+        for field names matching this pattern.
+    :arg format: Format in which the values are returned.
+    :arg include_unmapped: No documentation available.
+    """
+
+    field: Union[str, "InstrumentedField", "NotSet"]
+    format: Union[str, "NotSet"]
+    include_unmapped: Union[bool, "NotSet"]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, "InstrumentedField", "NotSet"] = NOT_SET,
+        format: Union[str, "NotSet"] = NOT_SET,
+        include_unmapped: Union[bool, "NotSet"] = NOT_SET,
+        **kwargs: Any,
+    ):
+        if not isinstance(field, NotSet):
+            kwargs["field"] = str(field)
+        if not isinstance(format, NotSet):
+            kwargs["format"] = format
+        if not isinstance(include_unmapped, NotSet):
+            kwargs["include_unmapped"] = include_unmapped
         super().__init__(kwargs)
 
 
@@ -2019,6 +2019,21 @@ class HighlightField(HighlightBase):
         super().__init__(**kwargs)
 
 
+class ScoreSort(AttrDict[Any]):
+    """
+    :arg order: No documentation available.
+    """
+
+    order: Union[Literal["asc", "desc"], "NotSet"]
+
+    def __init__(
+        self, *, order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET, **kwargs: Any
+    ):
+        if not isinstance(order, NotSet):
+            kwargs["order"] = order
+        super().__init__(kwargs)
+
+
 class GeoDistanceSort(AttrDict[Any]):
     """
     :arg mode: No documentation available.
@@ -2061,21 +2076,6 @@ class GeoDistanceSort(AttrDict[Any]):
             kwargs["unit"] = unit
         if not isinstance(nested, NotSet):
             kwargs["nested"] = nested
-        super().__init__(kwargs)
-
-
-class ScoreSort(AttrDict[Any]):
-    """
-    :arg order: No documentation available.
-    """
-
-    order: Union[Literal["asc", "desc"], "NotSet"]
-
-    def __init__(
-        self, *, order: Union[Literal["asc", "desc"], "NotSet"] = NOT_SET, **kwargs: Any
-    ):
-        if not isinstance(order, NotSet):
-            kwargs["order"] = order
         super().__init__(kwargs)
 
 

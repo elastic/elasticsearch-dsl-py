@@ -91,7 +91,7 @@ class ElasticsearchSchema:
         # Interfaces collects interfaces that are seen while traversing the schema.
         # Any interfaces collected here are then rendered as Python in the
         # interfaces.py module.
-        self.interfaces = set()
+        self.interfaces = []
 
     def find_type(self, name, namespace=None):
         for t in self.schema["types"]:
@@ -99,9 +99,6 @@ class ElasticsearchSchema:
                 namespace is None or t["name"]["namespace"] == namespace
             ):
                 return t
-
-    def reset_interfaces(self):
-        self.interfaces = set()
 
     def get_python_type(self, schema_type):
         """Obtain Python typing details for a given schema type
@@ -183,7 +180,8 @@ class ElasticsearchSchema:
                 == {"name": "string", "namespace": "_builtins"}
             ):
                 # for now we treat PipeSeparatedFlags as a special case
-                self.interfaces.add("PipeSeparatedFlags")
+                if "PipeSeparatedFlags" not in self.interfaces:
+                    self.interfaces.append("PipeSeparatedFlags")
                 return '"i.PipeSeparatedFlags"', None
             else:
                 # generic union type
@@ -228,7 +226,8 @@ class ElasticsearchSchema:
 
             # to handle other interfaces we generate a type of the same name
             # and add the interface to the interfaces.py module
-            self.interfaces.add(schema_type["name"]["name"])
+            if schema_type["name"]["name"] not in self.interfaces:
+                self.interfaces.append(schema_type["name"]["name"])
             return f"\"i.{schema_type['name']['name']}\"", None
         elif schema_type["kind"] == "user_defined_value":
             # user_defined_value maps to Python's Any type
@@ -436,17 +435,14 @@ def generate_query_py(schema, filename):
     print(f"Generated {filename}.")
 
 
-def generate_interfaces_py(schema, interfaces, filename):
+def generate_interfaces_py(schema, filename):
     """Generate interfaces.py"""
     classes = {}
-    for interface in interfaces:
+    schema.interfaces = sorted(schema.interfaces)
+    for interface in schema.interfaces:
         if interface == "PipeSeparatedFlags":
             continue  # handled as a special case
-        schema.reset_interfaces()
-        k = schema.interface_to_python_class(interface, interfaces)
-        for new_interface in sorted(schema.interfaces):
-            if new_interface not in interfaces:
-                interfaces.append(new_interface)
+        k = schema.interface_to_python_class(interface, schema.interfaces)
         classes[k["name"]] = k
 
     classes_list = []
@@ -477,7 +473,4 @@ def generate_interfaces_py(schema, interfaces, filename):
 if __name__ == "__main__":
     schema = ElasticsearchSchema()
     generate_query_py(schema, "elasticsearch_dsl/query.py")
-    interfaces = schema.interfaces
-    generate_interfaces_py(
-        schema, sorted(interfaces), "elasticsearch_dsl/interfaces.py"
-    )
+    generate_interfaces_py(schema, "elasticsearch_dsl/interfaces.py")
