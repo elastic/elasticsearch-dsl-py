@@ -141,9 +141,7 @@ class TermsFacet(Facet[_R]):
     def add_filter(self, filter_values: List[FilterValueType]) -> Optional[Query]:
         """Create a terms filter instead of bool containing term filters."""
         if filter_values:
-            return Terms(
-                _expand__to_dot=False, **{self._params["field"]: filter_values}
-            )
+            return Terms(self._params["field"], filter_values, _expand__to_dot=False)
         return None
 
 

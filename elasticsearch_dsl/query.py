@@ -30,6 +30,7 @@ from typing import (
     MutableMapping,
     Optional,
     Protocol,
+    Sequence,
     TypeVar,
     Union,
     cast,
@@ -163,6 +164,12 @@ class Bool(Query):
         for all documents.
     :arg should: The clause (query) should appear in the matching
         document.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "bool"
@@ -176,11 +183,13 @@ class Bool(Query):
     def __init__(
         self,
         *,
-        filter: Union[Query, List[Query], "DefaultType"] = DEFAULT,
+        filter: Union[Query, Sequence[Query], "DefaultType"] = DEFAULT,
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
-        must: Union[Query, List[Query], "DefaultType"] = DEFAULT,
-        must_not: Union[Query, List[Query], "DefaultType"] = DEFAULT,
-        should: Union[Query, List[Query], "DefaultType"] = DEFAULT,
+        must: Union[Query, Sequence[Query], "DefaultType"] = DEFAULT,
+        must_not: Union[Query, Sequence[Query], "DefaultType"] = DEFAULT,
+        should: Union[Query, Sequence[Query], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -189,6 +198,8 @@ class Bool(Query):
             must=must,
             must_not=must_not,
             should=should,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -306,13 +317,19 @@ class Boosting(Query):
     Returns documents matching a `positive` query while reducing the
     relevance score of documents that also match a `negative` query.
 
+    :arg negative_boost: (required) Floating point number between 0 and
+        1.0 used to decrease the relevance scores of documents matching
+        the `negative` query.
     :arg negative: (required) Query used to decrease the relevance score
         of matching documents.
     :arg positive: (required) Any returned documents must match this
         query.
-    :arg negative_boost: (required) Floating point number between 0 and
-        1.0 used to decrease the relevance scores of documents matching
-        the `negative` query.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "boosting"
@@ -324,15 +341,19 @@ class Boosting(Query):
     def __init__(
         self,
         *,
+        negative_boost: Union[float, "DefaultType"] = DEFAULT,
         negative: Union[Query, "DefaultType"] = DEFAULT,
         positive: Union[Query, "DefaultType"] = DEFAULT,
-        negative_boost: Union[float, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
+            negative_boost=negative_boost,
             negative=negative,
             positive=positive,
-            negative_boost=negative_boost,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -363,12 +384,12 @@ class CombinedFields(Query):
     The `combined_fields` query supports searching multiple text fields as
     if their contents had been indexed into one combined field.
 
-    :arg query: (required) Text to search for in the provided `fields`.
-        The `combined_fields` query analyzes the provided text before
-        performing a search.
     :arg fields: (required) List of fields to search. Field wildcard
         patterns are allowed. Only `text` fields are supported, and they
         must all have the same search `analyzer`.
+    :arg query: (required) Text to search for in the provided `fields`.
+        The `combined_fields` query analyzes the provided text before
+        performing a search.
     :arg auto_generate_synonyms_phrase_query: If true, match phrase
         queries are automatically created for multi-term synonyms.
     :arg operator: Boolean logic used to interpret text in the query
@@ -378,6 +399,12 @@ class CombinedFields(Query):
     :arg zero_terms_query: Indicates whether no documents are returned if
         the analyzer removes all tokens, such as when using a `stop`
         filter.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "combined_fields"
@@ -385,21 +412,27 @@ class CombinedFields(Query):
     def __init__(
         self,
         *,
+        fields: Union[
+            Sequence[Union[str, "InstrumentedField"]], "DefaultType"
+        ] = DEFAULT,
         query: Union[str, "DefaultType"] = DEFAULT,
-        fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"] = DEFAULT,
         auto_generate_synonyms_phrase_query: Union[bool, "DefaultType"] = DEFAULT,
         operator: Union[Literal["or", "and"], "DefaultType"] = DEFAULT,
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["none", "all"], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
-            query=query,
             fields=fields,
+            query=query,
             auto_generate_synonyms_phrase_query=auto_generate_synonyms_phrase_query,
             operator=operator,
             minimum_should_match=minimum_should_match,
             zero_terms_query=zero_terms_query,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -413,6 +446,12 @@ class ConstantScore(Query):
         documents must match this query. Filter queries do not calculate
         relevance scores. To speed up performance, Elasticsearch
         automatically caches frequently used filter queries.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "constant_score"
@@ -420,8 +459,15 @@ class ConstantScore(Query):
         "filter": {"type": "query"},
     }
 
-    def __init__(self, *, filter: Union[Query, "DefaultType"] = DEFAULT, **kwargs: Any):
-        super().__init__(filter=filter, **kwargs)
+    def __init__(
+        self,
+        *,
+        filter: Union[Query, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(filter=filter, boost=boost, _name=_name, **kwargs)
 
 
 class DisMax(Query):
@@ -438,6 +484,12 @@ class DisMax(Query):
     :arg tie_breaker: Floating point number between 0 and 1.0 used to
         increase the relevance scores of documents matching multiple query
         clauses.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "dis_max"
@@ -448,11 +500,15 @@ class DisMax(Query):
     def __init__(
         self,
         *,
-        queries: Union[List[Query], "DefaultType"] = DEFAULT,
+        queries: Union[Sequence[Query], "DefaultType"] = DEFAULT,
         tie_breaker: Union[float, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(queries=queries, tie_breaker=tie_breaker, **kwargs)
+        super().__init__(
+            queries=queries, tie_breaker=tie_breaker, boost=boost, _name=_name, **kwargs
+        )
 
 
 class DistanceFeature(Query):
@@ -461,6 +517,11 @@ class DistanceFeature(Query):
     date or point. For example, you can use this query to give more weight
     to documents closer to a certain date or location.
 
+    :arg origin: (required) Date or point of origin used to calculate
+        distances. If the `field` value is a `date` or `date_nanos` field,
+        the `origin` value must be a date. Date Math, such as `now-1h`, is
+        supported. If the field value is a `geo_point` field, the `origin`
+        value must be a geopoint.
     :arg pivot: (required) Distance from the `origin` at which relevance
         scores receive half of the `boost` value. If the `field` value is
         a `date` or `date_nanos` field, the `pivot` value must be a time
@@ -473,11 +534,12 @@ class DistanceFeature(Query):
         parameter value of `true`, which is the default; have an
         `doc_values` mapping parameter value of `true`, which is the
         default.
-    :arg origin: (required) Date or point of origin used to calculate
-        distances. If the `field` value is a `date` or `date_nanos` field,
-        the `origin` value must be a date. Date Math, such as `now-1h`, is
-        supported. If the field value is a `geo_point` field, the `origin`
-        value must be a geopoint.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "distance_feature"
@@ -485,12 +547,16 @@ class DistanceFeature(Query):
     def __init__(
         self,
         *,
+        origin: Any = DEFAULT,
         pivot: Any = DEFAULT,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        origin: Any = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(pivot=pivot, field=field, origin=origin, **kwargs)
+        super().__init__(
+            origin=origin, pivot=pivot, field=field, boost=boost, _name=_name, **kwargs
+        )
 
 
 class Exists(Query):
@@ -498,6 +564,12 @@ class Exists(Query):
     Returns documents that contain an indexed value for a field.
 
     :arg field: (required) Name of the field you wish to search.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "exists"
@@ -506,9 +578,11 @@ class Exists(Query):
         self,
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(field=field, **kwargs)
+        super().__init__(field=field, boost=boost, _name=_name, **kwargs)
 
 
 class FunctionScore(Query):
@@ -527,6 +601,12 @@ class FunctionScore(Query):
     :arg query: A query that determines the documents for which a new
         score is computed.
     :arg score_mode: Specifies how the computed scores are combined
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "function_score"
@@ -543,7 +623,7 @@ class FunctionScore(Query):
             Literal["multiply", "replace", "sum", "avg", "max", "min"], "DefaultType"
         ] = DEFAULT,
         functions: Union[
-            List["i.FunctionScoreContainer"], Dict[str, Any], "DefaultType"
+            Sequence["i.FunctionScoreContainer"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         max_boost: Union[float, "DefaultType"] = DEFAULT,
         min_score: Union[float, "DefaultType"] = DEFAULT,
@@ -551,6 +631,8 @@ class FunctionScore(Query):
         score_mode: Union[
             Literal["multiply", "sum", "avg", "first", "max", "min"], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if functions == DEFAULT:
@@ -565,6 +647,8 @@ class FunctionScore(Query):
             min_score=min_score,
             query=query,
             score_mode=score_mode,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -595,6 +679,8 @@ class GeoBoundingBox(Query):
     """
     Matches geo_point and geo_shape values that intersect a bounding box.
 
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     :arg type: No documentation available.
     :arg validation_method: Set to `IGNORE_MALFORMED` to accept geo points
         with invalid latitude or longitude. Set to `COERCE` to also try to
@@ -602,24 +688,45 @@ class GeoBoundingBox(Query):
     :arg ignore_unmapped: Set to `true` to ignore an unmapped field and
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "geo_bounding_box"
 
     def __init__(
         self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union[
+            "i.CoordsGeoBounds",
+            "i.TopLeftBottomRightGeoBounds",
+            "i.TopRightBottomLeftGeoBounds",
+            "i.WktGeoBounds",
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
         *,
         type: Union[Literal["memory", "indexed"], "DefaultType"] = DEFAULT,
         validation_method: Union[
             Literal["coerce", "ignore_malformed", "strict"], "DefaultType"
         ] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if _field != DEFAULT:
+            kwargs[str(_field)] = _value
         super().__init__(
             type=type,
             validation_method=validation_method,
             ignore_unmapped=ignore_unmapped,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -629,6 +736,8 @@ class GeoDistance(Query):
     Matches `geo_point` and `geo_shape` values within a given distance of
     a geopoint.
 
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     :arg distance: (required) The radius of the circle centred on the
         specified location. Points which fall into this circle are
         considered to be matches.
@@ -641,12 +750,27 @@ class GeoDistance(Query):
     :arg ignore_unmapped: Set to `true` to ignore an unmapped field and
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "geo_distance"
 
     def __init__(
         self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union[
+            "i.LatLonGeoLocation",
+            "i.GeoHashLocation",
+            Sequence[float],
+            str,
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
         *,
         distance: Union[str, "DefaultType"] = DEFAULT,
         distance_type: Union[Literal["arc", "plane"], "DefaultType"] = DEFAULT,
@@ -654,13 +778,19 @@ class GeoDistance(Query):
             Literal["coerce", "ignore_malformed", "strict"], "DefaultType"
         ] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if _field != DEFAULT:
+            kwargs[str(_field)] = _value
         super().__init__(
             distance=distance,
             distance_type=distance_type,
             validation_method=validation_method,
             ignore_unmapped=ignore_unmapped,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -669,24 +799,40 @@ class GeoPolygon(Query):
     """
     No documentation available.
 
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     :arg validation_method: No documentation available.
     :arg ignore_unmapped: No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "geo_polygon"
 
     def __init__(
         self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union["i.GeoPolygonPoints", Dict[str, Any], "DefaultType"] = DEFAULT,
         *,
         validation_method: Union[
             Literal["coerce", "ignore_malformed", "strict"], "DefaultType"
         ] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if _field != DEFAULT:
+            kwargs[str(_field)] = _value
         super().__init__(
             validation_method=validation_method,
             ignore_unmapped=ignore_unmapped,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -696,17 +842,36 @@ class GeoShape(Query):
     Filter documents indexed using either the `geo_shape` or the
     `geo_point` type.
 
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     :arg ignore_unmapped: Set to `true` to ignore an unmapped field and
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "geo_shape"
 
     def __init__(
-        self, *, ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT, **kwargs: Any
+        self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union["i.GeoShapeFieldQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        *,
+        ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
     ):
-        super().__init__(ignore_unmapped=ignore_unmapped, **kwargs)
+        if _field != DEFAULT:
+            kwargs[str(_field)] = _value
+        super().__init__(
+            ignore_unmapped=ignore_unmapped, boost=boost, _name=_name, **kwargs
+        )
 
 
 class HasChild(Query):
@@ -732,6 +897,12 @@ class HasChild(Query):
         from the search results.
     :arg score_mode: Indicates how scores for matching child documents
         affect the root parent document’s relevance score.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "has_child"
@@ -751,6 +922,8 @@ class HasChild(Query):
         score_mode: Union[
             Literal["none", "avg", "sum", "max", "min"], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -761,6 +934,8 @@ class HasChild(Query):
             max_children=max_children,
             min_children=min_children,
             score_mode=score_mode,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -782,6 +957,12 @@ class HasParent(Query):
     :arg inner_hits: If defined, each search hit will contain inner hits.
     :arg score: Indicates whether the relevance score of a matching parent
         document is aggregated into its child documents.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "has_parent"
@@ -797,6 +978,8 @@ class HasParent(Query):
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         inner_hits: Union["i.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
         score: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -805,6 +988,8 @@ class HasParent(Query):
             ignore_unmapped=ignore_unmapped,
             inner_hits=inner_hits,
             score=score,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -815,14 +1000,25 @@ class Ids(Query):
     stored in the `_id` field.
 
     :arg values: An array of document IDs.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "ids"
 
     def __init__(
-        self, *, values: Union[str, List[str], "DefaultType"] = DEFAULT, **kwargs: Any
+        self,
+        *,
+        values: Union[str, Sequence[str], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
     ):
-        super().__init__(values=values, **kwargs)
+        super().__init__(values=values, boost=boost, _name=_name, **kwargs)
 
 
 class Intervals(Query):
@@ -862,6 +1058,12 @@ class Knn(Query):
     :arg filter: Filters for the kNN search query
     :arg similarity: The minimum similarity for a vector to be considered
         a match
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "knn"
@@ -873,14 +1075,16 @@ class Knn(Query):
         self,
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        query_vector: Union[List[float], "DefaultType"] = DEFAULT,
+        query_vector: Union[Sequence[float], "DefaultType"] = DEFAULT,
         query_vector_builder: Union[
             "i.QueryVectorBuilder", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         num_candidates: Union[int, "DefaultType"] = DEFAULT,
         k: Union[int, "DefaultType"] = DEFAULT,
-        filter: Union[Query, List[Query], "DefaultType"] = DEFAULT,
+        filter: Union[Query, Sequence[Query], "DefaultType"] = DEFAULT,
         similarity: Union[float, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -891,6 +1095,8 @@ class Knn(Query):
             k=k,
             filter=filter,
             similarity=similarity,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -920,12 +1126,25 @@ class Match(Query):
 class MatchAll(Query):
     """
     Matches all documents, giving them all a `_score` of 1.0.
+
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "match_all"
 
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        *,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(boost=boost, _name=_name, **kwargs)
 
     def __add__(self, other: "Query") -> "Query":
         return other._clone()
@@ -972,12 +1191,25 @@ class MatchBoolPrefix(Query):
 class MatchNone(Query):
     """
     Matches no documents.
+
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "match_none"
 
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        *,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(boost=boost, _name=_name, **kwargs)
 
     def __add__(self, other: "Query") -> "MatchNone":
         return self
@@ -1081,6 +1313,12 @@ class MoreLikeThis(Query):
         match a set of terms.
     :arg version: No documentation available.
     :arg version_type: No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "more_like_this"
@@ -1090,14 +1328,16 @@ class MoreLikeThis(Query):
         *,
         like: Union[
             Union[str, "i.LikeDocument"],
-            List[Union[str, "i.LikeDocument"]],
+            Sequence[Union[str, "i.LikeDocument"]],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         boost_terms: Union[float, "DefaultType"] = DEFAULT,
         fail_on_unsupported_field: Union[bool, "DefaultType"] = DEFAULT,
-        fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"] = DEFAULT,
+        fields: Union[
+            Sequence[Union[str, "InstrumentedField"]], "DefaultType"
+        ] = DEFAULT,
         include: Union[bool, "DefaultType"] = DEFAULT,
         max_doc_freq: Union[int, "DefaultType"] = DEFAULT,
         max_query_terms: Union[int, "DefaultType"] = DEFAULT,
@@ -1107,10 +1347,10 @@ class MoreLikeThis(Query):
         min_term_freq: Union[int, "DefaultType"] = DEFAULT,
         min_word_length: Union[int, "DefaultType"] = DEFAULT,
         routing: Union[str, "DefaultType"] = DEFAULT,
-        stop_words: Union[str, List[str], "DefaultType"] = DEFAULT,
+        stop_words: Union[str, Sequence[str], "DefaultType"] = DEFAULT,
         unlike: Union[
             Union[str, "i.LikeDocument"],
-            List[Union[str, "i.LikeDocument"]],
+            Sequence[Union[str, "i.LikeDocument"]],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -1118,6 +1358,8 @@ class MoreLikeThis(Query):
         version_type: Union[
             Literal["internal", "external", "external_gte", "force"], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1139,6 +1381,8 @@ class MoreLikeThis(Query):
             unlike=unlike,
             version=version,
             version_type=version_type,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1183,6 +1427,12 @@ class MultiMatch(Query):
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
         filter.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "multi_match"
@@ -1196,7 +1446,7 @@ class MultiMatch(Query):
         cutoff_frequency: Union[float, "DefaultType"] = DEFAULT,
         fields: Union[
             Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
+            Sequence[Union[str, "InstrumentedField"]],
             "DefaultType",
         ] = DEFAULT,
         fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
@@ -1221,6 +1471,8 @@ class MultiMatch(Query):
             "DefaultType",
         ] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1241,6 +1493,8 @@ class MultiMatch(Query):
             tie_breaker=tie_breaker,
             type=type,
             zero_terms_query=zero_terms_query,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1258,6 +1512,12 @@ class Nested(Query):
     :arg inner_hits: If defined, each search hit will contain inner hits.
     :arg score_mode: How scores for matching child objects affect the root
         parent document’s relevance score.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "nested"
@@ -1275,6 +1535,8 @@ class Nested(Query):
         score_mode: Union[
             Literal["none", "avg", "sum", "max", "min"], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1283,6 +1545,8 @@ class Nested(Query):
             ignore_unmapped=ignore_unmapped,
             inner_hits=inner_hits,
             score_mode=score_mode,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1295,6 +1559,12 @@ class ParentId(Query):
     :arg ignore_unmapped: Indicates whether to ignore an unmapped `type`
         and not return any documents instead of an error.
     :arg type: Name of the child relationship mapped for the `join` field.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "parent_id"
@@ -1305,9 +1575,18 @@ class ParentId(Query):
         id: Union[str, "DefaultType"] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         type: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(id=id, ignore_unmapped=ignore_unmapped, type=type, **kwargs)
+        super().__init__(
+            id=id,
+            ignore_unmapped=ignore_unmapped,
+            type=type,
+            boost=boost,
+            _name=_name,
+            **kwargs,
+        )
 
 
 class Percolate(Query):
@@ -1325,6 +1604,12 @@ class Percolate(Query):
     :arg preference: Preference used to fetch document to percolate.
     :arg routing: Routing used to fetch document to percolate.
     :arg version: The expected version of a stored document to percolate.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "percolate"
@@ -1334,13 +1619,15 @@ class Percolate(Query):
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         document: Any = DEFAULT,
-        documents: Union[List[Any], "DefaultType"] = DEFAULT,
+        documents: Union[Sequence[Any], "DefaultType"] = DEFAULT,
         id: Union[str, "DefaultType"] = DEFAULT,
         index: Union[str, "DefaultType"] = DEFAULT,
         name: Union[str, "DefaultType"] = DEFAULT,
         preference: Union[str, "DefaultType"] = DEFAULT,
         routing: Union[str, "DefaultType"] = DEFAULT,
         version: Union[int, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1353,6 +1640,8 @@ class Percolate(Query):
             preference=preference,
             routing=routing,
             version=version,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1368,6 +1657,12 @@ class Pinned(Query):
         results. Required if `docs` is not specified.
     :arg docs: Documents listed in the order they are to appear in
         results. Required if `ids` is not specified.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "pinned"
@@ -1379,11 +1674,15 @@ class Pinned(Query):
         self,
         *,
         organic: Union[Query, "DefaultType"] = DEFAULT,
-        ids: Union[List[str], "DefaultType"] = DEFAULT,
-        docs: Union[List["i.PinnedDoc"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        ids: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        docs: Union[Sequence["i.PinnedDoc"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(organic=organic, ids=ids, docs=docs, **kwargs)
+        super().__init__(
+            organic=organic, ids=ids, docs=docs, boost=boost, _name=_name, **kwargs
+        )
 
 
 class Prefix(Query):
@@ -1461,6 +1760,12 @@ class QueryString(Query):
     :arg time_zone: Coordinated Universal Time (UTC) offset or IANA time
         zone used to convert date values in the query string to UTC.
     :arg type: Determines how the query matches and scores documents.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "query_string"
@@ -1477,7 +1782,9 @@ class QueryString(Query):
         default_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         enable_position_increments: Union[bool, "DefaultType"] = DEFAULT,
         escape: Union[bool, "DefaultType"] = DEFAULT,
-        fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"] = DEFAULT,
+        fields: Union[
+            Sequence[Union[str, "InstrumentedField"]], "DefaultType"
+        ] = DEFAULT,
         fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
         fuzzy_max_expansions: Union[int, "DefaultType"] = DEFAULT,
         fuzzy_prefix_length: Union[int, "DefaultType"] = DEFAULT,
@@ -1503,6 +1810,8 @@ class QueryString(Query):
             ],
             "DefaultType",
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1531,6 +1840,8 @@ class QueryString(Query):
             tie_breaker=tie_breaker,
             time_zone=time_zone,
             type=type,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1571,6 +1882,12 @@ class RankFeature(Query):
         the value of the rank feature `field`.
     :arg sigmoid: Sigmoid function used to boost relevance scores based on
         the value of the rank feature `field`.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "rank_feature"
@@ -1591,6 +1908,8 @@ class RankFeature(Query):
         sigmoid: Union[
             "i.RankFeatureFunctionSigmoid", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1599,6 +1918,8 @@ class RankFeature(Query):
             log=log,
             linear=linear,
             sigmoid=sigmoid,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1628,9 +1949,15 @@ class Rule(Query):
     """
     No documentation available.
 
+    :arg organic: (required) No documentation available.
     :arg ruleset_ids: (required) No documentation available.
     :arg match_criteria: (required) No documentation available.
-    :arg organic: (required) No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "rule"
@@ -1641,15 +1968,19 @@ class Rule(Query):
     def __init__(
         self,
         *,
-        ruleset_ids: Union[List[str], "DefaultType"] = DEFAULT,
-        match_criteria: Any = DEFAULT,
         organic: Union[Query, "DefaultType"] = DEFAULT,
+        ruleset_ids: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        match_criteria: Any = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
+            organic=organic,
             ruleset_ids=ruleset_ids,
             match_criteria=match_criteria,
-            organic=organic,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1661,6 +1992,12 @@ class Script(Query):
 
     :arg script: (required) Contains a script to run as a query. This
         script must return a boolean value, `true` or `false`.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "script"
@@ -1669,9 +2006,11 @@ class Script(Query):
         self,
         *,
         script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(script=script, **kwargs)
+        super().__init__(script=script, boost=boost, _name=_name, **kwargs)
 
 
 class ScriptScore(Query):
@@ -1684,6 +2023,12 @@ class ScriptScore(Query):
         `script_score` query cannot be negative.
     :arg min_score: Documents with a score lower than this floating point
         number are excluded from the search results.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "script_score"
@@ -1697,18 +2042,33 @@ class ScriptScore(Query):
         query: Union[Query, "DefaultType"] = DEFAULT,
         script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         min_score: Union[float, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(query=query, script=script, min_score=min_score, **kwargs)
+        super().__init__(
+            query=query,
+            script=script,
+            min_score=min_score,
+            boost=boost,
+            _name=_name,
+            **kwargs,
+        )
 
 
 class Semantic(Query):
     """
     A semantic query to semantic_text field types
 
-    :arg query: (required) The query text
     :arg field: (required) The field to query, which must be a
         semantic_text field type
+    :arg query: (required) The query text
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "semantic"
@@ -1716,27 +2076,48 @@ class Semantic(Query):
     def __init__(
         self,
         *,
-        query: Union[str, "DefaultType"] = DEFAULT,
         field: Union[str, "DefaultType"] = DEFAULT,
+        query: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(query=query, field=field, **kwargs)
+        super().__init__(field=field, query=query, boost=boost, _name=_name, **kwargs)
 
 
 class Shape(Query):
     """
     Queries documents that contain fields indexed using the `shape` type.
 
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
     :arg ignore_unmapped: When set to `true` the query ignores an unmapped
         field and will not match any documents.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "shape"
 
     def __init__(
-        self, *, ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT, **kwargs: Any
+        self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union["i.ShapeFieldQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        *,
+        ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
     ):
-        super().__init__(ignore_unmapped=ignore_unmapped, **kwargs)
+        if _field != DEFAULT:
+            kwargs[str(_field)] = _value
+        super().__init__(
+            ignore_unmapped=ignore_unmapped, boost=boost, _name=_name, **kwargs
+        )
 
 
 class SimpleQueryString(Query):
@@ -1774,6 +2155,12 @@ class SimpleQueryString(Query):
         for a document to be returned.
     :arg quote_field_suffix: Suffix appended to quoted text in the query
         string.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "simple_query_string"
@@ -1786,7 +2173,9 @@ class SimpleQueryString(Query):
         analyze_wildcard: Union[bool, "DefaultType"] = DEFAULT,
         auto_generate_synonyms_phrase_query: Union[bool, "DefaultType"] = DEFAULT,
         default_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
-        fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"] = DEFAULT,
+        fields: Union[
+            Sequence[Union[str, "InstrumentedField"]], "DefaultType"
+        ] = DEFAULT,
         flags: Union["i.PipeSeparatedFlags", Dict[str, Any], "DefaultType"] = DEFAULT,
         fuzzy_max_expansions: Union[int, "DefaultType"] = DEFAULT,
         fuzzy_prefix_length: Union[int, "DefaultType"] = DEFAULT,
@@ -1794,6 +2183,8 @@ class SimpleQueryString(Query):
         lenient: Union[bool, "DefaultType"] = DEFAULT,
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
         quote_field_suffix: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -1810,6 +2201,8 @@ class SimpleQueryString(Query):
             lenient=lenient,
             minimum_should_match=minimum_should_match,
             quote_field_suffix=quote_field_suffix,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -1818,10 +2211,16 @@ class SpanContaining(Query):
     """
     Returns matches which enclose another span query.
 
-    :arg little: (required) Can be any span query. Matching spans from
-        `big` that contain matches from `little` are returned.
     :arg big: (required) Can be any span query. Matching spans from `big`
         that contain matches from `little` are returned.
+    :arg little: (required) Can be any span query. Matching spans from
+        `big` that contain matches from `little` are returned.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_containing"
@@ -1829,11 +2228,13 @@ class SpanContaining(Query):
     def __init__(
         self,
         *,
-        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(little=little, big=big, **kwargs)
+        super().__init__(big=big, little=little, boost=boost, _name=_name, **kwargs)
 
 
 class SpanFieldMasking(Query):
@@ -1841,8 +2242,14 @@ class SpanFieldMasking(Query):
     Wrapper to allow span queries to participate in composite single-field
     span queries by _lying_ about their search field.
 
-    :arg query: (required) No documentation available.
     :arg field: (required) No documentation available.
+    :arg query: (required) No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_field_masking"
@@ -1850,20 +2257,28 @@ class SpanFieldMasking(Query):
     def __init__(
         self,
         *,
-        query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(query=query, field=field, **kwargs)
+        super().__init__(field=field, query=query, boost=boost, _name=_name, **kwargs)
 
 
 class SpanFirst(Query):
     """
     Matches spans near the beginning of a field.
 
-    :arg match: (required) Can be any other span type query.
     :arg end: (required) Controls the maximum end position permitted in a
         match.
+    :arg match: (required) Can be any other span type query.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_first"
@@ -1871,11 +2286,13 @@ class SpanFirst(Query):
     def __init__(
         self,
         *,
-        match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         end: Union[int, "DefaultType"] = DEFAULT,
+        match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(match=match, end=end, **kwargs)
+        super().__init__(end=end, match=match, boost=boost, _name=_name, **kwargs)
 
 
 class SpanMulti(Query):
@@ -1886,6 +2303,12 @@ class SpanMulti(Query):
 
     :arg match: (required) Should be a multi term query (one of
         `wildcard`, `fuzzy`, `prefix`, `range`, or `regexp` query).
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_multi"
@@ -1893,8 +2316,15 @@ class SpanMulti(Query):
         "match": {"type": "query"},
     }
 
-    def __init__(self, *, match: Union[Query, "DefaultType"] = DEFAULT, **kwargs: Any):
-        super().__init__(match=match, **kwargs)
+    def __init__(
+        self,
+        *,
+        match: Union[Query, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(match=match, boost=boost, _name=_name, **kwargs)
 
 
 class SpanNear(Query):
@@ -1907,6 +2337,12 @@ class SpanNear(Query):
     :arg in_order: Controls whether matches are required to be in-order.
     :arg slop: Controls the maximum number of intervening unmatched
         positions permitted.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_near"
@@ -1914,12 +2350,23 @@ class SpanNear(Query):
     def __init__(
         self,
         *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        clauses: Union[
+            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         in_order: Union[bool, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(clauses=clauses, in_order=in_order, slop=slop, **kwargs)
+        super().__init__(
+            clauses=clauses,
+            in_order=in_order,
+            slop=slop,
+            boost=boost,
+            _name=_name,
+            **kwargs,
+        )
 
 
 class SpanNot(Query):
@@ -1938,6 +2385,12 @@ class SpanNot(Query):
         overlap with the exclude span.
     :arg pre: The number of tokens before the include span that can’t have
         overlap with the exclude span.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_not"
@@ -1950,10 +2403,19 @@ class SpanNot(Query):
         dist: Union[int, "DefaultType"] = DEFAULT,
         post: Union[int, "DefaultType"] = DEFAULT,
         pre: Union[int, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
-            exclude=exclude, include=include, dist=dist, post=post, pre=pre, **kwargs
+            exclude=exclude,
+            include=include,
+            dist=dist,
+            post=post,
+            pre=pre,
+            boost=boost,
+            _name=_name,
+            **kwargs,
         )
 
 
@@ -1962,6 +2424,12 @@ class SpanOr(Query):
     Matches the union of its span clauses.
 
     :arg clauses: (required) Array of one or more other span type queries.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_or"
@@ -1969,10 +2437,14 @@ class SpanOr(Query):
     def __init__(
         self,
         *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        clauses: Union[
+            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(clauses=clauses, **kwargs)
+        super().__init__(clauses=clauses, boost=boost, _name=_name, **kwargs)
 
 
 class SpanTerm(Query):
@@ -2000,10 +2472,16 @@ class SpanWithin(Query):
     """
     Returns matches which are enclosed inside another span query.
 
-    :arg little: (required) Can be any span query. Matching spans from
-        `little` that are enclosed within `big` are returned.
     :arg big: (required) Can be any span query. Matching spans from
         `little` that are enclosed within `big` are returned.
+    :arg little: (required) Can be any span query. Matching spans from
+        `little` that are enclosed within `big` are returned.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "span_within"
@@ -2011,11 +2489,13 @@ class SpanWithin(Query):
     def __init__(
         self,
         *,
-        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        super().__init__(little=little, big=big, **kwargs)
+        super().__init__(big=big, little=little, boost=boost, _name=_name, **kwargs)
 
 
 class SparseVector(Query):
@@ -2047,6 +2527,12 @@ class SparseVector(Query):
         improve query performance. This is only used if prune is set to
         true. If prune is set to true but pruning_config is not specified,
         default values will be used.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "sparse_vector"
@@ -2062,6 +2548,8 @@ class SparseVector(Query):
         pruning_config: Union[
             "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         super().__init__(
@@ -2071,6 +2559,8 @@ class SparseVector(Query):
             query=query,
             prune=prune,
             pruning_config=pruning_config,
+            boost=boost,
+            _name=_name,
             **kwargs,
         )
 
@@ -2103,12 +2593,36 @@ class Terms(Query):
     Returns documents that contain one or more exact terms in a provided
     field. To return a document, one or more terms must exactly match a
     field value, including whitespace and capitalization.
+
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "terms"
 
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union[
+            Sequence[Union[int, float, str, bool, None, Any]],
+            "i.TermsLookup",
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        *,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if _field != DEFAULT:
+            kwargs[str(_field)] = _value
+        super().__init__(boost=boost, _name=_name, **kwargs)
 
     def _setattr(self, name: str, value: Any) -> None:
         # here we convert any iterables that are not strings to lists
@@ -2213,12 +2727,25 @@ class Wrapper(Query):
 
     :arg query: (required) A base64 encoded query. The binary data format
         can be any of JSON, YAML, CBOR or SMILE encodings
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "wrapper"
 
-    def __init__(self, *, query: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
-        super().__init__(query=query, **kwargs)
+    def __init__(
+        self,
+        *,
+        query: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(query=query, boost=boost, _name=_name, **kwargs)
 
 
 class Type(Query):
@@ -2226,9 +2753,22 @@ class Type(Query):
     No documentation available.
 
     :arg value: (required) No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     name = "type"
 
-    def __init__(self, *, value: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
-        super().__init__(value=value, **kwargs)
+    def __init__(
+        self,
+        *,
+        value: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(value=value, boost=boost, _name=_name, **kwargs)

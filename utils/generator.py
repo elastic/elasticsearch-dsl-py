@@ -147,9 +147,9 @@ class ElasticsearchSchema:
             return self.get_python_type(schema_type["type"])
 
         elif schema_type["kind"] == "array_of":
-            # for arrays we use List[element_type]
+            # for arrays we use Sequence[element_type]
             type_, param = self.get_python_type(schema_type["value"])
-            return f"List[{type_}]", {**param, "multi": True} if param else None
+            return f"Sequence[{type_}]", {**param, "multi": True} if param else None
 
         elif schema_type["kind"] == "dictionary_of":
             # for dicts we use Mapping[key_type, value_type]
@@ -164,10 +164,10 @@ class ElasticsearchSchema:
                 and schema_type["items"][1]["kind"] == "array_of"
                 and schema_type["items"][0] == schema_type["items"][1]["value"]
             ):
-                # special kind of unions in the form Union[type, List[type]]
+                # special kind of unions in the form Union[type, Sequence[type]]
                 type_, param = self.get_python_type(schema_type["items"][0])
                 return (
-                    f"Union[{type_}, List[{type_}]]",
+                    f"Union[{type_}, Sequence[{type_}]]",
                     ({"type": param["type"], "multi": True} if param else None),
                 )
             elif (
@@ -286,7 +286,8 @@ class ElasticsearchSchema:
                 "name": "the name of the attribute",
                 "type": "the Python type hint for the attribute",
                 "doc": ["formatted lines of documentation to add to class docstring"],
-                "required": bool
+                "required": bool,
+                "positional": bool,
             ],
             "params": [
                 "name": "the attribute name",
@@ -308,27 +309,79 @@ class ElasticsearchSchema:
             name = p["type"]["type"]["name"]
             if f"{namespace}:{name}" in TYPE_REPLACEMENTS:
                 namespace, name = TYPE_REPLACEMENTS[f"{namespace}:{name}"].split(":")
-            instance = schema.find_type(name, namespace)
-            if instance["kind"] == "interface":
+            type_ = schema.find_type(name, namespace)
+            if type_["kind"] == "interface":
                 k["args"] = []
                 k["params"] = []
-                for arg in instance["properties"]:
-                    python_arg, param = self.get_attribute_data(arg)
-                    if python_arg["required"]:
-                        # insert in the right place so that all required arguments
-                        # appear at the top of the argument list
-                        i = 0
-                        for i in range(len(k["args"])):
-                            if k["args"][i]["required"] is False:
-                                break
-                        k["args"].insert(i, python_arg)
+                if "behaviors" in type_:
+                    for behavior in type_["behaviors"]:
+                        if (
+                            behavior["type"]["name"] != "AdditionalProperty"
+                            or behavior["type"]["namespace"] != "_spec_utils"
+                        ):
+                            # we do not support this behavior, so we ignore it
+                            continue
+                        key_type, _ = schema.get_python_type(behavior["generics"][0])
+                        if "InstrumentedField" in key_type:
+                            value_type, _ = schema.get_python_type(
+                                behavior["generics"][1]
+                            )
+                            k["args"].append(
+                                {
+                                    "name": "_field",
+                                    "type": add_not_set(key_type),
+                                    "doc": [
+                                        ":arg _field: The field to use in this query."
+                                    ],
+                                    "required": False,
+                                    "positional": True,
+                                }
+                            )
+                            k["args"].append(
+                                {
+                                    "name": "_value",
+                                    "type": add_not_set(add_dict_type(value_type)),
+                                    "doc": [
+                                        ":arg _value: The query value for the field."
+                                    ],
+                                    "required": False,
+                                    "positional": True,
+                                }
+                            )
+                            k["is_single_field"] = True
+                        else:
+                            raise RuntimeError(
+                                f"Non-field AdditionalProperty are not supported for interface {namespace}:{name}."
+                            )
+                while True:
+                    for arg in type_["properties"]:
+                        python_arg, param = self.get_attribute_data(arg)
+                        if python_arg["required"]:
+                            # insert in the right place so that all required arguments
+                            # appear at the top of the argument list
+                            i = 0
+                            for i in range(len(k["args"]) + 1):
+                                if i == len(k["args"]):
+                                    break
+                                if k["args"][i].get("positional"):
+                                    continue
+                                if k["args"][i]["required"] is False:
+                                    break
+                            k["args"].insert(i, python_arg)
+                        else:
+                            k["args"].append(python_arg)
+                        if param:
+                            k["params"].append(param)
+                    if "inherits" in type_ and "type" in type_["inherits"]:
+                        type_ = schema.find_type(
+                            type_["inherits"]["type"]["name"],
+                            type_["inherits"]["type"]["namespace"],
+                        )
                     else:
-                        k["args"].append(python_arg)
-                    if param:
-                        k["params"].append(param)
+                        break
             else:
                 raise RuntimeError(
-                    f"Cannot generate code for instances of kind '{instance['kind']}'"
+                    f"Cannot generate code for instances of kind '{type_['kind']}'"
                 )
 
         elif kind == "dictionary_of":
@@ -343,12 +396,14 @@ class ElasticsearchSchema:
                             "type": add_not_set(key_type),
                             "doc": [":arg _field: The field to use in this query."],
                             "required": False,
+                            "positional": True,
                         },
                         {
                             "name": "_value",
                             "type": add_not_set(add_dict_type(value_type)),
                             "doc": [":arg _value: The query value for the field."],
                             "required": False,
+                            "positional": True,
                         },
                     ]
                     k["is_single_field"] = True
@@ -362,6 +417,7 @@ class ElasticsearchSchema:
                                 ":arg _fields: A dictionary of fields with their values."
                             ],
                             "required": False,
+                            "positional": True,
                         },
                     ]
                     k["is_multi_field"] = True
@@ -391,7 +447,8 @@ class ElasticsearchSchema:
                 "name": "the name of the attribute",
                 "type": "the Python type hint for the attribute",
                 "doc": ["formatted lines of documentation to add to class docstring"],
-                "required": bool
+                "required": bool,
+                "positional": bool,
             ],
         }
         ```
@@ -399,25 +456,22 @@ class ElasticsearchSchema:
         type_ = schema.find_type(interface)
         if type_["kind"] != "interface":
             raise RuntimeError(f"Type {interface} is not an interface")
-        if "inherits" in type_ and "type" in type_["inherits"]:
-            # this class has parents, make sure we have all the parents in our
-            # list of interfaces to render
-            parent = type_["inherits"]["type"]["name"]
-            base = type_
-            while base and "inherits" in base and "type" in base["inherits"]:
-                if base["inherits"]["type"]["name"] not in interfaces:
-                    interfaces.append(base["inherits"]["type"]["name"])
-                base = schema.find_type(
-                    base["inherits"]["type"]["name"],
-                    base["inherits"]["type"]["namespace"],
+        k = {"name": interface, "args": []}
+        while True:
+            for arg in type_["properties"]:
+                arg_type, _ = schema.get_attribute_data(arg)
+                k["args"].append(arg_type)
+            if "inherits" in type_ and "type" in type_["inherits"]:
+                if "parent" not in k:
+                    k["parent"] = type_["inherits"]["type"]["name"]
+                if type_["inherits"]["type"]["name"] not in interfaces:
+                    interfaces.append(type_["inherits"]["type"]["name"])
+                type_ = schema.find_type(
+                    type_["inherits"]["type"]["name"],
+                    type_["inherits"]["type"]["namespace"],
                 )
-        else:
-            # no parent, will inherit from AttrDict
-            parent = None
-        k = {"name": interface, "parent": parent, "args": []}
-        for arg in type_["properties"]:
-            arg_type, _ = schema.get_attribute_data(arg)
-            k["args"].append(arg_type)
+            else:
+                break
         return k
 
 

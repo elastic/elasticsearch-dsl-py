@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from typing import Any, Dict, List, Literal, Mapping, Union
+from typing import Any, Dict, Literal, Mapping, Sequence, Union
 
 from elastic_transport.client_utils import DEFAULT, DefaultType
 
@@ -63,6 +63,12 @@ class CommonTermsQuery(QueryBase):
     :arg low_freq_operator: No documentation available.
     :arg minimum_should_match: No documentation available.
     :arg query: (required) No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -71,6 +77,8 @@ class CommonTermsQuery(QueryBase):
     low_freq_operator: Union[Literal["and", "or"], "DefaultType"]
     minimum_should_match: Union[int, str, "DefaultType"]
     query: Union[str, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -81,6 +89,8 @@ class CommonTermsQuery(QueryBase):
         low_freq_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
         query: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if analyzer != DEFAULT:
@@ -95,7 +105,44 @@ class CommonTermsQuery(QueryBase):
             kwargs["minimum_should_match"] = minimum_should_match
         if query != DEFAULT:
             kwargs["query"] = query
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class CoordsGeoBounds(AttrDict[Any]):
+    """
+    :arg top: (required) No documentation available.
+    :arg bottom: (required) No documentation available.
+    :arg left: (required) No documentation available.
+    :arg right: (required) No documentation available.
+    """
+
+    top: Union[float, "DefaultType"]
+    bottom: Union[float, "DefaultType"]
+    left: Union[float, "DefaultType"]
+    right: Union[float, "DefaultType"]
+
+    def __init__(
+        self,
+        *,
+        top: Union[float, "DefaultType"] = DEFAULT,
+        bottom: Union[float, "DefaultType"] = DEFAULT,
+        left: Union[float, "DefaultType"] = DEFAULT,
+        right: Union[float, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if top != DEFAULT:
+            kwargs["top"] = top
+        if bottom != DEFAULT:
+            kwargs["bottom"] = bottom
+        if left != DEFAULT:
+            kwargs["left"] = left
+        if right != DEFAULT:
+            kwargs["right"] = right
+        super().__init__(kwargs)
 
 
 class FunctionScoreContainer(AttrDict[Any]):
@@ -175,6 +222,12 @@ class FuzzyQuery(QueryBase):
         two adjacent characters (for example `ab` to `ba`).
     :arg fuzziness: Maximum edit distance allowed for matching.
     :arg value: (required) Term you wish to find in the provided field.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     max_expansions: Union[int, "DefaultType"]
@@ -183,6 +236,8 @@ class FuzzyQuery(QueryBase):
     transpositions: Union[bool, "DefaultType"]
     fuzziness: Union[str, int, "DefaultType"]
     value: Union[str, float, bool, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -193,6 +248,8 @@ class FuzzyQuery(QueryBase):
         transpositions: Union[bool, "DefaultType"] = DEFAULT,
         fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
         value: Union[str, float, bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if max_expansions != DEFAULT:
@@ -207,7 +264,87 @@ class FuzzyQuery(QueryBase):
             kwargs["fuzziness"] = fuzziness
         if value != DEFAULT:
             kwargs["value"] = value
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class GeoHashLocation(AttrDict[Any]):
+    """
+    :arg geohash: (required) No documentation available.
+    """
+
+    geohash: Union[str, "DefaultType"]
+
+    def __init__(self, *, geohash: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
+        if geohash != DEFAULT:
+            kwargs["geohash"] = geohash
+        super().__init__(kwargs)
+
+
+class GeoPolygonPoints(AttrDict[Any]):
+    """
+    :arg points: (required) No documentation available.
+    """
+
+    points: Union[
+        Sequence[
+            Union["i.LatLonGeoLocation", "i.GeoHashLocation", Sequence[float], str]
+        ],
+        Dict[str, Any],
+        "DefaultType",
+    ]
+
+    def __init__(
+        self,
+        *,
+        points: Union[
+            Sequence[
+                Union["i.LatLonGeoLocation", "i.GeoHashLocation", Sequence[float], str]
+            ],
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if points != DEFAULT:
+            kwargs["points"] = points
+        super().__init__(kwargs)
+
+
+class GeoShapeFieldQuery(AttrDict[Any]):
+    """
+    :arg shape: No documentation available.
+    :arg indexed_shape: Query using an indexed shape retrieved from the
+        the specified document and path.
+    :arg relation: Spatial relation operator used to search a geo field.
+    """
+
+    shape: Any
+    indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"]
+    relation: Union[
+        Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
+    ]
+
+    def __init__(
+        self,
+        *,
+        shape: Any = DEFAULT,
+        indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"] = DEFAULT,
+        relation: Union[
+            Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if shape != DEFAULT:
+            kwargs["shape"] = shape
+        if indexed_shape != DEFAULT:
+            kwargs["indexed_shape"] = indexed_shape
+        if relation != DEFAULT:
+            kwargs["relation"] = relation
+        super().__init__(kwargs)
 
 
 class InnerHits(AttrDict[Any]):
@@ -237,7 +374,7 @@ class InnerHits(AttrDict[Any]):
     size: Union[int, "DefaultType"]
     from_: Union[int, "DefaultType"]
     collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"]
-    docvalue_fields: Union[List["i.FieldAndFormat"], Dict[str, Any], "DefaultType"]
+    docvalue_fields: Union[Sequence["i.FieldAndFormat"], Dict[str, Any], "DefaultType"]
     explain: Union[bool, "DefaultType"]
     highlight: Union["i.Highlight", Dict[str, Any], "DefaultType"]
     ignore_unmapped: Union[bool, "DefaultType"]
@@ -249,19 +386,19 @@ class InnerHits(AttrDict[Any]):
     seq_no_primary_term: Union[bool, "DefaultType"]
     fields: Union[
         Union[str, "InstrumentedField"],
-        List[Union[str, "InstrumentedField"]],
+        Sequence[Union[str, "InstrumentedField"]],
         "DefaultType",
     ]
     sort: Union[
         Union[Union[str, "InstrumentedField"], "i.SortOptions"],
-        List[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
+        Sequence[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
         Dict[str, Any],
         "DefaultType",
     ]
     _source: Union[bool, "i.SourceFilter", Dict[str, Any], "DefaultType"]
     stored_fields: Union[
         Union[str, "InstrumentedField"],
-        List[Union[str, "InstrumentedField"]],
+        Sequence[Union[str, "InstrumentedField"]],
         "DefaultType",
     ]
     track_scores: Union[bool, "DefaultType"]
@@ -275,7 +412,7 @@ class InnerHits(AttrDict[Any]):
         from_: Union[int, "DefaultType"] = DEFAULT,
         collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
         docvalue_fields: Union[
-            List["i.FieldAndFormat"], Dict[str, Any], "DefaultType"
+            Sequence["i.FieldAndFormat"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         explain: Union[bool, "DefaultType"] = DEFAULT,
         highlight: Union["i.Highlight", Dict[str, Any], "DefaultType"] = DEFAULT,
@@ -288,19 +425,19 @@ class InnerHits(AttrDict[Any]):
         seq_no_primary_term: Union[bool, "DefaultType"] = DEFAULT,
         fields: Union[
             Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
+            Sequence[Union[str, "InstrumentedField"]],
             "DefaultType",
         ] = DEFAULT,
         sort: Union[
             Union[Union[str, "InstrumentedField"], "i.SortOptions"],
-            List[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
+            Sequence[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
         _source: Union[bool, "i.SourceFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         stored_fields: Union[
             Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
+            Sequence[Union[str, "InstrumentedField"]],
             "DefaultType",
         ] = DEFAULT,
         track_scores: Union[bool, "DefaultType"] = DEFAULT,
@@ -352,6 +489,12 @@ class IntervalsQuery(QueryBase):
     :arg prefix: Matches terms that start with a specified set of
         characters.
     :arg wildcard: Matches terms using a wildcard pattern.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"]
@@ -360,6 +503,8 @@ class IntervalsQuery(QueryBase):
     match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"]
     prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"]
     wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -370,6 +515,8 @@ class IntervalsQuery(QueryBase):
         match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
         prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
         wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if all_of != DEFAULT:
@@ -384,7 +531,34 @@ class IntervalsQuery(QueryBase):
             kwargs["prefix"] = prefix
         if wildcard != DEFAULT:
             kwargs["wildcard"] = wildcard
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class LatLonGeoLocation(AttrDict[Any]):
+    """
+    :arg lat: (required) Latitude
+    :arg lon: (required) Longitude
+    """
+
+    lat: Union[float, "DefaultType"]
+    lon: Union[float, "DefaultType"]
+
+    def __init__(
+        self,
+        *,
+        lat: Union[float, "DefaultType"] = DEFAULT,
+        lon: Union[float, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if lat != DEFAULT:
+            kwargs["lat"] = lat
+        if lon != DEFAULT:
+            kwargs["lon"] = lon
+        super().__init__(kwargs)
 
 
 class LikeDocument(AttrDict[Any]):
@@ -400,7 +574,7 @@ class LikeDocument(AttrDict[Any]):
     """
 
     doc: Any
-    fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"]
+    fields: Union[Sequence[Union[str, "InstrumentedField"]], "DefaultType"]
     _id: Union[str, "DefaultType"]
     _index: Union[str, "DefaultType"]
     per_field_analyzer: Union[
@@ -416,7 +590,9 @@ class LikeDocument(AttrDict[Any]):
         self,
         *,
         doc: Any = DEFAULT,
-        fields: Union[List[Union[str, "InstrumentedField"]], "DefaultType"] = DEFAULT,
+        fields: Union[
+            Sequence[Union[str, "InstrumentedField"]], "DefaultType"
+        ] = DEFAULT,
         _id: Union[str, "DefaultType"] = DEFAULT,
         _index: Union[str, "DefaultType"] = DEFAULT,
         per_field_analyzer: Union[
@@ -475,6 +651,12 @@ class MatchBoolPrefixQuery(QueryBase):
         for all terms but the final term.
     :arg query: (required) Terms you wish to find in the provided field.
         The last term is used in a prefix query.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -486,6 +668,8 @@ class MatchBoolPrefixQuery(QueryBase):
     operator: Union[Literal["and", "or"], "DefaultType"]
     prefix_length: Union[int, "DefaultType"]
     query: Union[str, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -499,6 +683,8 @@ class MatchBoolPrefixQuery(QueryBase):
         operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         prefix_length: Union[int, "DefaultType"] = DEFAULT,
         query: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if analyzer != DEFAULT:
@@ -519,6 +705,10 @@ class MatchBoolPrefixQuery(QueryBase):
             kwargs["prefix_length"] = prefix_length
         if query != DEFAULT:
             kwargs["query"] = query
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -534,6 +724,12 @@ class MatchPhrasePrefixQuery(QueryBase):
     :arg zero_terms_query: Indicates whether no documents are returned if
         the analyzer removes all tokens, such as when using a `stop`
         filter.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -541,6 +737,8 @@ class MatchPhrasePrefixQuery(QueryBase):
     query: Union[str, "DefaultType"]
     slop: Union[int, "DefaultType"]
     zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -550,6 +748,8 @@ class MatchPhrasePrefixQuery(QueryBase):
         query: Union[str, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if analyzer != DEFAULT:
@@ -562,6 +762,10 @@ class MatchPhrasePrefixQuery(QueryBase):
             kwargs["slop"] = slop
         if zero_terms_query != DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -576,12 +780,20 @@ class MatchPhraseQuery(QueryBase):
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
         filter.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     analyzer: Union[str, "DefaultType"]
     query: Union[str, "DefaultType"]
     slop: Union[int, "DefaultType"]
     zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -590,6 +802,8 @@ class MatchPhraseQuery(QueryBase):
         query: Union[str, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if analyzer != DEFAULT:
@@ -600,6 +814,10 @@ class MatchPhraseQuery(QueryBase):
             kwargs["slop"] = slop
         if zero_terms_query != DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -630,6 +848,12 @@ class MatchQuery(QueryBase):
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
         filter.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -645,6 +869,8 @@ class MatchQuery(QueryBase):
     prefix_length: Union[int, "DefaultType"]
     query: Union[str, float, bool, "DefaultType"]
     zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -662,6 +888,8 @@ class MatchQuery(QueryBase):
         prefix_length: Union[int, "DefaultType"] = DEFAULT,
         query: Union[str, float, bool, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if analyzer != DEFAULT:
@@ -692,6 +920,10 @@ class MatchQuery(QueryBase):
             kwargs["query"] = query
         if zero_terms_query != DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -727,11 +959,19 @@ class PrefixQuery(QueryBase):
         value with the indexed field values when set to `true`. Default is
         `false` which means the case sensitivity of matching depends on
         the underlying field’s mapping.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     rewrite: Union[str, "DefaultType"]
     value: Union[str, "DefaultType"]
     case_insensitive: Union[bool, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -739,6 +979,8 @@ class PrefixQuery(QueryBase):
         rewrite: Union[str, "DefaultType"] = DEFAULT,
         value: Union[str, "DefaultType"] = DEFAULT,
         case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if rewrite != DEFAULT:
@@ -747,6 +989,10 @@ class PrefixQuery(QueryBase):
             kwargs["value"] = value
         if case_insensitive != DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -843,6 +1089,12 @@ class RegexpQuery(QueryBase):
     :arg rewrite: Method used to rewrite the query.
     :arg value: (required) Regular expression for terms you wish to find
         in the provided field.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     case_insensitive: Union[bool, "DefaultType"]
@@ -850,6 +1102,8 @@ class RegexpQuery(QueryBase):
     max_determinized_states: Union[int, "DefaultType"]
     rewrite: Union[str, "DefaultType"]
     value: Union[str, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -859,6 +1113,8 @@ class RegexpQuery(QueryBase):
         max_determinized_states: Union[int, "DefaultType"] = DEFAULT,
         rewrite: Union[str, "DefaultType"] = DEFAULT,
         value: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if case_insensitive != DEFAULT:
@@ -871,6 +1127,10 @@ class RegexpQuery(QueryBase):
             kwargs["rewrite"] = rewrite
         if value != DEFAULT:
             kwargs["value"] = value
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -913,6 +1173,40 @@ class Script(AttrDict[Any]):
             kwargs["lang"] = lang
         if options != DEFAULT:
             kwargs["options"] = options
+        super().__init__(kwargs)
+
+
+class ShapeFieldQuery(AttrDict[Any]):
+    """
+    :arg indexed_shape: Queries using a pre-indexed shape.
+    :arg relation: Spatial relation between the query shape and the
+        document shape.
+    :arg shape: Queries using an inline shape definition in GeoJSON or
+        Well Known Text (WKT) format.
+    """
+
+    indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"]
+    relation: Union[
+        Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
+    ]
+    shape: Any
+
+    def __init__(
+        self,
+        *,
+        indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"] = DEFAULT,
+        relation: Union[
+            Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
+        ] = DEFAULT,
+        shape: Any = DEFAULT,
+        **kwargs: Any,
+    ):
+        if indexed_shape != DEFAULT:
+            kwargs["indexed_shape"] = indexed_shape
+        if relation != DEFAULT:
+            kwargs["relation"] = relation
+        if shape != DEFAULT:
+            kwargs["shape"] = shape
         super().__init__(kwargs)
 
 
@@ -1011,13 +1305,32 @@ class SpanQuery(AttrDict[Any]):
 class SpanTermQuery(QueryBase):
     """
     :arg value: (required) No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     value: Union[str, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
-    def __init__(self, *, value: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        value: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
         if value != DEFAULT:
             kwargs["value"] = value
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1028,23 +1341,70 @@ class TermQuery(QueryBase):
         value with the indexed field values when set to `true`. When
         `false`, the case sensitivity of matching depends on the
         underlying field’s mapping.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     value: Union[int, float, str, bool, None, Any, "DefaultType"]
     case_insensitive: Union[bool, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
         value: Union[int, float, str, bool, None, Any, "DefaultType"] = DEFAULT,
         case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if value != DEFAULT:
             kwargs["value"] = value
         if case_insensitive != DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class TermsLookup(AttrDict[Any]):
+    """
+    :arg index: (required) No documentation available.
+    :arg id: (required) No documentation available.
+    :arg path: (required) No documentation available.
+    :arg routing: No documentation available.
+    """
+
+    index: Union[str, "DefaultType"]
+    id: Union[str, "DefaultType"]
+    path: Union[str, "InstrumentedField", "DefaultType"]
+    routing: Union[str, "DefaultType"]
+
+    def __init__(
+        self,
+        *,
+        index: Union[str, "DefaultType"] = DEFAULT,
+        id: Union[str, "DefaultType"] = DEFAULT,
+        path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        routing: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if index != DEFAULT:
+            kwargs["index"] = index
+        if id != DEFAULT:
+            kwargs["id"] = id
+        if path != DEFAULT:
+            kwargs["path"] = str(path)
+        if routing != DEFAULT:
+            kwargs["routing"] = routing
+        super().__init__(kwargs)
 
 
 class TermsSetQuery(QueryBase):
@@ -1055,11 +1415,19 @@ class TermsSetQuery(QueryBase):
         of matching terms required to return a document.
     :arg terms: (required) Array of terms you wish to find in the provided
         field.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     minimum_should_match_field: Union[str, "InstrumentedField", "DefaultType"]
     minimum_should_match_script: Union["i.Script", Dict[str, Any], "DefaultType"]
-    terms: Union[List[str], "DefaultType"]
+    terms: Union[Sequence[str], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -1070,7 +1438,9 @@ class TermsSetQuery(QueryBase):
         minimum_should_match_script: Union[
             "i.Script", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        terms: Union[List[str], "DefaultType"] = DEFAULT,
+        terms: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if minimum_should_match_field != DEFAULT:
@@ -1079,6 +1449,10 @@ class TermsSetQuery(QueryBase):
             kwargs["minimum_should_match_script"] = minimum_should_match_script
         if terms != DEFAULT:
             kwargs["terms"] = terms
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1087,11 +1461,19 @@ class TextExpansionQuery(QueryBase):
     :arg model_id: (required) The text expansion NLP model to use
     :arg model_text: (required) The query text
     :arg pruning_config: Token pruning configurations
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     model_id: Union[str, "DefaultType"]
     model_text: Union[str, "DefaultType"]
     pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -1101,6 +1483,8 @@ class TextExpansionQuery(QueryBase):
         pruning_config: Union[
             "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if model_id != DEFAULT:
@@ -1109,6 +1493,10 @@ class TextExpansionQuery(QueryBase):
             kwargs["model_text"] = model_text
         if pruning_config != DEFAULT:
             kwargs["pruning_config"] = pruning_config
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1144,14 +1532,124 @@ class TokenPruningConfig(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class TopLeftBottomRightGeoBounds(AttrDict[Any]):
+    """
+    :arg top_left: (required) No documentation available.
+    :arg bottom_right: (required) No documentation available.
+    """
+
+    top_left: Union[
+        "i.LatLonGeoLocation",
+        "i.GeoHashLocation",
+        Sequence[float],
+        str,
+        Dict[str, Any],
+        "DefaultType",
+    ]
+    bottom_right: Union[
+        "i.LatLonGeoLocation",
+        "i.GeoHashLocation",
+        Sequence[float],
+        str,
+        Dict[str, Any],
+        "DefaultType",
+    ]
+
+    def __init__(
+        self,
+        *,
+        top_left: Union[
+            "i.LatLonGeoLocation",
+            "i.GeoHashLocation",
+            Sequence[float],
+            str,
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        bottom_right: Union[
+            "i.LatLonGeoLocation",
+            "i.GeoHashLocation",
+            Sequence[float],
+            str,
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if top_left != DEFAULT:
+            kwargs["top_left"] = top_left
+        if bottom_right != DEFAULT:
+            kwargs["bottom_right"] = bottom_right
+        super().__init__(kwargs)
+
+
+class TopRightBottomLeftGeoBounds(AttrDict[Any]):
+    """
+    :arg top_right: (required) No documentation available.
+    :arg bottom_left: (required) No documentation available.
+    """
+
+    top_right: Union[
+        "i.LatLonGeoLocation",
+        "i.GeoHashLocation",
+        Sequence[float],
+        str,
+        Dict[str, Any],
+        "DefaultType",
+    ]
+    bottom_left: Union[
+        "i.LatLonGeoLocation",
+        "i.GeoHashLocation",
+        Sequence[float],
+        str,
+        Dict[str, Any],
+        "DefaultType",
+    ]
+
+    def __init__(
+        self,
+        *,
+        top_right: Union[
+            "i.LatLonGeoLocation",
+            "i.GeoHashLocation",
+            Sequence[float],
+            str,
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        bottom_left: Union[
+            "i.LatLonGeoLocation",
+            "i.GeoHashLocation",
+            Sequence[float],
+            str,
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if top_right != DEFAULT:
+            kwargs["top_right"] = top_right
+        if bottom_left != DEFAULT:
+            kwargs["bottom_left"] = bottom_left
+        super().__init__(kwargs)
+
+
 class WeightedTokensQuery(QueryBase):
     """
     :arg tokens: (required) The tokens representing this query
     :arg pruning_config: Token pruning configurations
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     tokens: Union[Mapping[str, float], "DefaultType"]
     pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -1160,12 +1658,18 @@ class WeightedTokensQuery(QueryBase):
         pruning_config: Union[
             "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if tokens != DEFAULT:
             kwargs["tokens"] = tokens
         if pruning_config != DEFAULT:
             kwargs["pruning_config"] = pruning_config
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1180,12 +1684,20 @@ class WildcardQuery(QueryBase):
         provided field. Required, when wildcard is not set.
     :arg wildcard: Wildcard pattern for terms you wish to find in the
         provided field. Required, when value is not set.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     case_insensitive: Union[bool, "DefaultType"]
     rewrite: Union[str, "DefaultType"]
     value: Union[str, "DefaultType"]
     wildcard: Union[str, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -1194,6 +1706,8 @@ class WildcardQuery(QueryBase):
         rewrite: Union[str, "DefaultType"] = DEFAULT,
         value: Union[str, "DefaultType"] = DEFAULT,
         wildcard: Union[str, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if case_insensitive != DEFAULT:
@@ -1204,7 +1718,57 @@ class WildcardQuery(QueryBase):
             kwargs["value"] = value
         if wildcard != DEFAULT:
             kwargs["wildcard"] = wildcard
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class WktGeoBounds(AttrDict[Any]):
+    """
+    :arg wkt: (required) No documentation available.
+    """
+
+    wkt: Union[str, "DefaultType"]
+
+    def __init__(self, *, wkt: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
+        if wkt != DEFAULT:
+            kwargs["wkt"] = wkt
+        super().__init__(kwargs)
+
+
+class FieldLookup(AttrDict[Any]):
+    """
+    :arg id: (required) `id` of the document.
+    :arg index: Index from which to retrieve the document.
+    :arg path: Name of the field.
+    :arg routing: Custom routing value.
+    """
+
+    id: Union[str, "DefaultType"]
+    index: Union[str, "DefaultType"]
+    path: Union[str, "InstrumentedField", "DefaultType"]
+    routing: Union[str, "DefaultType"]
+
+    def __init__(
+        self,
+        *,
+        id: Union[str, "DefaultType"] = DEFAULT,
+        index: Union[str, "DefaultType"] = DEFAULT,
+        path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        routing: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if id != DEFAULT:
+            kwargs["id"] = id
+        if index != DEFAULT:
+            kwargs["index"] = index
+        if path != DEFAULT:
+            kwargs["path"] = str(path)
+        if routing != DEFAULT:
+            kwargs["routing"] = routing
+        super().__init__(kwargs)
 
 
 class FieldCollapse(AttrDict[Any]):
@@ -1217,7 +1781,9 @@ class FieldCollapse(AttrDict[Any]):
     """
 
     field: Union[str, "InstrumentedField", "DefaultType"]
-    inner_hits: Union["i.InnerHits", List["i.InnerHits"], Dict[str, Any], "DefaultType"]
+    inner_hits: Union[
+        "i.InnerHits", Sequence["i.InnerHits"], Dict[str, Any], "DefaultType"
+    ]
     max_concurrent_group_searches: Union[int, "DefaultType"]
     collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"]
 
@@ -1226,7 +1792,7 @@ class FieldCollapse(AttrDict[Any]):
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         inner_hits: Union[
-            "i.InnerHits", List["i.InnerHits"], Dict[str, Any], "DefaultType"
+            "i.InnerHits", Sequence["i.InnerHits"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         max_concurrent_group_searches: Union[int, "DefaultType"] = DEFAULT,
         collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
@@ -1352,8 +1918,8 @@ class HighlightBase(AttrDict[Any]):
     options: Union[Mapping[str, Any], "DefaultType"]
     order: Union[Literal["score"], "DefaultType"]
     phrase_limit: Union[int, "DefaultType"]
-    post_tags: Union[List[str], "DefaultType"]
-    pre_tags: Union[List[str], "DefaultType"]
+    post_tags: Union[Sequence[str], "DefaultType"]
+    pre_tags: Union[Sequence[str], "DefaultType"]
     require_field_match: Union[bool, "DefaultType"]
     tags_schema: Union[Literal["styled"], "DefaultType"]
 
@@ -1379,8 +1945,8 @@ class HighlightBase(AttrDict[Any]):
         options: Union[Mapping[str, Any], "DefaultType"] = DEFAULT,
         order: Union[Literal["score"], "DefaultType"] = DEFAULT,
         phrase_limit: Union[int, "DefaultType"] = DEFAULT,
-        post_tags: Union[List[str], "DefaultType"] = DEFAULT,
-        pre_tags: Union[List[str], "DefaultType"] = DEFAULT,
+        post_tags: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        pre_tags: Union[Sequence[str], "DefaultType"] = DEFAULT,
         require_field_match: Union[bool, "DefaultType"] = DEFAULT,
         tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -1434,6 +2000,65 @@ class Highlight(HighlightBase):
     """
     :arg encoder: No documentation available.
     :arg fields: (required) No documentation available.
+    :arg type: No documentation available.
+    :arg boundary_chars: A string that contains each boundary character.
+    :arg boundary_max_scan: How far to scan for boundary characters.
+    :arg boundary_scanner: Specifies how to break the highlighted
+        fragments: chars, sentence, or word. Only valid for the unified
+        and fvh highlighters. Defaults to `sentence` for the `unified`
+        highlighter. Defaults to `chars` for the `fvh` highlighter.
+    :arg boundary_scanner_locale: Controls which locale is used to search
+        for sentence and word boundaries. This parameter takes a form of a
+        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+    :arg force_source: No documentation available.
+    :arg fragmenter: Specifies how text should be broken up in highlight
+        snippets: `simple` or `span`. Only valid for the `plain`
+        highlighter.
+    :arg fragment_size: The size of the highlighted fragment in
+        characters.
+    :arg highlight_filter: No documentation available.
+    :arg highlight_query: Highlight matches for a query other than the
+        search query. This is especially useful if you use a rescore query
+        because those are not taken into account by highlighting by
+        default.
+    :arg max_fragment_length: No documentation available.
+    :arg max_analyzed_offset: If set to a non-negative value, highlighting
+        stops at this defined maximum limit. The rest of the text is not
+        processed, thus not highlighted and no error is returned The
+        `max_analyzed_offset` query setting does not override the
+        `index.highlight.max_analyzed_offset` setting, which prevails when
+        it’s set to lower value than the query setting.
+    :arg no_match_size: The amount of text you want to return from the
+        beginning of the field if there are no matching fragments to
+        highlight.
+    :arg number_of_fragments: The maximum number of fragments to return.
+        If the number of fragments is set to `0`, no fragments are
+        returned. Instead, the entire field contents are highlighted and
+        returned. This can be handy when you need to highlight short texts
+        such as a title or address, but fragmentation is not required. If
+        `number_of_fragments` is `0`, `fragment_size` is ignored.
+    :arg options: No documentation available.
+    :arg order: Sorts highlighted fragments by score when set to `score`.
+        By default, fragments will be output in the order they appear in
+        the field (order: `none`). Setting this option to `score` will
+        output the most relevant fragments first. Each highlighter applies
+        its own logic to compute relevancy scores.
+    :arg phrase_limit: Controls the number of matching phrases in a
+        document that are considered. Prevents the `fvh` highlighter from
+        analyzing too many phrases and consuming too much memory. When
+        using `matched_fields`, `phrase_limit` phrases per matched field
+        are considered. Raising the limit increases query time and
+        consumes more memory. Only supported by the `fvh` highlighter.
+    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg require_field_match: By default, only fields that contains a
+        query match are highlighted. Set to `false` to highlight all
+        fields.
+    :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
     encoder: Union[Literal["default", "html"], "DefaultType"]
@@ -1442,6 +2067,27 @@ class Highlight(HighlightBase):
         Dict[str, Any],
         "DefaultType",
     ]
+    type: Union[Literal["plain", "fvh", "unified"], "DefaultType"]
+    boundary_chars: Union[str, "DefaultType"]
+    boundary_max_scan: Union[int, "DefaultType"]
+    boundary_scanner: Union[Literal["chars", "sentence", "word"], "DefaultType"]
+    boundary_scanner_locale: Union[str, "DefaultType"]
+    force_source: Union[bool, "DefaultType"]
+    fragmenter: Union[Literal["simple", "span"], "DefaultType"]
+    fragment_size: Union[int, "DefaultType"]
+    highlight_filter: Union[bool, "DefaultType"]
+    highlight_query: Union[Query, "DefaultType"]
+    max_fragment_length: Union[int, "DefaultType"]
+    max_analyzed_offset: Union[int, "DefaultType"]
+    no_match_size: Union[int, "DefaultType"]
+    number_of_fragments: Union[int, "DefaultType"]
+    options: Union[Mapping[str, Any], "DefaultType"]
+    order: Union[Literal["score"], "DefaultType"]
+    phrase_limit: Union[int, "DefaultType"]
+    post_tags: Union[Sequence[str], "DefaultType"]
+    pre_tags: Union[Sequence[str], "DefaultType"]
+    require_field_match: Union[bool, "DefaultType"]
+    tags_schema: Union[Literal["styled"], "DefaultType"]
 
     def __init__(
         self,
@@ -1452,12 +2098,77 @@ class Highlight(HighlightBase):
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
+        type: Union[Literal["plain", "fvh", "unified"], "DefaultType"] = DEFAULT,
+        boundary_chars: Union[str, "DefaultType"] = DEFAULT,
+        boundary_max_scan: Union[int, "DefaultType"] = DEFAULT,
+        boundary_scanner: Union[
+            Literal["chars", "sentence", "word"], "DefaultType"
+        ] = DEFAULT,
+        boundary_scanner_locale: Union[str, "DefaultType"] = DEFAULT,
+        force_source: Union[bool, "DefaultType"] = DEFAULT,
+        fragmenter: Union[Literal["simple", "span"], "DefaultType"] = DEFAULT,
+        fragment_size: Union[int, "DefaultType"] = DEFAULT,
+        highlight_filter: Union[bool, "DefaultType"] = DEFAULT,
+        highlight_query: Union[Query, "DefaultType"] = DEFAULT,
+        max_fragment_length: Union[int, "DefaultType"] = DEFAULT,
+        max_analyzed_offset: Union[int, "DefaultType"] = DEFAULT,
+        no_match_size: Union[int, "DefaultType"] = DEFAULT,
+        number_of_fragments: Union[int, "DefaultType"] = DEFAULT,
+        options: Union[Mapping[str, Any], "DefaultType"] = DEFAULT,
+        order: Union[Literal["score"], "DefaultType"] = DEFAULT,
+        phrase_limit: Union[int, "DefaultType"] = DEFAULT,
+        post_tags: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        pre_tags: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        require_field_match: Union[bool, "DefaultType"] = DEFAULT,
+        tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if encoder != DEFAULT:
             kwargs["encoder"] = encoder
         if fields != DEFAULT:
             kwargs["fields"] = str(fields)
+        if type != DEFAULT:
+            kwargs["type"] = type
+        if boundary_chars != DEFAULT:
+            kwargs["boundary_chars"] = boundary_chars
+        if boundary_max_scan != DEFAULT:
+            kwargs["boundary_max_scan"] = boundary_max_scan
+        if boundary_scanner != DEFAULT:
+            kwargs["boundary_scanner"] = boundary_scanner
+        if boundary_scanner_locale != DEFAULT:
+            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
+        if force_source != DEFAULT:
+            kwargs["force_source"] = force_source
+        if fragmenter != DEFAULT:
+            kwargs["fragmenter"] = fragmenter
+        if fragment_size != DEFAULT:
+            kwargs["fragment_size"] = fragment_size
+        if highlight_filter != DEFAULT:
+            kwargs["highlight_filter"] = highlight_filter
+        if highlight_query != DEFAULT:
+            kwargs["highlight_query"] = highlight_query
+        if max_fragment_length != DEFAULT:
+            kwargs["max_fragment_length"] = max_fragment_length
+        if max_analyzed_offset != DEFAULT:
+            kwargs["max_analyzed_offset"] = max_analyzed_offset
+        if no_match_size != DEFAULT:
+            kwargs["no_match_size"] = no_match_size
+        if number_of_fragments != DEFAULT:
+            kwargs["number_of_fragments"] = number_of_fragments
+        if options != DEFAULT:
+            kwargs["options"] = options
+        if order != DEFAULT:
+            kwargs["order"] = order
+        if phrase_limit != DEFAULT:
+            kwargs["phrase_limit"] = phrase_limit
+        if post_tags != DEFAULT:
+            kwargs["post_tags"] = post_tags
+        if pre_tags != DEFAULT:
+            kwargs["pre_tags"] = pre_tags
+        if require_field_match != DEFAULT:
+            kwargs["require_field_match"] = require_field_match
+        if tags_schema != DEFAULT:
+            kwargs["tags_schema"] = tags_schema
         super().__init__(**kwargs)
 
 
@@ -1527,12 +2238,12 @@ class SourceFilter(AttrDict[Any]):
 
     excludes: Union[
         Union[str, "InstrumentedField"],
-        List[Union[str, "InstrumentedField"]],
+        Sequence[Union[str, "InstrumentedField"]],
         "DefaultType",
     ]
     includes: Union[
         Union[str, "InstrumentedField"],
-        List[Union[str, "InstrumentedField"]],
+        Sequence[Union[str, "InstrumentedField"]],
         "DefaultType",
     ]
 
@@ -1541,12 +2252,12 @@ class SourceFilter(AttrDict[Any]):
         *,
         excludes: Union[
             Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
+            Sequence[Union[str, "InstrumentedField"]],
             "DefaultType",
         ] = DEFAULT,
         includes: Union[
             Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
+            Sequence[Union[str, "InstrumentedField"]],
             "DefaultType",
         ] = DEFAULT,
         **kwargs: Any,
@@ -1571,7 +2282,7 @@ class IntervalsAllOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
+    intervals: Union[Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
     max_gaps: Union[int, "DefaultType"]
     ordered: Union[bool, "DefaultType"]
     filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
@@ -1580,7 +2291,7 @@ class IntervalsAllOf(AttrDict[Any]):
         self,
         *,
         intervals: Union[
-            List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
+            Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         max_gaps: Union[int, "DefaultType"] = DEFAULT,
         ordered: Union[bool, "DefaultType"] = DEFAULT,
@@ -1604,14 +2315,14 @@ class IntervalsAnyOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
+    intervals: Union[Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
     filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         intervals: Union[
-            List["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
+            Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -1812,22 +2523,36 @@ class SpanContainingQuery(QueryBase):
         that contain matches from `little` are returned.
     :arg little: (required) Can be any span query. Matching spans from
         `big` that contain matches from `little` are returned.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
     little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
         big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if big != DEFAULT:
             kwargs["big"] = big
         if little != DEFAULT:
             kwargs["little"] = little
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1835,22 +2560,36 @@ class SpanFieldMaskingQuery(QueryBase):
     """
     :arg field: (required) No documentation available.
     :arg query: (required) No documentation available.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     field: Union[str, "InstrumentedField", "DefaultType"]
     query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if field != DEFAULT:
             kwargs["field"] = str(field)
         if query != DEFAULT:
             kwargs["query"] = query
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1859,22 +2598,36 @@ class SpanFirstQuery(QueryBase):
     :arg end: (required) Controls the maximum end position permitted in a
         match.
     :arg match: (required) Can be any other span type query.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     end: Union[int, "DefaultType"]
     match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
         end: Union[int, "DefaultType"] = DEFAULT,
         match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if end != DEFAULT:
             kwargs["end"] = end
         if match != DEFAULT:
             kwargs["match"] = match
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1882,13 +2635,32 @@ class SpanMultiTermQuery(QueryBase):
     """
     :arg match: (required) Should be a multi term query (one of
         `wildcard`, `fuzzy`, `prefix`, `range`, or `regexp` query).
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     match: Union[Query, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
-    def __init__(self, *, match: Union[Query, "DefaultType"] = DEFAULT, **kwargs: Any):
+    def __init__(
+        self,
+        *,
+        match: Union[Query, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
         if match != DEFAULT:
             kwargs["match"] = match
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1898,18 +2670,30 @@ class SpanNearQuery(QueryBase):
     :arg in_order: Controls whether matches are required to be in-order.
     :arg slop: Controls the maximum number of intervening unmatched
         positions permitted.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
-    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"]
+    clauses: Union[Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"]
     in_order: Union[bool, "DefaultType"]
     slop: Union[int, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        clauses: Union[
+            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         in_order: Union[bool, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if clauses != DEFAULT:
@@ -1918,6 +2702,10 @@ class SpanNearQuery(QueryBase):
             kwargs["in_order"] = in_order
         if slop != DEFAULT:
             kwargs["slop"] = slop
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1933,6 +2721,12 @@ class SpanNotQuery(QueryBase):
         overlap with the exclude span.
     :arg pre: The number of tokens before the include span that can’t have
         overlap with the exclude span.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     dist: Union[int, "DefaultType"]
@@ -1940,6 +2734,8 @@ class SpanNotQuery(QueryBase):
     include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
     post: Union[int, "DefaultType"]
     pre: Union[int, "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
@@ -1949,6 +2745,8 @@ class SpanNotQuery(QueryBase):
         include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         post: Union[int, "DefaultType"] = DEFAULT,
         pre: Union[int, "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if dist != DEFAULT:
@@ -1961,24 +2759,44 @@ class SpanNotQuery(QueryBase):
             kwargs["post"] = post
         if pre != DEFAULT:
             kwargs["pre"] = pre
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
 class SpanOrQuery(QueryBase):
     """
     :arg clauses: (required) Array of one or more other span type queries.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
-    clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"]
+    clauses: Union[Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        clauses: Union[List["i.SpanQuery"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        clauses: Union[
+            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if clauses != DEFAULT:
             kwargs["clauses"] = clauses
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -1988,22 +2806,36 @@ class SpanWithinQuery(QueryBase):
         `little` that are enclosed within `big` are returned.
     :arg little: (required) Can be any span query. Matching spans from
         `little` that are enclosed within `big` are returned.
+    :arg boost: Floating point number used to decrease or increase the
+        relevance scores of the query. Boost values are relative to the
+        default value of 1.0. A boost value between 0 and 1.0 decreases
+        the relevance score. A value greater than 1.0 increases the
+        relevance score.
+    :arg _name: No documentation available.
     """
 
     big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
     little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    boost: Union[float, "DefaultType"]
+    _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
         big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        boost: Union[float, "DefaultType"] = DEFAULT,
+        _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if big != DEFAULT:
             kwargs["big"] = big
         if little != DEFAULT:
             kwargs["little"] = little
+        if boost != DEFAULT:
+            kwargs["boost"] = boost
+        if _name != DEFAULT:
+            kwargs["_name"] = _name
         super().__init__(**kwargs)
 
 
@@ -2012,15 +2844,95 @@ class HighlightField(HighlightBase):
     :arg fragment_offset: No documentation available.
     :arg matched_fields: No documentation available.
     :arg analyzer: No documentation available.
+    :arg type: No documentation available.
+    :arg boundary_chars: A string that contains each boundary character.
+    :arg boundary_max_scan: How far to scan for boundary characters.
+    :arg boundary_scanner: Specifies how to break the highlighted
+        fragments: chars, sentence, or word. Only valid for the unified
+        and fvh highlighters. Defaults to `sentence` for the `unified`
+        highlighter. Defaults to `chars` for the `fvh` highlighter.
+    :arg boundary_scanner_locale: Controls which locale is used to search
+        for sentence and word boundaries. This parameter takes a form of a
+        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+    :arg force_source: No documentation available.
+    :arg fragmenter: Specifies how text should be broken up in highlight
+        snippets: `simple` or `span`. Only valid for the `plain`
+        highlighter.
+    :arg fragment_size: The size of the highlighted fragment in
+        characters.
+    :arg highlight_filter: No documentation available.
+    :arg highlight_query: Highlight matches for a query other than the
+        search query. This is especially useful if you use a rescore query
+        because those are not taken into account by highlighting by
+        default.
+    :arg max_fragment_length: No documentation available.
+    :arg max_analyzed_offset: If set to a non-negative value, highlighting
+        stops at this defined maximum limit. The rest of the text is not
+        processed, thus not highlighted and no error is returned The
+        `max_analyzed_offset` query setting does not override the
+        `index.highlight.max_analyzed_offset` setting, which prevails when
+        it’s set to lower value than the query setting.
+    :arg no_match_size: The amount of text you want to return from the
+        beginning of the field if there are no matching fragments to
+        highlight.
+    :arg number_of_fragments: The maximum number of fragments to return.
+        If the number of fragments is set to `0`, no fragments are
+        returned. Instead, the entire field contents are highlighted and
+        returned. This can be handy when you need to highlight short texts
+        such as a title or address, but fragmentation is not required. If
+        `number_of_fragments` is `0`, `fragment_size` is ignored.
+    :arg options: No documentation available.
+    :arg order: Sorts highlighted fragments by score when set to `score`.
+        By default, fragments will be output in the order they appear in
+        the field (order: `none`). Setting this option to `score` will
+        output the most relevant fragments first. Each highlighter applies
+        its own logic to compute relevancy scores.
+    :arg phrase_limit: Controls the number of matching phrases in a
+        document that are considered. Prevents the `fvh` highlighter from
+        analyzing too many phrases and consuming too much memory. When
+        using `matched_fields`, `phrase_limit` phrases per matched field
+        are considered. Raising the limit increases query time and
+        consumes more memory. Only supported by the `fvh` highlighter.
+    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg require_field_match: By default, only fields that contains a
+        query match are highlighted. Set to `false` to highlight all
+        fields.
+    :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
     fragment_offset: Union[int, "DefaultType"]
     matched_fields: Union[
         Union[str, "InstrumentedField"],
-        List[Union[str, "InstrumentedField"]],
+        Sequence[Union[str, "InstrumentedField"]],
         "DefaultType",
     ]
     analyzer: Union[str, Dict[str, Any], "DefaultType"]
+    type: Union[Literal["plain", "fvh", "unified"], "DefaultType"]
+    boundary_chars: Union[str, "DefaultType"]
+    boundary_max_scan: Union[int, "DefaultType"]
+    boundary_scanner: Union[Literal["chars", "sentence", "word"], "DefaultType"]
+    boundary_scanner_locale: Union[str, "DefaultType"]
+    force_source: Union[bool, "DefaultType"]
+    fragmenter: Union[Literal["simple", "span"], "DefaultType"]
+    fragment_size: Union[int, "DefaultType"]
+    highlight_filter: Union[bool, "DefaultType"]
+    highlight_query: Union[Query, "DefaultType"]
+    max_fragment_length: Union[int, "DefaultType"]
+    max_analyzed_offset: Union[int, "DefaultType"]
+    no_match_size: Union[int, "DefaultType"]
+    number_of_fragments: Union[int, "DefaultType"]
+    options: Union[Mapping[str, Any], "DefaultType"]
+    order: Union[Literal["score"], "DefaultType"]
+    phrase_limit: Union[int, "DefaultType"]
+    post_tags: Union[Sequence[str], "DefaultType"]
+    pre_tags: Union[Sequence[str], "DefaultType"]
+    require_field_match: Union[bool, "DefaultType"]
+    tags_schema: Union[Literal["styled"], "DefaultType"]
 
     def __init__(
         self,
@@ -2028,10 +2940,33 @@ class HighlightField(HighlightBase):
         fragment_offset: Union[int, "DefaultType"] = DEFAULT,
         matched_fields: Union[
             Union[str, "InstrumentedField"],
-            List[Union[str, "InstrumentedField"]],
+            Sequence[Union[str, "InstrumentedField"]],
             "DefaultType",
         ] = DEFAULT,
         analyzer: Union[str, Dict[str, Any], "DefaultType"] = DEFAULT,
+        type: Union[Literal["plain", "fvh", "unified"], "DefaultType"] = DEFAULT,
+        boundary_chars: Union[str, "DefaultType"] = DEFAULT,
+        boundary_max_scan: Union[int, "DefaultType"] = DEFAULT,
+        boundary_scanner: Union[
+            Literal["chars", "sentence", "word"], "DefaultType"
+        ] = DEFAULT,
+        boundary_scanner_locale: Union[str, "DefaultType"] = DEFAULT,
+        force_source: Union[bool, "DefaultType"] = DEFAULT,
+        fragmenter: Union[Literal["simple", "span"], "DefaultType"] = DEFAULT,
+        fragment_size: Union[int, "DefaultType"] = DEFAULT,
+        highlight_filter: Union[bool, "DefaultType"] = DEFAULT,
+        highlight_query: Union[Query, "DefaultType"] = DEFAULT,
+        max_fragment_length: Union[int, "DefaultType"] = DEFAULT,
+        max_analyzed_offset: Union[int, "DefaultType"] = DEFAULT,
+        no_match_size: Union[int, "DefaultType"] = DEFAULT,
+        number_of_fragments: Union[int, "DefaultType"] = DEFAULT,
+        options: Union[Mapping[str, Any], "DefaultType"] = DEFAULT,
+        order: Union[Literal["score"], "DefaultType"] = DEFAULT,
+        phrase_limit: Union[int, "DefaultType"] = DEFAULT,
+        post_tags: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        pre_tags: Union[Sequence[str], "DefaultType"] = DEFAULT,
+        require_field_match: Union[bool, "DefaultType"] = DEFAULT,
+        tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if fragment_offset != DEFAULT:
@@ -2040,6 +2975,48 @@ class HighlightField(HighlightBase):
             kwargs["matched_fields"] = str(matched_fields)
         if analyzer != DEFAULT:
             kwargs["analyzer"] = analyzer
+        if type != DEFAULT:
+            kwargs["type"] = type
+        if boundary_chars != DEFAULT:
+            kwargs["boundary_chars"] = boundary_chars
+        if boundary_max_scan != DEFAULT:
+            kwargs["boundary_max_scan"] = boundary_max_scan
+        if boundary_scanner != DEFAULT:
+            kwargs["boundary_scanner"] = boundary_scanner
+        if boundary_scanner_locale != DEFAULT:
+            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
+        if force_source != DEFAULT:
+            kwargs["force_source"] = force_source
+        if fragmenter != DEFAULT:
+            kwargs["fragmenter"] = fragmenter
+        if fragment_size != DEFAULT:
+            kwargs["fragment_size"] = fragment_size
+        if highlight_filter != DEFAULT:
+            kwargs["highlight_filter"] = highlight_filter
+        if highlight_query != DEFAULT:
+            kwargs["highlight_query"] = highlight_query
+        if max_fragment_length != DEFAULT:
+            kwargs["max_fragment_length"] = max_fragment_length
+        if max_analyzed_offset != DEFAULT:
+            kwargs["max_analyzed_offset"] = max_analyzed_offset
+        if no_match_size != DEFAULT:
+            kwargs["no_match_size"] = no_match_size
+        if number_of_fragments != DEFAULT:
+            kwargs["number_of_fragments"] = number_of_fragments
+        if options != DEFAULT:
+            kwargs["options"] = options
+        if order != DEFAULT:
+            kwargs["order"] = order
+        if phrase_limit != DEFAULT:
+            kwargs["phrase_limit"] = phrase_limit
+        if post_tags != DEFAULT:
+            kwargs["post_tags"] = post_tags
+        if pre_tags != DEFAULT:
+            kwargs["pre_tags"] = pre_tags
+        if require_field_match != DEFAULT:
+            kwargs["require_field_match"] = require_field_match
+        if tags_schema != DEFAULT:
+            kwargs["tags_schema"] = tags_schema
         super().__init__(**kwargs)
 
 

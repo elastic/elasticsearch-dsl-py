@@ -30,6 +30,7 @@ from typing import (
     MutableMapping,
     Optional,
     Protocol,
+    Sequence,
     TypeVar,
     Union,
     cast,
@@ -175,11 +176,18 @@ class {{ k.name }}({{ parent }}):
 
     def __init__(
         self,
-        {% if k.args and not k.is_single_field and not k.is_multi_field %}
+        {% for arg in k.args %}
+        {% if arg.positional %}
+        {{ arg.name }}: {{ arg.type }} = DEFAULT,
+        {% endif %}
+        {% endfor %}
+        {% if k.args and not k.args[-1].positional %}
         *,
         {% endif %}
         {% for arg in k.args %}
+        {% if not arg.positional %}
         {{ arg.name }}: {{ arg.type }} = DEFAULT,
+        {% endif %}
         {% endfor %}
         **kwargs: Any
     ):
@@ -198,11 +206,11 @@ class {{ k.name }}({{ parent }}):
                 kwargs[str(field)] = value
         {% endif %}
         super().__init__(
-            {% if not k.is_single_field and not k.is_multi_field %}
             {% for arg in k.args %}
+            {% if not arg.positional %}
             {{ arg.name }}={{ arg.name }},
-            {% endfor %}
             {% endif %}
+            {% endfor %}
             **kwargs
         )
 
