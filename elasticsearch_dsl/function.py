@@ -134,8 +134,12 @@ class RandomScore(ScoreFunction):
     name = "random_score"
 
 
-class FieldValueFactor(ScoreFunction):
+class FieldValueFactorScore(ScoreFunction):
     name = "field_value_factor"
+
+
+class FieldValueFactor(FieldValueFactorScore):  # alias of the above
+    pass
 
 
 class Linear(ScoreFunction):

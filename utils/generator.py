@@ -211,8 +211,6 @@ class ElasticsearchSchema:
                     return '"wrappers.Range[Any]"', None
                 elif schema_type["name"]["name"].endswith("ScoreFunction"):
                     name = schema_type["name"]["name"][:-8]
-                    if name == "FieldValueFactorScore":
-                        name = "FieldValueFactor"  # Python DSL uses different name
                     return f'"f.{name}"', None
                 elif schema_type["name"]["name"].endswith("DecayFunction"):
                     return '"f.DecayFunction"', None

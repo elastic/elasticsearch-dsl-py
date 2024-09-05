@@ -173,7 +173,7 @@ class FunctionScoreContainer(AttrDict[Any]):
     exp: Union["f.DecayFunction", "DefaultType"]
     gauss: Union["f.DecayFunction", "DefaultType"]
     linear: Union["f.DecayFunction", "DefaultType"]
-    field_value_factor: Union["f.FieldValueFactor", "DefaultType"]
+    field_value_factor: Union["f.FieldValueFactorScore", "DefaultType"]
     random_score: Union["f.RandomScore", "DefaultType"]
     script_score: Union["f.ScriptScore", "DefaultType"]
     filter: Union[Query, "DefaultType"]
@@ -185,7 +185,7 @@ class FunctionScoreContainer(AttrDict[Any]):
         exp: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
         gauss: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
         linear: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
-        field_value_factor: Union["f.FieldValueFactor", "DefaultType"] = DEFAULT,
+        field_value_factor: Union["f.FieldValueFactorScore", "DefaultType"] = DEFAULT,
         random_score: Union["f.RandomScore", "DefaultType"] = DEFAULT,
         script_score: Union["f.ScriptScore", "DefaultType"] = DEFAULT,
         filter: Union[Query, "DefaultType"] = DEFAULT,
