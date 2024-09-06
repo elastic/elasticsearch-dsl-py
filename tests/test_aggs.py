@@ -476,3 +476,12 @@ def test_top_metrics_aggregation() -> None:
     assert {
         "top_metrics": {"metrics": {"field": "m"}, "sort": {"s": "desc"}}
     } == a.to_dict()
+
+
+def test_bucket_agg_with_filter() -> None:
+    b = aggs.Filter(query.Terms(something=[1, 2, 3]))
+
+    a = aggs.Terms(field="some_field", size=100)
+    a.bucket("b", b)
+
+    assert a.aggs["b"] == a["b"]  # a.aggs['b'] threw exception before patch #1902
