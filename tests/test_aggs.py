@@ -484,4 +484,4 @@ def test_bucket_agg_with_filter() -> None:
     a = aggs.Terms(field="some_field", size=100)
     a.bucket("b", b)
 
-    assert a.aggs["b"] == a["b"]  # a.aggs['b'] threw exception before patch #1902
+    assert a.aggs["b"] == a["b"]  # a['b'] threw exception before patch #1902
