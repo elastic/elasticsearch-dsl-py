@@ -168,7 +168,7 @@ class Bool(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "bool"
@@ -328,7 +328,7 @@ class Boosting(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "boosting"
@@ -359,8 +359,6 @@ class Boosting(Query):
 
 class Common(Query):
     """
-    No documentation available.
-
     :arg _field: The field to use in this query.
     :arg _value: The query value for the field.
     """
@@ -405,7 +403,7 @@ class CombinedFields(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "combined_fields"
@@ -452,7 +450,7 @@ class ConstantScore(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "constant_score"
@@ -490,7 +488,7 @@ class DisMax(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "dis_max"
@@ -540,7 +538,7 @@ class DistanceFeature(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "distance_feature"
@@ -570,7 +568,7 @@ class Exists(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "exists"
@@ -607,7 +605,7 @@ class FunctionScore(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "function_score"
@@ -682,7 +680,7 @@ class GeoBoundingBox(Query):
 
     :arg _field: The field to use in this query.
     :arg _value: The query value for the field.
-    :arg type: No documentation available.
+    :arg type:
     :arg validation_method: Set to `IGNORE_MALFORMED` to accept geo points
         with invalid latitude or longitude. Set to `COERCE` to also try to
         infer correct latitude or longitude.
@@ -694,7 +692,7 @@ class GeoBoundingBox(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "geo_bounding_box"
@@ -756,7 +754,7 @@ class GeoDistance(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "geo_distance"
@@ -798,18 +796,16 @@ class GeoDistance(Query):
 
 class GeoPolygon(Query):
     """
-    No documentation available.
-
     :arg _field: The field to use in this query.
     :arg _value: The query value for the field.
-    :arg validation_method: No documentation available.
-    :arg ignore_unmapped: No documentation available.
+    :arg validation_method:
+    :arg ignore_unmapped:
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "geo_polygon"
@@ -855,7 +851,7 @@ class GeoShape(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "geo_shape"
@@ -907,7 +903,7 @@ class HasChild(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "has_child"
@@ -967,7 +963,7 @@ class HasParent(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "has_parent"
@@ -1010,7 +1006,7 @@ class Ids(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "ids"
@@ -1068,7 +1064,7 @@ class Knn(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "knn"
@@ -1137,7 +1133,7 @@ class MatchAll(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "match_all"
@@ -1202,7 +1198,7 @@ class MatchNone(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "match_none"
@@ -1313,19 +1309,19 @@ class MoreLikeThis(Query):
         are ignored from the input document.
     :arg min_word_length: The minimum word length below which the terms
         are ignored.
-    :arg routing: No documentation available.
+    :arg routing:
     :arg stop_words: An array of stop words. Any word in this set is
         ignored.
     :arg unlike: Used in combination with `like` to exclude documents that
         match a set of terms.
-    :arg version: No documentation available.
-    :arg version_type: No documentation available.
+    :arg version:
+    :arg version_type:
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "more_like_this"
@@ -1406,7 +1402,7 @@ class MultiMatch(Query):
         into tokens.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
         queries are automatically created for multi-term synonyms.
-    :arg cutoff_frequency: No documentation available.
+    :arg cutoff_frequency:
     :arg fields: The fields to be queried. Defaults to the
         `index.query.default_field` index settings, which in turn defaults
         to `*`.
@@ -1439,7 +1435,7 @@ class MultiMatch(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "multi_match"
@@ -1524,7 +1520,7 @@ class Nested(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "nested"
@@ -1571,7 +1567,7 @@ class ParentId(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "parent_id"
@@ -1616,7 +1612,7 @@ class Percolate(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "percolate"
@@ -1669,7 +1665,7 @@ class Pinned(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "pinned"
@@ -1738,7 +1734,7 @@ class QueryString(Query):
         the query string if no operators are specified.
     :arg enable_position_increments: If `true`, enable position increments
         in queries constructed from a `query_string` search.
-    :arg escape: No documentation available.
+    :arg escape:
     :arg fields: Array of fields to search. Supports wildcards (`*`).
     :arg fuzziness: Maximum edit distance allowed for fuzzy matching.
     :arg fuzzy_max_expansions: Maximum number of terms to which the query
@@ -1774,7 +1770,7 @@ class QueryString(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "query_string"
@@ -1896,7 +1892,7 @@ class RankFeature(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "rank_feature"
@@ -1956,17 +1952,15 @@ class Regexp(Query):
 
 class Rule(Query):
     """
-    No documentation available.
-
-    :arg organic: (required) No documentation available.
-    :arg ruleset_ids: (required) No documentation available.
-    :arg match_criteria: (required) No documentation available.
+    :arg organic: (required)
+    :arg ruleset_ids: (required)
+    :arg match_criteria: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "rule"
@@ -2006,7 +2000,7 @@ class Script(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "script"
@@ -2037,7 +2031,7 @@ class ScriptScore(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "script_score"
@@ -2077,7 +2071,7 @@ class Semantic(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "semantic"
@@ -2107,7 +2101,7 @@ class Shape(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "shape"
@@ -2169,7 +2163,7 @@ class SimpleQueryString(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "simple_query_string"
@@ -2231,7 +2225,7 @@ class SpanContaining(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_containing"
@@ -2253,14 +2247,14 @@ class SpanFieldMasking(Query):
     Wrapper to allow span queries to participate in composite single-field
     span queries by _lying_ about their search field.
 
-    :arg field: (required) No documentation available.
-    :arg query: (required) No documentation available.
+    :arg field: (required)
+    :arg query: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_field_masking"
@@ -2289,7 +2283,7 @@ class SpanFirst(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_first"
@@ -2319,7 +2313,7 @@ class SpanMulti(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_multi"
@@ -2353,7 +2347,7 @@ class SpanNear(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_near"
@@ -2401,7 +2395,7 @@ class SpanNot(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_not"
@@ -2440,7 +2434,7 @@ class SpanOr(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_or"
@@ -2492,7 +2486,7 @@ class SpanWithin(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "span_within"
@@ -2543,7 +2537,7 @@ class SparseVector(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "sparse_vector"
@@ -2612,7 +2606,7 @@ class Terms(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "terms"
@@ -2747,7 +2741,7 @@ class Wrapper(Query):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "wrapper"
@@ -2765,15 +2759,13 @@ class Wrapper(Query):
 
 class Type(Query):
     """
-    No documentation available.
-
-    :arg value: (required) No documentation available.
+    :arg value: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     name = "type"

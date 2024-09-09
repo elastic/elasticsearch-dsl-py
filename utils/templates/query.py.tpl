@@ -153,7 +153,9 @@ class {{ k.name }}({{ parent }}):
     {{ line }}
     {% endfor %}
     {% if k.args %}
+    {% if k.docstring %}
 
+    {% endif %}
     {% for kwarg in k.args %}
     {% for line in kwarg.doc %}
     {{ line }}

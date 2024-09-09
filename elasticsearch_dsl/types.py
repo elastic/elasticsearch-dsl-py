@@ -33,7 +33,7 @@ class QueryBase(AttrDict[Any]):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     boost: Union[float, "DefaultType"]
@@ -55,18 +55,18 @@ class QueryBase(AttrDict[Any]):
 
 class CommonTermsQuery(QueryBase):
     """
-    :arg analyzer: No documentation available.
-    :arg cutoff_frequency: No documentation available.
-    :arg high_freq_operator: No documentation available.
-    :arg low_freq_operator: No documentation available.
-    :arg minimum_should_match: No documentation available.
-    :arg query: (required) No documentation available.
+    :arg analyzer:
+    :arg cutoff_frequency:
+    :arg high_freq_operator:
+    :arg low_freq_operator:
+    :arg minimum_should_match:
+    :arg query: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -112,10 +112,10 @@ class CommonTermsQuery(QueryBase):
 
 class CoordsGeoBounds(AttrDict[Any]):
     """
-    :arg top: (required) No documentation available.
-    :arg bottom: (required) No documentation available.
-    :arg left: (required) No documentation available.
-    :arg right: (required) No documentation available.
+    :arg top: (required)
+    :arg bottom: (required)
+    :arg left: (required)
+    :arg right: (required)
     """
 
     top: Union[float, "DefaultType"]
@@ -164,8 +164,8 @@ class FunctionScoreContainer(AttrDict[Any]):
     :arg script_score: Enables you to wrap another query and customize the
         scoring of it optionally with a computation derived from other
         numeric field values in the doc using a script expression.
-    :arg filter: No documentation available.
-    :arg weight: No documentation available.
+    :arg filter:
+    :arg weight:
     """
 
     exp: Union["function.DecayFunction", "DefaultType"]
@@ -227,7 +227,7 @@ class FuzzyQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     max_expansions: Union[int, "DefaultType"]
@@ -273,7 +273,7 @@ class FuzzyQuery(QueryBase):
 
 class GeoHashLocation(AttrDict[Any]):
     """
-    :arg geohash: (required) No documentation available.
+    :arg geohash: (required)
     """
 
     geohash: Union[str, "DefaultType"]
@@ -286,7 +286,7 @@ class GeoHashLocation(AttrDict[Any]):
 
 class GeoPolygonPoints(AttrDict[Any]):
     """
-    :arg points: (required) No documentation available.
+    :arg points: (required)
     """
 
     points: Union[
@@ -323,7 +323,7 @@ class GeoPolygonPoints(AttrDict[Any]):
 
 class GeoShapeFieldQuery(AttrDict[Any]):
     """
-    :arg shape: No documentation available.
+    :arg shape:
     :arg indexed_shape: Query using an indexed shape retrieved from the
         the specified document and path.
     :arg relation: Spatial relation operator used to search a geo field.
@@ -363,20 +363,20 @@ class InnerHits(AttrDict[Any]):
         hits.
     :arg size: The maximum number of hits to return per `inner_hits`.
     :arg from: Inner hit starting document offset.
-    :arg collapse: No documentation available.
-    :arg docvalue_fields: No documentation available.
-    :arg explain: No documentation available.
-    :arg highlight: No documentation available.
-    :arg ignore_unmapped: No documentation available.
-    :arg script_fields: No documentation available.
-    :arg seq_no_primary_term: No documentation available.
-    :arg fields: No documentation available.
+    :arg collapse:
+    :arg docvalue_fields:
+    :arg explain:
+    :arg highlight:
+    :arg ignore_unmapped:
+    :arg script_fields:
+    :arg seq_no_primary_term:
+    :arg fields:
     :arg sort: How the inner hits should be sorted per `inner_hits`. By
         default, inner hits are sorted by score.
-    :arg _source: No documentation available.
-    :arg stored_fields: No documentation available.
-    :arg track_scores: No documentation available.
-    :arg version: No documentation available.
+    :arg _source:
+    :arg stored_fields:
+    :arg track_scores:
+    :arg version:
     """
 
     name: Union[str, "DefaultType"]
@@ -507,7 +507,7 @@ class IntervalsQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     all_of: Union["types.IntervalsAllOf", Dict[str, Any], "DefaultType"]
@@ -579,13 +579,13 @@ class LatLonGeoLocation(AttrDict[Any]):
 class LikeDocument(AttrDict[Any]):
     """
     :arg doc: A document not present in the index.
-    :arg fields: No documentation available.
+    :arg fields:
     :arg _id: ID of a document.
     :arg _index: Index of a document.
     :arg per_field_analyzer: Overrides the default analyzer.
-    :arg routing: No documentation available.
-    :arg version: No documentation available.
-    :arg version_type: No documentation available.
+    :arg routing:
+    :arg version:
+    :arg version_type:
     """
 
     doc: Any
@@ -671,7 +671,7 @@ class MatchBoolPrefixQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -744,7 +744,7 @@ class MatchPhrasePrefixQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -800,7 +800,7 @@ class MatchPhraseQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -842,7 +842,7 @@ class MatchQuery(QueryBase):
         into tokens.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
         queries are automatically created for multi-term synonyms.
-    :arg cutoff_frequency: No documentation available.
+    :arg cutoff_frequency:
     :arg fuzziness: Maximum edit distance allowed for matching.
     :arg fuzzy_rewrite: Method used to rewrite the query.
     :arg fuzzy_transpositions: If `true`, edits for fuzzy matching include
@@ -868,7 +868,7 @@ class MatchQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     analyzer: Union[str, "DefaultType"]
@@ -979,7 +979,7 @@ class PrefixQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     rewrite: Union[str, "DefaultType"]
@@ -1013,7 +1013,7 @@ class PrefixQuery(QueryBase):
 
 class QueryVectorBuilder(AttrDict[Any]):
     """
-    :arg text_embedding: No documentation available.
+    :arg text_embedding:
     """
 
     text_embedding: Union["types.TextEmbedding", Dict[str, Any], "DefaultType"]
@@ -1109,7 +1109,7 @@ class RegexpQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     case_insensitive: Union[bool, "DefaultType"]
@@ -1157,7 +1157,7 @@ class Script(AttrDict[Any]):
         script as variables. Use parameters instead of hard-coded values
         to decrease compile time.
     :arg lang: Specifies the language the script is written in.
-    :arg options: No documentation available.
+    :arg options:
     """
 
     source: Union[str, "DefaultType"]
@@ -1235,7 +1235,7 @@ class SpanQuery(AttrDict[Any]):
         across different fields.
     :arg span_first: Accepts another span query whose matches must appear
         within the first N positions of the field.
-    :arg span_gap: No documentation available.
+    :arg span_gap:
     :arg span_multi: Wraps a `term`, `range`, `prefix`, `wildcard`,
         `regexp`, or `fuzzy` query.
     :arg span_near: Accepts multiple span queries whose matches must be
@@ -1327,13 +1327,13 @@ class SpanQuery(AttrDict[Any]):
 
 class SpanTermQuery(QueryBase):
     """
-    :arg value: (required) No documentation available.
+    :arg value: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     value: Union[str, "DefaultType"]
@@ -1369,7 +1369,7 @@ class TermQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     value: Union[int, float, str, bool, None, Any, "DefaultType"]
@@ -1399,10 +1399,10 @@ class TermQuery(QueryBase):
 
 class TermsLookup(AttrDict[Any]):
     """
-    :arg index: (required) No documentation available.
-    :arg id: (required) No documentation available.
-    :arg path: (required) No documentation available.
-    :arg routing: No documentation available.
+    :arg index: (required)
+    :arg id: (required)
+    :arg path: (required)
+    :arg routing:
     """
 
     index: Union[str, "DefaultType"]
@@ -1443,7 +1443,7 @@ class TermsSetQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     minimum_should_match_field: Union[str, "InstrumentedField", "DefaultType"]
@@ -1489,7 +1489,7 @@ class TextExpansionQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     model_id: Union[str, "DefaultType"]
@@ -1557,8 +1557,8 @@ class TokenPruningConfig(AttrDict[Any]):
 
 class TopLeftBottomRightGeoBounds(AttrDict[Any]):
     """
-    :arg top_left: (required) No documentation available.
-    :arg bottom_right: (required) No documentation available.
+    :arg top_left: (required)
+    :arg bottom_right: (required)
     """
 
     top_left: Union[
@@ -1608,8 +1608,8 @@ class TopLeftBottomRightGeoBounds(AttrDict[Any]):
 
 class TopRightBottomLeftGeoBounds(AttrDict[Any]):
     """
-    :arg top_right: (required) No documentation available.
-    :arg bottom_left: (required) No documentation available.
+    :arg top_right: (required)
+    :arg bottom_left: (required)
     """
 
     top_right: Union[
@@ -1666,7 +1666,7 @@ class WeightedTokensQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     tokens: Union[Mapping[str, float], "DefaultType"]
@@ -1712,7 +1712,7 @@ class WildcardQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     case_insensitive: Union[bool, "DefaultType"]
@@ -1750,7 +1750,7 @@ class WildcardQuery(QueryBase):
 
 class WktGeoBounds(AttrDict[Any]):
     """
-    :arg wkt: (required) No documentation available.
+    :arg wkt: (required)
     """
 
     wkt: Union[str, "DefaultType"]
@@ -1800,7 +1800,7 @@ class FieldCollapse(AttrDict[Any]):
     :arg inner_hits: The number of inner hits and their sort order
     :arg max_concurrent_group_searches: The number of concurrent requests
         allowed to retrieve the inner_hits per group
-    :arg collapse: No documentation available.
+    :arg collapse:
     """
 
     field: Union[str, "InstrumentedField", "DefaultType"]
@@ -1840,7 +1840,7 @@ class FieldAndFormat(AttrDict[Any]):
     :arg field: (required) Wildcard pattern. The request returns values
         for field names matching this pattern.
     :arg format: Format in which the values are returned.
-    :arg include_unmapped: No documentation available.
+    :arg include_unmapped:
     """
 
     field: Union[str, "InstrumentedField", "DefaultType"]
@@ -1866,7 +1866,7 @@ class FieldAndFormat(AttrDict[Any]):
 
 class HighlightBase(AttrDict[Any]):
     """
-    :arg type: No documentation available.
+    :arg type:
     :arg boundary_chars: A string that contains each boundary character.
     :arg boundary_max_scan: How far to scan for boundary characters.
     :arg boundary_scanner: Specifies how to break the highlighted
@@ -1876,18 +1876,18 @@ class HighlightBase(AttrDict[Any]):
     :arg boundary_scanner_locale: Controls which locale is used to search
         for sentence and word boundaries. This parameter takes a form of a
         language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
-    :arg force_source: No documentation available.
+    :arg force_source:
     :arg fragmenter: Specifies how text should be broken up in highlight
         snippets: `simple` or `span`. Only valid for the `plain`
         highlighter.
     :arg fragment_size: The size of the highlighted fragment in
         characters.
-    :arg highlight_filter: No documentation available.
+    :arg highlight_filter:
     :arg highlight_query: Highlight matches for a query other than the
         search query. This is especially useful if you use a rescore query
         because those are not taken into account by highlighting by
         default.
-    :arg max_fragment_length: No documentation available.
+    :arg max_fragment_length:
     :arg max_analyzed_offset: If set to a non-negative value, highlighting
         stops at this defined maximum limit. The rest of the text is not
         processed, thus not highlighted and no error is returned The
@@ -1903,7 +1903,7 @@ class HighlightBase(AttrDict[Any]):
         returned. This can be handy when you need to highlight short texts
         such as a title or address, but fragmentation is not required. If
         `number_of_fragments` is `0`, `fragment_size` is ignored.
-    :arg options: No documentation available.
+    :arg options:
     :arg order: Sorts highlighted fragments by score when set to `score`.
         By default, fragments will be output in the order they appear in
         the field (order: `none`). Setting this option to `score` will
@@ -2024,9 +2024,9 @@ class HighlightBase(AttrDict[Any]):
 
 class Highlight(HighlightBase):
     """
-    :arg encoder: No documentation available.
-    :arg fields: (required) No documentation available.
-    :arg type: No documentation available.
+    :arg encoder:
+    :arg fields: (required)
+    :arg type:
     :arg boundary_chars: A string that contains each boundary character.
     :arg boundary_max_scan: How far to scan for boundary characters.
     :arg boundary_scanner: Specifies how to break the highlighted
@@ -2036,18 +2036,18 @@ class Highlight(HighlightBase):
     :arg boundary_scanner_locale: Controls which locale is used to search
         for sentence and word boundaries. This parameter takes a form of a
         language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
-    :arg force_source: No documentation available.
+    :arg force_source:
     :arg fragmenter: Specifies how text should be broken up in highlight
         snippets: `simple` or `span`. Only valid for the `plain`
         highlighter.
     :arg fragment_size: The size of the highlighted fragment in
         characters.
-    :arg highlight_filter: No documentation available.
+    :arg highlight_filter:
     :arg highlight_query: Highlight matches for a query other than the
         search query. This is especially useful if you use a rescore query
         because those are not taken into account by highlighting by
         default.
-    :arg max_fragment_length: No documentation available.
+    :arg max_fragment_length:
     :arg max_analyzed_offset: If set to a non-negative value, highlighting
         stops at this defined maximum limit. The rest of the text is not
         processed, thus not highlighted and no error is returned The
@@ -2063,7 +2063,7 @@ class Highlight(HighlightBase):
         returned. This can be handy when you need to highlight short texts
         such as a title or address, but fragmentation is not required. If
         `number_of_fragments` is `0`, `fragment_size` is ignored.
-    :arg options: No documentation available.
+    :arg options:
     :arg order: Sorts highlighted fragments by score when set to `score`.
         By default, fragments will be output in the order they appear in
         the field (order: `none`). Setting this option to `score` will
@@ -2200,8 +2200,8 @@ class Highlight(HighlightBase):
 
 class ScriptField(AttrDict[Any]):
     """
-    :arg script: (required) No documentation available.
-    :arg ignore_failure: No documentation available.
+    :arg script: (required)
+    :arg ignore_failure:
     """
 
     script: Union["types.Script", Dict[str, Any], "DefaultType"]
@@ -2223,10 +2223,10 @@ class ScriptField(AttrDict[Any]):
 
 class SortOptions(AttrDict[Any]):
     """
-    :arg _score: No documentation available.
-    :arg _doc: No documentation available.
-    :arg _geo_distance: No documentation available.
-    :arg _script: No documentation available.
+    :arg _score:
+    :arg _doc:
+    :arg _geo_distance:
+    :arg _script:
     """
 
     _score: Union["types.ScoreSort", Dict[str, Any], "DefaultType"]
@@ -2258,8 +2258,8 @@ class SortOptions(AttrDict[Any]):
 
 class SourceFilter(AttrDict[Any]):
     """
-    :arg excludes: No documentation available.
-    :arg includes: No documentation available.
+    :arg excludes:
+    :arg includes:
     """
 
     excludes: Union[
@@ -2526,8 +2526,8 @@ class IntervalsWildcard(AttrDict[Any]):
 
 class TextEmbedding(AttrDict[Any]):
     """
-    :arg model_id: (required) No documentation available.
-    :arg model_text: (required) No documentation available.
+    :arg model_id: (required)
+    :arg model_text: (required)
     """
 
     model_id: Union[str, "DefaultType"]
@@ -2558,7 +2558,7 @@ class SpanContainingQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
@@ -2588,14 +2588,14 @@ class SpanContainingQuery(QueryBase):
 
 class SpanFieldMaskingQuery(QueryBase):
     """
-    :arg field: (required) No documentation available.
-    :arg query: (required) No documentation available.
+    :arg field: (required)
+    :arg query: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     field: Union[str, "InstrumentedField", "DefaultType"]
@@ -2633,7 +2633,7 @@ class SpanFirstQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     end: Union[int, "DefaultType"]
@@ -2670,7 +2670,7 @@ class SpanMultiTermQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     match: Union[Query, "DefaultType"]
@@ -2705,7 +2705,7 @@ class SpanNearQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     clauses: Union[Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"]
@@ -2756,7 +2756,7 @@ class SpanNotQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     dist: Union[int, "DefaultType"]
@@ -2804,7 +2804,7 @@ class SpanOrQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     clauses: Union[Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"]
@@ -2841,7 +2841,7 @@ class SpanWithinQuery(QueryBase):
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
         relevance score.
-    :arg _name: No documentation available.
+    :arg _name:
     """
 
     big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
@@ -2871,10 +2871,10 @@ class SpanWithinQuery(QueryBase):
 
 class HighlightField(HighlightBase):
     """
-    :arg fragment_offset: No documentation available.
-    :arg matched_fields: No documentation available.
-    :arg analyzer: No documentation available.
-    :arg type: No documentation available.
+    :arg fragment_offset:
+    :arg matched_fields:
+    :arg analyzer:
+    :arg type:
     :arg boundary_chars: A string that contains each boundary character.
     :arg boundary_max_scan: How far to scan for boundary characters.
     :arg boundary_scanner: Specifies how to break the highlighted
@@ -2884,18 +2884,18 @@ class HighlightField(HighlightBase):
     :arg boundary_scanner_locale: Controls which locale is used to search
         for sentence and word boundaries. This parameter takes a form of a
         language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
-    :arg force_source: No documentation available.
+    :arg force_source:
     :arg fragmenter: Specifies how text should be broken up in highlight
         snippets: `simple` or `span`. Only valid for the `plain`
         highlighter.
     :arg fragment_size: The size of the highlighted fragment in
         characters.
-    :arg highlight_filter: No documentation available.
+    :arg highlight_filter:
     :arg highlight_query: Highlight matches for a query other than the
         search query. This is especially useful if you use a rescore query
         because those are not taken into account by highlighting by
         default.
-    :arg max_fragment_length: No documentation available.
+    :arg max_fragment_length:
     :arg max_analyzed_offset: If set to a non-negative value, highlighting
         stops at this defined maximum limit. The rest of the text is not
         processed, thus not highlighted and no error is returned The
@@ -2911,7 +2911,7 @@ class HighlightField(HighlightBase):
         returned. This can be handy when you need to highlight short texts
         such as a title or address, but fragmentation is not required. If
         `number_of_fragments` is `0`, `fragment_size` is ignored.
-    :arg options: No documentation available.
+    :arg options:
     :arg order: Sorts highlighted fragments by score when set to `score`.
         By default, fragments will be output in the order they appear in
         the field (order: `none`). Setting this option to `score` will
@@ -3052,7 +3052,7 @@ class HighlightField(HighlightBase):
 
 class ScoreSort(AttrDict[Any]):
     """
-    :arg order: No documentation available.
+    :arg order:
     """
 
     order: Union[Literal["asc", "desc"], "DefaultType"]
@@ -3070,12 +3070,12 @@ class ScoreSort(AttrDict[Any]):
 
 class GeoDistanceSort(AttrDict[Any]):
     """
-    :arg mode: No documentation available.
-    :arg distance_type: No documentation available.
-    :arg ignore_unmapped: No documentation available.
-    :arg order: No documentation available.
-    :arg unit: No documentation available.
-    :arg nested: No documentation available.
+    :arg mode:
+    :arg distance_type:
+    :arg ignore_unmapped:
+    :arg order:
+    :arg unit:
+    :arg nested:
     """
 
     mode: Union[Literal["min", "max", "sum", "avg", "median"], "DefaultType"]
@@ -3119,11 +3119,11 @@ class GeoDistanceSort(AttrDict[Any]):
 
 class ScriptSort(AttrDict[Any]):
     """
-    :arg order: No documentation available.
-    :arg script: (required) No documentation available.
-    :arg type: No documentation available.
-    :arg mode: No documentation available.
-    :arg nested: No documentation available.
+    :arg order:
+    :arg script: (required)
+    :arg type:
+    :arg mode:
+    :arg nested:
     """
 
     order: Union[Literal["asc", "desc"], "DefaultType"]
@@ -3288,10 +3288,10 @@ class IntervalsFilter(AttrDict[Any]):
 
 class NestedSortValue(AttrDict[Any]):
     """
-    :arg filter: No documentation available.
-    :arg max_children: No documentation available.
-    :arg nested: No documentation available.
-    :arg path: (required) No documentation available.
+    :arg filter:
+    :arg max_children:
+    :arg nested:
+    :arg path: (required)
     """
 
     filter: Union[Query, "DefaultType"]

@@ -46,7 +46,7 @@ TYPE_REPLACEMENTS = {
 def wrapped_doc(text, width=70, initial_indent="", subsequent_indent=""):
     """Formats a docstring as a list of lines of up to the request width."""
     return textwrap.wrap(
-        (text or "No documentation available.").replace("\n", " "),
+        text.replace("\n", " "),
         width=width,
         initial_indent=initial_indent,
         subsequent_indent=subsequent_indent,
@@ -253,7 +253,7 @@ class ElasticsearchSchema:
             type_ = add_not_set(type_)
         required = "(required) " if arg["required"] else ""
         doc = wrapped_doc(
-            f":arg {arg['name']}: {required}{arg.get('description', 'No documentation available.')}",
+            f":arg {arg['name']}: {required}{arg.get('description', '')}",
             subsequent_indent="    ",
         )
         arg = {
@@ -300,7 +300,7 @@ class ElasticsearchSchema:
             "property_name": p["name"],
             "name": "".join([w.title() for w in p["name"].split("_")]),
         }
-        k["docstring"] = wrapped_doc(p.get("description"))
+        k["docstring"] = wrapped_doc(p.get("description") or "")
         kind = p["type"]["kind"]
         if kind == "instance_of":
             namespace = p["type"]["type"]["namespace"]
