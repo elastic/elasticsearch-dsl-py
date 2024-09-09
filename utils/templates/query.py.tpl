@@ -192,16 +192,16 @@ class {{ k.name }}({{ parent }}):
         **kwargs: Any
     ):
         {% if k.name == "FunctionScore" %}
-        if functions == DEFAULT:
+        if functions is DEFAULT:
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
                     functions.append({name: kwargs.pop(name)})  # type: ignore
         {% elif k.is_single_field %}
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         {% elif k.is_multi_field %}
-        if _fields != DEFAULT:
+        if _fields is not DEFAULT:
             for field, value in _fields.items():
                 kwargs[str(field)] = value
         {% endif %}

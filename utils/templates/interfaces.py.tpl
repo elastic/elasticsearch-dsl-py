@@ -54,16 +54,16 @@ class {{ k.name }}({% if k.parent %}{{ k.parent }}{% else %}AttrDict[Any]{% endi
         **kwargs: Any
     ):
         {% if k.is_single_field %}
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         {% elif k.is_multi_field %}
-        if _fields != DEFAULT:
+        if _fields is not DEFAULT:
             for field, value in _fields.items():
                 kwargs[str(field)] = value
         {% endif %}
         {% for arg in k.args %}
         {% if not arg.positional %}
-        if {{ arg.name }} != DEFAULT:
+        if {{ arg.name }} is not DEFAULT:
             {% if "InstrumentedField" in arg.type %}
             kwargs["{{ arg.name }}"] = str({{ arg.name }})
             {% else %}

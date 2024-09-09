@@ -374,7 +374,7 @@ class Common(Query):
         _value: Union["i.CommonTermsQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -635,7 +635,7 @@ class FunctionScore(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if functions == DEFAULT:
+        if functions is DEFAULT:
             functions = []
             for name in ScoreFunction._classes:
                 if name in kwargs:
@@ -670,7 +670,7 @@ class Fuzzy(Query):
         _value: Union["i.FuzzyQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -719,7 +719,7 @@ class GeoBoundingBox(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(
             type=type,
@@ -782,7 +782,7 @@ class GeoDistance(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(
             distance=distance,
@@ -826,7 +826,7 @@ class GeoPolygon(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(
             validation_method=validation_method,
@@ -867,7 +867,7 @@ class GeoShape(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(
             ignore_unmapped=ignore_unmapped, boost=boost, _name=_name, **kwargs
@@ -1037,7 +1037,7 @@ class Intervals(Query):
         _value: Union["i.IntervalsQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1118,7 +1118,7 @@ class Match(Query):
         _value: Union["i.MatchQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1183,7 +1183,7 @@ class MatchBoolPrefix(Query):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1241,7 +1241,7 @@ class MatchPhrase(Query):
         _value: Union["i.MatchPhraseQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1266,7 +1266,7 @@ class MatchPhrasePrefix(Query):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1701,7 +1701,7 @@ class Prefix(Query):
         _value: Union["i.PrefixQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1862,7 +1862,7 @@ class Range(Query):
         _value: Union["wrappers.Range[Any]", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -1940,7 +1940,7 @@ class Regexp(Query):
         _value: Union["i.RegexpQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2113,7 +2113,7 @@ class Shape(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(
             ignore_unmapped=ignore_unmapped, boost=boost, _name=_name, **kwargs
@@ -2463,7 +2463,7 @@ class SpanTerm(Query):
         _value: Union["i.SpanTermQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2583,7 +2583,7 @@ class Term(Query):
         _value: Union["i.TermQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2620,7 +2620,7 @@ class Terms(Query):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(boost=boost, _name=_name, **kwargs)
 
@@ -2650,7 +2650,7 @@ class TermsSet(Query):
         _value: Union["i.TermsSetQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2673,7 +2673,7 @@ class TextExpansion(Query):
         _value: Union["i.TextExpansionQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2695,7 +2695,7 @@ class WeightedTokens(Query):
         _value: Union["i.WeightedTokensQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 
@@ -2716,7 +2716,7 @@ class Wildcard(Query):
         _value: Union["i.WildcardQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _field != DEFAULT:
+        if _field is not DEFAULT:
             kwargs[str(_field)] = _value
         super().__init__(**kwargs)
 

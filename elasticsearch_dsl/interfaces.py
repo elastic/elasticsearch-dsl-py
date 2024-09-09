@@ -48,9 +48,9 @@ class QueryBase(AttrDict[Any]):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(kwargs)
 
@@ -93,21 +93,21 @@ class CommonTermsQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if cutoff_frequency != DEFAULT:
+        if cutoff_frequency is not DEFAULT:
             kwargs["cutoff_frequency"] = cutoff_frequency
-        if high_freq_operator != DEFAULT:
+        if high_freq_operator is not DEFAULT:
             kwargs["high_freq_operator"] = high_freq_operator
-        if low_freq_operator != DEFAULT:
+        if low_freq_operator is not DEFAULT:
             kwargs["low_freq_operator"] = low_freq_operator
-        if minimum_should_match != DEFAULT:
+        if minimum_should_match is not DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -134,13 +134,13 @@ class CoordsGeoBounds(AttrDict[Any]):
         right: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if top != DEFAULT:
+        if top is not DEFAULT:
             kwargs["top"] = top
-        if bottom != DEFAULT:
+        if bottom is not DEFAULT:
             kwargs["bottom"] = bottom
-        if left != DEFAULT:
+        if left is not DEFAULT:
             kwargs["left"] = left
-        if right != DEFAULT:
+        if right is not DEFAULT:
             kwargs["right"] = right
         super().__init__(kwargs)
 
@@ -192,21 +192,21 @@ class FunctionScoreContainer(AttrDict[Any]):
         weight: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if exp != DEFAULT:
+        if exp is not DEFAULT:
             kwargs["exp"] = exp
-        if gauss != DEFAULT:
+        if gauss is not DEFAULT:
             kwargs["gauss"] = gauss
-        if linear != DEFAULT:
+        if linear is not DEFAULT:
             kwargs["linear"] = linear
-        if field_value_factor != DEFAULT:
+        if field_value_factor is not DEFAULT:
             kwargs["field_value_factor"] = field_value_factor
-        if random_score != DEFAULT:
+        if random_score is not DEFAULT:
             kwargs["random_score"] = random_score
-        if script_score != DEFAULT:
+        if script_score is not DEFAULT:
             kwargs["script_score"] = script_score
-        if filter != DEFAULT:
+        if filter is not DEFAULT:
             kwargs["filter"] = filter
-        if weight != DEFAULT:
+        if weight is not DEFAULT:
             kwargs["weight"] = weight
         super().__init__(kwargs)
 
@@ -252,21 +252,21 @@ class FuzzyQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if max_expansions != DEFAULT:
+        if max_expansions is not DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if prefix_length != DEFAULT:
+        if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if rewrite != DEFAULT:
+        if rewrite is not DEFAULT:
             kwargs["rewrite"] = rewrite
-        if transpositions != DEFAULT:
+        if transpositions is not DEFAULT:
             kwargs["transpositions"] = transpositions
-        if fuzziness != DEFAULT:
+        if fuzziness is not DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if value != DEFAULT:
+        if value is not DEFAULT:
             kwargs["value"] = value
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -279,7 +279,7 @@ class GeoHashLocation(AttrDict[Any]):
     geohash: Union[str, "DefaultType"]
 
     def __init__(self, *, geohash: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
-        if geohash != DEFAULT:
+        if geohash is not DEFAULT:
             kwargs["geohash"] = geohash
         super().__init__(kwargs)
 
@@ -309,7 +309,7 @@ class GeoPolygonPoints(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if points != DEFAULT:
+        if points is not DEFAULT:
             kwargs["points"] = points
         super().__init__(kwargs)
 
@@ -338,11 +338,11 @@ class GeoShapeFieldQuery(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if shape != DEFAULT:
+        if shape is not DEFAULT:
             kwargs["shape"] = shape
-        if indexed_shape != DEFAULT:
+        if indexed_shape is not DEFAULT:
             kwargs["indexed_shape"] = indexed_shape
-        if relation != DEFAULT:
+        if relation is not DEFAULT:
             kwargs["relation"] = relation
         super().__init__(kwargs)
 
@@ -444,37 +444,37 @@ class InnerHits(AttrDict[Any]):
         version: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if name != DEFAULT:
+        if name is not DEFAULT:
             kwargs["name"] = name
-        if size != DEFAULT:
+        if size is not DEFAULT:
             kwargs["size"] = size
-        if from_ != DEFAULT:
+        if from_ is not DEFAULT:
             kwargs["from_"] = from_
-        if collapse != DEFAULT:
+        if collapse is not DEFAULT:
             kwargs["collapse"] = collapse
-        if docvalue_fields != DEFAULT:
+        if docvalue_fields is not DEFAULT:
             kwargs["docvalue_fields"] = docvalue_fields
-        if explain != DEFAULT:
+        if explain is not DEFAULT:
             kwargs["explain"] = explain
-        if highlight != DEFAULT:
+        if highlight is not DEFAULT:
             kwargs["highlight"] = highlight
-        if ignore_unmapped != DEFAULT:
+        if ignore_unmapped is not DEFAULT:
             kwargs["ignore_unmapped"] = ignore_unmapped
-        if script_fields != DEFAULT:
+        if script_fields is not DEFAULT:
             kwargs["script_fields"] = str(script_fields)
-        if seq_no_primary_term != DEFAULT:
+        if seq_no_primary_term is not DEFAULT:
             kwargs["seq_no_primary_term"] = seq_no_primary_term
-        if fields != DEFAULT:
+        if fields is not DEFAULT:
             kwargs["fields"] = str(fields)
-        if sort != DEFAULT:
+        if sort is not DEFAULT:
             kwargs["sort"] = str(sort)
-        if _source != DEFAULT:
+        if _source is not DEFAULT:
             kwargs["_source"] = _source
-        if stored_fields != DEFAULT:
+        if stored_fields is not DEFAULT:
             kwargs["stored_fields"] = str(stored_fields)
-        if track_scores != DEFAULT:
+        if track_scores is not DEFAULT:
             kwargs["track_scores"] = track_scores
-        if version != DEFAULT:
+        if version is not DEFAULT:
             kwargs["version"] = version
         super().__init__(kwargs)
 
@@ -519,21 +519,21 @@ class IntervalsQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if all_of != DEFAULT:
+        if all_of is not DEFAULT:
             kwargs["all_of"] = all_of
-        if any_of != DEFAULT:
+        if any_of is not DEFAULT:
             kwargs["any_of"] = any_of
-        if fuzzy != DEFAULT:
+        if fuzzy is not DEFAULT:
             kwargs["fuzzy"] = fuzzy
-        if match != DEFAULT:
+        if match is not DEFAULT:
             kwargs["match"] = match
-        if prefix != DEFAULT:
+        if prefix is not DEFAULT:
             kwargs["prefix"] = prefix
-        if wildcard != DEFAULT:
+        if wildcard is not DEFAULT:
             kwargs["wildcard"] = wildcard
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -554,9 +554,9 @@ class LatLonGeoLocation(AttrDict[Any]):
         lon: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if lat != DEFAULT:
+        if lat is not DEFAULT:
             kwargs["lat"] = lat
-        if lon != DEFAULT:
+        if lon is not DEFAULT:
             kwargs["lon"] = lon
         super().__init__(kwargs)
 
@@ -605,21 +605,21 @@ class LikeDocument(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if doc != DEFAULT:
+        if doc is not DEFAULT:
             kwargs["doc"] = doc
-        if fields != DEFAULT:
+        if fields is not DEFAULT:
             kwargs["fields"] = str(fields)
-        if _id != DEFAULT:
+        if _id is not DEFAULT:
             kwargs["_id"] = _id
-        if _index != DEFAULT:
+        if _index is not DEFAULT:
             kwargs["_index"] = _index
-        if per_field_analyzer != DEFAULT:
+        if per_field_analyzer is not DEFAULT:
             kwargs["per_field_analyzer"] = str(per_field_analyzer)
-        if routing != DEFAULT:
+        if routing is not DEFAULT:
             kwargs["routing"] = routing
-        if version != DEFAULT:
+        if version is not DEFAULT:
             kwargs["version"] = version
-        if version_type != DEFAULT:
+        if version_type is not DEFAULT:
             kwargs["version_type"] = version_type
         super().__init__(kwargs)
 
@@ -687,27 +687,27 @@ class MatchBoolPrefixQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if fuzziness != DEFAULT:
+        if fuzziness is not DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if fuzzy_rewrite != DEFAULT:
+        if fuzzy_rewrite is not DEFAULT:
             kwargs["fuzzy_rewrite"] = fuzzy_rewrite
-        if fuzzy_transpositions != DEFAULT:
+        if fuzzy_transpositions is not DEFAULT:
             kwargs["fuzzy_transpositions"] = fuzzy_transpositions
-        if max_expansions != DEFAULT:
+        if max_expansions is not DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if minimum_should_match != DEFAULT:
+        if minimum_should_match is not DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if operator != DEFAULT:
+        if operator is not DEFAULT:
             kwargs["operator"] = operator
-        if prefix_length != DEFAULT:
+        if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -752,19 +752,19 @@ class MatchPhrasePrefixQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if max_expansions != DEFAULT:
+        if max_expansions is not DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if slop != DEFAULT:
+        if slop is not DEFAULT:
             kwargs["slop"] = slop
-        if zero_terms_query != DEFAULT:
+        if zero_terms_query is not DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -806,17 +806,17 @@ class MatchPhraseQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if slop != DEFAULT:
+        if slop is not DEFAULT:
             kwargs["slop"] = slop
-        if zero_terms_query != DEFAULT:
+        if zero_terms_query is not DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -892,37 +892,37 @@ class MatchQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if auto_generate_synonyms_phrase_query != DEFAULT:
+        if auto_generate_synonyms_phrase_query is not DEFAULT:
             kwargs["auto_generate_synonyms_phrase_query"] = (
                 auto_generate_synonyms_phrase_query
             )
-        if cutoff_frequency != DEFAULT:
+        if cutoff_frequency is not DEFAULT:
             kwargs["cutoff_frequency"] = cutoff_frequency
-        if fuzziness != DEFAULT:
+        if fuzziness is not DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if fuzzy_rewrite != DEFAULT:
+        if fuzzy_rewrite is not DEFAULT:
             kwargs["fuzzy_rewrite"] = fuzzy_rewrite
-        if fuzzy_transpositions != DEFAULT:
+        if fuzzy_transpositions is not DEFAULT:
             kwargs["fuzzy_transpositions"] = fuzzy_transpositions
-        if lenient != DEFAULT:
+        if lenient is not DEFAULT:
             kwargs["lenient"] = lenient
-        if max_expansions != DEFAULT:
+        if max_expansions is not DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if minimum_should_match != DEFAULT:
+        if minimum_should_match is not DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if operator != DEFAULT:
+        if operator is not DEFAULT:
             kwargs["operator"] = operator
-        if prefix_length != DEFAULT:
+        if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if zero_terms_query != DEFAULT:
+        if zero_terms_query is not DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -943,9 +943,9 @@ class PinnedDoc(AttrDict[Any]):
         _index: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _id != DEFAULT:
+        if _id is not DEFAULT:
             kwargs["_id"] = _id
-        if _index != DEFAULT:
+        if _index is not DEFAULT:
             kwargs["_index"] = _index
         super().__init__(kwargs)
 
@@ -983,15 +983,15 @@ class PrefixQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if rewrite != DEFAULT:
+        if rewrite is not DEFAULT:
             kwargs["rewrite"] = rewrite
-        if value != DEFAULT:
+        if value is not DEFAULT:
             kwargs["value"] = value
-        if case_insensitive != DEFAULT:
+        if case_insensitive is not DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1011,7 +1011,7 @@ class QueryVectorBuilder(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if text_embedding != DEFAULT:
+        if text_embedding is not DEFAULT:
             kwargs["text_embedding"] = text_embedding
         super().__init__(kwargs)
 
@@ -1034,7 +1034,7 @@ class RankFeatureFunctionLogarithm(RankFeatureFunction):
     def __init__(
         self, *, scaling_factor: Union[float, "DefaultType"] = DEFAULT, **kwargs: Any
     ):
-        if scaling_factor != DEFAULT:
+        if scaling_factor is not DEFAULT:
             kwargs["scaling_factor"] = scaling_factor
         super().__init__(**kwargs)
 
@@ -1048,7 +1048,7 @@ class RankFeatureFunctionSaturation(RankFeatureFunction):
     pivot: Union[float, "DefaultType"]
 
     def __init__(self, *, pivot: Union[float, "DefaultType"] = DEFAULT, **kwargs: Any):
-        if pivot != DEFAULT:
+        if pivot is not DEFAULT:
             kwargs["pivot"] = pivot
         super().__init__(**kwargs)
 
@@ -1070,9 +1070,9 @@ class RankFeatureFunctionSigmoid(RankFeatureFunction):
         exponent: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if pivot != DEFAULT:
+        if pivot is not DEFAULT:
             kwargs["pivot"] = pivot
-        if exponent != DEFAULT:
+        if exponent is not DEFAULT:
             kwargs["exponent"] = exponent
         super().__init__(**kwargs)
 
@@ -1117,19 +1117,19 @@ class RegexpQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if case_insensitive != DEFAULT:
+        if case_insensitive is not DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
-        if flags != DEFAULT:
+        if flags is not DEFAULT:
             kwargs["flags"] = flags
-        if max_determinized_states != DEFAULT:
+        if max_determinized_states is not DEFAULT:
             kwargs["max_determinized_states"] = max_determinized_states
-        if rewrite != DEFAULT:
+        if rewrite is not DEFAULT:
             kwargs["rewrite"] = rewrite
-        if value != DEFAULT:
+        if value is not DEFAULT:
             kwargs["value"] = value
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1163,15 +1163,15 @@ class Script(AttrDict[Any]):
         options: Union[Mapping[str, str], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if source != DEFAULT:
+        if source is not DEFAULT:
             kwargs["source"] = source
-        if id != DEFAULT:
+        if id is not DEFAULT:
             kwargs["id"] = id
-        if params != DEFAULT:
+        if params is not DEFAULT:
             kwargs["params"] = params
-        if lang != DEFAULT:
+        if lang is not DEFAULT:
             kwargs["lang"] = lang
-        if options != DEFAULT:
+        if options is not DEFAULT:
             kwargs["options"] = options
         super().__init__(kwargs)
 
@@ -1201,11 +1201,11 @@ class ShapeFieldQuery(AttrDict[Any]):
         shape: Any = DEFAULT,
         **kwargs: Any,
     ):
-        if indexed_shape != DEFAULT:
+        if indexed_shape is not DEFAULT:
             kwargs["indexed_shape"] = indexed_shape
-        if relation != DEFAULT:
+        if relation is not DEFAULT:
             kwargs["relation"] = relation
-        if shape != DEFAULT:
+        if shape is not DEFAULT:
             kwargs["shape"] = shape
         super().__init__(kwargs)
 
@@ -1279,25 +1279,25 @@ class SpanQuery(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if span_containing != DEFAULT:
+        if span_containing is not DEFAULT:
             kwargs["span_containing"] = span_containing
-        if span_field_masking != DEFAULT:
+        if span_field_masking is not DEFAULT:
             kwargs["span_field_masking"] = span_field_masking
-        if span_first != DEFAULT:
+        if span_first is not DEFAULT:
             kwargs["span_first"] = span_first
-        if span_gap != DEFAULT:
+        if span_gap is not DEFAULT:
             kwargs["span_gap"] = str(span_gap)
-        if span_multi != DEFAULT:
+        if span_multi is not DEFAULT:
             kwargs["span_multi"] = span_multi
-        if span_near != DEFAULT:
+        if span_near is not DEFAULT:
             kwargs["span_near"] = span_near
-        if span_not != DEFAULT:
+        if span_not is not DEFAULT:
             kwargs["span_not"] = span_not
-        if span_or != DEFAULT:
+        if span_or is not DEFAULT:
             kwargs["span_or"] = span_or
-        if span_term != DEFAULT:
+        if span_term is not DEFAULT:
             kwargs["span_term"] = str(span_term)
-        if span_within != DEFAULT:
+        if span_within is not DEFAULT:
             kwargs["span_within"] = span_within
         super().__init__(kwargs)
 
@@ -1325,11 +1325,11 @@ class SpanTermQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if value != DEFAULT:
+        if value is not DEFAULT:
             kwargs["value"] = value
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1363,13 +1363,13 @@ class TermQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if value != DEFAULT:
+        if value is not DEFAULT:
             kwargs["value"] = value
-        if case_insensitive != DEFAULT:
+        if case_insensitive is not DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1396,13 +1396,13 @@ class TermsLookup(AttrDict[Any]):
         routing: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if index != DEFAULT:
+        if index is not DEFAULT:
             kwargs["index"] = index
-        if id != DEFAULT:
+        if id is not DEFAULT:
             kwargs["id"] = id
-        if path != DEFAULT:
+        if path is not DEFAULT:
             kwargs["path"] = str(path)
-        if routing != DEFAULT:
+        if routing is not DEFAULT:
             kwargs["routing"] = routing
         super().__init__(kwargs)
 
@@ -1443,15 +1443,15 @@ class TermsSetQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if minimum_should_match_field != DEFAULT:
+        if minimum_should_match_field is not DEFAULT:
             kwargs["minimum_should_match_field"] = str(minimum_should_match_field)
-        if minimum_should_match_script != DEFAULT:
+        if minimum_should_match_script is not DEFAULT:
             kwargs["minimum_should_match_script"] = minimum_should_match_script
-        if terms != DEFAULT:
+        if terms is not DEFAULT:
             kwargs["terms"] = terms
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1487,15 +1487,15 @@ class TextExpansionQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if model_id != DEFAULT:
+        if model_id is not DEFAULT:
             kwargs["model_id"] = model_id
-        if model_text != DEFAULT:
+        if model_text is not DEFAULT:
             kwargs["model_text"] = model_text
-        if pruning_config != DEFAULT:
+        if pruning_config is not DEFAULT:
             kwargs["pruning_config"] = pruning_config
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1523,11 +1523,11 @@ class TokenPruningConfig(AttrDict[Any]):
         only_score_pruned_tokens: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if tokens_freq_ratio_threshold != DEFAULT:
+        if tokens_freq_ratio_threshold is not DEFAULT:
             kwargs["tokens_freq_ratio_threshold"] = tokens_freq_ratio_threshold
-        if tokens_weight_threshold != DEFAULT:
+        if tokens_weight_threshold is not DEFAULT:
             kwargs["tokens_weight_threshold"] = tokens_weight_threshold
-        if only_score_pruned_tokens != DEFAULT:
+        if only_score_pruned_tokens is not DEFAULT:
             kwargs["only_score_pruned_tokens"] = only_score_pruned_tokens
         super().__init__(kwargs)
 
@@ -1576,9 +1576,9 @@ class TopLeftBottomRightGeoBounds(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if top_left != DEFAULT:
+        if top_left is not DEFAULT:
             kwargs["top_left"] = top_left
-        if bottom_right != DEFAULT:
+        if bottom_right is not DEFAULT:
             kwargs["bottom_right"] = bottom_right
         super().__init__(kwargs)
 
@@ -1627,9 +1627,9 @@ class TopRightBottomLeftGeoBounds(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if top_right != DEFAULT:
+        if top_right is not DEFAULT:
             kwargs["top_right"] = top_right
-        if bottom_left != DEFAULT:
+        if bottom_left is not DEFAULT:
             kwargs["bottom_left"] = bottom_left
         super().__init__(kwargs)
 
@@ -1662,13 +1662,13 @@ class WeightedTokensQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if tokens != DEFAULT:
+        if tokens is not DEFAULT:
             kwargs["tokens"] = tokens
-        if pruning_config != DEFAULT:
+        if pruning_config is not DEFAULT:
             kwargs["pruning_config"] = pruning_config
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1710,17 +1710,17 @@ class WildcardQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if case_insensitive != DEFAULT:
+        if case_insensitive is not DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
-        if rewrite != DEFAULT:
+        if rewrite is not DEFAULT:
             kwargs["rewrite"] = rewrite
-        if value != DEFAULT:
+        if value is not DEFAULT:
             kwargs["value"] = value
-        if wildcard != DEFAULT:
+        if wildcard is not DEFAULT:
             kwargs["wildcard"] = wildcard
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -1733,7 +1733,7 @@ class WktGeoBounds(AttrDict[Any]):
     wkt: Union[str, "DefaultType"]
 
     def __init__(self, *, wkt: Union[str, "DefaultType"] = DEFAULT, **kwargs: Any):
-        if wkt != DEFAULT:
+        if wkt is not DEFAULT:
             kwargs["wkt"] = wkt
         super().__init__(kwargs)
 
@@ -1760,13 +1760,13 @@ class FieldLookup(AttrDict[Any]):
         routing: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if id != DEFAULT:
+        if id is not DEFAULT:
             kwargs["id"] = id
-        if index != DEFAULT:
+        if index is not DEFAULT:
             kwargs["index"] = index
-        if path != DEFAULT:
+        if path is not DEFAULT:
             kwargs["path"] = str(path)
-        if routing != DEFAULT:
+        if routing is not DEFAULT:
             kwargs["routing"] = routing
         super().__init__(kwargs)
 
@@ -1798,13 +1798,13 @@ class FieldCollapse(AttrDict[Any]):
         collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if field != DEFAULT:
+        if field is not DEFAULT:
             kwargs["field"] = str(field)
-        if inner_hits != DEFAULT:
+        if inner_hits is not DEFAULT:
             kwargs["inner_hits"] = inner_hits
-        if max_concurrent_group_searches != DEFAULT:
+        if max_concurrent_group_searches is not DEFAULT:
             kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
-        if collapse != DEFAULT:
+        if collapse is not DEFAULT:
             kwargs["collapse"] = collapse
         super().__init__(kwargs)
 
@@ -1829,11 +1829,11 @@ class FieldAndFormat(AttrDict[Any]):
         include_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if field != DEFAULT:
+        if field is not DEFAULT:
             kwargs["field"] = str(field)
-        if format != DEFAULT:
+        if format is not DEFAULT:
             kwargs["format"] = format
-        if include_unmapped != DEFAULT:
+        if include_unmapped is not DEFAULT:
             kwargs["include_unmapped"] = include_unmapped
         super().__init__(kwargs)
 
@@ -1951,47 +1951,47 @@ class HighlightBase(AttrDict[Any]):
         tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if type != DEFAULT:
+        if type is not DEFAULT:
             kwargs["type"] = type
-        if boundary_chars != DEFAULT:
+        if boundary_chars is not DEFAULT:
             kwargs["boundary_chars"] = boundary_chars
-        if boundary_max_scan != DEFAULT:
+        if boundary_max_scan is not DEFAULT:
             kwargs["boundary_max_scan"] = boundary_max_scan
-        if boundary_scanner != DEFAULT:
+        if boundary_scanner is not DEFAULT:
             kwargs["boundary_scanner"] = boundary_scanner
-        if boundary_scanner_locale != DEFAULT:
+        if boundary_scanner_locale is not DEFAULT:
             kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if force_source != DEFAULT:
+        if force_source is not DEFAULT:
             kwargs["force_source"] = force_source
-        if fragmenter != DEFAULT:
+        if fragmenter is not DEFAULT:
             kwargs["fragmenter"] = fragmenter
-        if fragment_size != DEFAULT:
+        if fragment_size is not DEFAULT:
             kwargs["fragment_size"] = fragment_size
-        if highlight_filter != DEFAULT:
+        if highlight_filter is not DEFAULT:
             kwargs["highlight_filter"] = highlight_filter
-        if highlight_query != DEFAULT:
+        if highlight_query is not DEFAULT:
             kwargs["highlight_query"] = highlight_query
-        if max_fragment_length != DEFAULT:
+        if max_fragment_length is not DEFAULT:
             kwargs["max_fragment_length"] = max_fragment_length
-        if max_analyzed_offset != DEFAULT:
+        if max_analyzed_offset is not DEFAULT:
             kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if no_match_size != DEFAULT:
+        if no_match_size is not DEFAULT:
             kwargs["no_match_size"] = no_match_size
-        if number_of_fragments != DEFAULT:
+        if number_of_fragments is not DEFAULT:
             kwargs["number_of_fragments"] = number_of_fragments
-        if options != DEFAULT:
+        if options is not DEFAULT:
             kwargs["options"] = options
-        if order != DEFAULT:
+        if order is not DEFAULT:
             kwargs["order"] = order
-        if phrase_limit != DEFAULT:
+        if phrase_limit is not DEFAULT:
             kwargs["phrase_limit"] = phrase_limit
-        if post_tags != DEFAULT:
+        if post_tags is not DEFAULT:
             kwargs["post_tags"] = post_tags
-        if pre_tags != DEFAULT:
+        if pre_tags is not DEFAULT:
             kwargs["pre_tags"] = pre_tags
-        if require_field_match != DEFAULT:
+        if require_field_match is not DEFAULT:
             kwargs["require_field_match"] = require_field_match
-        if tags_schema != DEFAULT:
+        if tags_schema is not DEFAULT:
             kwargs["tags_schema"] = tags_schema
         super().__init__(kwargs)
 
@@ -2123,51 +2123,51 @@ class Highlight(HighlightBase):
         tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if encoder != DEFAULT:
+        if encoder is not DEFAULT:
             kwargs["encoder"] = encoder
-        if fields != DEFAULT:
+        if fields is not DEFAULT:
             kwargs["fields"] = str(fields)
-        if type != DEFAULT:
+        if type is not DEFAULT:
             kwargs["type"] = type
-        if boundary_chars != DEFAULT:
+        if boundary_chars is not DEFAULT:
             kwargs["boundary_chars"] = boundary_chars
-        if boundary_max_scan != DEFAULT:
+        if boundary_max_scan is not DEFAULT:
             kwargs["boundary_max_scan"] = boundary_max_scan
-        if boundary_scanner != DEFAULT:
+        if boundary_scanner is not DEFAULT:
             kwargs["boundary_scanner"] = boundary_scanner
-        if boundary_scanner_locale != DEFAULT:
+        if boundary_scanner_locale is not DEFAULT:
             kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if force_source != DEFAULT:
+        if force_source is not DEFAULT:
             kwargs["force_source"] = force_source
-        if fragmenter != DEFAULT:
+        if fragmenter is not DEFAULT:
             kwargs["fragmenter"] = fragmenter
-        if fragment_size != DEFAULT:
+        if fragment_size is not DEFAULT:
             kwargs["fragment_size"] = fragment_size
-        if highlight_filter != DEFAULT:
+        if highlight_filter is not DEFAULT:
             kwargs["highlight_filter"] = highlight_filter
-        if highlight_query != DEFAULT:
+        if highlight_query is not DEFAULT:
             kwargs["highlight_query"] = highlight_query
-        if max_fragment_length != DEFAULT:
+        if max_fragment_length is not DEFAULT:
             kwargs["max_fragment_length"] = max_fragment_length
-        if max_analyzed_offset != DEFAULT:
+        if max_analyzed_offset is not DEFAULT:
             kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if no_match_size != DEFAULT:
+        if no_match_size is not DEFAULT:
             kwargs["no_match_size"] = no_match_size
-        if number_of_fragments != DEFAULT:
+        if number_of_fragments is not DEFAULT:
             kwargs["number_of_fragments"] = number_of_fragments
-        if options != DEFAULT:
+        if options is not DEFAULT:
             kwargs["options"] = options
-        if order != DEFAULT:
+        if order is not DEFAULT:
             kwargs["order"] = order
-        if phrase_limit != DEFAULT:
+        if phrase_limit is not DEFAULT:
             kwargs["phrase_limit"] = phrase_limit
-        if post_tags != DEFAULT:
+        if post_tags is not DEFAULT:
             kwargs["post_tags"] = post_tags
-        if pre_tags != DEFAULT:
+        if pre_tags is not DEFAULT:
             kwargs["pre_tags"] = pre_tags
-        if require_field_match != DEFAULT:
+        if require_field_match is not DEFAULT:
             kwargs["require_field_match"] = require_field_match
-        if tags_schema != DEFAULT:
+        if tags_schema is not DEFAULT:
             kwargs["tags_schema"] = tags_schema
         super().__init__(**kwargs)
 
@@ -2188,9 +2188,9 @@ class ScriptField(AttrDict[Any]):
         ignore_failure: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if script != DEFAULT:
+        if script is not DEFAULT:
             kwargs["script"] = script
-        if ignore_failure != DEFAULT:
+        if ignore_failure is not DEFAULT:
             kwargs["ignore_failure"] = ignore_failure
         super().__init__(kwargs)
 
@@ -2219,13 +2219,13 @@ class SortOptions(AttrDict[Any]):
         _script: Union["i.ScriptSort", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if _score != DEFAULT:
+        if _score is not DEFAULT:
             kwargs["_score"] = _score
-        if _doc != DEFAULT:
+        if _doc is not DEFAULT:
             kwargs["_doc"] = _doc
-        if _geo_distance != DEFAULT:
+        if _geo_distance is not DEFAULT:
             kwargs["_geo_distance"] = _geo_distance
-        if _script != DEFAULT:
+        if _script is not DEFAULT:
             kwargs["_script"] = _script
         super().__init__(kwargs)
 
@@ -2262,9 +2262,9 @@ class SourceFilter(AttrDict[Any]):
         ] = DEFAULT,
         **kwargs: Any,
     ):
-        if excludes != DEFAULT:
+        if excludes is not DEFAULT:
             kwargs["excludes"] = str(excludes)
-        if includes != DEFAULT:
+        if includes is not DEFAULT:
             kwargs["includes"] = str(includes)
         super().__init__(kwargs)
 
@@ -2298,13 +2298,13 @@ class IntervalsAllOf(AttrDict[Any]):
         filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if intervals != DEFAULT:
+        if intervals is not DEFAULT:
             kwargs["intervals"] = intervals
-        if max_gaps != DEFAULT:
+        if max_gaps is not DEFAULT:
             kwargs["max_gaps"] = max_gaps
-        if ordered != DEFAULT:
+        if ordered is not DEFAULT:
             kwargs["ordered"] = ordered
-        if filter != DEFAULT:
+        if filter is not DEFAULT:
             kwargs["filter"] = filter
         super().__init__(kwargs)
 
@@ -2327,9 +2327,9 @@ class IntervalsAnyOf(AttrDict[Any]):
         filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if intervals != DEFAULT:
+        if intervals is not DEFAULT:
             kwargs["intervals"] = intervals
-        if filter != DEFAULT:
+        if filter is not DEFAULT:
             kwargs["filter"] = filter
         super().__init__(kwargs)
 
@@ -2367,17 +2367,17 @@ class IntervalsFuzzy(AttrDict[Any]):
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if fuzziness != DEFAULT:
+        if fuzziness is not DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if prefix_length != DEFAULT:
+        if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if term != DEFAULT:
+        if term is not DEFAULT:
             kwargs["term"] = term
-        if transpositions != DEFAULT:
+        if transpositions is not DEFAULT:
             kwargs["transpositions"] = transpositions
-        if use_field != DEFAULT:
+        if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
 
@@ -2415,17 +2415,17 @@ class IntervalsMatch(AttrDict[Any]):
         filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if max_gaps != DEFAULT:
+        if max_gaps is not DEFAULT:
             kwargs["max_gaps"] = max_gaps
-        if ordered != DEFAULT:
+        if ordered is not DEFAULT:
             kwargs["ordered"] = ordered
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if use_field != DEFAULT:
+        if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
-        if filter != DEFAULT:
+        if filter is not DEFAULT:
             kwargs["filter"] = filter
         super().__init__(kwargs)
 
@@ -2453,11 +2453,11 @@ class IntervalsPrefix(AttrDict[Any]):
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if prefix != DEFAULT:
+        if prefix is not DEFAULT:
             kwargs["prefix"] = prefix
-        if use_field != DEFAULT:
+        if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
 
@@ -2485,11 +2485,11 @@ class IntervalsWildcard(AttrDict[Any]):
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if pattern != DEFAULT:
+        if pattern is not DEFAULT:
             kwargs["pattern"] = pattern
-        if use_field != DEFAULT:
+        if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
 
@@ -2510,9 +2510,9 @@ class TextEmbedding(AttrDict[Any]):
         model_text: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if model_id != DEFAULT:
+        if model_id is not DEFAULT:
             kwargs["model_id"] = model_id
-        if model_text != DEFAULT:
+        if model_text is not DEFAULT:
             kwargs["model_text"] = model_text
         super().__init__(kwargs)
 
@@ -2545,13 +2545,13 @@ class SpanContainingQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if big != DEFAULT:
+        if big is not DEFAULT:
             kwargs["big"] = big
-        if little != DEFAULT:
+        if little is not DEFAULT:
             kwargs["little"] = little
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2582,13 +2582,13 @@ class SpanFieldMaskingQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if field != DEFAULT:
+        if field is not DEFAULT:
             kwargs["field"] = str(field)
-        if query != DEFAULT:
+        if query is not DEFAULT:
             kwargs["query"] = query
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2620,13 +2620,13 @@ class SpanFirstQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if end != DEFAULT:
+        if end is not DEFAULT:
             kwargs["end"] = end
-        if match != DEFAULT:
+        if match is not DEFAULT:
             kwargs["match"] = match
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2655,11 +2655,11 @@ class SpanMultiTermQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if match != DEFAULT:
+        if match is not DEFAULT:
             kwargs["match"] = match
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2696,15 +2696,15 @@ class SpanNearQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if clauses != DEFAULT:
+        if clauses is not DEFAULT:
             kwargs["clauses"] = clauses
-        if in_order != DEFAULT:
+        if in_order is not DEFAULT:
             kwargs["in_order"] = in_order
-        if slop != DEFAULT:
+        if slop is not DEFAULT:
             kwargs["slop"] = slop
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2749,19 +2749,19 @@ class SpanNotQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if dist != DEFAULT:
+        if dist is not DEFAULT:
             kwargs["dist"] = dist
-        if exclude != DEFAULT:
+        if exclude is not DEFAULT:
             kwargs["exclude"] = exclude
-        if include != DEFAULT:
+        if include is not DEFAULT:
             kwargs["include"] = include
-        if post != DEFAULT:
+        if post is not DEFAULT:
             kwargs["post"] = post
-        if pre != DEFAULT:
+        if pre is not DEFAULT:
             kwargs["pre"] = pre
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2791,11 +2791,11 @@ class SpanOrQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if clauses != DEFAULT:
+        if clauses is not DEFAULT:
             kwargs["clauses"] = clauses
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2828,13 +2828,13 @@ class SpanWithinQuery(QueryBase):
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if big != DEFAULT:
+        if big is not DEFAULT:
             kwargs["big"] = big
-        if little != DEFAULT:
+        if little is not DEFAULT:
             kwargs["little"] = little
-        if boost != DEFAULT:
+        if boost is not DEFAULT:
             kwargs["boost"] = boost
-        if _name != DEFAULT:
+        if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
 
@@ -2969,53 +2969,53 @@ class HighlightField(HighlightBase):
         tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if fragment_offset != DEFAULT:
+        if fragment_offset is not DEFAULT:
             kwargs["fragment_offset"] = fragment_offset
-        if matched_fields != DEFAULT:
+        if matched_fields is not DEFAULT:
             kwargs["matched_fields"] = str(matched_fields)
-        if analyzer != DEFAULT:
+        if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
-        if type != DEFAULT:
+        if type is not DEFAULT:
             kwargs["type"] = type
-        if boundary_chars != DEFAULT:
+        if boundary_chars is not DEFAULT:
             kwargs["boundary_chars"] = boundary_chars
-        if boundary_max_scan != DEFAULT:
+        if boundary_max_scan is not DEFAULT:
             kwargs["boundary_max_scan"] = boundary_max_scan
-        if boundary_scanner != DEFAULT:
+        if boundary_scanner is not DEFAULT:
             kwargs["boundary_scanner"] = boundary_scanner
-        if boundary_scanner_locale != DEFAULT:
+        if boundary_scanner_locale is not DEFAULT:
             kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if force_source != DEFAULT:
+        if force_source is not DEFAULT:
             kwargs["force_source"] = force_source
-        if fragmenter != DEFAULT:
+        if fragmenter is not DEFAULT:
             kwargs["fragmenter"] = fragmenter
-        if fragment_size != DEFAULT:
+        if fragment_size is not DEFAULT:
             kwargs["fragment_size"] = fragment_size
-        if highlight_filter != DEFAULT:
+        if highlight_filter is not DEFAULT:
             kwargs["highlight_filter"] = highlight_filter
-        if highlight_query != DEFAULT:
+        if highlight_query is not DEFAULT:
             kwargs["highlight_query"] = highlight_query
-        if max_fragment_length != DEFAULT:
+        if max_fragment_length is not DEFAULT:
             kwargs["max_fragment_length"] = max_fragment_length
-        if max_analyzed_offset != DEFAULT:
+        if max_analyzed_offset is not DEFAULT:
             kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if no_match_size != DEFAULT:
+        if no_match_size is not DEFAULT:
             kwargs["no_match_size"] = no_match_size
-        if number_of_fragments != DEFAULT:
+        if number_of_fragments is not DEFAULT:
             kwargs["number_of_fragments"] = number_of_fragments
-        if options != DEFAULT:
+        if options is not DEFAULT:
             kwargs["options"] = options
-        if order != DEFAULT:
+        if order is not DEFAULT:
             kwargs["order"] = order
-        if phrase_limit != DEFAULT:
+        if phrase_limit is not DEFAULT:
             kwargs["phrase_limit"] = phrase_limit
-        if post_tags != DEFAULT:
+        if post_tags is not DEFAULT:
             kwargs["post_tags"] = post_tags
-        if pre_tags != DEFAULT:
+        if pre_tags is not DEFAULT:
             kwargs["pre_tags"] = pre_tags
-        if require_field_match != DEFAULT:
+        if require_field_match is not DEFAULT:
             kwargs["require_field_match"] = require_field_match
-        if tags_schema != DEFAULT:
+        if tags_schema is not DEFAULT:
             kwargs["tags_schema"] = tags_schema
         super().__init__(**kwargs)
 
@@ -3033,7 +3033,7 @@ class ScoreSort(AttrDict[Any]):
         order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if order != DEFAULT:
+        if order is not DEFAULT:
             kwargs["order"] = order
         super().__init__(kwargs)
 
@@ -3072,17 +3072,17 @@ class GeoDistanceSort(AttrDict[Any]):
         nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if mode != DEFAULT:
+        if mode is not DEFAULT:
             kwargs["mode"] = mode
-        if distance_type != DEFAULT:
+        if distance_type is not DEFAULT:
             kwargs["distance_type"] = distance_type
-        if ignore_unmapped != DEFAULT:
+        if ignore_unmapped is not DEFAULT:
             kwargs["ignore_unmapped"] = ignore_unmapped
-        if order != DEFAULT:
+        if order is not DEFAULT:
             kwargs["order"] = order
-        if unit != DEFAULT:
+        if unit is not DEFAULT:
             kwargs["unit"] = unit
-        if nested != DEFAULT:
+        if nested is not DEFAULT:
             kwargs["nested"] = nested
         super().__init__(kwargs)
 
@@ -3114,15 +3114,15 @@ class ScriptSort(AttrDict[Any]):
         nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if order != DEFAULT:
+        if order is not DEFAULT:
             kwargs["order"] = order
-        if script != DEFAULT:
+        if script is not DEFAULT:
             kwargs["script"] = script
-        if type != DEFAULT:
+        if type is not DEFAULT:
             kwargs["type"] = type
-        if mode != DEFAULT:
+        if mode is not DEFAULT:
             kwargs["mode"] = mode
-        if nested != DEFAULT:
+        if nested is not DEFAULT:
             kwargs["nested"] = nested
         super().__init__(kwargs)
 
@@ -3156,17 +3156,17 @@ class IntervalsContainer(AttrDict[Any]):
         wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if all_of != DEFAULT:
+        if all_of is not DEFAULT:
             kwargs["all_of"] = all_of
-        if any_of != DEFAULT:
+        if any_of is not DEFAULT:
             kwargs["any_of"] = any_of
-        if fuzzy != DEFAULT:
+        if fuzzy is not DEFAULT:
             kwargs["fuzzy"] = fuzzy
-        if match != DEFAULT:
+        if match is not DEFAULT:
             kwargs["match"] = match
-        if prefix != DEFAULT:
+        if prefix is not DEFAULT:
             kwargs["prefix"] = prefix
-        if wildcard != DEFAULT:
+        if wildcard is not DEFAULT:
             kwargs["wildcard"] = wildcard
         super().__init__(kwargs)
 
@@ -3229,23 +3229,23 @@ class IntervalsFilter(AttrDict[Any]):
         script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if after != DEFAULT:
+        if after is not DEFAULT:
             kwargs["after"] = after
-        if before != DEFAULT:
+        if before is not DEFAULT:
             kwargs["before"] = before
-        if contained_by != DEFAULT:
+        if contained_by is not DEFAULT:
             kwargs["contained_by"] = contained_by
-        if containing != DEFAULT:
+        if containing is not DEFAULT:
             kwargs["containing"] = containing
-        if not_contained_by != DEFAULT:
+        if not_contained_by is not DEFAULT:
             kwargs["not_contained_by"] = not_contained_by
-        if not_containing != DEFAULT:
+        if not_containing is not DEFAULT:
             kwargs["not_containing"] = not_containing
-        if not_overlapping != DEFAULT:
+        if not_overlapping is not DEFAULT:
             kwargs["not_overlapping"] = not_overlapping
-        if overlapping != DEFAULT:
+        if overlapping is not DEFAULT:
             kwargs["overlapping"] = overlapping
-        if script != DEFAULT:
+        if script is not DEFAULT:
             kwargs["script"] = script
         super().__init__(kwargs)
 
@@ -3272,12 +3272,12 @@ class NestedSortValue(AttrDict[Any]):
         path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if filter != DEFAULT:
+        if filter is not DEFAULT:
             kwargs["filter"] = filter
-        if max_children != DEFAULT:
+        if max_children is not DEFAULT:
             kwargs["max_children"] = max_children
-        if nested != DEFAULT:
+        if nested is not DEFAULT:
             kwargs["nested"] = nested
-        if path != DEFAULT:
+        if path is not DEFAULT:
             kwargs["path"] = str(path)
         super().__init__(kwargs)
