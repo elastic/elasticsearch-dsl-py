@@ -500,11 +500,8 @@ def generate_interfaces_py(schema, filename):
     classes_list = []
     for n in classes:
         k = classes[n]
-        try:
-            classes_list.index(k)
+        if k in classes_list:
             continue
-        except ValueError:
-            pass
         classes_list.append(k)
         parent = k.get("parent")
         parent_index = len(classes_list) - 1
