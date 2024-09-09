@@ -551,7 +551,10 @@ class Terms(Query):
     name = "terms"
 
     def _setattr(self, name: str, value: Any) -> None:
-        super()._setattr(name, list(value))
+        if name != "boost":
+            value = list(value)
+
+        super()._setattr(name, value)
 
 
 class TermsSet(Query):
