@@ -125,3 +125,12 @@ def test_attrlist_to_list() -> None:
     l = utils.AttrList[Any]([{}, {}]).to_list()
     assert isinstance(l, list)
     assert l == [{}, {}]
+
+
+def test_attrdict_with_reserved_keyword() -> None:
+    d = utils.AttrDict({"from": 10, "size": 20})
+    assert d.from_ == 10
+    assert d.size == 20
+    d = utils.AttrDict({})
+    d.from_ = 10
+    assert {"from": 10} == d.to_dict()
