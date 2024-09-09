@@ -48,7 +48,7 @@ from .utils import DslBase
 if TYPE_CHECKING:
     from elastic_transport.client_utils import DefaultType
     from .document_base import InstrumentedField
-    from elasticsearch_dsl import interfaces as i, wrappers
+    from elasticsearch_dsl import types, wrappers
 
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Mapping[str, Any])

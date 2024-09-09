@@ -26,8 +26,8 @@ from elasticsearch_dsl import (
     AsyncSearch,
     Document,
     Q,
-    interfaces,
     query,
+    types,
     wrappers,
 )
 from elasticsearch_dsl.exceptions import IllegalOperation
@@ -541,8 +541,8 @@ def test_reverse() -> None:
 def test_code_generated_classes() -> None:
     s = AsyncSearch()
     s = (
-        s.query(query.Match("title", interfaces.MatchQuery(query="python")))
-        .query(~query.Match("title", interfaces.MatchQuery(query="ruby")))
+        s.query(query.Match("title", types.MatchQuery(query="python")))
+        .query(~query.Match("title", types.MatchQuery(query="ruby")))
         .query(
             query.Knn(
                 field="title",
@@ -553,8 +553,8 @@ def test_code_generated_classes() -> None:
             )
         )
         .filter(
-            query.Term("category", interfaces.TermQuery(value="meetup"))
-            | query.Term("category", interfaces.TermQuery(value="conference"))
+            query.Term("category", types.TermQuery(value="meetup"))
+            | query.Term("category", types.TermQuery(value="conference"))
         )
         .collapse("user_id")
         .post_filter(query.Terms(tags=["prague", "czech"]))

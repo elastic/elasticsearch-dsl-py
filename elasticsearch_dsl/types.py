@@ -19,9 +19,7 @@ from typing import Any, Dict, Literal, Mapping, Sequence, Union
 
 from elastic_transport.client_utils import DEFAULT, DefaultType
 
-from elasticsearch_dsl import Query
-from elasticsearch_dsl import function as f
-from elasticsearch_dsl import interfaces as i
+from elasticsearch_dsl import Query, function, types
 from elasticsearch_dsl.document_base import InstrumentedField
 from elasticsearch_dsl.utils import AttrDict
 
@@ -170,24 +168,26 @@ class FunctionScoreContainer(AttrDict[Any]):
     :arg weight: No documentation available.
     """
 
-    exp: Union["f.DecayFunction", "DefaultType"]
-    gauss: Union["f.DecayFunction", "DefaultType"]
-    linear: Union["f.DecayFunction", "DefaultType"]
-    field_value_factor: Union["f.FieldValueFactorScore", "DefaultType"]
-    random_score: Union["f.RandomScore", "DefaultType"]
-    script_score: Union["f.ScriptScore", "DefaultType"]
+    exp: Union["function.DecayFunction", "DefaultType"]
+    gauss: Union["function.DecayFunction", "DefaultType"]
+    linear: Union["function.DecayFunction", "DefaultType"]
+    field_value_factor: Union["function.FieldValueFactorScore", "DefaultType"]
+    random_score: Union["function.RandomScore", "DefaultType"]
+    script_score: Union["function.ScriptScore", "DefaultType"]
     filter: Union[Query, "DefaultType"]
     weight: Union[float, "DefaultType"]
 
     def __init__(
         self,
         *,
-        exp: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
-        gauss: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
-        linear: Union["f.DecayFunction", "DefaultType"] = DEFAULT,
-        field_value_factor: Union["f.FieldValueFactorScore", "DefaultType"] = DEFAULT,
-        random_score: Union["f.RandomScore", "DefaultType"] = DEFAULT,
-        script_score: Union["f.ScriptScore", "DefaultType"] = DEFAULT,
+        exp: Union["function.DecayFunction", "DefaultType"] = DEFAULT,
+        gauss: Union["function.DecayFunction", "DefaultType"] = DEFAULT,
+        linear: Union["function.DecayFunction", "DefaultType"] = DEFAULT,
+        field_value_factor: Union[
+            "function.FieldValueFactorScore", "DefaultType"
+        ] = DEFAULT,
+        random_score: Union["function.RandomScore", "DefaultType"] = DEFAULT,
+        script_score: Union["function.ScriptScore", "DefaultType"] = DEFAULT,
         filter: Union[Query, "DefaultType"] = DEFAULT,
         weight: Union[float, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -291,7 +291,9 @@ class GeoPolygonPoints(AttrDict[Any]):
 
     points: Union[
         Sequence[
-            Union["i.LatLonGeoLocation", "i.GeoHashLocation", Sequence[float], str]
+            Union[
+                "types.LatLonGeoLocation", "types.GeoHashLocation", Sequence[float], str
+            ]
         ],
         Dict[str, Any],
         "DefaultType",
@@ -302,7 +304,12 @@ class GeoPolygonPoints(AttrDict[Any]):
         *,
         points: Union[
             Sequence[
-                Union["i.LatLonGeoLocation", "i.GeoHashLocation", Sequence[float], str]
+                Union[
+                    "types.LatLonGeoLocation",
+                    "types.GeoHashLocation",
+                    Sequence[float],
+                    str,
+                ]
             ],
             Dict[str, Any],
             "DefaultType",
@@ -323,7 +330,7 @@ class GeoShapeFieldQuery(AttrDict[Any]):
     """
 
     shape: Any
-    indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"]
+    indexed_shape: Union["types.FieldLookup", Dict[str, Any], "DefaultType"]
     relation: Union[
         Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
     ]
@@ -332,7 +339,9 @@ class GeoShapeFieldQuery(AttrDict[Any]):
         self,
         *,
         shape: Any = DEFAULT,
-        indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"] = DEFAULT,
+        indexed_shape: Union[
+            "types.FieldLookup", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         relation: Union[
             Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
         ] = DEFAULT,
@@ -373,13 +382,15 @@ class InnerHits(AttrDict[Any]):
     name: Union[str, "DefaultType"]
     size: Union[int, "DefaultType"]
     from_: Union[int, "DefaultType"]
-    collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"]
-    docvalue_fields: Union[Sequence["i.FieldAndFormat"], Dict[str, Any], "DefaultType"]
+    collapse: Union["types.FieldCollapse", Dict[str, Any], "DefaultType"]
+    docvalue_fields: Union[
+        Sequence["types.FieldAndFormat"], Dict[str, Any], "DefaultType"
+    ]
     explain: Union[bool, "DefaultType"]
-    highlight: Union["i.Highlight", Dict[str, Any], "DefaultType"]
+    highlight: Union["types.Highlight", Dict[str, Any], "DefaultType"]
     ignore_unmapped: Union[bool, "DefaultType"]
     script_fields: Union[
-        Mapping[Union[str, "InstrumentedField"], "i.ScriptField"],
+        Mapping[Union[str, "InstrumentedField"], "types.ScriptField"],
         Dict[str, Any],
         "DefaultType",
     ]
@@ -390,12 +401,12 @@ class InnerHits(AttrDict[Any]):
         "DefaultType",
     ]
     sort: Union[
-        Union[Union[str, "InstrumentedField"], "i.SortOptions"],
-        Sequence[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
+        Union[Union[str, "InstrumentedField"], "types.SortOptions"],
+        Sequence[Union[Union[str, "InstrumentedField"], "types.SortOptions"]],
         Dict[str, Any],
         "DefaultType",
     ]
-    _source: Union[bool, "i.SourceFilter", Dict[str, Any], "DefaultType"]
+    _source: Union[bool, "types.SourceFilter", Dict[str, Any], "DefaultType"]
     stored_fields: Union[
         Union[str, "InstrumentedField"],
         Sequence[Union[str, "InstrumentedField"]],
@@ -410,15 +421,15 @@ class InnerHits(AttrDict[Any]):
         name: Union[str, "DefaultType"] = DEFAULT,
         size: Union[int, "DefaultType"] = DEFAULT,
         from_: Union[int, "DefaultType"] = DEFAULT,
-        collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
+        collapse: Union["types.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
         docvalue_fields: Union[
-            Sequence["i.FieldAndFormat"], Dict[str, Any], "DefaultType"
+            Sequence["types.FieldAndFormat"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         explain: Union[bool, "DefaultType"] = DEFAULT,
-        highlight: Union["i.Highlight", Dict[str, Any], "DefaultType"] = DEFAULT,
+        highlight: Union["types.Highlight", Dict[str, Any], "DefaultType"] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         script_fields: Union[
-            Mapping[Union[str, "InstrumentedField"], "i.ScriptField"],
+            Mapping[Union[str, "InstrumentedField"], "types.ScriptField"],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -429,12 +440,14 @@ class InnerHits(AttrDict[Any]):
             "DefaultType",
         ] = DEFAULT,
         sort: Union[
-            Union[Union[str, "InstrumentedField"], "i.SortOptions"],
-            Sequence[Union[Union[str, "InstrumentedField"], "i.SortOptions"]],
+            Union[Union[str, "InstrumentedField"], "types.SortOptions"],
+            Sequence[Union[Union[str, "InstrumentedField"], "types.SortOptions"]],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
-        _source: Union[bool, "i.SourceFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _source: Union[
+            bool, "types.SourceFilter", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         stored_fields: Union[
             Union[str, "InstrumentedField"],
             Sequence[Union[str, "InstrumentedField"]],
@@ -497,24 +510,26 @@ class IntervalsQuery(QueryBase):
     :arg _name: No documentation available.
     """
 
-    all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"]
-    any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"]
-    fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"]
-    match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"]
-    prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"]
-    wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"]
+    all_of: Union["types.IntervalsAllOf", Dict[str, Any], "DefaultType"]
+    any_of: Union["types.IntervalsAnyOf", Dict[str, Any], "DefaultType"]
+    fuzzy: Union["types.IntervalsFuzzy", Dict[str, Any], "DefaultType"]
+    match: Union["types.IntervalsMatch", Dict[str, Any], "DefaultType"]
+    prefix: Union["types.IntervalsPrefix", Dict[str, Any], "DefaultType"]
+    wildcard: Union["types.IntervalsWildcard", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"] = DEFAULT,
-        any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"] = DEFAULT,
-        fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"] = DEFAULT,
-        match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
-        prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
-        wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"] = DEFAULT,
+        all_of: Union["types.IntervalsAllOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        any_of: Union["types.IntervalsAnyOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        fuzzy: Union["types.IntervalsFuzzy", Dict[str, Any], "DefaultType"] = DEFAULT,
+        match: Union["types.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
+        prefix: Union["types.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
+        wildcard: Union[
+            "types.IntervalsWildcard", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -1001,13 +1016,13 @@ class QueryVectorBuilder(AttrDict[Any]):
     :arg text_embedding: No documentation available.
     """
 
-    text_embedding: Union["i.TextEmbedding", Dict[str, Any], "DefaultType"]
+    text_embedding: Union["types.TextEmbedding", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         text_embedding: Union[
-            "i.TextEmbedding", Dict[str, Any], "DefaultType"
+            "types.TextEmbedding", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         **kwargs: Any,
     ):
@@ -1185,7 +1200,7 @@ class ShapeFieldQuery(AttrDict[Any]):
         Well Known Text (WKT) format.
     """
 
-    indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"]
+    indexed_shape: Union["types.FieldLookup", Dict[str, Any], "DefaultType"]
     relation: Union[
         Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
     ]
@@ -1194,7 +1209,9 @@ class ShapeFieldQuery(AttrDict[Any]):
     def __init__(
         self,
         *,
-        indexed_shape: Union["i.FieldLookup", Dict[str, Any], "DefaultType"] = DEFAULT,
+        indexed_shape: Union[
+            "types.FieldLookup", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         relation: Union[
             Literal["intersects", "disjoint", "within", "contains"], "DefaultType"
         ] = DEFAULT,
@@ -1235,47 +1252,53 @@ class SpanQuery(AttrDict[Any]):
         other span queries.
     """
 
-    span_containing: Union["i.SpanContainingQuery", Dict[str, Any], "DefaultType"]
-    span_field_masking: Union["i.SpanFieldMaskingQuery", Dict[str, Any], "DefaultType"]
-    span_first: Union["i.SpanFirstQuery", Dict[str, Any], "DefaultType"]
+    span_containing: Union["types.SpanContainingQuery", Dict[str, Any], "DefaultType"]
+    span_field_masking: Union[
+        "types.SpanFieldMaskingQuery", Dict[str, Any], "DefaultType"
+    ]
+    span_first: Union["types.SpanFirstQuery", Dict[str, Any], "DefaultType"]
     span_gap: Union[Mapping[Union[str, "InstrumentedField"], int], "DefaultType"]
-    span_multi: Union["i.SpanMultiTermQuery", Dict[str, Any], "DefaultType"]
-    span_near: Union["i.SpanNearQuery", Dict[str, Any], "DefaultType"]
-    span_not: Union["i.SpanNotQuery", Dict[str, Any], "DefaultType"]
-    span_or: Union["i.SpanOrQuery", Dict[str, Any], "DefaultType"]
+    span_multi: Union["types.SpanMultiTermQuery", Dict[str, Any], "DefaultType"]
+    span_near: Union["types.SpanNearQuery", Dict[str, Any], "DefaultType"]
+    span_not: Union["types.SpanNotQuery", Dict[str, Any], "DefaultType"]
+    span_or: Union["types.SpanOrQuery", Dict[str, Any], "DefaultType"]
     span_term: Union[
-        Mapping[Union[str, "InstrumentedField"], "i.SpanTermQuery"],
+        Mapping[Union[str, "InstrumentedField"], "types.SpanTermQuery"],
         Dict[str, Any],
         "DefaultType",
     ]
-    span_within: Union["i.SpanWithinQuery", Dict[str, Any], "DefaultType"]
+    span_within: Union["types.SpanWithinQuery", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         span_containing: Union[
-            "i.SpanContainingQuery", Dict[str, Any], "DefaultType"
+            "types.SpanContainingQuery", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         span_field_masking: Union[
-            "i.SpanFieldMaskingQuery", Dict[str, Any], "DefaultType"
+            "types.SpanFieldMaskingQuery", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        span_first: Union["i.SpanFirstQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        span_first: Union[
+            "types.SpanFirstQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         span_gap: Union[
             Mapping[Union[str, "InstrumentedField"], int], "DefaultType"
         ] = DEFAULT,
         span_multi: Union[
-            "i.SpanMultiTermQuery", Dict[str, Any], "DefaultType"
+            "types.SpanMultiTermQuery", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        span_near: Union["i.SpanNearQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        span_not: Union["i.SpanNotQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        span_or: Union["i.SpanOrQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        span_near: Union[
+            "types.SpanNearQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        span_not: Union["types.SpanNotQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        span_or: Union["types.SpanOrQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         span_term: Union[
-            Mapping[Union[str, "InstrumentedField"], "i.SpanTermQuery"],
+            Mapping[Union[str, "InstrumentedField"], "types.SpanTermQuery"],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
         span_within: Union[
-            "i.SpanWithinQuery", Dict[str, Any], "DefaultType"
+            "types.SpanWithinQuery", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         **kwargs: Any,
     ):
@@ -1424,7 +1447,7 @@ class TermsSetQuery(QueryBase):
     """
 
     minimum_should_match_field: Union[str, "InstrumentedField", "DefaultType"]
-    minimum_should_match_script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    minimum_should_match_script: Union["types.Script", Dict[str, Any], "DefaultType"]
     terms: Union[Sequence[str], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
@@ -1436,7 +1459,7 @@ class TermsSetQuery(QueryBase):
             str, "InstrumentedField", "DefaultType"
         ] = DEFAULT,
         minimum_should_match_script: Union[
-            "i.Script", Dict[str, Any], "DefaultType"
+            "types.Script", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         terms: Union[Sequence[str], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
@@ -1471,7 +1494,7 @@ class TextExpansionQuery(QueryBase):
 
     model_id: Union[str, "DefaultType"]
     model_text: Union[str, "DefaultType"]
-    pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "DefaultType"]
+    pruning_config: Union["types.TokenPruningConfig", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
@@ -1481,7 +1504,7 @@ class TextExpansionQuery(QueryBase):
         model_id: Union[str, "DefaultType"] = DEFAULT,
         model_text: Union[str, "DefaultType"] = DEFAULT,
         pruning_config: Union[
-            "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
+            "types.TokenPruningConfig", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -1539,16 +1562,16 @@ class TopLeftBottomRightGeoBounds(AttrDict[Any]):
     """
 
     top_left: Union[
-        "i.LatLonGeoLocation",
-        "i.GeoHashLocation",
+        "types.LatLonGeoLocation",
+        "types.GeoHashLocation",
         Sequence[float],
         str,
         Dict[str, Any],
         "DefaultType",
     ]
     bottom_right: Union[
-        "i.LatLonGeoLocation",
-        "i.GeoHashLocation",
+        "types.LatLonGeoLocation",
+        "types.GeoHashLocation",
         Sequence[float],
         str,
         Dict[str, Any],
@@ -1559,16 +1582,16 @@ class TopLeftBottomRightGeoBounds(AttrDict[Any]):
         self,
         *,
         top_left: Union[
-            "i.LatLonGeoLocation",
-            "i.GeoHashLocation",
+            "types.LatLonGeoLocation",
+            "types.GeoHashLocation",
             Sequence[float],
             str,
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
         bottom_right: Union[
-            "i.LatLonGeoLocation",
-            "i.GeoHashLocation",
+            "types.LatLonGeoLocation",
+            "types.GeoHashLocation",
             Sequence[float],
             str,
             Dict[str, Any],
@@ -1590,16 +1613,16 @@ class TopRightBottomLeftGeoBounds(AttrDict[Any]):
     """
 
     top_right: Union[
-        "i.LatLonGeoLocation",
-        "i.GeoHashLocation",
+        "types.LatLonGeoLocation",
+        "types.GeoHashLocation",
         Sequence[float],
         str,
         Dict[str, Any],
         "DefaultType",
     ]
     bottom_left: Union[
-        "i.LatLonGeoLocation",
-        "i.GeoHashLocation",
+        "types.LatLonGeoLocation",
+        "types.GeoHashLocation",
         Sequence[float],
         str,
         Dict[str, Any],
@@ -1610,16 +1633,16 @@ class TopRightBottomLeftGeoBounds(AttrDict[Any]):
         self,
         *,
         top_right: Union[
-            "i.LatLonGeoLocation",
-            "i.GeoHashLocation",
+            "types.LatLonGeoLocation",
+            "types.GeoHashLocation",
             Sequence[float],
             str,
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
         bottom_left: Union[
-            "i.LatLonGeoLocation",
-            "i.GeoHashLocation",
+            "types.LatLonGeoLocation",
+            "types.GeoHashLocation",
             Sequence[float],
             str,
             Dict[str, Any],
@@ -1647,7 +1670,7 @@ class WeightedTokensQuery(QueryBase):
     """
 
     tokens: Union[Mapping[str, float], "DefaultType"]
-    pruning_config: Union["i.TokenPruningConfig", Dict[str, Any], "DefaultType"]
+    pruning_config: Union["types.TokenPruningConfig", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
@@ -1656,7 +1679,7 @@ class WeightedTokensQuery(QueryBase):
         *,
         tokens: Union[Mapping[str, float], "DefaultType"] = DEFAULT,
         pruning_config: Union[
-            "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
+            "types.TokenPruningConfig", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -1782,20 +1805,23 @@ class FieldCollapse(AttrDict[Any]):
 
     field: Union[str, "InstrumentedField", "DefaultType"]
     inner_hits: Union[
-        "i.InnerHits", Sequence["i.InnerHits"], Dict[str, Any], "DefaultType"
+        "types.InnerHits", Sequence["types.InnerHits"], Dict[str, Any], "DefaultType"
     ]
     max_concurrent_group_searches: Union[int, "DefaultType"]
-    collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"]
+    collapse: Union["types.FieldCollapse", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         inner_hits: Union[
-            "i.InnerHits", Sequence["i.InnerHits"], Dict[str, Any], "DefaultType"
+            "types.InnerHits",
+            Sequence["types.InnerHits"],
+            Dict[str, Any],
+            "DefaultType",
         ] = DEFAULT,
         max_concurrent_group_searches: Union[int, "DefaultType"] = DEFAULT,
-        collapse: Union["i.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
+        collapse: Union["types.FieldCollapse", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if field is not DEFAULT:
@@ -2063,7 +2089,7 @@ class Highlight(HighlightBase):
 
     encoder: Union[Literal["default", "html"], "DefaultType"]
     fields: Union[
-        Mapping[Union[str, "InstrumentedField"], "i.HighlightField"],
+        Mapping[Union[str, "InstrumentedField"], "types.HighlightField"],
         Dict[str, Any],
         "DefaultType",
     ]
@@ -2094,7 +2120,7 @@ class Highlight(HighlightBase):
         *,
         encoder: Union[Literal["default", "html"], "DefaultType"] = DEFAULT,
         fields: Union[
-            Mapping[Union[str, "InstrumentedField"], "i.HighlightField"],
+            Mapping[Union[str, "InstrumentedField"], "types.HighlightField"],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -2178,13 +2204,13 @@ class ScriptField(AttrDict[Any]):
     :arg ignore_failure: No documentation available.
     """
 
-    script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    script: Union["types.Script", Dict[str, Any], "DefaultType"]
     ignore_failure: Union[bool, "DefaultType"]
 
     def __init__(
         self,
         *,
-        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        script: Union["types.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         ignore_failure: Union[bool, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
@@ -2203,20 +2229,20 @@ class SortOptions(AttrDict[Any]):
     :arg _script: No documentation available.
     """
 
-    _score: Union["i.ScoreSort", Dict[str, Any], "DefaultType"]
-    _doc: Union["i.ScoreSort", Dict[str, Any], "DefaultType"]
-    _geo_distance: Union["i.GeoDistanceSort", Dict[str, Any], "DefaultType"]
-    _script: Union["i.ScriptSort", Dict[str, Any], "DefaultType"]
+    _score: Union["types.ScoreSort", Dict[str, Any], "DefaultType"]
+    _doc: Union["types.ScoreSort", Dict[str, Any], "DefaultType"]
+    _geo_distance: Union["types.GeoDistanceSort", Dict[str, Any], "DefaultType"]
+    _script: Union["types.ScriptSort", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        _score: Union["i.ScoreSort", Dict[str, Any], "DefaultType"] = DEFAULT,
-        _doc: Union["i.ScoreSort", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _score: Union["types.ScoreSort", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _doc: Union["types.ScoreSort", Dict[str, Any], "DefaultType"] = DEFAULT,
         _geo_distance: Union[
-            "i.GeoDistanceSort", Dict[str, Any], "DefaultType"
+            "types.GeoDistanceSort", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        _script: Union["i.ScriptSort", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _script: Union["types.ScriptSort", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _score is not DEFAULT:
@@ -2282,20 +2308,22 @@ class IntervalsAllOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
+    intervals: Union[
+        Sequence["types.IntervalsContainer"], Dict[str, Any], "DefaultType"
+    ]
     max_gaps: Union[int, "DefaultType"]
     ordered: Union[bool, "DefaultType"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
+    filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         intervals: Union[
-            Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
+            Sequence["types.IntervalsContainer"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         max_gaps: Union[int, "DefaultType"] = DEFAULT,
         ordered: Union[bool, "DefaultType"] = DEFAULT,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
+        filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if intervals is not DEFAULT:
@@ -2315,16 +2343,18 @@ class IntervalsAnyOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
+    intervals: Union[
+        Sequence["types.IntervalsContainer"], Dict[str, Any], "DefaultType"
+    ]
+    filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         intervals: Union[
-            Sequence["i.IntervalsContainer"], Dict[str, Any], "DefaultType"
+            Sequence["types.IntervalsContainer"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
+        filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if intervals is not DEFAULT:
@@ -2402,7 +2432,7 @@ class IntervalsMatch(AttrDict[Any]):
     ordered: Union[bool, "DefaultType"]
     query: Union[str, "DefaultType"]
     use_field: Union[str, "InstrumentedField", "DefaultType"]
-    filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"]
+    filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
@@ -2412,7 +2442,7 @@ class IntervalsMatch(AttrDict[Any]):
         ordered: Union[bool, "DefaultType"] = DEFAULT,
         query: Union[str, "DefaultType"] = DEFAULT,
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        filter: Union["i.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
+        filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if analyzer is not DEFAULT:
@@ -2531,16 +2561,16 @@ class SpanContainingQuery(QueryBase):
     :arg _name: No documentation available.
     """
 
-    big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
-    little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
+    little: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2569,7 +2599,7 @@ class SpanFieldMaskingQuery(QueryBase):
     """
 
     field: Union[str, "InstrumentedField", "DefaultType"]
-    query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    query: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
@@ -2577,7 +2607,7 @@ class SpanFieldMaskingQuery(QueryBase):
         self,
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        query: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2607,7 +2637,7 @@ class SpanFirstQuery(QueryBase):
     """
 
     end: Union[int, "DefaultType"]
-    match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    match: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
@@ -2615,7 +2645,7 @@ class SpanFirstQuery(QueryBase):
         self,
         *,
         end: Union[int, "DefaultType"] = DEFAULT,
-        match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        match: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2678,7 +2708,7 @@ class SpanNearQuery(QueryBase):
     :arg _name: No documentation available.
     """
 
-    clauses: Union[Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"]
+    clauses: Union[Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"]
     in_order: Union[bool, "DefaultType"]
     slop: Union[int, "DefaultType"]
     boost: Union[float, "DefaultType"]
@@ -2688,7 +2718,7 @@ class SpanNearQuery(QueryBase):
         self,
         *,
         clauses: Union[
-            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+            Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         in_order: Union[bool, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
@@ -2730,8 +2760,8 @@ class SpanNotQuery(QueryBase):
     """
 
     dist: Union[int, "DefaultType"]
-    exclude: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
-    include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    exclude: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
+    include: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
     post: Union[int, "DefaultType"]
     pre: Union[int, "DefaultType"]
     boost: Union[float, "DefaultType"]
@@ -2741,8 +2771,8 @@ class SpanNotQuery(QueryBase):
         self,
         *,
         dist: Union[int, "DefaultType"] = DEFAULT,
-        exclude: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        exclude: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        include: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         post: Union[int, "DefaultType"] = DEFAULT,
         pre: Union[int, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
@@ -2777,7 +2807,7 @@ class SpanOrQuery(QueryBase):
     :arg _name: No documentation available.
     """
 
-    clauses: Union[Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"]
+    clauses: Union[Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
@@ -2785,7 +2815,7 @@ class SpanOrQuery(QueryBase):
         self,
         *,
         clauses: Union[
-            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+            Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -2814,16 +2844,16 @@ class SpanWithinQuery(QueryBase):
     :arg _name: No documentation available.
     """
 
-    big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
-    little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"]
+    big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
+    little: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
-        big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -3055,7 +3085,7 @@ class GeoDistanceSort(AttrDict[Any]):
     unit: Union[
         Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], "DefaultType"
     ]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"]
+    nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
@@ -3069,7 +3099,7 @@ class GeoDistanceSort(AttrDict[Any]):
         unit: Union[
             Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], "DefaultType"
         ] = DEFAULT,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
+        nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if mode is not DEFAULT:
@@ -3097,21 +3127,21 @@ class ScriptSort(AttrDict[Any]):
     """
 
     order: Union[Literal["asc", "desc"], "DefaultType"]
-    script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    script: Union["types.Script", Dict[str, Any], "DefaultType"]
     type: Union[Literal["string", "number", "version"], "DefaultType"]
     mode: Union[Literal["min", "max", "sum", "avg", "median"], "DefaultType"]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"]
+    nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
         order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
-        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        script: Union["types.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         type: Union[Literal["string", "number", "version"], "DefaultType"] = DEFAULT,
         mode: Union[
             Literal["min", "max", "sum", "avg", "median"], "DefaultType"
         ] = DEFAULT,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
+        nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if order is not DEFAULT:
@@ -3138,22 +3168,24 @@ class IntervalsContainer(AttrDict[Any]):
     :arg wildcard: Matches terms using a wildcard pattern.
     """
 
-    all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"]
-    any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"]
-    fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"]
-    match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"]
-    prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"]
-    wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"]
+    all_of: Union["types.IntervalsAllOf", Dict[str, Any], "DefaultType"]
+    any_of: Union["types.IntervalsAnyOf", Dict[str, Any], "DefaultType"]
+    fuzzy: Union["types.IntervalsFuzzy", Dict[str, Any], "DefaultType"]
+    match: Union["types.IntervalsMatch", Dict[str, Any], "DefaultType"]
+    prefix: Union["types.IntervalsPrefix", Dict[str, Any], "DefaultType"]
+    wildcard: Union["types.IntervalsWildcard", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        all_of: Union["i.IntervalsAllOf", Dict[str, Any], "DefaultType"] = DEFAULT,
-        any_of: Union["i.IntervalsAnyOf", Dict[str, Any], "DefaultType"] = DEFAULT,
-        fuzzy: Union["i.IntervalsFuzzy", Dict[str, Any], "DefaultType"] = DEFAULT,
-        match: Union["i.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
-        prefix: Union["i.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
-        wildcard: Union["i.IntervalsWildcard", Dict[str, Any], "DefaultType"] = DEFAULT,
+        all_of: Union["types.IntervalsAllOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        any_of: Union["types.IntervalsAnyOf", Dict[str, Any], "DefaultType"] = DEFAULT,
+        fuzzy: Union["types.IntervalsFuzzy", Dict[str, Any], "DefaultType"] = DEFAULT,
+        match: Union["types.IntervalsMatch", Dict[str, Any], "DefaultType"] = DEFAULT,
+        prefix: Union["types.IntervalsPrefix", Dict[str, Any], "DefaultType"] = DEFAULT,
+        wildcard: Union[
+            "types.IntervalsWildcard", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
         if all_of is not DEFAULT:
@@ -3193,40 +3225,44 @@ class IntervalsFilter(AttrDict[Any]):
         must return a boolean value: `true` or `false`.
     """
 
-    after: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    before: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    contained_by: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    containing: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    not_contained_by: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    not_containing: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    not_overlapping: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    overlapping: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"]
-    script: Union["i.Script", Dict[str, Any], "DefaultType"]
+    after: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    before: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    contained_by: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    containing: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    not_contained_by: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    not_containing: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    not_overlapping: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    overlapping: Union["types.IntervalsContainer", Dict[str, Any], "DefaultType"]
+    script: Union["types.Script", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
-        after: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"] = DEFAULT,
-        before: Union["i.IntervalsContainer", Dict[str, Any], "DefaultType"] = DEFAULT,
+        after: Union[
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
+        before: Union[
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         contained_by: Union[
-            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         containing: Union[
-            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         not_contained_by: Union[
-            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         not_containing: Union[
-            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         not_overlapping: Union[
-            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         overlapping: Union[
-            "i.IntervalsContainer", Dict[str, Any], "DefaultType"
+            "types.IntervalsContainer", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        script: Union["types.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if after is not DEFAULT:
@@ -3260,7 +3296,7 @@ class NestedSortValue(AttrDict[Any]):
 
     filter: Union[Query, "DefaultType"]
     max_children: Union[int, "DefaultType"]
-    nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"]
+    nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"]
     path: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
@@ -3268,7 +3304,7 @@ class NestedSortValue(AttrDict[Any]):
         *,
         filter: Union[Query, "DefaultType"] = DEFAULT,
         max_children: Union[int, "DefaultType"] = DEFAULT,
-        nested: Union["i.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
+        nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):

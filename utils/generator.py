@@ -31,7 +31,7 @@ jinja_env = Environment(
     lstrip_blocks=True,
 )
 query_py = jinja_env.get_template("query.py.tpl")
-interfaces_py = jinja_env.get_template("interfaces.py.tpl")
+types_py = jinja_env.get_template("types.py.tpl")
 
 # map with name replacements for Elasticsearch attributes
 PROP_REPLACEMENTS = {"from": "from_"}
@@ -90,7 +90,7 @@ class ElasticsearchSchema:
 
         # Interfaces collects interfaces that are seen while traversing the schema.
         # Any interfaces collected here are then rendered as Python in the
-        # interfaces.py module.
+        # types.py module.
         self.interfaces = []
 
     def find_type(self, name, namespace=None):
@@ -182,7 +182,7 @@ class ElasticsearchSchema:
                 # for now we treat PipeSeparatedFlags as a special case
                 if "PipeSeparatedFlags" not in self.interfaces:
                     self.interfaces.append("PipeSeparatedFlags")
-                return '"i.PipeSeparatedFlags"', None
+                return '"types.PipeSeparatedFlags"', None
             else:
                 # generic union type
                 types = list(
@@ -211,11 +211,11 @@ class ElasticsearchSchema:
                     return '"wrappers.Range[Any]"', None
                 elif schema_type["name"]["name"].endswith("ScoreFunction"):
                     name = schema_type["name"]["name"][:-8]
-                    return f'"f.{name}"', None
+                    return f'"function.{name}"', None
                 elif schema_type["name"]["name"].endswith("DecayFunction"):
-                    return '"f.DecayFunction"', None
+                    return '"function.DecayFunction"', None
                 elif schema_type["name"]["name"].endswith("Function"):
-                    return f"\"f.{schema_type['name']['name']}\"", None
+                    return f"\"function.{schema_type['name']['name']}\"", None
             elif schema_type["name"]["namespace"] == "_types.analysis" and schema_type[
                 "name"
             ]["name"].endswith("Analyzer"):
@@ -226,7 +226,7 @@ class ElasticsearchSchema:
             # and add the interface to the interfaces.py module
             if schema_type["name"]["name"] not in self.interfaces:
                 self.interfaces.append(schema_type["name"]["name"])
-            return f"\"i.{schema_type['name']['name']}\"", None
+            return f"\"types.{schema_type['name']['name']}\"", None
         elif schema_type["kind"] == "user_defined_value":
             # user_defined_value maps to Python's Any type
             return "Any", None
@@ -248,7 +248,7 @@ class ElasticsearchSchema:
             type_ = "Any"
             param = None
         if type_ != "Any":
-            if "i." in type_:
+            if "types." in type_:
                 type_ = add_dict_type(type_)  # interfaces can be given as dicts
             type_ = add_not_set(type_)
         required = "(required) " if arg["required"] else ""
@@ -487,8 +487,8 @@ def generate_query_py(schema, filename):
     print(f"Generated {filename}.")
 
 
-def generate_interfaces_py(schema, filename):
-    """Generate interfaces.py"""
+def generate_types_py(schema, filename):
+    """Generate types.py"""
     classes = {}
     schema.interfaces = sorted(schema.interfaces)
     for interface in schema.interfaces:
@@ -515,11 +515,11 @@ def generate_interfaces_py(schema, filename):
             parent = classes[parent].get("parent")
 
     with open(filename, "wt") as f:
-        f.write(interfaces_py.render(classes=classes_list))
+        f.write(types_py.render(classes=classes_list))
     print(f"Generated {filename}.")
 
 
 if __name__ == "__main__":
     schema = ElasticsearchSchema()
     generate_query_py(schema, "elasticsearch_dsl/query.py")
-    generate_interfaces_py(schema, "elasticsearch_dsl/interfaces.py")
+    generate_types_py(schema, "elasticsearch_dsl/types.py")

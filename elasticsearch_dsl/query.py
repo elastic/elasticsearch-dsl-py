@@ -48,8 +48,7 @@ from .utils import DslBase
 if TYPE_CHECKING:
     from elastic_transport.client_utils import DefaultType
 
-    from elasticsearch_dsl import interfaces as i
-    from elasticsearch_dsl import wrappers
+    from elasticsearch_dsl import types, wrappers
 
     from .document_base import InstrumentedField
 
@@ -371,7 +370,9 @@ class Common(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.CommonTermsQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union[
+            "types.CommonTermsQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -623,7 +624,7 @@ class FunctionScore(Query):
             Literal["multiply", "replace", "sum", "avg", "max", "min"], "DefaultType"
         ] = DEFAULT,
         functions: Union[
-            Sequence["i.FunctionScoreContainer"], Dict[str, Any], "DefaultType"
+            Sequence["types.FunctionScoreContainer"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         max_boost: Union[float, "DefaultType"] = DEFAULT,
         min_score: Union[float, "DefaultType"] = DEFAULT,
@@ -667,7 +668,7 @@ class Fuzzy(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.FuzzyQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.FuzzyQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -702,10 +703,10 @@ class GeoBoundingBox(Query):
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         _value: Union[
-            "i.CoordsGeoBounds",
-            "i.TopLeftBottomRightGeoBounds",
-            "i.TopRightBottomLeftGeoBounds",
-            "i.WktGeoBounds",
+            "types.CoordsGeoBounds",
+            "types.TopLeftBottomRightGeoBounds",
+            "types.TopRightBottomLeftGeoBounds",
+            "types.WktGeoBounds",
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -764,8 +765,8 @@ class GeoDistance(Query):
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         _value: Union[
-            "i.LatLonGeoLocation",
-            "i.GeoHashLocation",
+            "types.LatLonGeoLocation",
+            "types.GeoHashLocation",
             Sequence[float],
             str,
             Dict[str, Any],
@@ -816,7 +817,9 @@ class GeoPolygon(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.GeoPolygonPoints", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union[
+            "types.GeoPolygonPoints", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         *,
         validation_method: Union[
             Literal["coerce", "ignore_malformed", "strict"], "DefaultType"
@@ -860,7 +863,9 @@ class GeoShape(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.GeoShapeFieldQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union[
+            "types.GeoShapeFieldQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         *,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
@@ -916,7 +921,7 @@ class HasChild(Query):
         query: Union[Query, "DefaultType"] = DEFAULT,
         type: Union[str, "DefaultType"] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
-        inner_hits: Union["i.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
+        inner_hits: Union["types.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
         max_children: Union[int, "DefaultType"] = DEFAULT,
         min_children: Union[int, "DefaultType"] = DEFAULT,
         score_mode: Union[
@@ -976,7 +981,7 @@ class HasParent(Query):
         parent_type: Union[str, "DefaultType"] = DEFAULT,
         query: Union[Query, "DefaultType"] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
-        inner_hits: Union["i.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
+        inner_hits: Union["types.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
         score: Union[bool, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -1034,7 +1039,7 @@ class Intervals(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.IntervalsQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.IntervalsQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -1077,7 +1082,7 @@ class Knn(Query):
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         query_vector: Union[Sequence[float], "DefaultType"] = DEFAULT,
         query_vector_builder: Union[
-            "i.QueryVectorBuilder", Dict[str, Any], "DefaultType"
+            "types.QueryVectorBuilder", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         num_candidates: Union[int, "DefaultType"] = DEFAULT,
         k: Union[int, "DefaultType"] = DEFAULT,
@@ -1115,7 +1120,7 @@ class Match(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.MatchQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.MatchQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -1179,7 +1184,7 @@ class MatchBoolPrefix(Query):
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         _value: Union[
-            "i.MatchBoolPrefixQuery", Dict[str, Any], "DefaultType"
+            "types.MatchBoolPrefixQuery", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         **kwargs: Any,
     ):
@@ -1238,7 +1243,9 @@ class MatchPhrase(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.MatchPhraseQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union[
+            "types.MatchPhraseQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -1262,7 +1269,7 @@ class MatchPhrasePrefix(Query):
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         _value: Union[
-            "i.MatchPhrasePrefixQuery", Dict[str, Any], "DefaultType"
+            "types.MatchPhrasePrefixQuery", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         **kwargs: Any,
     ):
@@ -1327,8 +1334,8 @@ class MoreLikeThis(Query):
         self,
         *,
         like: Union[
-            Union[str, "i.LikeDocument"],
-            Sequence[Union[str, "i.LikeDocument"]],
+            Union[str, "types.LikeDocument"],
+            Sequence[Union[str, "types.LikeDocument"]],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -1349,8 +1356,8 @@ class MoreLikeThis(Query):
         routing: Union[str, "DefaultType"] = DEFAULT,
         stop_words: Union[str, Sequence[str], "DefaultType"] = DEFAULT,
         unlike: Union[
-            Union[str, "i.LikeDocument"],
-            Sequence[Union[str, "i.LikeDocument"]],
+            Union[str, "types.LikeDocument"],
+            Sequence[Union[str, "types.LikeDocument"]],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -1531,7 +1538,7 @@ class Nested(Query):
         path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         query: Union[Query, "DefaultType"] = DEFAULT,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
-        inner_hits: Union["i.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
+        inner_hits: Union["types.InnerHits", Dict[str, Any], "DefaultType"] = DEFAULT,
         score_mode: Union[
             Literal["none", "avg", "sum", "max", "min"], "DefaultType"
         ] = DEFAULT,
@@ -1675,7 +1682,9 @@ class Pinned(Query):
         *,
         organic: Union[Query, "DefaultType"] = DEFAULT,
         ids: Union[Sequence[str], "DefaultType"] = DEFAULT,
-        docs: Union[Sequence["i.PinnedDoc"], Dict[str, Any], "DefaultType"] = DEFAULT,
+        docs: Union[
+            Sequence["types.PinnedDoc"], Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -1698,7 +1707,7 @@ class Prefix(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.PrefixQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.PrefixQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -1897,16 +1906,16 @@ class RankFeature(Query):
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         saturation: Union[
-            "i.RankFeatureFunctionSaturation", Dict[str, Any], "DefaultType"
+            "types.RankFeatureFunctionSaturation", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         log: Union[
-            "i.RankFeatureFunctionLogarithm", Dict[str, Any], "DefaultType"
+            "types.RankFeatureFunctionLogarithm", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         linear: Union[
-            "i.RankFeatureFunctionLinear", Dict[str, Any], "DefaultType"
+            "types.RankFeatureFunctionLinear", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         sigmoid: Union[
-            "i.RankFeatureFunctionSigmoid", Dict[str, Any], "DefaultType"
+            "types.RankFeatureFunctionSigmoid", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -1937,7 +1946,7 @@ class Regexp(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.RegexpQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.RegexpQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -2005,7 +2014,7 @@ class Script(Query):
     def __init__(
         self,
         *,
-        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        script: Union["types.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2040,7 +2049,7 @@ class ScriptScore(Query):
         self,
         *,
         query: Union[Query, "DefaultType"] = DEFAULT,
-        script: Union["i.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        script: Union["types.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
         min_score: Union[float, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -2106,7 +2115,7 @@ class Shape(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.ShapeFieldQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.ShapeFieldQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         *,
         ignore_unmapped: Union[bool, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
@@ -2176,7 +2185,9 @@ class SimpleQueryString(Query):
         fields: Union[
             Sequence[Union[str, "InstrumentedField"]], "DefaultType"
         ] = DEFAULT,
-        flags: Union["i.PipeSeparatedFlags", Dict[str, Any], "DefaultType"] = DEFAULT,
+        flags: Union[
+            "types.PipeSeparatedFlags", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         fuzzy_max_expansions: Union[int, "DefaultType"] = DEFAULT,
         fuzzy_prefix_length: Union[int, "DefaultType"] = DEFAULT,
         fuzzy_transpositions: Union[bool, "DefaultType"] = DEFAULT,
@@ -2228,8 +2239,8 @@ class SpanContaining(Query):
     def __init__(
         self,
         *,
-        big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2258,7 +2269,7 @@ class SpanFieldMasking(Query):
         self,
         *,
         field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        query: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        query: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2287,7 +2298,7 @@ class SpanFirst(Query):
         self,
         *,
         end: Union[int, "DefaultType"] = DEFAULT,
-        match: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        match: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2351,7 +2362,7 @@ class SpanNear(Query):
         self,
         *,
         clauses: Union[
-            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+            Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         in_order: Union[bool, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
@@ -2398,8 +2409,8 @@ class SpanNot(Query):
     def __init__(
         self,
         *,
-        exclude: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        include: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        exclude: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        include: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         dist: Union[int, "DefaultType"] = DEFAULT,
         post: Union[int, "DefaultType"] = DEFAULT,
         pre: Union[int, "DefaultType"] = DEFAULT,
@@ -2438,7 +2449,7 @@ class SpanOr(Query):
         self,
         *,
         clauses: Union[
-            Sequence["i.SpanQuery"], Dict[str, Any], "DefaultType"
+            Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -2460,7 +2471,7 @@ class SpanTerm(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.SpanTermQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.SpanTermQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -2489,8 +2500,8 @@ class SpanWithin(Query):
     def __init__(
         self,
         *,
-        big: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
-        little: Union["i.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        big: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        little: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
@@ -2546,7 +2557,7 @@ class SparseVector(Query):
         query: Union[str, "DefaultType"] = DEFAULT,
         prune: Union[bool, "DefaultType"] = DEFAULT,
         pruning_config: Union[
-            "i.TokenPruningConfig", Dict[str, Any], "DefaultType"
+            "types.TokenPruningConfig", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -2580,7 +2591,7 @@ class Term(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.TermQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.TermQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -2611,7 +2622,7 @@ class Terms(Query):
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         _value: Union[
             Sequence[Union[int, float, str, bool, None, Any]],
-            "i.TermsLookup",
+            "types.TermsLookup",
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
@@ -2647,7 +2658,7 @@ class TermsSet(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.TermsSetQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.TermsSetQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -2670,7 +2681,9 @@ class TextExpansion(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.TextExpansionQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union[
+            "types.TextExpansionQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -2692,7 +2705,9 @@ class WeightedTokens(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.WeightedTokensQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union[
+            "types.WeightedTokensQuery", Dict[str, Any], "DefaultType"
+        ] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
@@ -2713,7 +2728,7 @@ class Wildcard(Query):
     def __init__(
         self,
         _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
-        _value: Union["i.WildcardQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        _value: Union["types.WildcardQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
         if _field is not DEFAULT:
