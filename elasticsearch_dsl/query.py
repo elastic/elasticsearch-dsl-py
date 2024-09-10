@@ -167,7 +167,7 @@ class Bool(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -327,7 +327,7 @@ class Boosting(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -391,18 +391,19 @@ class CombinedFields(Query):
         performing a search.
     :arg auto_generate_synonyms_phrase_query: If true, match phrase
         queries are automatically created for multi-term synonyms.
+        Defaults to `True` if omitted.
     :arg operator: Boolean logic used to interpret text in the query
-        value.
+        value. Defaults to `or` if omitted.
     :arg minimum_should_match: Minimum number of clauses that must match
         for a document to be returned.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the analyzer removes all tokens, such as when using a `stop`
-        filter.
+        filter. Defaults to `none` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -449,7 +450,7 @@ class ConstantScore(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -487,7 +488,7 @@ class DisMax(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -537,7 +538,7 @@ class DistanceFeature(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -567,7 +568,7 @@ class Exists(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -590,7 +591,7 @@ class FunctionScore(Query):
     are retrieved by a query.
 
     :arg boost_mode: Defines how he newly computed score is combined with
-        the score of the query
+        the score of the query Defaults to `multiply` if omitted.
     :arg functions: One or more functions that compute a new score for
         each document returned by the query.
     :arg max_boost: Restricts the new score to not exceed the provided
@@ -600,11 +601,12 @@ class FunctionScore(Query):
     :arg query: A query that determines the documents for which a new
         score is computed.
     :arg score_mode: Specifies how the computed scores are combined
+        Defaults to `multiply` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -683,7 +685,8 @@ class GeoBoundingBox(Query):
     :arg type:
     :arg validation_method: Set to `IGNORE_MALFORMED` to accept geo points
         with invalid latitude or longitude. Set to `COERCE` to also try to
-        infer correct latitude or longitude.
+        infer correct latitude or longitude. Defaults to `'strict'` if
+        omitted.
     :arg ignore_unmapped: Set to `true` to ignore an unmapped field and
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
@@ -691,7 +694,7 @@ class GeoBoundingBox(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -742,10 +745,11 @@ class GeoDistance(Query):
         considered to be matches.
     :arg distance_type: How to compute the distance. Set to `plane` for a
         faster calculation that's inaccurate on long distances and close
-        to the poles.
+        to the poles. Defaults to `'arc'` if omitted.
     :arg validation_method: Set to `IGNORE_MALFORMED` to accept geo points
         with invalid latitude or longitude. Set to `COERCE` to also try to
-        infer correct latitude or longitude.
+        infer correct latitude or longitude. Defaults to `'strict'` if
+        omitted.
     :arg ignore_unmapped: Set to `true` to ignore an unmapped field and
         not match any documents for this query. Set to `false` to throw an
         exception if the field is not mapped.
@@ -753,7 +757,7 @@ class GeoDistance(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -798,13 +802,13 @@ class GeoPolygon(Query):
     """
     :arg _field: The field to use in this query.
     :arg _value: The query value for the field.
-    :arg validation_method:
+    :arg validation_method:  Defaults to `'strict'` if omitted.
     :arg ignore_unmapped:
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -850,7 +854,7 @@ class GeoShape(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -897,12 +901,13 @@ class HasChild(Query):
         If the parent document does not meet this limit, it is excluded
         from the search results.
     :arg score_mode: Indicates how scores for matching child documents
-        affect the root parent document’s relevance score.
+        affect the root parent document’s relevance score. Defaults to
+        `'none'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -962,7 +967,7 @@ class HasParent(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1005,7 +1010,7 @@ class Ids(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1063,7 +1068,7 @@ class Knn(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1132,7 +1137,7 @@ class MatchAll(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1197,7 +1202,7 @@ class MatchNone(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1288,7 +1293,8 @@ class MoreLikeThis(Query):
         when using this feature. Defaults to deactivated (0).
     :arg fail_on_unsupported_field: Controls whether the query should fail
         (throw an exception) if any of the specified fields are not of the
-        supported types (`text` or `keyword`).
+        supported types (`text` or `keyword`). Defaults to `True` if
+        omitted.
     :arg fields: A list of fields to fetch and analyze the text from.
         Defaults to the `index.query.default_field` index setting, which
         has a default value of `*`.
@@ -1297,16 +1303,17 @@ class MoreLikeThis(Query):
     :arg max_doc_freq: The maximum document frequency above which the
         terms are ignored from the input document.
     :arg max_query_terms: The maximum number of query terms that can be
-        selected.
+        selected. Defaults to `25` if omitted.
     :arg max_word_length: The maximum word length above which the terms
         are ignored. Defaults to unbounded (`0`).
     :arg min_doc_freq: The minimum document frequency below which the
-        terms are ignored from the input document.
+        terms are ignored from the input document. Defaults to `5` if
+        omitted.
     :arg minimum_should_match: After the disjunctive query has been
         formed, this parameter controls the number of terms that must
         match.
     :arg min_term_freq: The minimum term frequency below which the terms
-        are ignored from the input document.
+        are ignored from the input document. Defaults to `2` if omitted.
     :arg min_word_length: The minimum word length below which the terms
         are ignored.
     :arg routing:
@@ -1315,12 +1322,12 @@ class MoreLikeThis(Query):
     :arg unlike: Used in combination with `like` to exclude documents that
         match a set of terms.
     :arg version:
-    :arg version_type:
+    :arg version_type:  Defaults to `'internal'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1402,6 +1409,7 @@ class MultiMatch(Query):
         into tokens.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
         queries are automatically created for multi-term synonyms.
+        Defaults to `True` if omitted.
     :arg cutoff_frequency:
     :arg fields: The fields to be queried. Defaults to the
         `index.query.default_field` index settings, which in turn defaults
@@ -1411,15 +1419,15 @@ class MultiMatch(Query):
     :arg fuzzy_transpositions: If `true`, edits for fuzzy matching include
         transpositions of two adjacent characters (for example, `ab` to
         `ba`). Can be applied to the term subqueries constructed for all
-        terms but the final term.
+        terms but the final term. Defaults to `True` if omitted.
     :arg lenient: If `true`, format-based errors, such as providing a text
         query value for a numeric field, are ignored.
     :arg max_expansions: Maximum number of terms to which the query will
-        expand.
+        expand. Defaults to `50` if omitted.
     :arg minimum_should_match: Minimum number of clauses that must match
         for a document to be returned.
     :arg operator: Boolean logic used to interpret text in the query
-        value.
+        value. Defaults to `'or'` if omitted.
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching.
     :arg slop: Maximum number of positions allowed between matching
@@ -1427,14 +1435,15 @@ class MultiMatch(Query):
     :arg tie_breaker: Determines how scores for each per-term blended
         query and scores across groups are combined.
     :arg type: How `the` multi_match query is executed internally.
+        Defaults to `'best_fields'` if omitted.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
-        filter.
+        filter. Defaults to `'none'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1514,12 +1523,12 @@ class Nested(Query):
         not return any documents instead of an error.
     :arg inner_hits: If defined, each search hit will contain inner hits.
     :arg score_mode: How scores for matching child objects affect the root
-        parent document’s relevance score.
+        parent document’s relevance score. Defaults to `'avg'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1566,7 +1575,7 @@ class ParentId(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1611,7 +1620,7 @@ class Percolate(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1664,7 +1673,7 @@ class Pinned(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1720,35 +1729,39 @@ class QueryString(Query):
         search.
     :arg allow_leading_wildcard: If `true`, the wildcard characters `*`
         and `?` are allowed as the first character of the query string.
+        Defaults to `True` if omitted.
     :arg analyzer: Analyzer used to convert text in the query string into
         tokens.
     :arg analyze_wildcard: If `true`, the query attempts to analyze
         wildcard terms in the query string.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
         queries are automatically created for multi-term synonyms.
+        Defaults to `True` if omitted.
     :arg default_field: Default field to search if no field is provided in
         the query string. Supports wildcards (`*`). Defaults to the
         `index.query.default_field` index setting, which has a default
         value of `*`.
     :arg default_operator: Default boolean logic used to interpret text in
-        the query string if no operators are specified.
+        the query string if no operators are specified. Defaults to `'or'`
+        if omitted.
     :arg enable_position_increments: If `true`, enable position increments
-        in queries constructed from a `query_string` search.
+        in queries constructed from a `query_string` search. Defaults to
+        `True` if omitted.
     :arg escape:
     :arg fields: Array of fields to search. Supports wildcards (`*`).
     :arg fuzziness: Maximum edit distance allowed for fuzzy matching.
     :arg fuzzy_max_expansions: Maximum number of terms to which the query
-        expands for fuzzy matching.
+        expands for fuzzy matching. Defaults to `50` if omitted.
     :arg fuzzy_prefix_length: Number of beginning characters left
         unchanged for fuzzy matching.
     :arg fuzzy_rewrite: Method used to rewrite the query.
     :arg fuzzy_transpositions: If `true`, edits for fuzzy matching include
         transpositions of two adjacent characters (for example, `ab` to
-        `ba`).
+        `ba`). Defaults to `True` if omitted.
     :arg lenient: If `true`, format-based errors, such as providing a text
         value for a numeric field, are ignored.
     :arg max_determinized_states: Maximum number of automaton states
-        required for the query.
+        required for the query. Defaults to `10000` if omitted.
     :arg minimum_should_match: Minimum number of clauses that must match
         for a document to be returned.
     :arg phrase_slop: Maximum number of positions allowed between matching
@@ -1765,11 +1778,12 @@ class QueryString(Query):
     :arg time_zone: Coordinated Universal Time (UTC) offset or IANA time
         zone used to convert date values in the query string to UTC.
     :arg type: Determines how the query matches and scores documents.
+        Defaults to `'best_fields'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1891,7 +1905,7 @@ class RankFeature(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1959,7 +1973,7 @@ class Rule(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1999,7 +2013,7 @@ class Script(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2030,7 +2044,7 @@ class ScriptScore(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2070,7 +2084,7 @@ class Semantic(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2100,7 +2114,7 @@ class Shape(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2136,17 +2150,19 @@ class SimpleQueryString(Query):
         wildcard terms in the query string.
     :arg auto_generate_synonyms_phrase_query: If `true`, the parser
         creates a match_phrase query for each multi-position token.
+        Defaults to `True` if omitted.
     :arg default_operator: Default boolean logic used to interpret text in
-        the query string if no operators are specified.
+        the query string if no operators are specified. Defaults to `'or'`
+        if omitted.
     :arg fields: Array of fields you wish to search. Accepts wildcard
         expressions. You also can boost relevance scores for matches to
         particular fields using a caret (`^`) notation. Defaults to the
         `index.query.default_field index` setting, which has a default
         value of `*`.
     :arg flags: List of enabled operators for the simple query string
-        syntax.
+        syntax. Defaults to `ALL` if omitted.
     :arg fuzzy_max_expansions: Maximum number of terms to which the query
-        expands for fuzzy matching.
+        expands for fuzzy matching. Defaults to `50` if omitted.
     :arg fuzzy_prefix_length: Number of beginning characters left
         unchanged for fuzzy matching.
     :arg fuzzy_transpositions: If `true`, edits for fuzzy matching include
@@ -2162,7 +2178,7 @@ class SimpleQueryString(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2224,7 +2240,7 @@ class SpanContaining(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2253,7 +2269,7 @@ class SpanFieldMasking(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2282,7 +2298,7 @@ class SpanFirst(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2312,7 +2328,7 @@ class SpanMulti(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2346,7 +2362,7 @@ class SpanNear(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2394,7 +2410,7 @@ class SpanNot(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2433,7 +2449,7 @@ class SpanOr(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2485,7 +2501,7 @@ class SpanWithin(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2536,7 +2552,7 @@ class SparseVector(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2605,7 +2621,7 @@ class Terms(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2740,7 +2756,7 @@ class Wrapper(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2764,7 +2780,7 @@ class Type(Query):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 

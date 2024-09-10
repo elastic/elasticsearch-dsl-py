@@ -32,7 +32,7 @@ class QueryBase(AttrDict[Any]):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -65,7 +65,7 @@ class CommonTermsQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -214,19 +214,21 @@ class FunctionScoreContainer(AttrDict[Any]):
 class FuzzyQuery(QueryBase):
     """
     :arg value: (required) Term you wish to find in the provided field.
-    :arg max_expansions: Maximum number of variations created.
+    :arg max_expansions: Maximum number of variations created. Defaults to
+        `50` if omitted.
     :arg prefix_length: Number of beginning characters left unchanged when
         creating expansions.
     :arg rewrite: Number of beginning characters left unchanged when
-        creating expansions.
+        creating expansions. Defaults to `constant_score` if omitted.
     :arg transpositions: Indicates whether edits include transpositions of
-        two adjacent characters (for example `ab` to `ba`).
+        two adjacent characters (for example `ab` to `ba`). Defaults to
+        `True` if omitted.
     :arg fuzziness: Maximum edit distance allowed for matching.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -327,6 +329,7 @@ class GeoShapeFieldQuery(AttrDict[Any]):
     :arg indexed_shape: Query using an indexed shape retrieved from the
         the specified document and path.
     :arg relation: Spatial relation operator used to search a geo field.
+        Defaults to `intersects` if omitted.
     """
 
     shape: Any
@@ -362,6 +365,7 @@ class InnerHits(AttrDict[Any]):
         response. Useful when a search request contains multiple inner
         hits.
     :arg size: The maximum number of hits to return per `inner_hits`.
+        Defaults to `3` if omitted.
     :arg from: Inner hit starting document offset.
     :arg collapse:
     :arg docvalue_fields:
@@ -506,7 +510,7 @@ class IntervalsQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -585,7 +589,7 @@ class LikeDocument(AttrDict[Any]):
     :arg per_field_analyzer: Overrides the default analyzer.
     :arg routing:
     :arg version:
-    :arg version_type:
+    :arg version_type:  Defaults to `'internal'` if omitted.
     """
 
     doc: Any
@@ -654,15 +658,16 @@ class MatchBoolPrefixQuery(QueryBase):
     :arg fuzzy_transpositions: If `true`, edits for fuzzy matching include
         transpositions of two adjacent characters (for example, `ab` to
         `ba`). Can be applied to the term subqueries constructed for all
-        terms but the final term.
+        terms but the final term. Defaults to `True` if omitted.
     :arg max_expansions: Maximum number of terms to which the query will
         expand. Can be applied to the term subqueries constructed for all
-        terms but the final term.
+        terms but the final term. Defaults to `50` if omitted.
     :arg minimum_should_match: Minimum number of clauses that must match
         for a document to be returned. Applied to the constructed bool
         query.
     :arg operator: Boolean logic used to interpret text in the query
-        value. Applied to the constructed bool query.
+        value. Applied to the constructed bool query. Defaults to `'or'`
+        if omitted.
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching. Can be applied to the term subqueries constructed
         for all terms but the final term.
@@ -670,7 +675,7 @@ class MatchBoolPrefixQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -733,17 +738,18 @@ class MatchPhrasePrefixQuery(QueryBase):
     :arg analyzer: Analyzer used to convert text in the query value into
         tokens.
     :arg max_expansions: Maximum number of terms to which the last
-        provided term of the query value will expand.
+        provided term of the query value will expand. Defaults to `50` if
+        omitted.
     :arg slop: Maximum number of positions allowed between matching
         tokens.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the analyzer removes all tokens, such as when using a `stop`
-        filter.
+        filter. Defaults to `none` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -794,12 +800,12 @@ class MatchPhraseQuery(QueryBase):
         tokens.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
-        filter.
+        filter. Defaults to `'none'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -844,30 +850,31 @@ class MatchQuery(QueryBase):
         into tokens.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
         queries are automatically created for multi-term synonyms.
+        Defaults to `True` if omitted.
     :arg cutoff_frequency:
     :arg fuzziness: Maximum edit distance allowed for matching.
     :arg fuzzy_rewrite: Method used to rewrite the query.
     :arg fuzzy_transpositions: If `true`, edits for fuzzy matching include
         transpositions of two adjacent characters (for example, `ab` to
-        `ba`).
+        `ba`). Defaults to `True` if omitted.
     :arg lenient: If `true`, format-based errors, such as providing a text
         query value for a numeric field, are ignored.
     :arg max_expansions: Maximum number of terms to which the query will
-        expand.
+        expand. Defaults to `50` if omitted.
     :arg minimum_should_match: Minimum number of clauses that must match
         for a document to be returned.
     :arg operator: Boolean logic used to interpret text in the query
-        value.
+        value. Defaults to `'or'` if omitted.
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
-        filter.
+        filter. Defaults to `'none'` if omitted.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -978,7 +985,7 @@ class PrefixQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1102,13 +1109,13 @@ class RegexpQuery(QueryBase):
         underlying field’s mapping.
     :arg flags: Enables optional operators for the regular expression.
     :arg max_determinized_states: Maximum number of automaton states
-        required for the query.
+        required for the query. Defaults to `10000` if omitted.
     :arg rewrite: Method used to rewrite the query.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1156,7 +1163,8 @@ class Script(AttrDict[Any]):
     :arg params: Specifies any named parameters that are passed into the
         script as variables. Use parameters instead of hard-coded values
         to decrease compile time.
-    :arg lang: Specifies the language the script is written in.
+    :arg lang: Specifies the language the script is written in. Defaults
+        to `painless` if omitted.
     :arg options:
     """
 
@@ -1332,7 +1340,7 @@ class SpanTermQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1368,7 +1376,7 @@ class TermQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1442,7 +1450,7 @@ class TermsSetQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1488,7 +1496,7 @@ class TextExpansionQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1527,9 +1535,11 @@ class TokenPruningConfig(AttrDict[Any]):
     """
     :arg tokens_freq_ratio_threshold: Tokens whose frequency is more than
         this threshold times the average frequency of all tokens in the
-        specified field are considered outliers and pruned.
+        specified field are considered outliers and pruned. Defaults to
+        `5` if omitted.
     :arg tokens_weight_threshold: Tokens whose weight is less than this
-        threshold are considered nonsignificant and pruned.
+        threshold are considered nonsignificant and pruned. Defaults to
+        `0.4` if omitted.
     :arg only_score_pruned_tokens: Whether to only score pruned tokens, vs
         only scoring kept tokens.
     """
@@ -1665,7 +1675,7 @@ class WeightedTokensQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1711,7 +1721,7 @@ class WildcardQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -1868,7 +1878,9 @@ class HighlightBase(AttrDict[Any]):
     """
     :arg type:
     :arg boundary_chars: A string that contains each boundary character.
+        Defaults to `.,!? \t\n` if omitted.
     :arg boundary_max_scan: How far to scan for boundary characters.
+        Defaults to `20` if omitted.
     :arg boundary_scanner: Specifies how to break the highlighted
         fragments: chars, sentence, or word. Only valid for the unified
         and fvh highlighters. Defaults to `sentence` for the `unified`
@@ -1876,12 +1888,13 @@ class HighlightBase(AttrDict[Any]):
     :arg boundary_scanner_locale: Controls which locale is used to search
         for sentence and word boundaries. This parameter takes a form of a
         language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+        Defaults to `Locale.ROOT` if omitted.
     :arg force_source:
     :arg fragmenter: Specifies how text should be broken up in highlight
         snippets: `simple` or `span`. Only valid for the `plain`
-        highlighter.
+        highlighter. Defaults to `span` if omitted.
     :arg fragment_size: The size of the highlighted fragment in
-        characters.
+        characters. Defaults to `100` if omitted.
     :arg highlight_filter:
     :arg highlight_query: Highlight matches for a query other than the
         search query. This is especially useful if you use a rescore query
@@ -1902,19 +1915,22 @@ class HighlightBase(AttrDict[Any]):
         returned. Instead, the entire field contents are highlighted and
         returned. This can be handy when you need to highlight short texts
         such as a title or address, but fragmentation is not required. If
-        `number_of_fragments` is `0`, `fragment_size` is ignored.
+        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
+        to `5` if omitted.
     :arg options:
     :arg order: Sorts highlighted fragments by score when set to `score`.
         By default, fragments will be output in the order they appear in
         the field (order: `none`). Setting this option to `score` will
         output the most relevant fragments first. Each highlighter applies
-        its own logic to compute relevancy scores.
+        its own logic to compute relevancy scores. Defaults to `none` if
+        omitted.
     :arg phrase_limit: Controls the number of matching phrases in a
         document that are considered. Prevents the `fvh` highlighter from
         analyzing too many phrases and consuming too much memory. When
         using `matched_fields`, `phrase_limit` phrases per matched field
         are considered. Raising the limit increases query time and
         consumes more memory. Only supported by the `fvh` highlighter.
+        Defaults to `256` if omitted.
     :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
         tags to use for the highlighted text. By default, highlighted text
         is wrapped in `<em>` and `</em>` tags.
@@ -1923,7 +1939,7 @@ class HighlightBase(AttrDict[Any]):
         is wrapped in `<em>` and `</em>` tags.
     :arg require_field_match: By default, only fields that contains a
         query match are highlighted. Set to `false` to highlight all
-        fields.
+        fields. Defaults to `True` if omitted.
     :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
@@ -2028,7 +2044,9 @@ class Highlight(HighlightBase):
     :arg encoder:
     :arg type:
     :arg boundary_chars: A string that contains each boundary character.
+        Defaults to `.,!? \t\n` if omitted.
     :arg boundary_max_scan: How far to scan for boundary characters.
+        Defaults to `20` if omitted.
     :arg boundary_scanner: Specifies how to break the highlighted
         fragments: chars, sentence, or word. Only valid for the unified
         and fvh highlighters. Defaults to `sentence` for the `unified`
@@ -2036,12 +2054,13 @@ class Highlight(HighlightBase):
     :arg boundary_scanner_locale: Controls which locale is used to search
         for sentence and word boundaries. This parameter takes a form of a
         language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+        Defaults to `Locale.ROOT` if omitted.
     :arg force_source:
     :arg fragmenter: Specifies how text should be broken up in highlight
         snippets: `simple` or `span`. Only valid for the `plain`
-        highlighter.
+        highlighter. Defaults to `span` if omitted.
     :arg fragment_size: The size of the highlighted fragment in
-        characters.
+        characters. Defaults to `100` if omitted.
     :arg highlight_filter:
     :arg highlight_query: Highlight matches for a query other than the
         search query. This is especially useful if you use a rescore query
@@ -2062,19 +2081,22 @@ class Highlight(HighlightBase):
         returned. Instead, the entire field contents are highlighted and
         returned. This can be handy when you need to highlight short texts
         such as a title or address, but fragmentation is not required. If
-        `number_of_fragments` is `0`, `fragment_size` is ignored.
+        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
+        to `5` if omitted.
     :arg options:
     :arg order: Sorts highlighted fragments by score when set to `score`.
         By default, fragments will be output in the order they appear in
         the field (order: `none`). Setting this option to `score` will
         output the most relevant fragments first. Each highlighter applies
-        its own logic to compute relevancy scores.
+        its own logic to compute relevancy scores. Defaults to `none` if
+        omitted.
     :arg phrase_limit: Controls the number of matching phrases in a
         document that are considered. Prevents the `fvh` highlighter from
         analyzing too many phrases and consuming too much memory. When
         using `matched_fields`, `phrase_limit` phrases per matched field
         are considered. Raising the limit increases query time and
         consumes more memory. Only supported by the `fvh` highlighter.
+        Defaults to `256` if omitted.
     :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
         tags to use for the highlighted text. By default, highlighted text
         is wrapped in `<em>` and `</em>` tags.
@@ -2083,7 +2105,7 @@ class Highlight(HighlightBase):
         is wrapped in `<em>` and `</em>` tags.
     :arg require_field_match: By default, only fields that contains a
         query match are highlighted. Set to `false` to highlight all
-        fields.
+        fields. Defaults to `True` if omitted.
     :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
@@ -2302,7 +2324,7 @@ class IntervalsAllOf(AttrDict[Any]):
         match.
     :arg max_gaps: Maximum number of positions between the matching terms.
         Intervals produced by the rules further apart than this are not
-        considered matches.
+        considered matches. Defaults to `-1` if omitted.
     :arg ordered: If `true`, intervals produced by the rules should appear
         in the order in which they are specified.
     :arg filter: Rule used to filter returned intervals.
@@ -2368,11 +2390,13 @@ class IntervalsFuzzy(AttrDict[Any]):
     """
     :arg term: (required) The term to match.
     :arg analyzer: Analyzer used to normalize the term.
-    :arg fuzziness: Maximum edit distance allowed for matching.
+    :arg fuzziness: Maximum edit distance allowed for matching. Defaults
+        to `auto` if omitted.
     :arg prefix_length: Number of beginning characters left unchanged when
         creating expansions.
     :arg transpositions: Indicates whether edits include transpositions of
-        two adjacent characters (for example, `ab` to `ba`).
+        two adjacent characters (for example, `ab` to `ba`). Defaults to
+        `True` if omitted.
     :arg use_field: If specified, match intervals from this field rather
         than the top-level field. The `term` is normalized using the
         search analyzer from this field, unless `analyzer` is specified
@@ -2417,7 +2441,8 @@ class IntervalsMatch(AttrDict[Any]):
     :arg query: (required) Text you wish to find in the provided field.
     :arg analyzer: Analyzer used to analyze terms in the query.
     :arg max_gaps: Maximum number of positions between the matching terms.
-        Terms further apart than this are not considered matches.
+        Terms further apart than this are not considered matches. Defaults
+        to `-1` if omitted.
     :arg ordered: If `true`, matching terms must appear in their specified
         order.
     :arg use_field: If specified, match intervals from this field rather
@@ -2557,7 +2582,7 @@ class SpanContainingQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2594,7 +2619,7 @@ class SpanFieldMaskingQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2632,7 +2657,7 @@ class SpanFirstQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2669,7 +2694,7 @@ class SpanMultiTermQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2704,7 +2729,7 @@ class SpanNearQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2755,7 +2780,7 @@ class SpanNotQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2803,7 +2828,7 @@ class SpanOrQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2840,7 +2865,7 @@ class SpanWithinQuery(QueryBase):
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
         the relevance score. A value greater than 1.0 increases the
-        relevance score.
+        relevance score. Defaults to `1` if omitted.
     :arg _name:
     """
 
@@ -2876,7 +2901,9 @@ class HighlightField(HighlightBase):
     :arg analyzer:
     :arg type:
     :arg boundary_chars: A string that contains each boundary character.
+        Defaults to `.,!? \t\n` if omitted.
     :arg boundary_max_scan: How far to scan for boundary characters.
+        Defaults to `20` if omitted.
     :arg boundary_scanner: Specifies how to break the highlighted
         fragments: chars, sentence, or word. Only valid for the unified
         and fvh highlighters. Defaults to `sentence` for the `unified`
@@ -2884,12 +2911,13 @@ class HighlightField(HighlightBase):
     :arg boundary_scanner_locale: Controls which locale is used to search
         for sentence and word boundaries. This parameter takes a form of a
         language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+        Defaults to `Locale.ROOT` if omitted.
     :arg force_source:
     :arg fragmenter: Specifies how text should be broken up in highlight
         snippets: `simple` or `span`. Only valid for the `plain`
-        highlighter.
+        highlighter. Defaults to `span` if omitted.
     :arg fragment_size: The size of the highlighted fragment in
-        characters.
+        characters. Defaults to `100` if omitted.
     :arg highlight_filter:
     :arg highlight_query: Highlight matches for a query other than the
         search query. This is especially useful if you use a rescore query
@@ -2910,19 +2938,22 @@ class HighlightField(HighlightBase):
         returned. Instead, the entire field contents are highlighted and
         returned. This can be handy when you need to highlight short texts
         such as a title or address, but fragmentation is not required. If
-        `number_of_fragments` is `0`, `fragment_size` is ignored.
+        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
+        to `5` if omitted.
     :arg options:
     :arg order: Sorts highlighted fragments by score when set to `score`.
         By default, fragments will be output in the order they appear in
         the field (order: `none`). Setting this option to `score` will
         output the most relevant fragments first. Each highlighter applies
-        its own logic to compute relevancy scores.
+        its own logic to compute relevancy scores. Defaults to `none` if
+        omitted.
     :arg phrase_limit: Controls the number of matching phrases in a
         document that are considered. Prevents the `fvh` highlighter from
         analyzing too many phrases and consuming too much memory. When
         using `matched_fields`, `phrase_limit` phrases per matched field
         are considered. Raising the limit increases query time and
         consumes more memory. Only supported by the `fvh` highlighter.
+        Defaults to `256` if omitted.
     :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
         tags to use for the highlighted text. By default, highlighted text
         is wrapped in `<em>` and `</em>` tags.
@@ -2931,7 +2962,7 @@ class HighlightField(HighlightBase):
         is wrapped in `<em>` and `</em>` tags.
     :arg require_field_match: By default, only fields that contains a
         query match are highlighted. Set to `false` to highlight all
-        fields.
+        fields. Defaults to `True` if omitted.
     :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 

@@ -254,8 +254,13 @@ class ElasticsearchSchema:
                 type_ = add_dict_type(type_)  # interfaces can be given as dicts
             type_ = add_not_set(type_)
         required = "(required) " if arg["required"] else ""
+        server_default = (
+            f" Defaults to `{arg['serverDefault']}` if omitted."
+            if arg.get("serverDefault")
+            else ""
+        )
         doc = wrapped_doc(
-            f":arg {arg['name']}: {required}{arg.get('description', '')}",
+            f":arg {arg['name']}: {required}{arg.get('description', '')}{server_default}",
             subsequent_indent="    ",
         )
         arg = {
