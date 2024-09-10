@@ -16,6 +16,7 @@
 #  under the License.
 
 import json
+import re
 import textwrap
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -234,7 +235,7 @@ class ElasticsearchSchema:
 
         raise RuntimeError(f"Cannot find Python type for {schema_type}")
 
-    def add_attribute(self, k, arg):
+    def add_attribute(self, k, arg, for_types_py=False):
         """Add an attribute to the internal representation of a class.
 
         This method adds the argument `arg` to the data structure for a class
@@ -243,6 +244,13 @@ class ElasticsearchSchema:
         argument is of a type that needs Python DSL specific typing details to
         be stored in the DslBase._param_defs attribute, then this is added to
         `k["params"]`.
+
+        When `for_types_py` is `True`, type hints are formatted in the most
+        convenient way for the types.py file. When possible, double quotes are
+        removed from types, and for types that are in the same file the quotes
+        are kept to prevent forward references, but the "types." namespace is
+        removed. When `for_types_py` is `False`, all non-native types use
+        quotes and are namespaced.
         """
         try:
             type_, param = schema.get_python_type(arg["type"])
@@ -253,6 +261,12 @@ class ElasticsearchSchema:
             if "types." in type_:
                 type_ = add_dict_type(type_)  # interfaces can be given as dicts
             type_ = add_not_set(type_)
+        if for_types_py:
+            type_ = type_.replace('"DefaultType"', "DefaultType")
+            type_ = type_.replace('"InstrumentedField"', "InstrumentedField")
+            type_ = re.sub(r'"(function\.[a-zA-Z0-9_]+)"', r"\1", type_)
+            type_ = re.sub(r'"types\.([a-zA-Z0-9_]+)"', r'"\1"', type_)
+            type_ = re.sub(r'"(wrappers\.[a-zA-Z0-9_]+)"', r"\1", type_)
         required = "(required) " if arg["required"] else ""
         server_default = (
             f" Defaults to `{arg['serverDefault']}` if omitted."
@@ -463,7 +477,7 @@ class ElasticsearchSchema:
         k = {"name": interface, "args": []}
         while True:
             for arg in type_["properties"]:
-                schema.add_attribute(k, arg)
+                schema.add_attribute(k, arg, for_types_py=True)
             if "inherits" in type_ and "type" in type_["inherits"]:
                 if "parent" not in k:
                     k["parent"] = type_["inherits"]["type"]["name"]

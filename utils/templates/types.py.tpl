@@ -20,7 +20,7 @@ from typing import Any, Dict, Literal, Mapping, Sequence, Union
 from elastic_transport.client_utils import DEFAULT, DefaultType
 
 from elasticsearch_dsl.document_base import InstrumentedField
-from elasticsearch_dsl import function, types, Query
+from elasticsearch_dsl import function, Query
 from elasticsearch_dsl.utils import AttrDict
 
 PipeSeparatedFlags = str
