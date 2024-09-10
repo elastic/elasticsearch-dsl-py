@@ -234,14 +234,15 @@ class ElasticsearchSchema:
 
         raise RuntimeError(f"Cannot find Python type for {schema_type}")
 
-    def get_attribute_data(self, arg):
-        """Return the template definitions for a class attribute.
+    def add_attribute(self, k, arg):
+        """Add an attribute to the internal representation of a class.
 
-        This method returns a tuple. The first element is a dict with the
-        information to render the attribute. The second element is a dictionary
-        with Python DSL specific typing details to be stored in the
-        DslBase._param_defs attribute (or None if the type does not need to be
-        in _param_defs).
+        This method adds the argument `arg` to the data structure for a class
+        stored in `k`. In particular, the argument is added to the `k["args"]`
+        list, making sure required arguments are first in the list. If the
+        argument is of a type that needs Python DSL specific typing details to
+        be stored in the DslBase._param_defs attribute, then this is added to
+        `k["params"]`.
         """
         try:
             type_, param = schema.get_python_type(arg["type"])
@@ -265,7 +266,22 @@ class ElasticsearchSchema:
         }
         if param is not None:
             param = {"name": arg["name"], "param": param}
-        return arg, param
+        if arg["required"]:
+            # insert in the right place so that all required arguments
+            # appear at the top of the argument list
+            i = 0
+            for i in range(len(k["args"]) + 1):
+                if i == len(k["args"]):
+                    break
+                if k["args"][i].get("positional"):
+                    continue
+                if k["args"][i]["required"] is False:
+                    break
+            k["args"].insert(i, arg)
+        else:
+            k["args"].append(arg)
+        if param and "params" in k:
+            k["params"].append(param)
 
     def property_to_python_class(self, p):
         """Return a dictionary with template data necessary to render a schema
@@ -354,23 +370,7 @@ class ElasticsearchSchema:
                             )
                 while True:
                     for arg in type_["properties"]:
-                        python_arg, param = self.get_attribute_data(arg)
-                        if python_arg["required"]:
-                            # insert in the right place so that all required arguments
-                            # appear at the top of the argument list
-                            i = 0
-                            for i in range(len(k["args"]) + 1):
-                                if i == len(k["args"]):
-                                    break
-                                if k["args"][i].get("positional"):
-                                    continue
-                                if k["args"][i]["required"] is False:
-                                    break
-                            k["args"].insert(i, python_arg)
-                        else:
-                            k["args"].append(python_arg)
-                        if param:
-                            k["params"].append(param)
+                        self.add_attribute(k, arg)
                     if "inherits" in type_ and "type" in type_["inherits"]:
                         type_ = schema.find_type(
                             type_["inherits"]["type"]["name"],
@@ -458,8 +458,7 @@ class ElasticsearchSchema:
         k = {"name": interface, "args": []}
         while True:
             for arg in type_["properties"]:
-                arg_type, _ = schema.get_attribute_data(arg)
-                k["args"].append(arg_type)
+                schema.add_attribute(k, arg)
             if "inherits" in type_ and "type" in type_["inherits"]:
                 if "parent" not in k:
                     k["parent"] = type_["inherits"]["type"]["name"]

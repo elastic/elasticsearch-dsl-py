@@ -55,12 +55,12 @@ class QueryBase(AttrDict[Any]):
 
 class CommonTermsQuery(QueryBase):
     """
+    :arg query: (required)
     :arg analyzer:
     :arg cutoff_frequency:
     :arg high_freq_operator:
     :arg low_freq_operator:
     :arg minimum_should_match:
-    :arg query: (required)
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
@@ -69,28 +69,30 @@ class CommonTermsQuery(QueryBase):
     :arg _name:
     """
 
+    query: Union[str, "DefaultType"]
     analyzer: Union[str, "DefaultType"]
     cutoff_frequency: Union[float, "DefaultType"]
     high_freq_operator: Union[Literal["and", "or"], "DefaultType"]
     low_freq_operator: Union[Literal["and", "or"], "DefaultType"]
     minimum_should_match: Union[int, str, "DefaultType"]
-    query: Union[str, "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
+        query: Union[str, "DefaultType"] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         cutoff_frequency: Union[float, "DefaultType"] = DEFAULT,
         high_freq_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         low_freq_operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
-        query: Union[str, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if query is not DEFAULT:
+            kwargs["query"] = query
         if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
         if cutoff_frequency is not DEFAULT:
@@ -101,8 +103,6 @@ class CommonTermsQuery(QueryBase):
             kwargs["low_freq_operator"] = low_freq_operator
         if minimum_should_match is not DEFAULT:
             kwargs["minimum_should_match"] = minimum_should_match
-        if query is not DEFAULT:
-            kwargs["query"] = query
         if boost is not DEFAULT:
             kwargs["boost"] = boost
         if _name is not DEFAULT:
@@ -213,6 +213,7 @@ class FunctionScoreContainer(AttrDict[Any]):
 
 class FuzzyQuery(QueryBase):
     """
+    :arg value: (required) Term you wish to find in the provided field.
     :arg max_expansions: Maximum number of variations created.
     :arg prefix_length: Number of beginning characters left unchanged when
         creating expansions.
@@ -221,7 +222,6 @@ class FuzzyQuery(QueryBase):
     :arg transpositions: Indicates whether edits include transpositions of
         two adjacent characters (for example `ab` to `ba`).
     :arg fuzziness: Maximum edit distance allowed for matching.
-    :arg value: (required) Term you wish to find in the provided field.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
@@ -230,28 +230,30 @@ class FuzzyQuery(QueryBase):
     :arg _name:
     """
 
+    value: Union[str, float, bool, "DefaultType"]
     max_expansions: Union[int, "DefaultType"]
     prefix_length: Union[int, "DefaultType"]
     rewrite: Union[str, "DefaultType"]
     transpositions: Union[bool, "DefaultType"]
     fuzziness: Union[str, int, "DefaultType"]
-    value: Union[str, float, bool, "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
+        value: Union[str, float, bool, "DefaultType"] = DEFAULT,
         max_expansions: Union[int, "DefaultType"] = DEFAULT,
         prefix_length: Union[int, "DefaultType"] = DEFAULT,
         rewrite: Union[str, "DefaultType"] = DEFAULT,
         transpositions: Union[bool, "DefaultType"] = DEFAULT,
         fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
-        value: Union[str, float, bool, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if value is not DEFAULT:
+            kwargs["value"] = value
         if max_expansions is not DEFAULT:
             kwargs["max_expansions"] = max_expansions
         if prefix_length is not DEFAULT:
@@ -262,8 +264,6 @@ class FuzzyQuery(QueryBase):
             kwargs["transpositions"] = transpositions
         if fuzziness is not DEFAULT:
             kwargs["fuzziness"] = fuzziness
-        if value is not DEFAULT:
-            kwargs["value"] = value
         if boost is not DEFAULT:
             kwargs["boost"] = boost
         if _name is not DEFAULT:
@@ -641,6 +641,8 @@ class LikeDocument(AttrDict[Any]):
 
 class MatchBoolPrefixQuery(QueryBase):
     """
+    :arg query: (required) Terms you wish to find in the provided field.
+        The last term is used in a prefix query.
     :arg analyzer: Analyzer used to convert the text in the query value
         into tokens.
     :arg fuzziness: Maximum edit distance allowed for matching. Can be
@@ -664,8 +666,6 @@ class MatchBoolPrefixQuery(QueryBase):
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching. Can be applied to the term subqueries constructed
         for all terms but the final term.
-    :arg query: (required) Terms you wish to find in the provided field.
-        The last term is used in a prefix query.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
@@ -674,6 +674,7 @@ class MatchBoolPrefixQuery(QueryBase):
     :arg _name:
     """
 
+    query: Union[str, "DefaultType"]
     analyzer: Union[str, "DefaultType"]
     fuzziness: Union[str, int, "DefaultType"]
     fuzzy_rewrite: Union[str, "DefaultType"]
@@ -682,13 +683,13 @@ class MatchBoolPrefixQuery(QueryBase):
     minimum_should_match: Union[int, str, "DefaultType"]
     operator: Union[Literal["and", "or"], "DefaultType"]
     prefix_length: Union[int, "DefaultType"]
-    query: Union[str, "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
+        query: Union[str, "DefaultType"] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
         fuzzy_rewrite: Union[str, "DefaultType"] = DEFAULT,
@@ -697,11 +698,12 @@ class MatchBoolPrefixQuery(QueryBase):
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
         operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         prefix_length: Union[int, "DefaultType"] = DEFAULT,
-        query: Union[str, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if query is not DEFAULT:
+            kwargs["query"] = query
         if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
         if fuzziness is not DEFAULT:
@@ -718,8 +720,6 @@ class MatchBoolPrefixQuery(QueryBase):
             kwargs["operator"] = operator
         if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if query is not DEFAULT:
-            kwargs["query"] = query
         if boost is not DEFAULT:
             kwargs["boost"] = boost
         if _name is not DEFAULT:
@@ -729,11 +729,11 @@ class MatchBoolPrefixQuery(QueryBase):
 
 class MatchPhrasePrefixQuery(QueryBase):
     """
+    :arg query: (required) Text you wish to find in the provided field.
     :arg analyzer: Analyzer used to convert text in the query value into
         tokens.
     :arg max_expansions: Maximum number of terms to which the last
         provided term of the query value will expand.
-    :arg query: (required) Text you wish to find in the provided field.
     :arg slop: Maximum number of positions allowed between matching
         tokens.
     :arg zero_terms_query: Indicates whether no documents are returned if
@@ -747,9 +747,9 @@ class MatchPhrasePrefixQuery(QueryBase):
     :arg _name:
     """
 
+    query: Union[str, "DefaultType"]
     analyzer: Union[str, "DefaultType"]
     max_expansions: Union[int, "DefaultType"]
-    query: Union[str, "DefaultType"]
     slop: Union[int, "DefaultType"]
     zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
     boost: Union[float, "DefaultType"]
@@ -758,21 +758,21 @@ class MatchPhrasePrefixQuery(QueryBase):
     def __init__(
         self,
         *,
+        query: Union[str, "DefaultType"] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         max_expansions: Union[int, "DefaultType"] = DEFAULT,
-        query: Union[str, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if query is not DEFAULT:
+            kwargs["query"] = query
         if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
         if max_expansions is not DEFAULT:
             kwargs["max_expansions"] = max_expansions
-        if query is not DEFAULT:
-            kwargs["query"] = query
         if slop is not DEFAULT:
             kwargs["slop"] = slop
         if zero_terms_query is not DEFAULT:
@@ -786,10 +786,10 @@ class MatchPhrasePrefixQuery(QueryBase):
 
 class MatchPhraseQuery(QueryBase):
     """
-    :arg analyzer: Analyzer used to convert the text in the query value
-        into tokens.
     :arg query: (required) Query terms that are analyzed and turned into a
         phrase query.
+    :arg analyzer: Analyzer used to convert the text in the query value
+        into tokens.
     :arg slop: Maximum number of positions allowed between matching
         tokens.
     :arg zero_terms_query: Indicates whether no documents are returned if
@@ -803,8 +803,8 @@ class MatchPhraseQuery(QueryBase):
     :arg _name:
     """
 
-    analyzer: Union[str, "DefaultType"]
     query: Union[str, "DefaultType"]
+    analyzer: Union[str, "DefaultType"]
     slop: Union[int, "DefaultType"]
     zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
     boost: Union[float, "DefaultType"]
@@ -813,18 +813,18 @@ class MatchPhraseQuery(QueryBase):
     def __init__(
         self,
         *,
-        analyzer: Union[str, "DefaultType"] = DEFAULT,
         query: Union[str, "DefaultType"] = DEFAULT,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer is not DEFAULT:
-            kwargs["analyzer"] = analyzer
         if query is not DEFAULT:
             kwargs["query"] = query
+        if analyzer is not DEFAULT:
+            kwargs["analyzer"] = analyzer
         if slop is not DEFAULT:
             kwargs["slop"] = slop
         if zero_terms_query is not DEFAULT:
@@ -838,6 +838,8 @@ class MatchPhraseQuery(QueryBase):
 
 class MatchQuery(QueryBase):
     """
+    :arg query: (required) Text, number, boolean value or date you wish to
+        find in the provided field.
     :arg analyzer: Analyzer used to convert the text in the query value
         into tokens.
     :arg auto_generate_synonyms_phrase_query: If `true`, match phrase
@@ -858,8 +860,6 @@ class MatchQuery(QueryBase):
         value.
     :arg prefix_length: Number of beginning characters left unchanged for
         fuzzy matching.
-    :arg query: (required) Text, number, boolean value or date you wish to
-        find in the provided field.
     :arg zero_terms_query: Indicates whether no documents are returned if
         the `analyzer` removes all tokens, such as when using a `stop`
         filter.
@@ -871,6 +871,7 @@ class MatchQuery(QueryBase):
     :arg _name:
     """
 
+    query: Union[str, float, bool, "DefaultType"]
     analyzer: Union[str, "DefaultType"]
     auto_generate_synonyms_phrase_query: Union[bool, "DefaultType"]
     cutoff_frequency: Union[float, "DefaultType"]
@@ -882,7 +883,6 @@ class MatchQuery(QueryBase):
     minimum_should_match: Union[int, str, "DefaultType"]
     operator: Union[Literal["and", "or"], "DefaultType"]
     prefix_length: Union[int, "DefaultType"]
-    query: Union[str, float, bool, "DefaultType"]
     zero_terms_query: Union[Literal["all", "none"], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
@@ -890,6 +890,7 @@ class MatchQuery(QueryBase):
     def __init__(
         self,
         *,
+        query: Union[str, float, bool, "DefaultType"] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         auto_generate_synonyms_phrase_query: Union[bool, "DefaultType"] = DEFAULT,
         cutoff_frequency: Union[float, "DefaultType"] = DEFAULT,
@@ -901,12 +902,13 @@ class MatchQuery(QueryBase):
         minimum_should_match: Union[int, str, "DefaultType"] = DEFAULT,
         operator: Union[Literal["and", "or"], "DefaultType"] = DEFAULT,
         prefix_length: Union[int, "DefaultType"] = DEFAULT,
-        query: Union[str, float, bool, "DefaultType"] = DEFAULT,
         zero_terms_query: Union[Literal["all", "none"], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if query is not DEFAULT:
+            kwargs["query"] = query
         if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
         if auto_generate_synonyms_phrase_query is not DEFAULT:
@@ -931,8 +933,6 @@ class MatchQuery(QueryBase):
             kwargs["operator"] = operator
         if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if query is not DEFAULT:
-            kwargs["query"] = query
         if zero_terms_query is not DEFAULT:
             kwargs["zero_terms_query"] = zero_terms_query
         if boost is not DEFAULT:
@@ -967,9 +967,9 @@ class PinnedDoc(AttrDict[Any]):
 
 class PrefixQuery(QueryBase):
     """
-    :arg rewrite: Method used to rewrite the query.
     :arg value: (required) Beginning characters of terms you wish to find
         in the provided field.
+    :arg rewrite: Method used to rewrite the query.
     :arg case_insensitive: Allows ASCII case insensitive matching of the
         value with the indexed field values when set to `true`. Default is
         `false` which means the case sensitivity of matching depends on
@@ -982,8 +982,8 @@ class PrefixQuery(QueryBase):
     :arg _name:
     """
 
-    rewrite: Union[str, "DefaultType"]
     value: Union[str, "DefaultType"]
+    rewrite: Union[str, "DefaultType"]
     case_insensitive: Union[bool, "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
@@ -991,17 +991,17 @@ class PrefixQuery(QueryBase):
     def __init__(
         self,
         *,
-        rewrite: Union[str, "DefaultType"] = DEFAULT,
         value: Union[str, "DefaultType"] = DEFAULT,
+        rewrite: Union[str, "DefaultType"] = DEFAULT,
         case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if rewrite is not DEFAULT:
-            kwargs["rewrite"] = rewrite
         if value is not DEFAULT:
             kwargs["value"] = value
+        if rewrite is not DEFAULT:
+            kwargs["rewrite"] = rewrite
         if case_insensitive is not DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
         if boost is not DEFAULT:
@@ -1094,6 +1094,8 @@ class RankFeatureFunctionSigmoid(RankFeatureFunction):
 
 class RegexpQuery(QueryBase):
     """
+    :arg value: (required) Regular expression for terms you wish to find
+        in the provided field.
     :arg case_insensitive: Allows case insensitive matching of the regular
         expression value with the indexed field values when set to `true`.
         When `false`, case sensitivity of matching depends on the
@@ -1102,8 +1104,6 @@ class RegexpQuery(QueryBase):
     :arg max_determinized_states: Maximum number of automaton states
         required for the query.
     :arg rewrite: Method used to rewrite the query.
-    :arg value: (required) Regular expression for terms you wish to find
-        in the provided field.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
@@ -1112,26 +1112,28 @@ class RegexpQuery(QueryBase):
     :arg _name:
     """
 
+    value: Union[str, "DefaultType"]
     case_insensitive: Union[bool, "DefaultType"]
     flags: Union[str, "DefaultType"]
     max_determinized_states: Union[int, "DefaultType"]
     rewrite: Union[str, "DefaultType"]
-    value: Union[str, "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
+        value: Union[str, "DefaultType"] = DEFAULT,
         case_insensitive: Union[bool, "DefaultType"] = DEFAULT,
         flags: Union[str, "DefaultType"] = DEFAULT,
         max_determinized_states: Union[int, "DefaultType"] = DEFAULT,
         rewrite: Union[str, "DefaultType"] = DEFAULT,
-        value: Union[str, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if value is not DEFAULT:
+            kwargs["value"] = value
         if case_insensitive is not DEFAULT:
             kwargs["case_insensitive"] = case_insensitive
         if flags is not DEFAULT:
@@ -1140,8 +1142,6 @@ class RegexpQuery(QueryBase):
             kwargs["max_determinized_states"] = max_determinized_states
         if rewrite is not DEFAULT:
             kwargs["rewrite"] = rewrite
-        if value is not DEFAULT:
-            kwargs["value"] = value
         if boost is not DEFAULT:
             kwargs["boost"] = boost
         if _name is not DEFAULT:
@@ -1432,12 +1432,12 @@ class TermsLookup(AttrDict[Any]):
 
 class TermsSetQuery(QueryBase):
     """
+    :arg terms: (required) Array of terms you wish to find in the provided
+        field.
     :arg minimum_should_match_field: Numeric field containing the number
         of matching terms required to return a document.
     :arg minimum_should_match_script: Custom script containing the number
         of matching terms required to return a document.
-    :arg terms: (required) Array of terms you wish to find in the provided
-        field.
     :arg boost: Floating point number used to decrease or increase the
         relevance scores of the query. Boost values are relative to the
         default value of 1.0. A boost value between 0 and 1.0 decreases
@@ -1446,32 +1446,32 @@ class TermsSetQuery(QueryBase):
     :arg _name:
     """
 
+    terms: Union[Sequence[str], "DefaultType"]
     minimum_should_match_field: Union[str, "InstrumentedField", "DefaultType"]
     minimum_should_match_script: Union["types.Script", Dict[str, Any], "DefaultType"]
-    terms: Union[Sequence[str], "DefaultType"]
     boost: Union[float, "DefaultType"]
     _name: Union[str, "DefaultType"]
 
     def __init__(
         self,
         *,
+        terms: Union[Sequence[str], "DefaultType"] = DEFAULT,
         minimum_should_match_field: Union[
             str, "InstrumentedField", "DefaultType"
         ] = DEFAULT,
         minimum_should_match_script: Union[
             "types.Script", Dict[str, Any], "DefaultType"
         ] = DEFAULT,
-        terms: Union[Sequence[str], "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if terms is not DEFAULT:
+            kwargs["terms"] = terms
         if minimum_should_match_field is not DEFAULT:
             kwargs["minimum_should_match_field"] = str(minimum_should_match_field)
         if minimum_should_match_script is not DEFAULT:
             kwargs["minimum_should_match_script"] = minimum_should_match_script
-        if terms is not DEFAULT:
-            kwargs["terms"] = terms
         if boost is not DEFAULT:
             kwargs["boost"] = boost
         if _name is not DEFAULT:
@@ -2024,8 +2024,8 @@ class HighlightBase(AttrDict[Any]):
 
 class Highlight(HighlightBase):
     """
-    :arg encoder:
     :arg fields: (required)
+    :arg encoder:
     :arg type:
     :arg boundary_chars: A string that contains each boundary character.
     :arg boundary_max_scan: How far to scan for boundary characters.
@@ -2087,12 +2087,12 @@ class Highlight(HighlightBase):
     :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
-    encoder: Union[Literal["default", "html"], "DefaultType"]
     fields: Union[
         Mapping[Union[str, "InstrumentedField"], "types.HighlightField"],
         Dict[str, Any],
         "DefaultType",
     ]
+    encoder: Union[Literal["default", "html"], "DefaultType"]
     type: Union[Literal["plain", "fvh", "unified"], "DefaultType"]
     boundary_chars: Union[str, "DefaultType"]
     boundary_max_scan: Union[int, "DefaultType"]
@@ -2118,12 +2118,12 @@ class Highlight(HighlightBase):
     def __init__(
         self,
         *,
-        encoder: Union[Literal["default", "html"], "DefaultType"] = DEFAULT,
         fields: Union[
             Mapping[Union[str, "InstrumentedField"], "types.HighlightField"],
             Dict[str, Any],
             "DefaultType",
         ] = DEFAULT,
+        encoder: Union[Literal["default", "html"], "DefaultType"] = DEFAULT,
         type: Union[Literal["plain", "fvh", "unified"], "DefaultType"] = DEFAULT,
         boundary_chars: Union[str, "DefaultType"] = DEFAULT,
         boundary_max_scan: Union[int, "DefaultType"] = DEFAULT,
@@ -2149,10 +2149,10 @@ class Highlight(HighlightBase):
         tags_schema: Union[Literal["styled"], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if encoder is not DEFAULT:
-            kwargs["encoder"] = encoder
         if fields is not DEFAULT:
             kwargs["fields"] = str(fields)
+        if encoder is not DEFAULT:
+            kwargs["encoder"] = encoder
         if type is not DEFAULT:
             kwargs["type"] = type
         if boundary_chars is not DEFAULT:
@@ -2366,11 +2366,11 @@ class IntervalsAnyOf(AttrDict[Any]):
 
 class IntervalsFuzzy(AttrDict[Any]):
     """
+    :arg term: (required) The term to match.
     :arg analyzer: Analyzer used to normalize the term.
     :arg fuzziness: Maximum edit distance allowed for matching.
     :arg prefix_length: Number of beginning characters left unchanged when
         creating expansions.
-    :arg term: (required) The term to match.
     :arg transpositions: Indicates whether edits include transpositions of
         two adjacent characters (for example, `ab` to `ba`).
     :arg use_field: If specified, match intervals from this field rather
@@ -2379,32 +2379,32 @@ class IntervalsFuzzy(AttrDict[Any]):
         separately.
     """
 
+    term: Union[str, "DefaultType"]
     analyzer: Union[str, "DefaultType"]
     fuzziness: Union[str, int, "DefaultType"]
     prefix_length: Union[int, "DefaultType"]
-    term: Union[str, "DefaultType"]
     transpositions: Union[bool, "DefaultType"]
     use_field: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
+        term: Union[str, "DefaultType"] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         fuzziness: Union[str, int, "DefaultType"] = DEFAULT,
         prefix_length: Union[int, "DefaultType"] = DEFAULT,
-        term: Union[str, "DefaultType"] = DEFAULT,
         transpositions: Union[bool, "DefaultType"] = DEFAULT,
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if term is not DEFAULT:
+            kwargs["term"] = term
         if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
         if fuzziness is not DEFAULT:
             kwargs["fuzziness"] = fuzziness
         if prefix_length is not DEFAULT:
             kwargs["prefix_length"] = prefix_length
-        if term is not DEFAULT:
-            kwargs["term"] = term
         if transpositions is not DEFAULT:
             kwargs["transpositions"] = transpositions
         if use_field is not DEFAULT:
@@ -2414,12 +2414,12 @@ class IntervalsFuzzy(AttrDict[Any]):
 
 class IntervalsMatch(AttrDict[Any]):
     """
+    :arg query: (required) Text you wish to find in the provided field.
     :arg analyzer: Analyzer used to analyze terms in the query.
     :arg max_gaps: Maximum number of positions between the matching terms.
         Terms further apart than this are not considered matches.
     :arg ordered: If `true`, matching terms must appear in their specified
         order.
-    :arg query: (required) Text you wish to find in the provided field.
     :arg use_field: If specified, match intervals from this field rather
         than the top-level field. The `term` is normalized using the
         search analyzer from this field, unless `analyzer` is specified
@@ -2427,32 +2427,32 @@ class IntervalsMatch(AttrDict[Any]):
     :arg filter: An optional interval filter.
     """
 
+    query: Union[str, "DefaultType"]
     analyzer: Union[str, "DefaultType"]
     max_gaps: Union[int, "DefaultType"]
     ordered: Union[bool, "DefaultType"]
-    query: Union[str, "DefaultType"]
     use_field: Union[str, "InstrumentedField", "DefaultType"]
     filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"]
 
     def __init__(
         self,
         *,
+        query: Union[str, "DefaultType"] = DEFAULT,
         analyzer: Union[str, "DefaultType"] = DEFAULT,
         max_gaps: Union[int, "DefaultType"] = DEFAULT,
         ordered: Union[bool, "DefaultType"] = DEFAULT,
-        query: Union[str, "DefaultType"] = DEFAULT,
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         filter: Union["types.IntervalsFilter", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if query is not DEFAULT:
+            kwargs["query"] = query
         if analyzer is not DEFAULT:
             kwargs["analyzer"] = analyzer
         if max_gaps is not DEFAULT:
             kwargs["max_gaps"] = max_gaps
         if ordered is not DEFAULT:
             kwargs["ordered"] = ordered
-        if query is not DEFAULT:
-            kwargs["query"] = query
         if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
         if filter is not DEFAULT:
@@ -2462,31 +2462,31 @@ class IntervalsMatch(AttrDict[Any]):
 
 class IntervalsPrefix(AttrDict[Any]):
     """
-    :arg analyzer: Analyzer used to analyze the `prefix`.
     :arg prefix: (required) Beginning characters of terms you wish to find
         in the top-level field.
+    :arg analyzer: Analyzer used to analyze the `prefix`.
     :arg use_field: If specified, match intervals from this field rather
         than the top-level field. The `prefix` is normalized using the
         search analyzer from this field, unless `analyzer` is specified
         separately.
     """
 
-    analyzer: Union[str, "DefaultType"]
     prefix: Union[str, "DefaultType"]
+    analyzer: Union[str, "DefaultType"]
     use_field: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "DefaultType"] = DEFAULT,
         prefix: Union[str, "DefaultType"] = DEFAULT,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer is not DEFAULT:
-            kwargs["analyzer"] = analyzer
         if prefix is not DEFAULT:
             kwargs["prefix"] = prefix
+        if analyzer is not DEFAULT:
+            kwargs["analyzer"] = analyzer
         if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
@@ -2494,31 +2494,31 @@ class IntervalsPrefix(AttrDict[Any]):
 
 class IntervalsWildcard(AttrDict[Any]):
     """
+    :arg pattern: (required) Wildcard pattern used to find matching terms.
     :arg analyzer: Analyzer used to analyze the `pattern`. Defaults to the
         top-level field's analyzer.
-    :arg pattern: (required) Wildcard pattern used to find matching terms.
     :arg use_field: If specified, match intervals from this field rather
         than the top-level field. The `pattern` is normalized using the
         search analyzer from this field, unless `analyzer` is specified
         separately.
     """
 
-    analyzer: Union[str, "DefaultType"]
     pattern: Union[str, "DefaultType"]
+    analyzer: Union[str, "DefaultType"]
     use_field: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
-        analyzer: Union[str, "DefaultType"] = DEFAULT,
         pattern: Union[str, "DefaultType"] = DEFAULT,
+        analyzer: Union[str, "DefaultType"] = DEFAULT,
         use_field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if analyzer is not DEFAULT:
-            kwargs["analyzer"] = analyzer
         if pattern is not DEFAULT:
             kwargs["pattern"] = pattern
+        if analyzer is not DEFAULT:
+            kwargs["analyzer"] = analyzer
         if use_field is not DEFAULT:
             kwargs["use_field"] = str(use_field)
         super().__init__(kwargs)
@@ -2741,12 +2741,12 @@ class SpanNearQuery(QueryBase):
 
 class SpanNotQuery(QueryBase):
     """
-    :arg dist: The number of tokens from within the include span that
-        can’t have overlap with the exclude span. Equivalent to setting
-        both `pre` and `post`.
     :arg exclude: (required) Span query whose matches must not overlap
         those returned.
     :arg include: (required) Span query whose matches are filtered.
+    :arg dist: The number of tokens from within the include span that
+        can’t have overlap with the exclude span. Equivalent to setting
+        both `pre` and `post`.
     :arg post: The number of tokens after the include span that can’t have
         overlap with the exclude span.
     :arg pre: The number of tokens before the include span that can’t have
@@ -2759,9 +2759,9 @@ class SpanNotQuery(QueryBase):
     :arg _name:
     """
 
-    dist: Union[int, "DefaultType"]
     exclude: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
     include: Union["types.SpanQuery", Dict[str, Any], "DefaultType"]
+    dist: Union[int, "DefaultType"]
     post: Union[int, "DefaultType"]
     pre: Union[int, "DefaultType"]
     boost: Union[float, "DefaultType"]
@@ -2770,21 +2770,21 @@ class SpanNotQuery(QueryBase):
     def __init__(
         self,
         *,
-        dist: Union[int, "DefaultType"] = DEFAULT,
         exclude: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
         include: Union["types.SpanQuery", Dict[str, Any], "DefaultType"] = DEFAULT,
+        dist: Union[int, "DefaultType"] = DEFAULT,
         post: Union[int, "DefaultType"] = DEFAULT,
         pre: Union[int, "DefaultType"] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if dist is not DEFAULT:
-            kwargs["dist"] = dist
         if exclude is not DEFAULT:
             kwargs["exclude"] = exclude
         if include is not DEFAULT:
             kwargs["include"] = include
+        if dist is not DEFAULT:
+            kwargs["dist"] = dist
         if post is not DEFAULT:
             kwargs["post"] = post
         if pre is not DEFAULT:
@@ -3119,15 +3119,15 @@ class GeoDistanceSort(AttrDict[Any]):
 
 class ScriptSort(AttrDict[Any]):
     """
-    :arg order:
     :arg script: (required)
+    :arg order:
     :arg type:
     :arg mode:
     :arg nested:
     """
 
-    order: Union[Literal["asc", "desc"], "DefaultType"]
     script: Union["types.Script", Dict[str, Any], "DefaultType"]
+    order: Union[Literal["asc", "desc"], "DefaultType"]
     type: Union[Literal["string", "number", "version"], "DefaultType"]
     mode: Union[Literal["min", "max", "sum", "avg", "median"], "DefaultType"]
     nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"]
@@ -3135,8 +3135,8 @@ class ScriptSort(AttrDict[Any]):
     def __init__(
         self,
         *,
-        order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
         script: Union["types.Script", Dict[str, Any], "DefaultType"] = DEFAULT,
+        order: Union[Literal["asc", "desc"], "DefaultType"] = DEFAULT,
         type: Union[Literal["string", "number", "version"], "DefaultType"] = DEFAULT,
         mode: Union[
             Literal["min", "max", "sum", "avg", "median"], "DefaultType"
@@ -3144,10 +3144,10 @@ class ScriptSort(AttrDict[Any]):
         nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
-        if order is not DEFAULT:
-            kwargs["order"] = order
         if script is not DEFAULT:
             kwargs["script"] = script
+        if order is not DEFAULT:
+            kwargs["order"] = order
         if type is not DEFAULT:
             kwargs["type"] = type
         if mode is not DEFAULT:
@@ -3288,32 +3288,32 @@ class IntervalsFilter(AttrDict[Any]):
 
 class NestedSortValue(AttrDict[Any]):
     """
+    :arg path: (required)
     :arg filter:
     :arg max_children:
     :arg nested:
-    :arg path: (required)
     """
 
+    path: Union[str, "InstrumentedField", "DefaultType"]
     filter: Union[Query, "DefaultType"]
     max_children: Union[int, "DefaultType"]
     nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"]
-    path: Union[str, "InstrumentedField", "DefaultType"]
 
     def __init__(
         self,
         *,
+        path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         filter: Union[Query, "DefaultType"] = DEFAULT,
         max_children: Union[int, "DefaultType"] = DEFAULT,
         nested: Union["types.NestedSortValue", Dict[str, Any], "DefaultType"] = DEFAULT,
-        path: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
         **kwargs: Any,
     ):
+        if path is not DEFAULT:
+            kwargs["path"] = str(path)
         if filter is not DEFAULT:
             kwargs["filter"] = filter
         if max_children is not DEFAULT:
             kwargs["max_children"] = max_children
         if nested is not DEFAULT:
             kwargs["nested"] = nested
-        if path is not DEFAULT:
-            kwargs["path"] = str(path)
         super().__init__(kwargs)
