@@ -475,19 +475,19 @@ class ElasticsearchSchema:
             raise RuntimeError(f"Type {interface} is not an interface")
         k = {"name": interface, "args": []}
         while True:
+            if "inherits" not in type_ or "type" not in type_["inherits"]:
+                break
+                
             for arg in type_["properties"]:
                 schema.add_attribute(k, arg, for_types_py=True)
-            if "inherits" in type_ and "type" in type_["inherits"]:
-                if "parent" not in k:
-                    k["parent"] = type_["inherits"]["type"]["name"]
-                if type_["inherits"]["type"]["name"] not in interfaces:
-                    interfaces.append(type_["inherits"]["type"]["name"])
-                type_ = schema.find_type(
-                    type_["inherits"]["type"]["name"],
-                    type_["inherits"]["type"]["namespace"],
-                )
-            else:
-                break
+            if "parent" not in k:
+                k["parent"] = type_["inherits"]["type"]["name"]
+            if type_["inherits"]["type"]["name"] not in interfaces:
+                interfaces.append(type_["inherits"]["type"]["name"])
+            type_ = schema.find_type(
+                type_["inherits"]["type"]["name"],
+                type_["inherits"]["type"]["namespace"],
+            )
         return k
 
 
