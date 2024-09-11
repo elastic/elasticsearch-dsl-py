@@ -128,7 +128,7 @@ class Document(DocumentBase, metaclass=IndexMeta):
         using: Optional[UsingType] = None,
         index: Optional[str] = None,
         **kwargs: Any,
-    ) -> Optional[Self]:
+    ) -> Self:
         """
         Retrieve a single document from elasticsearch using its ``id``.
 
@@ -138,12 +138,11 @@ class Document(DocumentBase, metaclass=IndexMeta):
         :arg using: connection alias to use, defaults to ``'default'``
 
         Any additional keyword arguments will be passed to
-        ``Elasticsearch.get`` unchanged.
+        ``Elasticsearch.get`` unchanged. If the given ``id`` is not found,
+        a ``NotFoundError`` exception is raised.
         """
         es = cls._get_connection(using)
         doc = es.get(index=cls._default_index(index), id=id, **kwargs)
-        if not doc.get("found", False):
-            return None
         return cls.from_es(doc)
 
     @classmethod
