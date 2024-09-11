@@ -27,7 +27,7 @@ PipeSeparatedFlags = str
 
 
 {% for k in classes %}
-class {{ k.name }}({% if k.parent %}{{ k.parent }}{% else %}AttrDict[Any]{% endif %}):
+class {{ k.name }}({ k.parent if k.parent else "AttrDict[Any]" }}):
     {% if k.args %}
     """
     {% for arg in k.args %}
