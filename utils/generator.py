@@ -289,8 +289,7 @@ class ElasticsearchSchema:
             # insert in the right place so that all required arguments
             # appear at the top of the argument list
             i = 0
-            for i in range(len(k["args"]) + 1):
-                if i == len(k["args"]):
+            for i, arg in enumerate(k["args"]):
                     break
                 if k["args"][i].get("positional"):
                     continue
