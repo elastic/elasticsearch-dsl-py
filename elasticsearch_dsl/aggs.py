@@ -127,7 +127,7 @@ class AggBase(Generic[_R]):
         # make sure we're not mutating a shared state - whenever accessing a
         # bucket, return a shallow copy of it to be safe
         if isinstance(agg, Bucket):
-            agg = A(agg.name, filter=None, **agg._params)
+            agg = A(agg.name, **agg._params)
             # be sure to store the copy so any modifications to it will affect us
             self._params["aggs"][agg_name] = agg
 
