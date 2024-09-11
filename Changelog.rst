@@ -3,6 +3,12 @@
 Changelog
 =========
 
+8.15.3 (2024-09-12)
+-------------------
+
+* Fixed regression introduced in ``Terms`` query class (`#1907 <https://github.com/elastic/elasticsearch-dsl-py/pull/1907>`_)
+* Removed unnecessary ``filter`` argument in ``AggBase.__getitem__`` (`#1903 <https://github.com/elastic/elasticsearch-dsl-py/pull/1903>`_)
+
 8.15.2 (2024-09-04)
 -------------------
 
