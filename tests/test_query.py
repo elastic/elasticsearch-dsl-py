@@ -81,8 +81,8 @@ def test_terms_to_dict() -> None:
     assert {"terms": {"_type": ["article", "section"]}} == query.Terms(
         _type=["article", "section"]
     ).to_dict()
-    assert {"terms": {"_type": ["article", "section"]}} == query.Terms(
-        _type=("article", "section")
+    assert {"terms": {"_type": ["article", "section"], "boost": 1.1}} == query.Terms(
+        _type=("article", "section"), boost=1.1
     ).to_dict()
 
 
