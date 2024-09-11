@@ -153,47 +153,51 @@ class {{ k.name }}({{ parent }}):
     {{ line }}
     {% endfor %}
     {% if k.args %}
-    {% if k.docstring %}
+        {% if k.docstring %}
 
-    {% endif %}
-    {% for kwarg in k.args %}
-    {% for line in kwarg.doc %}
+        {% endif %}
+        {% for kwarg in k.args %}
+            {% for line in kwarg.doc %}
     {{ line }}
-    {% endfor %}
-    {% endfor %}
+            {% endfor %}
+        {% endfor %}
     {% endif %}
     """
     name = "{{ k.property_name }}"
     {% if k.params %}
     _param_defs = {
-        {% for param in k.params %}
+    {% for param in k.params %}
         "{{ param.name }}": {{ param.param }},
-        {% endfor %}
-        {% if k.name == "FunctionScore" %}
+    {% endfor %}
+    {% if k.name == "FunctionScore" %}
+        {# The FunctionScore class implements a custom solution for the `functions`
+           shortcut property. Until the code generator can support shortcut
+           properties directly that solution is added here #}
         "filter": {"type": "query"},
         "functions": {"type": "score_function", "multi": True},
-        {% endif %}
+    {% endif %}
     }
     {% endif %}
 
     def __init__(
         self,
         {% for arg in k.args %}
-        {% if arg.positional %}
+            {% if arg.positional %}
         {{ arg.name }}: {{ arg.type }} = DEFAULT,
-        {% endif %}
+            {% endif %}
         {% endfor %}
         {% if k.args and not k.args[-1].positional %}
         *,
         {% endif %}
         {% for arg in k.args %}
-        {% if not arg.positional %}
+            {% if not arg.positional %}
         {{ arg.name }}: {{ arg.type }} = DEFAULT,
-        {% endif %}
+            {% endif %}
         {% endfor %}
         **kwargs: Any
     ):
         {% if k.name == "FunctionScore" %}
+            {# continuation of the FunctionScore shortcut property support from above #}
         if functions is DEFAULT:
             functions = []
             for name in ScoreFunction._classes:
@@ -209,13 +213,15 @@ class {{ k.name }}({{ parent }}):
         {% endif %}
         super().__init__(
             {% for arg in k.args %}
-            {% if not arg.positional %}
+                {% if not arg.positional %}
             {{ arg.name }}={{ arg.name }},
-            {% endif %}
+                {% endif %}
             {% endfor %}
             **kwargs
         )
 
+    {# what follows is a set of Pythonic enhancements to some of the query classes
+       which are outside the scope of the code generator #}
     {% if k.name == "MatchAll" %}
     def __add__(self, other: "Query") -> "Query":
         return other._clone()
@@ -358,7 +364,10 @@ EMPTY_QUERY = MatchAll()
 
     {% elif k.name == "Terms" %}
     def _setattr(self, name: str, value: Any) -> None:
-        super()._setattr(name, list(value))
+        # here we convert any iterables that are not strings to lists
+        if hasattr(value, "__iter__") and not isinstance(value, (str, list)):
+            value = list(value)
+        super()._setattr(name, value)
 
     {% endif %}
 

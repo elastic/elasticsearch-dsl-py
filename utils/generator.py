@@ -289,7 +289,8 @@ class ElasticsearchSchema:
             # insert in the right place so that all required arguments
             # appear at the top of the argument list
             i = 0
-            for i, arg in enumerate(k["args"]):
+            for i in range(len(k["args"]) + 1):
+                if i == len(k["args"]):
                     break
                 if k["args"][i].get("positional"):
                     continue
@@ -475,11 +476,12 @@ class ElasticsearchSchema:
             raise RuntimeError(f"Type {interface} is not an interface")
         k = {"name": interface, "args": []}
         while True:
-            if "inherits" not in type_ or "type" not in type_["inherits"]:
-                break
-                
             for arg in type_["properties"]:
                 schema.add_attribute(k, arg, for_types_py=True)
+
+            if "inherits" not in type_ or "type" not in type_["inherits"]:
+                break
+
             if "parent" not in k:
                 k["parent"] = type_["inherits"]["type"]["name"]
             if type_["inherits"]["type"]["name"] not in interfaces:

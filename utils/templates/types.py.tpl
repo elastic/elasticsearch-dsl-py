@@ -27,18 +27,18 @@ PipeSeparatedFlags = str
 
 
 {% for k in classes %}
-class {{ k.name }}({ k.parent if k.parent else "AttrDict[Any]" }}):
+class {{ k.name }}({{ k.parent if k.parent else "AttrDict[Any]" }}):
     {% if k.args %}
     """
-    {% for arg in k.args %}
-    {% for line in arg.doc %}
+        {% for arg in k.args %}
+            {% for line in arg.doc %}
     {{ line }}
-    {% endfor %}
-    {% endfor %}
+            {% endfor %}
+        {% endfor %}
     """
-    {% for arg in k.args %}
+        {% for arg in k.args %}
     {{ arg.name }}: {{ arg.type }}
-    {% endfor %}
+        {% endfor %}
 
     def __init__(
         self,
@@ -62,14 +62,14 @@ class {{ k.name }}({ k.parent if k.parent else "AttrDict[Any]" }}):
                 kwargs[str(field)] = value
         {% endif %}
         {% for arg in k.args %}
-        {% if not arg.positional %}
+            {% if not arg.positional %}
         if {{ arg.name }} is not DEFAULT:
-            {% if "InstrumentedField" in arg.type %}
+                {% if "InstrumentedField" in arg.type %}
             kwargs["{{ arg.name }}"] = str({{ arg.name }})
-            {% else %}
+                {% else %}
             kwargs["{{ arg.name }}"] = {{ arg.name }}
+                {% endif %}
             {% endif %}
-        {% endif %}
         {% endfor %}
         {% if k.parent %}
         super().__init__(**kwargs)
