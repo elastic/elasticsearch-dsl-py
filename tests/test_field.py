@@ -17,7 +17,7 @@
 
 import base64
 import ipaddress
-from datetime import datetime
+from datetime import date, datetime, time
 from typing import cast
 
 import pytest
@@ -46,6 +46,24 @@ def test_boolean_deserialization() -> None:
     assert bf.deserialize(True)
     assert bf.deserialize("true")
     assert bf.deserialize(1)
+
+
+def test_datetime_deserialization() -> None:
+    f = field.Date()
+    dt = datetime.now()
+    assert dt == f._deserialize(dt.isoformat())
+
+    d = date.today()
+    assert datetime.combine(d, time()) == f._deserialize(d.isoformat())
+
+
+def test_date_deserialization() -> None:
+    f = field.Date(format="yyyy-MM-dd")
+    d = date.today()
+    assert d == f._deserialize(d.isoformat())
+
+    dt = datetime.now()
+    assert dt.date() == f._deserialize(dt.isoformat())
 
 
 def test_date_field_can_have_default_tz() -> None:
