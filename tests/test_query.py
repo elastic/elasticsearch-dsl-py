@@ -124,7 +124,7 @@ def test_query_clone() -> None:
 
 
 def test_bool_converts_its_init_args_to_queries() -> None:
-    q = query.Bool(must=[{"match": {"f": "value"}}])
+    q = query.Bool(must=[{"match": {"f": "value"}}])  # type: ignore
 
     assert len(q.must) == 1
     assert q.must[0] == query.Match(f="value")

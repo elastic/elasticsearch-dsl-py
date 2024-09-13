@@ -17,9 +17,20 @@
 
 import collections.abc
 from copy import deepcopy
-from typing import Any, ClassVar, Dict, MutableMapping, Optional, Union, overload
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    Literal,
+    MutableMapping,
+    Optional,
+    Union,
+    overload,
+)
 
-from .utils import DslBase
+from elastic_transport.client_utils import DEFAULT, DefaultType
+
+from .utils import AttrDict, DslBase
 
 
 @overload
@@ -123,8 +134,12 @@ class RandomScore(ScoreFunction):
     name = "random_score"
 
 
-class FieldValueFactor(ScoreFunction):
+class FieldValueFactorScore(ScoreFunction):
     name = "field_value_factor"
+
+
+class FieldValueFactor(FieldValueFactorScore):  # alias of the above
+    pass
 
 
 class Linear(ScoreFunction):
@@ -137,3 +152,29 @@ class Gauss(ScoreFunction):
 
 class Exp(ScoreFunction):
     name = "exp"
+
+
+class DecayFunction(AttrDict[Any]):
+    def __init__(
+        self,
+        *,
+        decay: Union[float, "DefaultType"] = DEFAULT,
+        offset: Any = DEFAULT,
+        scale: Any = DEFAULT,
+        origin: Any = DEFAULT,
+        multi_value_mode: Union[
+            Literal["min", "max", "avg", "sum"], "DefaultType"
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if decay != DEFAULT:
+            kwargs["decay"] = decay
+        if offset != DEFAULT:
+            kwargs["offset"] = offset
+        if scale != DEFAULT:
+            kwargs["scale"] = scale
+        if origin != DEFAULT:
+            kwargs["origin"] = origin
+        if multi_value_mode != DEFAULT:
+            kwargs["multi_value_mode"] = multi_value_mode
+        super().__init__(kwargs)
