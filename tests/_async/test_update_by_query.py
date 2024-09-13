@@ -101,22 +101,26 @@ def test_exclude() -> None:
 def test_reverse() -> None:
     d = {
         "query": {
-            "filtered": {
-                "filter": {
-                    "bool": {
-                        "should": [
-                            {"term": {"category": "meetup"}},
-                            {"term": {"category": "conference"}},
-                        ]
+            "bool": {
+                "filter": [
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"category": "meetup"}},
+                                {"term": {"category": "conference"}},
+                            ]
+                        }
                     }
-                },
-                "query": {
-                    "bool": {
-                        "must": [{"match": {"title": "python"}}],
-                        "must_not": [{"match": {"title": "ruby"}}],
-                        "minimum_should_match": 2,
+                ],
+                "must": [
+                    {
+                        "bool": {
+                            "must": [{"match": {"title": "python"}}],
+                            "must_not": [{"match": {"title": "ruby"}}],
+                            "minimum_should_match": 2,
+                        }
                     }
-                },
+                ],
             }
         },
         "script": {
