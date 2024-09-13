@@ -315,6 +315,9 @@ class Date(Field):
                 raise ValidationException(
                     f"Could not parse date from the value ({data!r})", e
                 )
+            # we treat the yyyy-MM-dd format as a special case
+            if hasattr(self, "format") and self.format == "yyyy-MM-dd":
+                data = data.date()
 
         if isinstance(data, datetime):
             if self._default_timezone and data.tzinfo is None:
