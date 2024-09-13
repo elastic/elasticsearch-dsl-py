@@ -16,19 +16,19 @@
 #  under the License.
 
 import os
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, Mapping, Sequence
 
 from elasticsearch.helpers import bulk
 
-from elasticsearch_dsl import A, Agg, Response, Search, connections
+from elasticsearch_dsl import Agg, Response, Search, aggs, connections
 from tests.test_integration.test_data import DATA, GIT_INDEX
 
 
 def scan_aggs(
     search: Search,
-    source_aggs: Union[Dict[str, Agg], List[Dict[str, Agg]]],
+    source_aggs: Sequence[Mapping[str, Agg]],
     inner_aggs: Dict[str, Agg] = {},
-    size: Optional[int] = 10,
+    size: int = 10,
 ) -> Iterator[Response]:
     """
     Helper function used to iterate over all possible bucket combinations of
@@ -39,7 +39,12 @@ def scan_aggs(
     def run_search(**kwargs: Any) -> Response:
         s = search[:0]
         bucket = s.aggs.bucket(
-            "comp", "composite", sources=source_aggs, size=size, **kwargs
+            "comp",
+            aggs.Composite(
+                sources=source_aggs,
+                size=size,
+                **kwargs,
+            ),
         )
         for agg_name, agg in inner_aggs.items():
             bucket[agg_name] = agg
@@ -69,8 +74,8 @@ def main() -> None:
     # run some aggregations on the data
     for b in scan_aggs(
         Search(index="git"),
-        {"files": A("terms", field="files")},
-        {"first_seen": A("min", field="committed_date")},
+        [{"files": aggs.Terms(field="files")}],
+        {"first_seen": aggs.Min(field="committed_date")},
     ):
         print(
             "File %s has been modified %d times, first seen at %s."

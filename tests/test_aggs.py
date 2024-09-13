@@ -17,7 +17,7 @@
 
 from pytest import raises
 
-from elasticsearch_dsl import aggs, query
+from elasticsearch_dsl import aggs, query, types
 
 
 def test_repr() -> None:
@@ -220,7 +220,13 @@ def test_filters_correctly_identifies_the_hash() -> None:
 
 
 def test_bucket_sort_agg() -> None:
-    bucket_sort_agg = aggs.BucketSort(sort=[{"total_sales": {"order": "desc"}}], size=3)
+    bucket_sort_agg = aggs.BucketSort(sort=[{"total_sales": {"order": "desc"}}], size=3)  # type: ignore
+    assert bucket_sort_agg.to_dict() == {
+        "bucket_sort": {"sort": [{"total_sales": {"order": "desc"}}], "size": 3}
+    }
+    bucket_sort_agg = aggs.BucketSort(
+        sort=[types.SortOptions("total_sales", types.FieldSort(order="desc"))], size=3
+    )
     assert bucket_sort_agg.to_dict() == {
         "bucket_sort": {"sort": [{"total_sales": {"order": "desc"}}], "size": 3}
     }
@@ -245,7 +251,9 @@ def test_bucket_sort_agg() -> None:
 
 
 def test_bucket_sort_agg_only_trnunc() -> None:
-    bucket_sort_agg = aggs.BucketSort(False, **{"from": 1, "size": 1})
+    bucket_sort_agg = aggs.BucketSort(**{"from": 1, "size": 1, "_expand__to_dot": False})  # type: ignore
+    assert bucket_sort_agg.to_dict() == {"bucket_sort": {"from": 1, "size": 1}}
+    bucket_sort_agg = aggs.BucketSort(from_=1, size=1, _expand__to_dot=False)
     assert bucket_sort_agg.to_dict() == {"bucket_sort": {"from": 1, "size": 1}}
 
     a = aggs.DateHistogram(field="date", interval="month")
@@ -257,20 +265,23 @@ def test_bucket_sort_agg_only_trnunc() -> None:
 
 
 def test_geohash_grid_aggregation() -> None:
-    a = aggs.GeohashGrid(**{"field": "centroid", "precision": 3})
-
+    a = aggs.GeohashGrid(**{"field": "centroid", "precision": 3})  # type: ignore
+    assert {"geohash_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
+    a = aggs.GeohashGrid(field="centroid", precision=3)
     assert {"geohash_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
 
 
 def test_geohex_grid_aggregation() -> None:
-    a = aggs.GeohexGrid(**{"field": "centroid", "precision": 3})
-
+    a = aggs.GeohexGrid(**{"field": "centroid", "precision": 3})  # type: ignore
+    assert {"geohex_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
+    a = aggs.GeohexGrid(field="centroid", precision=3)
     assert {"geohex_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
 
 
 def test_geotile_grid_aggregation() -> None:
-    a = aggs.GeotileGrid(**{"field": "centroid", "precision": 3})
-
+    a = aggs.GeotileGrid(**{"field": "centroid", "precision": 3})  # type: ignore
+    assert {"geotile_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
+    a = aggs.GeotileGrid(field="centroid", precision=3)
     assert {"geotile_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
 
 
@@ -307,19 +318,14 @@ def test_variable_width_histogram_aggregation() -> None:
 
 
 def test_ip_prefix_aggregation() -> None:
-    a = aggs.IPPrefix(**{"field": "ipv4", "prefix_length": 24})
-
+    a = aggs.IPPrefix(**{"field": "ipv4", "prefix_length": 24})  # type: ignore
+    assert {"ip_prefix": {"field": "ipv4", "prefix_length": 24}} == a.to_dict()
+    a = aggs.IPPrefix(field="ipv4", prefix_length=24)
     assert {"ip_prefix": {"field": "ipv4", "prefix_length": 24}} == a.to_dict()
 
 
 def test_ip_prefix_aggregation_extra() -> None:
-    a = aggs.IPPrefix(
-        **{
-            "field": "ipv6",
-            "prefix_length": 64,
-            "is_ipv6": True,
-        }
-    )
+    a = aggs.IPPrefix(field="ipv6", prefix_length=64, is_ipv6=True)
 
     assert {
         "ip_prefix": {
@@ -332,6 +338,20 @@ def test_ip_prefix_aggregation_extra() -> None:
 
 def test_multi_terms_aggregation() -> None:
     a = aggs.MultiTerms(terms=[{"field": "tags"}, {"field": "author.row"}])
+    assert {
+        "multi_terms": {
+            "terms": [
+                {"field": "tags"},
+                {"field": "author.row"},
+            ]
+        }
+    } == a.to_dict()
+    a = aggs.MultiTerms(
+        terms=[
+            types.MultiTermLookup(field="tags"),
+            types.MultiTermLookup(field="author.row"),
+        ]
+    )
     assert {
         "multi_terms": {
             "terms": [
@@ -452,11 +472,21 @@ def test_random_sampler_aggregation() -> None:
 
 
 def test_adjancecy_matrix_aggregation() -> None:
+    a = aggs.AdjacencyMatrix(filters={"grpA": {"terms": {"accounts": ["hillary", "sidney"]}}, "grpB": {"terms": {"accounts": ["donald", "mitt"]}}, "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}}})  # type: ignore
+    assert {
+        "adjacency_matrix": {
+            "filters": {
+                "grpA": {"terms": {"accounts": ["hillary", "sidney"]}},
+                "grpB": {"terms": {"accounts": ["donald", "mitt"]}},
+                "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}},
+            }
+        }
+    } == a.to_dict()
     a = aggs.AdjacencyMatrix(
         filters={
-            "grpA": {"terms": {"accounts": ["hillary", "sidney"]}},
-            "grpB": {"terms": {"accounts": ["donald", "mitt"]}},
-            "grpC": {"terms": {"accounts": ["vladimir", "nigel"]}},
+            "grpA": query.Terms(accounts=["hillary", "sidney"]),
+            "grpB": query.Terms(accounts=["donald", "mitt"]),
+            "grpC": query.Terms(accounts=["vladimir", "nigel"]),
         }
     )
     assert {
@@ -471,10 +501,16 @@ def test_adjancecy_matrix_aggregation() -> None:
 
 
 def test_top_metrics_aggregation() -> None:
-    a = aggs.TopMetrics(metrics={"field": "m"}, sort={"s": "desc"})
-
+    a = aggs.TopMetrics(metrics={"field": "m"}, sort={"s": "desc"})  # type: ignore
     assert {
         "top_metrics": {"metrics": {"field": "m"}, "sort": {"s": "desc"}}
+    } == a.to_dict()
+    a = aggs.TopMetrics(
+        metrics=types.TopMetricsValue(field="m"),
+        sort=types.SortOptions("s", types.FieldSort(order="desc")),
+    )
+    assert {
+        "top_metrics": {"metrics": {"field": "m"}, "sort": {"s": {"order": "desc"}}}
     } == a.to_dict()
 
 
