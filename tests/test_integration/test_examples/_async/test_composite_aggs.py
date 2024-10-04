@@ -28,7 +28,7 @@ async def test_scan_aggs_exhausts_all_files(
     async_data_client: AsyncElasticsearch,
 ) -> None:
     s = AsyncSearch(index="flat-git")
-    key_aggs = {"files": A("terms", field="files")}
+    key_aggs = [{"files": A("terms", field="files")}]
     file_list = [f async for f in scan_aggs(s, key_aggs)]
 
     assert len(file_list) == 26

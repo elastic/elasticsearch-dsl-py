@@ -949,7 +949,7 @@ class SearchBase(Request[_R]):
         d = {}
 
         if self.query:
-            d["query"] = self.query.to_dict()
+            d["query"] = recursive_to_dict(self.query)
 
         if self._knn:
             if len(self._knn) == 1:
@@ -963,10 +963,10 @@ class SearchBase(Request[_R]):
         # count request doesn't care for sorting and other things
         if not count:
             if self.post_filter:
-                d["post_filter"] = self.post_filter.to_dict()
+                d["post_filter"] = recursive_to_dict(self.post_filter.to_dict())
 
             if self.aggs.aggs:
-                d.update(self.aggs.to_dict())
+                d.update(recursive_to_dict(self.aggs.to_dict()))
 
             if self._sort:
                 d["sort"] = self._sort

@@ -26,6 +26,110 @@ from elasticsearch_dsl.utils import AttrDict
 PipeSeparatedFlags = str
 
 
+class Aggregation(AttrDict[Any]):
+    pass
+
+
+class AggregationRange(AttrDict[Any]):
+    """
+    :arg from: Start of the range (inclusive).
+    :arg key: Custom key to return the range with.
+    :arg to: End of the range (exclusive).
+    """
+
+    from_: Union[float, DefaultType]
+    key: Union[str, DefaultType]
+    to: Union[float, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        from_: Union[float, DefaultType] = DEFAULT,
+        key: Union[str, DefaultType] = DEFAULT,
+        to: Union[float, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if from_ is not DEFAULT:
+            kwargs["from_"] = from_
+        if key is not DEFAULT:
+            kwargs["key"] = key
+        if to is not DEFAULT:
+            kwargs["to"] = to
+        super().__init__(kwargs)
+
+
+class BucketCorrelationFunction(AttrDict[Any]):
+    """
+    :arg count_correlation: (required) The configuration to calculate a
+        count correlation. This function is designed for determining the
+        correlation of a term value and a given metric.
+    """
+
+    count_correlation: Union[
+        "BucketCorrelationFunctionCountCorrelation", Dict[str, Any], DefaultType
+    ]
+
+    def __init__(
+        self,
+        *,
+        count_correlation: Union[
+            "BucketCorrelationFunctionCountCorrelation", Dict[str, Any], DefaultType
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if count_correlation is not DEFAULT:
+            kwargs["count_correlation"] = count_correlation
+        super().__init__(kwargs)
+
+
+class BucketPathAggregation(Aggregation):
+    """
+    :arg buckets_path: Path to the buckets that contain one set of values
+        to correlate.
+    """
+
+    buckets_path: Union[str, Sequence[str], Mapping[str, str], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        buckets_path: Union[
+            str, Sequence[str], Mapping[str, str], DefaultType
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if buckets_path is not DEFAULT:
+            kwargs["buckets_path"] = buckets_path
+        super().__init__(**kwargs)
+
+
+class ChiSquareHeuristic(AttrDict[Any]):
+    """
+    :arg background_is_superset: (required) Set to `false` if you defined
+        a custom background filter that represents a different set of
+        documents that you want to compare to.
+    :arg include_negatives: (required) Set to `false` to filter out the
+        terms that appear less often in the subset than in documents
+        outside the subset.
+    """
+
+    background_is_superset: Union[bool, DefaultType]
+    include_negatives: Union[bool, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        background_is_superset: Union[bool, DefaultType] = DEFAULT,
+        include_negatives: Union[bool, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if background_is_superset is not DEFAULT:
+            kwargs["background_is_superset"] = background_is_superset
+        if include_negatives is not DEFAULT:
+            kwargs["include_negatives"] = include_negatives
+        super().__init__(kwargs)
+
+
 class QueryBase(AttrDict[Any]):
     """
     :arg boost: Floating point number used to decrease or increase the
@@ -140,6 +244,157 @@ class CoordsGeoBounds(AttrDict[Any]):
             kwargs["left"] = left
         if right is not DEFAULT:
             kwargs["right"] = right
+        super().__init__(kwargs)
+
+
+class CustomCategorizeTextAnalyzer(AttrDict[Any]):
+    """
+    :arg char_filter:
+    :arg tokenizer:
+    :arg filter:
+    """
+
+    char_filter: Union[Sequence[str], DefaultType]
+    tokenizer: Union[str, DefaultType]
+    filter: Union[Sequence[str], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        char_filter: Union[Sequence[str], DefaultType] = DEFAULT,
+        tokenizer: Union[str, DefaultType] = DEFAULT,
+        filter: Union[Sequence[str], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if char_filter is not DEFAULT:
+            kwargs["char_filter"] = char_filter
+        if tokenizer is not DEFAULT:
+            kwargs["tokenizer"] = tokenizer
+        if filter is not DEFAULT:
+            kwargs["filter"] = filter
+        super().__init__(kwargs)
+
+
+class DateRangeExpression(AttrDict[Any]):
+    """
+    :arg from: Start of the range (inclusive).
+    :arg key: Custom key to return the range with.
+    :arg to: End of the range (exclusive).
+    """
+
+    from_: Union[str, float, DefaultType]
+    key: Union[str, DefaultType]
+    to: Union[str, float, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        from_: Union[str, float, DefaultType] = DEFAULT,
+        key: Union[str, DefaultType] = DEFAULT,
+        to: Union[str, float, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if from_ is not DEFAULT:
+            kwargs["from_"] = from_
+        if key is not DEFAULT:
+            kwargs["key"] = key
+        if to is not DEFAULT:
+            kwargs["to"] = to
+        super().__init__(kwargs)
+
+
+class EmptyObject(AttrDict[Any]):
+    pass
+
+
+class EwmaModelSettings(AttrDict[Any]):
+    """
+    :arg alpha:
+    """
+
+    alpha: Union[float, DefaultType]
+
+    def __init__(self, *, alpha: Union[float, DefaultType] = DEFAULT, **kwargs: Any):
+        if alpha is not DEFAULT:
+            kwargs["alpha"] = alpha
+        super().__init__(kwargs)
+
+
+class ExtendedBounds(AttrDict[Any]):
+    """
+    :arg max: Maximum value for the bound.
+    :arg min: Minimum value for the bound.
+    """
+
+    max: Any
+    min: Any
+
+    def __init__(self, *, max: Any = DEFAULT, min: Any = DEFAULT, **kwargs: Any):
+        if max is not DEFAULT:
+            kwargs["max"] = max
+        if min is not DEFAULT:
+            kwargs["min"] = min
+        super().__init__(kwargs)
+
+
+class FieldAndFormat(AttrDict[Any]):
+    """
+    :arg field: (required) Wildcard pattern. The request returns values
+        for field names matching this pattern.
+    :arg format: Format in which the values are returned.
+    :arg include_unmapped:
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+    format: Union[str, DefaultType]
+    include_unmapped: Union[bool, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        format: Union[str, DefaultType] = DEFAULT,
+        include_unmapped: Union[bool, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        if format is not DEFAULT:
+            kwargs["format"] = format
+        if include_unmapped is not DEFAULT:
+            kwargs["include_unmapped"] = include_unmapped
+        super().__init__(kwargs)
+
+
+class FrequentItemSetsField(AttrDict[Any]):
+    """
+    :arg field: (required)
+    :arg exclude: Values to exclude. Can be regular expression strings or
+        arrays of strings of exact terms.
+    :arg include: Values to include. Can be regular expression strings or
+        arrays of strings of exact terms.
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+    exclude: Union[str, Sequence[str], DefaultType]
+    include: Union[str, Sequence[str], "TermsPartition", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        exclude: Union[str, Sequence[str], DefaultType] = DEFAULT,
+        include: Union[
+            str, Sequence[str], "TermsPartition", Dict[str, Any], DefaultType
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        if exclude is not DEFAULT:
+            kwargs["exclude"] = exclude
+        if include is not DEFAULT:
+            kwargs["include"] = include
         super().__init__(kwargs)
 
 
@@ -286,6 +541,43 @@ class GeoHashLocation(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class GeoLinePoint(AttrDict[Any]):
+    """
+    :arg field: (required) The name of the geo_point field.
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        super().__init__(kwargs)
+
+
+class GeoLineSort(AttrDict[Any]):
+    """
+    :arg field: (required) The name of the numeric field to use as the
+        sort key for ordering the points.
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        super().__init__(kwargs)
+
+
 class GeoPolygonPoints(AttrDict[Any]):
     """
     :arg points: (required)
@@ -348,6 +640,486 @@ class GeoShapeFieldQuery(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class GoogleNormalizedDistanceHeuristic(AttrDict[Any]):
+    """
+    :arg background_is_superset: Set to `false` if you defined a custom
+        background filter that represents a different set of documents
+        that you want to compare to.
+    """
+
+    background_is_superset: Union[bool, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        background_is_superset: Union[bool, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if background_is_superset is not DEFAULT:
+            kwargs["background_is_superset"] = background_is_superset
+        super().__init__(kwargs)
+
+
+class HdrMethod(AttrDict[Any]):
+    """
+    :arg number_of_significant_value_digits: Specifies the resolution of
+        values for the histogram in number of significant digits.
+    """
+
+    number_of_significant_value_digits: Union[int, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        number_of_significant_value_digits: Union[int, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if number_of_significant_value_digits is not DEFAULT:
+            kwargs["number_of_significant_value_digits"] = (
+                number_of_significant_value_digits
+            )
+        super().__init__(kwargs)
+
+
+class HighlightBase(AttrDict[Any]):
+    """
+    :arg type:
+    :arg boundary_chars: A string that contains each boundary character.
+        Defaults to `.,!? \t\n` if omitted.
+    :arg boundary_max_scan: How far to scan for boundary characters.
+        Defaults to `20` if omitted.
+    :arg boundary_scanner: Specifies how to break the highlighted
+        fragments: chars, sentence, or word. Only valid for the unified
+        and fvh highlighters. Defaults to `sentence` for the `unified`
+        highlighter. Defaults to `chars` for the `fvh` highlighter.
+    :arg boundary_scanner_locale: Controls which locale is used to search
+        for sentence and word boundaries. This parameter takes a form of a
+        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+        Defaults to `Locale.ROOT` if omitted.
+    :arg force_source:
+    :arg fragmenter: Specifies how text should be broken up in highlight
+        snippets: `simple` or `span`. Only valid for the `plain`
+        highlighter. Defaults to `span` if omitted.
+    :arg fragment_size: The size of the highlighted fragment in
+        characters. Defaults to `100` if omitted.
+    :arg highlight_filter:
+    :arg highlight_query: Highlight matches for a query other than the
+        search query. This is especially useful if you use a rescore query
+        because those are not taken into account by highlighting by
+        default.
+    :arg max_fragment_length:
+    :arg max_analyzed_offset: If set to a non-negative value, highlighting
+        stops at this defined maximum limit. The rest of the text is not
+        processed, thus not highlighted and no error is returned The
+        `max_analyzed_offset` query setting does not override the
+        `index.highlight.max_analyzed_offset` setting, which prevails when
+        it’s set to lower value than the query setting.
+    :arg no_match_size: The amount of text you want to return from the
+        beginning of the field if there are no matching fragments to
+        highlight.
+    :arg number_of_fragments: The maximum number of fragments to return.
+        If the number of fragments is set to `0`, no fragments are
+        returned. Instead, the entire field contents are highlighted and
+        returned. This can be handy when you need to highlight short texts
+        such as a title or address, but fragmentation is not required. If
+        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
+        to `5` if omitted.
+    :arg options:
+    :arg order: Sorts highlighted fragments by score when set to `score`.
+        By default, fragments will be output in the order they appear in
+        the field (order: `none`). Setting this option to `score` will
+        output the most relevant fragments first. Each highlighter applies
+        its own logic to compute relevancy scores. Defaults to `none` if
+        omitted.
+    :arg phrase_limit: Controls the number of matching phrases in a
+        document that are considered. Prevents the `fvh` highlighter from
+        analyzing too many phrases and consuming too much memory. When
+        using `matched_fields`, `phrase_limit` phrases per matched field
+        are considered. Raising the limit increases query time and
+        consumes more memory. Only supported by the `fvh` highlighter.
+        Defaults to `256` if omitted.
+    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg require_field_match: By default, only fields that contains a
+        query match are highlighted. Set to `false` to highlight all
+        fields. Defaults to `True` if omitted.
+    :arg tags_schema: Set to `styled` to use the built-in tag schema.
+    """
+
+    type: Union[Literal["plain", "fvh", "unified"], DefaultType]
+    boundary_chars: Union[str, DefaultType]
+    boundary_max_scan: Union[int, DefaultType]
+    boundary_scanner: Union[Literal["chars", "sentence", "word"], DefaultType]
+    boundary_scanner_locale: Union[str, DefaultType]
+    force_source: Union[bool, DefaultType]
+    fragmenter: Union[Literal["simple", "span"], DefaultType]
+    fragment_size: Union[int, DefaultType]
+    highlight_filter: Union[bool, DefaultType]
+    highlight_query: Union[Query, DefaultType]
+    max_fragment_length: Union[int, DefaultType]
+    max_analyzed_offset: Union[int, DefaultType]
+    no_match_size: Union[int, DefaultType]
+    number_of_fragments: Union[int, DefaultType]
+    options: Union[Mapping[str, Any], DefaultType]
+    order: Union[Literal["score"], DefaultType]
+    phrase_limit: Union[int, DefaultType]
+    post_tags: Union[Sequence[str], DefaultType]
+    pre_tags: Union[Sequence[str], DefaultType]
+    require_field_match: Union[bool, DefaultType]
+    tags_schema: Union[Literal["styled"], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
+        boundary_chars: Union[str, DefaultType] = DEFAULT,
+        boundary_max_scan: Union[int, DefaultType] = DEFAULT,
+        boundary_scanner: Union[
+            Literal["chars", "sentence", "word"], DefaultType
+        ] = DEFAULT,
+        boundary_scanner_locale: Union[str, DefaultType] = DEFAULT,
+        force_source: Union[bool, DefaultType] = DEFAULT,
+        fragmenter: Union[Literal["simple", "span"], DefaultType] = DEFAULT,
+        fragment_size: Union[int, DefaultType] = DEFAULT,
+        highlight_filter: Union[bool, DefaultType] = DEFAULT,
+        highlight_query: Union[Query, DefaultType] = DEFAULT,
+        max_fragment_length: Union[int, DefaultType] = DEFAULT,
+        max_analyzed_offset: Union[int, DefaultType] = DEFAULT,
+        no_match_size: Union[int, DefaultType] = DEFAULT,
+        number_of_fragments: Union[int, DefaultType] = DEFAULT,
+        options: Union[Mapping[str, Any], DefaultType] = DEFAULT,
+        order: Union[Literal["score"], DefaultType] = DEFAULT,
+        phrase_limit: Union[int, DefaultType] = DEFAULT,
+        post_tags: Union[Sequence[str], DefaultType] = DEFAULT,
+        pre_tags: Union[Sequence[str], DefaultType] = DEFAULT,
+        require_field_match: Union[bool, DefaultType] = DEFAULT,
+        tags_schema: Union[Literal["styled"], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if type is not DEFAULT:
+            kwargs["type"] = type
+        if boundary_chars is not DEFAULT:
+            kwargs["boundary_chars"] = boundary_chars
+        if boundary_max_scan is not DEFAULT:
+            kwargs["boundary_max_scan"] = boundary_max_scan
+        if boundary_scanner is not DEFAULT:
+            kwargs["boundary_scanner"] = boundary_scanner
+        if boundary_scanner_locale is not DEFAULT:
+            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
+        if force_source is not DEFAULT:
+            kwargs["force_source"] = force_source
+        if fragmenter is not DEFAULT:
+            kwargs["fragmenter"] = fragmenter
+        if fragment_size is not DEFAULT:
+            kwargs["fragment_size"] = fragment_size
+        if highlight_filter is not DEFAULT:
+            kwargs["highlight_filter"] = highlight_filter
+        if highlight_query is not DEFAULT:
+            kwargs["highlight_query"] = highlight_query
+        if max_fragment_length is not DEFAULT:
+            kwargs["max_fragment_length"] = max_fragment_length
+        if max_analyzed_offset is not DEFAULT:
+            kwargs["max_analyzed_offset"] = max_analyzed_offset
+        if no_match_size is not DEFAULT:
+            kwargs["no_match_size"] = no_match_size
+        if number_of_fragments is not DEFAULT:
+            kwargs["number_of_fragments"] = number_of_fragments
+        if options is not DEFAULT:
+            kwargs["options"] = options
+        if order is not DEFAULT:
+            kwargs["order"] = order
+        if phrase_limit is not DEFAULT:
+            kwargs["phrase_limit"] = phrase_limit
+        if post_tags is not DEFAULT:
+            kwargs["post_tags"] = post_tags
+        if pre_tags is not DEFAULT:
+            kwargs["pre_tags"] = pre_tags
+        if require_field_match is not DEFAULT:
+            kwargs["require_field_match"] = require_field_match
+        if tags_schema is not DEFAULT:
+            kwargs["tags_schema"] = tags_schema
+        super().__init__(kwargs)
+
+
+class Highlight(HighlightBase):
+    """
+    :arg fields: (required)
+    :arg encoder:
+    :arg type:
+    :arg boundary_chars: A string that contains each boundary character.
+        Defaults to `.,!? \t\n` if omitted.
+    :arg boundary_max_scan: How far to scan for boundary characters.
+        Defaults to `20` if omitted.
+    :arg boundary_scanner: Specifies how to break the highlighted
+        fragments: chars, sentence, or word. Only valid for the unified
+        and fvh highlighters. Defaults to `sentence` for the `unified`
+        highlighter. Defaults to `chars` for the `fvh` highlighter.
+    :arg boundary_scanner_locale: Controls which locale is used to search
+        for sentence and word boundaries. This parameter takes a form of a
+        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
+        Defaults to `Locale.ROOT` if omitted.
+    :arg force_source:
+    :arg fragmenter: Specifies how text should be broken up in highlight
+        snippets: `simple` or `span`. Only valid for the `plain`
+        highlighter. Defaults to `span` if omitted.
+    :arg fragment_size: The size of the highlighted fragment in
+        characters. Defaults to `100` if omitted.
+    :arg highlight_filter:
+    :arg highlight_query: Highlight matches for a query other than the
+        search query. This is especially useful if you use a rescore query
+        because those are not taken into account by highlighting by
+        default.
+    :arg max_fragment_length:
+    :arg max_analyzed_offset: If set to a non-negative value, highlighting
+        stops at this defined maximum limit. The rest of the text is not
+        processed, thus not highlighted and no error is returned The
+        `max_analyzed_offset` query setting does not override the
+        `index.highlight.max_analyzed_offset` setting, which prevails when
+        it’s set to lower value than the query setting.
+    :arg no_match_size: The amount of text you want to return from the
+        beginning of the field if there are no matching fragments to
+        highlight.
+    :arg number_of_fragments: The maximum number of fragments to return.
+        If the number of fragments is set to `0`, no fragments are
+        returned. Instead, the entire field contents are highlighted and
+        returned. This can be handy when you need to highlight short texts
+        such as a title or address, but fragmentation is not required. If
+        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
+        to `5` if omitted.
+    :arg options:
+    :arg order: Sorts highlighted fragments by score when set to `score`.
+        By default, fragments will be output in the order they appear in
+        the field (order: `none`). Setting this option to `score` will
+        output the most relevant fragments first. Each highlighter applies
+        its own logic to compute relevancy scores. Defaults to `none` if
+        omitted.
+    :arg phrase_limit: Controls the number of matching phrases in a
+        document that are considered. Prevents the `fvh` highlighter from
+        analyzing too many phrases and consuming too much memory. When
+        using `matched_fields`, `phrase_limit` phrases per matched field
+        are considered. Raising the limit increases query time and
+        consumes more memory. Only supported by the `fvh` highlighter.
+        Defaults to `256` if omitted.
+    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
+        tags to use for the highlighted text. By default, highlighted text
+        is wrapped in `<em>` and `</em>` tags.
+    :arg require_field_match: By default, only fields that contains a
+        query match are highlighted. Set to `false` to highlight all
+        fields. Defaults to `True` if omitted.
+    :arg tags_schema: Set to `styled` to use the built-in tag schema.
+    """
+
+    fields: Union[
+        Mapping[Union[str, InstrumentedField], "HighlightField"],
+        Dict[str, Any],
+        DefaultType,
+    ]
+    encoder: Union[Literal["default", "html"], DefaultType]
+    type: Union[Literal["plain", "fvh", "unified"], DefaultType]
+    boundary_chars: Union[str, DefaultType]
+    boundary_max_scan: Union[int, DefaultType]
+    boundary_scanner: Union[Literal["chars", "sentence", "word"], DefaultType]
+    boundary_scanner_locale: Union[str, DefaultType]
+    force_source: Union[bool, DefaultType]
+    fragmenter: Union[Literal["simple", "span"], DefaultType]
+    fragment_size: Union[int, DefaultType]
+    highlight_filter: Union[bool, DefaultType]
+    highlight_query: Union[Query, DefaultType]
+    max_fragment_length: Union[int, DefaultType]
+    max_analyzed_offset: Union[int, DefaultType]
+    no_match_size: Union[int, DefaultType]
+    number_of_fragments: Union[int, DefaultType]
+    options: Union[Mapping[str, Any], DefaultType]
+    order: Union[Literal["score"], DefaultType]
+    phrase_limit: Union[int, DefaultType]
+    post_tags: Union[Sequence[str], DefaultType]
+    pre_tags: Union[Sequence[str], DefaultType]
+    require_field_match: Union[bool, DefaultType]
+    tags_schema: Union[Literal["styled"], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        fields: Union[
+            Mapping[Union[str, InstrumentedField], "HighlightField"],
+            Dict[str, Any],
+            DefaultType,
+        ] = DEFAULT,
+        encoder: Union[Literal["default", "html"], DefaultType] = DEFAULT,
+        type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
+        boundary_chars: Union[str, DefaultType] = DEFAULT,
+        boundary_max_scan: Union[int, DefaultType] = DEFAULT,
+        boundary_scanner: Union[
+            Literal["chars", "sentence", "word"], DefaultType
+        ] = DEFAULT,
+        boundary_scanner_locale: Union[str, DefaultType] = DEFAULT,
+        force_source: Union[bool, DefaultType] = DEFAULT,
+        fragmenter: Union[Literal["simple", "span"], DefaultType] = DEFAULT,
+        fragment_size: Union[int, DefaultType] = DEFAULT,
+        highlight_filter: Union[bool, DefaultType] = DEFAULT,
+        highlight_query: Union[Query, DefaultType] = DEFAULT,
+        max_fragment_length: Union[int, DefaultType] = DEFAULT,
+        max_analyzed_offset: Union[int, DefaultType] = DEFAULT,
+        no_match_size: Union[int, DefaultType] = DEFAULT,
+        number_of_fragments: Union[int, DefaultType] = DEFAULT,
+        options: Union[Mapping[str, Any], DefaultType] = DEFAULT,
+        order: Union[Literal["score"], DefaultType] = DEFAULT,
+        phrase_limit: Union[int, DefaultType] = DEFAULT,
+        post_tags: Union[Sequence[str], DefaultType] = DEFAULT,
+        pre_tags: Union[Sequence[str], DefaultType] = DEFAULT,
+        require_field_match: Union[bool, DefaultType] = DEFAULT,
+        tags_schema: Union[Literal["styled"], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if fields is not DEFAULT:
+            kwargs["fields"] = str(fields)
+        if encoder is not DEFAULT:
+            kwargs["encoder"] = encoder
+        if type is not DEFAULT:
+            kwargs["type"] = type
+        if boundary_chars is not DEFAULT:
+            kwargs["boundary_chars"] = boundary_chars
+        if boundary_max_scan is not DEFAULT:
+            kwargs["boundary_max_scan"] = boundary_max_scan
+        if boundary_scanner is not DEFAULT:
+            kwargs["boundary_scanner"] = boundary_scanner
+        if boundary_scanner_locale is not DEFAULT:
+            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
+        if force_source is not DEFAULT:
+            kwargs["force_source"] = force_source
+        if fragmenter is not DEFAULT:
+            kwargs["fragmenter"] = fragmenter
+        if fragment_size is not DEFAULT:
+            kwargs["fragment_size"] = fragment_size
+        if highlight_filter is not DEFAULT:
+            kwargs["highlight_filter"] = highlight_filter
+        if highlight_query is not DEFAULT:
+            kwargs["highlight_query"] = highlight_query
+        if max_fragment_length is not DEFAULT:
+            kwargs["max_fragment_length"] = max_fragment_length
+        if max_analyzed_offset is not DEFAULT:
+            kwargs["max_analyzed_offset"] = max_analyzed_offset
+        if no_match_size is not DEFAULT:
+            kwargs["no_match_size"] = no_match_size
+        if number_of_fragments is not DEFAULT:
+            kwargs["number_of_fragments"] = number_of_fragments
+        if options is not DEFAULT:
+            kwargs["options"] = options
+        if order is not DEFAULT:
+            kwargs["order"] = order
+        if phrase_limit is not DEFAULT:
+            kwargs["phrase_limit"] = phrase_limit
+        if post_tags is not DEFAULT:
+            kwargs["post_tags"] = post_tags
+        if pre_tags is not DEFAULT:
+            kwargs["pre_tags"] = pre_tags
+        if require_field_match is not DEFAULT:
+            kwargs["require_field_match"] = require_field_match
+        if tags_schema is not DEFAULT:
+            kwargs["tags_schema"] = tags_schema
+        super().__init__(**kwargs)
+
+
+class HoltLinearModelSettings(AttrDict[Any]):
+    """
+    :arg alpha:
+    :arg beta:
+    """
+
+    alpha: Union[float, DefaultType]
+    beta: Union[float, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        alpha: Union[float, DefaultType] = DEFAULT,
+        beta: Union[float, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if alpha is not DEFAULT:
+            kwargs["alpha"] = alpha
+        if beta is not DEFAULT:
+            kwargs["beta"] = beta
+        super().__init__(kwargs)
+
+
+class HoltWintersModelSettings(AttrDict[Any]):
+    """
+    :arg alpha:
+    :arg beta:
+    :arg gamma:
+    :arg pad:
+    :arg period:
+    :arg type:
+    """
+
+    alpha: Union[float, DefaultType]
+    beta: Union[float, DefaultType]
+    gamma: Union[float, DefaultType]
+    pad: Union[bool, DefaultType]
+    period: Union[int, DefaultType]
+    type: Union[Literal["add", "mult"], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        alpha: Union[float, DefaultType] = DEFAULT,
+        beta: Union[float, DefaultType] = DEFAULT,
+        gamma: Union[float, DefaultType] = DEFAULT,
+        pad: Union[bool, DefaultType] = DEFAULT,
+        period: Union[int, DefaultType] = DEFAULT,
+        type: Union[Literal["add", "mult"], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if alpha is not DEFAULT:
+            kwargs["alpha"] = alpha
+        if beta is not DEFAULT:
+            kwargs["beta"] = beta
+        if gamma is not DEFAULT:
+            kwargs["gamma"] = gamma
+        if pad is not DEFAULT:
+            kwargs["pad"] = pad
+        if period is not DEFAULT:
+            kwargs["period"] = period
+        if type is not DEFAULT:
+            kwargs["type"] = type
+        super().__init__(kwargs)
+
+
+class InferenceConfigContainer(AttrDict[Any]):
+    """
+    :arg regression: Regression configuration for inference.
+    :arg classification: Classification configuration for inference.
+    """
+
+    regression: Union["RegressionInferenceOptions", Dict[str, Any], DefaultType]
+    classification: Union["ClassificationInferenceOptions", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        regression: Union[
+            "RegressionInferenceOptions", Dict[str, Any], DefaultType
+        ] = DEFAULT,
+        classification: Union[
+            "ClassificationInferenceOptions", Dict[str, Any], DefaultType
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if regression is not DEFAULT:
+            kwargs["regression"] = regression
+        if classification is not DEFAULT:
+            kwargs["classification"] = classification
+        super().__init__(kwargs)
+
+
 class InnerHits(AttrDict[Any]):
     """
     :arg name: The name for the particular inner hit definition in the
@@ -376,7 +1148,9 @@ class InnerHits(AttrDict[Any]):
     size: Union[int, DefaultType]
     from_: Union[int, DefaultType]
     collapse: Union["FieldCollapse", Dict[str, Any], DefaultType]
-    docvalue_fields: Union[Sequence["FieldAndFormat"], Dict[str, Any], DefaultType]
+    docvalue_fields: Union[
+        Sequence["FieldAndFormat"], Sequence[Dict[str, Any]], DefaultType
+    ]
     explain: Union[bool, DefaultType]
     highlight: Union["Highlight", Dict[str, Any], DefaultType]
     ignore_unmapped: Union[bool, DefaultType]
@@ -414,7 +1188,7 @@ class InnerHits(AttrDict[Any]):
         from_: Union[int, DefaultType] = DEFAULT,
         collapse: Union["FieldCollapse", Dict[str, Any], DefaultType] = DEFAULT,
         docvalue_fields: Union[
-            Sequence["FieldAndFormat"], Dict[str, Any], DefaultType
+            Sequence["FieldAndFormat"], Sequence[Dict[str, Any]], DefaultType
         ] = DEFAULT,
         explain: Union[bool, DefaultType] = DEFAULT,
         highlight: Union["Highlight", Dict[str, Any], DefaultType] = DEFAULT,
@@ -538,6 +1312,34 @@ class IntervalsQuery(QueryBase):
         if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class IpRangeAggregationRange(AttrDict[Any]):
+    """
+    :arg from: Start of the range.
+    :arg mask: IP range defined as a CIDR mask.
+    :arg to: End of the range.
+    """
+
+    from_: Union[str, None, DefaultType]
+    mask: Union[str, DefaultType]
+    to: Union[str, None, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        from_: Union[str, None, DefaultType] = DEFAULT,
+        mask: Union[str, DefaultType] = DEFAULT,
+        to: Union[str, None, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if from_ is not DEFAULT:
+            kwargs["from_"] = from_
+        if mask is not DEFAULT:
+            kwargs["mask"] = mask
+        if to is not DEFAULT:
+            kwargs["to"] = to
+        super().__init__(kwargs)
 
 
 class LatLonGeoLocation(AttrDict[Any]):
@@ -928,6 +1730,148 @@ class MatchQuery(QueryBase):
         super().__init__(**kwargs)
 
 
+class PipelineAggregationBase(BucketPathAggregation):
+    """
+    :arg format: `DecimalFormat` pattern for the output value. If
+        specified, the formatted value is returned in the aggregation’s
+        `value_as_string` property.
+    :arg gap_policy: Policy to apply when gaps are found in the data.
+        Defaults to `skip` if omitted.
+    :arg buckets_path: Path to the buckets that contain one set of values
+        to correlate.
+    """
+
+    format: Union[str, DefaultType]
+    gap_policy: Union[Literal["skip", "insert_zeros", "keep_values"], DefaultType]
+    buckets_path: Union[str, Sequence[str], Mapping[str, str], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        format: Union[str, DefaultType] = DEFAULT,
+        gap_policy: Union[
+            Literal["skip", "insert_zeros", "keep_values"], DefaultType
+        ] = DEFAULT,
+        buckets_path: Union[
+            str, Sequence[str], Mapping[str, str], DefaultType
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if format is not DEFAULT:
+            kwargs["format"] = format
+        if gap_policy is not DEFAULT:
+            kwargs["gap_policy"] = gap_policy
+        if buckets_path is not DEFAULT:
+            kwargs["buckets_path"] = buckets_path
+        super().__init__(**kwargs)
+
+
+class MovingAverageAggregationBase(PipelineAggregationBase):
+    """
+    :arg minimize:
+    :arg predict:
+    :arg window:
+    :arg format: `DecimalFormat` pattern for the output value. If
+        specified, the formatted value is returned in the aggregation’s
+        `value_as_string` property.
+    :arg gap_policy: Policy to apply when gaps are found in the data.
+        Defaults to `skip` if omitted.
+    :arg buckets_path: Path to the buckets that contain one set of values
+        to correlate.
+    """
+
+    minimize: Union[bool, DefaultType]
+    predict: Union[int, DefaultType]
+    window: Union[int, DefaultType]
+    format: Union[str, DefaultType]
+    gap_policy: Union[Literal["skip", "insert_zeros", "keep_values"], DefaultType]
+    buckets_path: Union[str, Sequence[str], Mapping[str, str], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        minimize: Union[bool, DefaultType] = DEFAULT,
+        predict: Union[int, DefaultType] = DEFAULT,
+        window: Union[int, DefaultType] = DEFAULT,
+        format: Union[str, DefaultType] = DEFAULT,
+        gap_policy: Union[
+            Literal["skip", "insert_zeros", "keep_values"], DefaultType
+        ] = DEFAULT,
+        buckets_path: Union[
+            str, Sequence[str], Mapping[str, str], DefaultType
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if minimize is not DEFAULT:
+            kwargs["minimize"] = minimize
+        if predict is not DEFAULT:
+            kwargs["predict"] = predict
+        if window is not DEFAULT:
+            kwargs["window"] = window
+        if format is not DEFAULT:
+            kwargs["format"] = format
+        if gap_policy is not DEFAULT:
+            kwargs["gap_policy"] = gap_policy
+        if buckets_path is not DEFAULT:
+            kwargs["buckets_path"] = buckets_path
+        super().__init__(**kwargs)
+
+
+class MultiTermLookup(AttrDict[Any]):
+    """
+    :arg field: (required) A fields from which to retrieve terms.
+    :arg missing: The value to apply to documents that do not have a
+        value. By default, documents without a value are ignored.
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+    missing: Union[str, int, float, bool, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        missing: Union[str, int, float, bool, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        if missing is not DEFAULT:
+            kwargs["missing"] = missing
+        super().__init__(kwargs)
+
+
+class MutualInformationHeuristic(AttrDict[Any]):
+    """
+    :arg background_is_superset: Set to `false` if you defined a custom
+        background filter that represents a different set of documents
+        that you want to compare to.
+    :arg include_negatives: Set to `false` to filter out the terms that
+        appear less often in the subset than in documents outside the
+        subset.
+    """
+
+    background_is_superset: Union[bool, DefaultType]
+    include_negatives: Union[bool, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        background_is_superset: Union[bool, DefaultType] = DEFAULT,
+        include_negatives: Union[bool, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if background_is_superset is not DEFAULT:
+            kwargs["background_is_superset"] = background_is_superset
+        if include_negatives is not DEFAULT:
+            kwargs["include_negatives"] = include_negatives
+        super().__init__(kwargs)
+
+
+class PercentageScoreHeuristic(AttrDict[Any]):
+    pass
+
+
 class PinnedDoc(AttrDict[Any]):
     """
     :arg _id: (required) The unique document ID.
@@ -1176,6 +2120,47 @@ class Script(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class ScriptField(AttrDict[Any]):
+    """
+    :arg script: (required)
+    :arg ignore_failure:
+    """
+
+    script: Union["Script", Dict[str, Any], DefaultType]
+    ignore_failure: Union[bool, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
+        ignore_failure: Union[bool, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if script is not DEFAULT:
+            kwargs["script"] = script
+        if ignore_failure is not DEFAULT:
+            kwargs["ignore_failure"] = ignore_failure
+        super().__init__(kwargs)
+
+
+class ScriptedHeuristic(AttrDict[Any]):
+    """
+    :arg script: (required)
+    """
+
+    script: Union["Script", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if script is not DEFAULT:
+            kwargs["script"] = script
+        super().__init__(kwargs)
+
+
 class ShapeFieldQuery(AttrDict[Any]):
     """
     :arg indexed_shape: Queries using a pre-indexed shape.
@@ -1207,6 +2192,86 @@ class ShapeFieldQuery(AttrDict[Any]):
             kwargs["relation"] = relation
         if shape is not DEFAULT:
             kwargs["shape"] = shape
+        super().__init__(kwargs)
+
+
+class SortOptions(AttrDict[Any]):
+    """
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
+    :arg _score:
+    :arg _doc:
+    :arg _geo_distance:
+    :arg _script:
+    """
+
+    _field: Union[str, "InstrumentedField", "DefaultType"]
+    _value: Union["FieldSort", Dict[str, Any], "DefaultType"]
+    _score: Union["ScoreSort", Dict[str, Any], DefaultType]
+    _doc: Union["ScoreSort", Dict[str, Any], DefaultType]
+    _geo_distance: Union["GeoDistanceSort", Dict[str, Any], DefaultType]
+    _script: Union["ScriptSort", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union["FieldSort", Dict[str, Any], "DefaultType"] = DEFAULT,
+        *,
+        _score: Union["ScoreSort", Dict[str, Any], DefaultType] = DEFAULT,
+        _doc: Union["ScoreSort", Dict[str, Any], DefaultType] = DEFAULT,
+        _geo_distance: Union["GeoDistanceSort", Dict[str, Any], DefaultType] = DEFAULT,
+        _script: Union["ScriptSort", Dict[str, Any], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if _field is not DEFAULT:
+            kwargs[str(_field)] = _value
+        if _score is not DEFAULT:
+            kwargs["_score"] = _score
+        if _doc is not DEFAULT:
+            kwargs["_doc"] = _doc
+        if _geo_distance is not DEFAULT:
+            kwargs["_geo_distance"] = _geo_distance
+        if _script is not DEFAULT:
+            kwargs["_script"] = _script
+        super().__init__(kwargs)
+
+
+class SourceFilter(AttrDict[Any]):
+    """
+    :arg excludes:
+    :arg includes:
+    """
+
+    excludes: Union[
+        Union[str, InstrumentedField],
+        Sequence[Union[str, InstrumentedField]],
+        DefaultType,
+    ]
+    includes: Union[
+        Union[str, InstrumentedField],
+        Sequence[Union[str, InstrumentedField]],
+        DefaultType,
+    ]
+
+    def __init__(
+        self,
+        *,
+        excludes: Union[
+            Union[str, InstrumentedField],
+            Sequence[Union[str, InstrumentedField]],
+            DefaultType,
+        ] = DEFAULT,
+        includes: Union[
+            Union[str, InstrumentedField],
+            Sequence[Union[str, InstrumentedField]],
+            DefaultType,
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if excludes is not DEFAULT:
+            kwargs["excludes"] = str(excludes)
+        if includes is not DEFAULT:
+            kwargs["includes"] = str(includes)
         super().__init__(kwargs)
 
 
@@ -1330,6 +2395,23 @@ class SpanTermQuery(QueryBase):
         super().__init__(**kwargs)
 
 
+class TDigest(AttrDict[Any]):
+    """
+    :arg compression: Limits the maximum number of nodes used by the
+        underlying TDigest algorithm to `20 * compression`, enabling
+        control of memory usage and approximation error.
+    """
+
+    compression: Union[int, DefaultType]
+
+    def __init__(
+        self, *, compression: Union[int, DefaultType] = DEFAULT, **kwargs: Any
+    ):
+        if compression is not DEFAULT:
+            kwargs["compression"] = compression
+        super().__init__(kwargs)
+
+
 class TermQuery(QueryBase):
     """
     :arg value: (required) Term you wish to find in the provided field.
@@ -1403,10 +2485,35 @@ class TermsLookup(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class TermsPartition(AttrDict[Any]):
+    """
+    :arg num_partitions: (required) The number of partitions.
+    :arg partition: (required) The partition number for this request.
+    """
+
+    num_partitions: Union[int, DefaultType]
+    partition: Union[int, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        num_partitions: Union[int, DefaultType] = DEFAULT,
+        partition: Union[int, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if num_partitions is not DEFAULT:
+            kwargs["num_partitions"] = num_partitions
+        if partition is not DEFAULT:
+            kwargs["partition"] = partition
+        super().__init__(kwargs)
+
+
 class TermsSetQuery(QueryBase):
     """
     :arg terms: (required) Array of terms you wish to find in the provided
         field.
+    :arg minimum_should_match: Specification describing number of matching
+        terms required to return a document.
     :arg minimum_should_match_field: Numeric field containing the number
         of matching terms required to return a document.
     :arg minimum_should_match_script: Custom script containing the number
@@ -1420,6 +2527,7 @@ class TermsSetQuery(QueryBase):
     """
 
     terms: Union[Sequence[str], DefaultType]
+    minimum_should_match: Union[int, str, DefaultType]
     minimum_should_match_field: Union[str, InstrumentedField, DefaultType]
     minimum_should_match_script: Union["Script", Dict[str, Any], DefaultType]
     boost: Union[float, DefaultType]
@@ -1429,6 +2537,7 @@ class TermsSetQuery(QueryBase):
         self,
         *,
         terms: Union[Sequence[str], DefaultType] = DEFAULT,
+        minimum_should_match: Union[int, str, DefaultType] = DEFAULT,
         minimum_should_match_field: Union[
             str, InstrumentedField, DefaultType
         ] = DEFAULT,
@@ -1441,6 +2550,8 @@ class TermsSetQuery(QueryBase):
     ):
         if terms is not DEFAULT:
             kwargs["terms"] = terms
+        if minimum_should_match is not DEFAULT:
+            kwargs["minimum_should_match"] = minimum_should_match
         if minimum_should_match_field is not DEFAULT:
             kwargs["minimum_should_match_field"] = str(minimum_should_match_field)
         if minimum_should_match_script is not DEFAULT:
@@ -1450,6 +2561,35 @@ class TermsSetQuery(QueryBase):
         if _name is not DEFAULT:
             kwargs["_name"] = _name
         super().__init__(**kwargs)
+
+
+class TestPopulation(AttrDict[Any]):
+    """
+    :arg field: (required) The field to aggregate.
+    :arg script:
+    :arg filter: A filter used to define a set of records to run unpaired
+        t-test on.
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+    script: Union["Script", Dict[str, Any], DefaultType]
+    filter: Union[Query, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
+        filter: Union[Query, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        if script is not DEFAULT:
+            kwargs["script"] = script
+        if filter is not DEFAULT:
+            kwargs["filter"] = filter
+        super().__init__(kwargs)
 
 
 class TextExpansionQuery(QueryBase):
@@ -1581,6 +2721,24 @@ class TopLeftBottomRightGeoBounds(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class TopMetricsValue(AttrDict[Any]):
+    """
+    :arg field: (required) A field to return as a metric.
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        super().__init__(kwargs)
+
+
 class TopRightBottomLeftGeoBounds(AttrDict[Any]):
     """
     :arg top_right: (required)
@@ -1629,6 +2787,34 @@ class TopRightBottomLeftGeoBounds(AttrDict[Any]):
             kwargs["top_right"] = top_right
         if bottom_left is not DEFAULT:
             kwargs["bottom_left"] = bottom_left
+        super().__init__(kwargs)
+
+
+class WeightedAverageValue(AttrDict[Any]):
+    """
+    :arg field: The field from which to extract the values or weights.
+    :arg missing: A value or weight to use if the field is missing.
+    :arg script:
+    """
+
+    field: Union[str, InstrumentedField, DefaultType]
+    missing: Union[float, DefaultType]
+    script: Union["Script", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        missing: Union[float, DefaultType] = DEFAULT,
+        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        if missing is not DEFAULT:
+            kwargs["missing"] = missing
+        if script is not DEFAULT:
+            kwargs["script"] = script
         super().__init__(kwargs)
 
 
@@ -1736,6 +2922,33 @@ class WktGeoBounds(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class BucketCorrelationFunctionCountCorrelation(AttrDict[Any]):
+    """
+    :arg indicator: (required) The indicator with which to correlate the
+        configured `bucket_path` values.
+    """
+
+    indicator: Union[
+        "BucketCorrelationFunctionCountCorrelationIndicator",
+        Dict[str, Any],
+        DefaultType,
+    ]
+
+    def __init__(
+        self,
+        *,
+        indicator: Union[
+            "BucketCorrelationFunctionCountCorrelationIndicator",
+            Dict[str, Any],
+            DefaultType,
+        ] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if indicator is not DEFAULT:
+            kwargs["indicator"] = indicator
+        super().__init__(kwargs)
+
+
 class FieldLookup(AttrDict[Any]):
     """
     :arg id: (required) `id` of the document.
@@ -1769,73 +2982,11 @@ class FieldLookup(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class FieldCollapse(AttrDict[Any]):
+class HighlightField(HighlightBase):
     """
-    :arg field: (required) The field to collapse the result set on
-    :arg inner_hits: The number of inner hits and their sort order
-    :arg max_concurrent_group_searches: The number of concurrent requests
-        allowed to retrieve the inner_hits per group
-    :arg collapse:
-    """
-
-    field: Union[str, InstrumentedField, DefaultType]
-    inner_hits: Union["InnerHits", Sequence["InnerHits"], Dict[str, Any], DefaultType]
-    max_concurrent_group_searches: Union[int, DefaultType]
-    collapse: Union["FieldCollapse", Dict[str, Any], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
-        inner_hits: Union[
-            "InnerHits", Sequence["InnerHits"], Dict[str, Any], DefaultType
-        ] = DEFAULT,
-        max_concurrent_group_searches: Union[int, DefaultType] = DEFAULT,
-        collapse: Union["FieldCollapse", Dict[str, Any], DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if field is not DEFAULT:
-            kwargs["field"] = str(field)
-        if inner_hits is not DEFAULT:
-            kwargs["inner_hits"] = inner_hits
-        if max_concurrent_group_searches is not DEFAULT:
-            kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
-        if collapse is not DEFAULT:
-            kwargs["collapse"] = collapse
-        super().__init__(kwargs)
-
-
-class FieldAndFormat(AttrDict[Any]):
-    """
-    :arg field: (required) Wildcard pattern. The request returns values
-        for field names matching this pattern.
-    :arg format: Format in which the values are returned.
-    :arg include_unmapped:
-    """
-
-    field: Union[str, InstrumentedField, DefaultType]
-    format: Union[str, DefaultType]
-    include_unmapped: Union[bool, DefaultType]
-
-    def __init__(
-        self,
-        *,
-        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
-        format: Union[str, DefaultType] = DEFAULT,
-        include_unmapped: Union[bool, DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if field is not DEFAULT:
-            kwargs["field"] = str(field)
-        if format is not DEFAULT:
-            kwargs["format"] = format
-        if include_unmapped is not DEFAULT:
-            kwargs["include_unmapped"] = include_unmapped
-        super().__init__(kwargs)
-
-
-class HighlightBase(AttrDict[Any]):
-    """
+    :arg fragment_offset:
+    :arg matched_fields:
+    :arg analyzer:
     :arg type:
     :arg boundary_chars: A string that contains each boundary character.
         Defaults to `.,!? \t\n` if omitted.
@@ -1903,178 +3054,13 @@ class HighlightBase(AttrDict[Any]):
     :arg tags_schema: Set to `styled` to use the built-in tag schema.
     """
 
-    type: Union[Literal["plain", "fvh", "unified"], DefaultType]
-    boundary_chars: Union[str, DefaultType]
-    boundary_max_scan: Union[int, DefaultType]
-    boundary_scanner: Union[Literal["chars", "sentence", "word"], DefaultType]
-    boundary_scanner_locale: Union[str, DefaultType]
-    force_source: Union[bool, DefaultType]
-    fragmenter: Union[Literal["simple", "span"], DefaultType]
-    fragment_size: Union[int, DefaultType]
-    highlight_filter: Union[bool, DefaultType]
-    highlight_query: Union[Query, DefaultType]
-    max_fragment_length: Union[int, DefaultType]
-    max_analyzed_offset: Union[int, DefaultType]
-    no_match_size: Union[int, DefaultType]
-    number_of_fragments: Union[int, DefaultType]
-    options: Union[Mapping[str, Any], DefaultType]
-    order: Union[Literal["score"], DefaultType]
-    phrase_limit: Union[int, DefaultType]
-    post_tags: Union[Sequence[str], DefaultType]
-    pre_tags: Union[Sequence[str], DefaultType]
-    require_field_match: Union[bool, DefaultType]
-    tags_schema: Union[Literal["styled"], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
-        boundary_chars: Union[str, DefaultType] = DEFAULT,
-        boundary_max_scan: Union[int, DefaultType] = DEFAULT,
-        boundary_scanner: Union[
-            Literal["chars", "sentence", "word"], DefaultType
-        ] = DEFAULT,
-        boundary_scanner_locale: Union[str, DefaultType] = DEFAULT,
-        force_source: Union[bool, DefaultType] = DEFAULT,
-        fragmenter: Union[Literal["simple", "span"], DefaultType] = DEFAULT,
-        fragment_size: Union[int, DefaultType] = DEFAULT,
-        highlight_filter: Union[bool, DefaultType] = DEFAULT,
-        highlight_query: Union[Query, DefaultType] = DEFAULT,
-        max_fragment_length: Union[int, DefaultType] = DEFAULT,
-        max_analyzed_offset: Union[int, DefaultType] = DEFAULT,
-        no_match_size: Union[int, DefaultType] = DEFAULT,
-        number_of_fragments: Union[int, DefaultType] = DEFAULT,
-        options: Union[Mapping[str, Any], DefaultType] = DEFAULT,
-        order: Union[Literal["score"], DefaultType] = DEFAULT,
-        phrase_limit: Union[int, DefaultType] = DEFAULT,
-        post_tags: Union[Sequence[str], DefaultType] = DEFAULT,
-        pre_tags: Union[Sequence[str], DefaultType] = DEFAULT,
-        require_field_match: Union[bool, DefaultType] = DEFAULT,
-        tags_schema: Union[Literal["styled"], DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if type is not DEFAULT:
-            kwargs["type"] = type
-        if boundary_chars is not DEFAULT:
-            kwargs["boundary_chars"] = boundary_chars
-        if boundary_max_scan is not DEFAULT:
-            kwargs["boundary_max_scan"] = boundary_max_scan
-        if boundary_scanner is not DEFAULT:
-            kwargs["boundary_scanner"] = boundary_scanner
-        if boundary_scanner_locale is not DEFAULT:
-            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if force_source is not DEFAULT:
-            kwargs["force_source"] = force_source
-        if fragmenter is not DEFAULT:
-            kwargs["fragmenter"] = fragmenter
-        if fragment_size is not DEFAULT:
-            kwargs["fragment_size"] = fragment_size
-        if highlight_filter is not DEFAULT:
-            kwargs["highlight_filter"] = highlight_filter
-        if highlight_query is not DEFAULT:
-            kwargs["highlight_query"] = highlight_query
-        if max_fragment_length is not DEFAULT:
-            kwargs["max_fragment_length"] = max_fragment_length
-        if max_analyzed_offset is not DEFAULT:
-            kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if no_match_size is not DEFAULT:
-            kwargs["no_match_size"] = no_match_size
-        if number_of_fragments is not DEFAULT:
-            kwargs["number_of_fragments"] = number_of_fragments
-        if options is not DEFAULT:
-            kwargs["options"] = options
-        if order is not DEFAULT:
-            kwargs["order"] = order
-        if phrase_limit is not DEFAULT:
-            kwargs["phrase_limit"] = phrase_limit
-        if post_tags is not DEFAULT:
-            kwargs["post_tags"] = post_tags
-        if pre_tags is not DEFAULT:
-            kwargs["pre_tags"] = pre_tags
-        if require_field_match is not DEFAULT:
-            kwargs["require_field_match"] = require_field_match
-        if tags_schema is not DEFAULT:
-            kwargs["tags_schema"] = tags_schema
-        super().__init__(kwargs)
-
-
-class Highlight(HighlightBase):
-    """
-    :arg fields: (required)
-    :arg encoder:
-    :arg type:
-    :arg boundary_chars: A string that contains each boundary character.
-        Defaults to `.,!? \t\n` if omitted.
-    :arg boundary_max_scan: How far to scan for boundary characters.
-        Defaults to `20` if omitted.
-    :arg boundary_scanner: Specifies how to break the highlighted
-        fragments: chars, sentence, or word. Only valid for the unified
-        and fvh highlighters. Defaults to `sentence` for the `unified`
-        highlighter. Defaults to `chars` for the `fvh` highlighter.
-    :arg boundary_scanner_locale: Controls which locale is used to search
-        for sentence and word boundaries. This parameter takes a form of a
-        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
-        Defaults to `Locale.ROOT` if omitted.
-    :arg force_source:
-    :arg fragmenter: Specifies how text should be broken up in highlight
-        snippets: `simple` or `span`. Only valid for the `plain`
-        highlighter. Defaults to `span` if omitted.
-    :arg fragment_size: The size of the highlighted fragment in
-        characters. Defaults to `100` if omitted.
-    :arg highlight_filter:
-    :arg highlight_query: Highlight matches for a query other than the
-        search query. This is especially useful if you use a rescore query
-        because those are not taken into account by highlighting by
-        default.
-    :arg max_fragment_length:
-    :arg max_analyzed_offset: If set to a non-negative value, highlighting
-        stops at this defined maximum limit. The rest of the text is not
-        processed, thus not highlighted and no error is returned The
-        `max_analyzed_offset` query setting does not override the
-        `index.highlight.max_analyzed_offset` setting, which prevails when
-        it’s set to lower value than the query setting.
-    :arg no_match_size: The amount of text you want to return from the
-        beginning of the field if there are no matching fragments to
-        highlight.
-    :arg number_of_fragments: The maximum number of fragments to return.
-        If the number of fragments is set to `0`, no fragments are
-        returned. Instead, the entire field contents are highlighted and
-        returned. This can be handy when you need to highlight short texts
-        such as a title or address, but fragmentation is not required. If
-        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
-        to `5` if omitted.
-    :arg options:
-    :arg order: Sorts highlighted fragments by score when set to `score`.
-        By default, fragments will be output in the order they appear in
-        the field (order: `none`). Setting this option to `score` will
-        output the most relevant fragments first. Each highlighter applies
-        its own logic to compute relevancy scores. Defaults to `none` if
-        omitted.
-    :arg phrase_limit: Controls the number of matching phrases in a
-        document that are considered. Prevents the `fvh` highlighter from
-        analyzing too many phrases and consuming too much memory. When
-        using `matched_fields`, `phrase_limit` phrases per matched field
-        are considered. Raising the limit increases query time and
-        consumes more memory. Only supported by the `fvh` highlighter.
-        Defaults to `256` if omitted.
-    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
-        tags to use for the highlighted text. By default, highlighted text
-        is wrapped in `<em>` and `</em>` tags.
-    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
-        tags to use for the highlighted text. By default, highlighted text
-        is wrapped in `<em>` and `</em>` tags.
-    :arg require_field_match: By default, only fields that contains a
-        query match are highlighted. Set to `false` to highlight all
-        fields. Defaults to `True` if omitted.
-    :arg tags_schema: Set to `styled` to use the built-in tag schema.
-    """
-
-    fields: Union[
-        Mapping[Union[str, InstrumentedField], "HighlightField"],
-        Dict[str, Any],
+    fragment_offset: Union[int, DefaultType]
+    matched_fields: Union[
+        Union[str, InstrumentedField],
+        Sequence[Union[str, InstrumentedField]],
         DefaultType,
     ]
-    encoder: Union[Literal["default", "html"], DefaultType]
+    analyzer: Union[str, Dict[str, Any], DefaultType]
     type: Union[Literal["plain", "fvh", "unified"], DefaultType]
     boundary_chars: Union[str, DefaultType]
     boundary_max_scan: Union[int, DefaultType]
@@ -2100,12 +3086,13 @@ class Highlight(HighlightBase):
     def __init__(
         self,
         *,
-        fields: Union[
-            Mapping[Union[str, InstrumentedField], "HighlightField"],
-            Dict[str, Any],
+        fragment_offset: Union[int, DefaultType] = DEFAULT,
+        matched_fields: Union[
+            Union[str, InstrumentedField],
+            Sequence[Union[str, InstrumentedField]],
             DefaultType,
         ] = DEFAULT,
-        encoder: Union[Literal["default", "html"], DefaultType] = DEFAULT,
+        analyzer: Union[str, Dict[str, Any], DefaultType] = DEFAULT,
         type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
         boundary_chars: Union[str, DefaultType] = DEFAULT,
         boundary_max_scan: Union[int, DefaultType] = DEFAULT,
@@ -2131,10 +3118,12 @@ class Highlight(HighlightBase):
         tags_schema: Union[Literal["styled"], DefaultType] = DEFAULT,
         **kwargs: Any,
     ):
-        if fields is not DEFAULT:
-            kwargs["fields"] = str(fields)
-        if encoder is not DEFAULT:
-            kwargs["encoder"] = encoder
+        if fragment_offset is not DEFAULT:
+            kwargs["fragment_offset"] = fragment_offset
+        if matched_fields is not DEFAULT:
+            kwargs["matched_fields"] = str(matched_fields)
+        if analyzer is not DEFAULT:
+            kwargs["analyzer"] = analyzer
         if type is not DEFAULT:
             kwargs["type"] = type
         if boundary_chars is not DEFAULT:
@@ -2180,98 +3169,114 @@ class Highlight(HighlightBase):
         super().__init__(**kwargs)
 
 
-class ScriptField(AttrDict[Any]):
+class RegressionInferenceOptions(AttrDict[Any]):
     """
-    :arg script: (required)
-    :arg ignore_failure:
+    :arg results_field: The field that is added to incoming documents to
+        contain the inference prediction. Defaults to predicted_value.
+    :arg num_top_feature_importance_values: Specifies the maximum number
+        of feature importance values per document.
     """
 
-    script: Union["Script", Dict[str, Any], DefaultType]
-    ignore_failure: Union[bool, DefaultType]
+    results_field: Union[str, InstrumentedField, DefaultType]
+    num_top_feature_importance_values: Union[int, DefaultType]
 
     def __init__(
         self,
         *,
-        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
-        ignore_failure: Union[bool, DefaultType] = DEFAULT,
+        results_field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        num_top_feature_importance_values: Union[int, DefaultType] = DEFAULT,
         **kwargs: Any,
     ):
-        if script is not DEFAULT:
-            kwargs["script"] = script
-        if ignore_failure is not DEFAULT:
-            kwargs["ignore_failure"] = ignore_failure
+        if results_field is not DEFAULT:
+            kwargs["results_field"] = str(results_field)
+        if num_top_feature_importance_values is not DEFAULT:
+            kwargs["num_top_feature_importance_values"] = (
+                num_top_feature_importance_values
+            )
         super().__init__(kwargs)
 
 
-class SortOptions(AttrDict[Any]):
+class ClassificationInferenceOptions(AttrDict[Any]):
     """
-    :arg _score:
-    :arg _doc:
-    :arg _geo_distance:
-    :arg _script:
+    :arg num_top_classes: Specifies the number of top class predictions to
+        return. Defaults to 0.
+    :arg num_top_feature_importance_values: Specifies the maximum number
+        of feature importance values per document.
+    :arg prediction_field_type: Specifies the type of the predicted field
+        to write. Acceptable values are: string, number, boolean. When
+        boolean is provided 1.0 is transformed to true and 0.0 to false.
+    :arg results_field: The field that is added to incoming documents to
+        contain the inference prediction. Defaults to predicted_value.
+    :arg top_classes_results_field: Specifies the field to which the top
+        classes are written. Defaults to top_classes.
     """
 
-    _score: Union["ScoreSort", Dict[str, Any], DefaultType]
-    _doc: Union["ScoreSort", Dict[str, Any], DefaultType]
-    _geo_distance: Union["GeoDistanceSort", Dict[str, Any], DefaultType]
-    _script: Union["ScriptSort", Dict[str, Any], DefaultType]
+    num_top_classes: Union[int, DefaultType]
+    num_top_feature_importance_values: Union[int, DefaultType]
+    prediction_field_type: Union[str, DefaultType]
+    results_field: Union[str, DefaultType]
+    top_classes_results_field: Union[str, DefaultType]
 
     def __init__(
         self,
         *,
-        _score: Union["ScoreSort", Dict[str, Any], DefaultType] = DEFAULT,
-        _doc: Union["ScoreSort", Dict[str, Any], DefaultType] = DEFAULT,
-        _geo_distance: Union["GeoDistanceSort", Dict[str, Any], DefaultType] = DEFAULT,
-        _script: Union["ScriptSort", Dict[str, Any], DefaultType] = DEFAULT,
+        num_top_classes: Union[int, DefaultType] = DEFAULT,
+        num_top_feature_importance_values: Union[int, DefaultType] = DEFAULT,
+        prediction_field_type: Union[str, DefaultType] = DEFAULT,
+        results_field: Union[str, DefaultType] = DEFAULT,
+        top_classes_results_field: Union[str, DefaultType] = DEFAULT,
         **kwargs: Any,
     ):
-        if _score is not DEFAULT:
-            kwargs["_score"] = _score
-        if _doc is not DEFAULT:
-            kwargs["_doc"] = _doc
-        if _geo_distance is not DEFAULT:
-            kwargs["_geo_distance"] = _geo_distance
-        if _script is not DEFAULT:
-            kwargs["_script"] = _script
+        if num_top_classes is not DEFAULT:
+            kwargs["num_top_classes"] = num_top_classes
+        if num_top_feature_importance_values is not DEFAULT:
+            kwargs["num_top_feature_importance_values"] = (
+                num_top_feature_importance_values
+            )
+        if prediction_field_type is not DEFAULT:
+            kwargs["prediction_field_type"] = prediction_field_type
+        if results_field is not DEFAULT:
+            kwargs["results_field"] = results_field
+        if top_classes_results_field is not DEFAULT:
+            kwargs["top_classes_results_field"] = top_classes_results_field
         super().__init__(kwargs)
 
 
-class SourceFilter(AttrDict[Any]):
+class FieldCollapse(AttrDict[Any]):
     """
-    :arg excludes:
-    :arg includes:
+    :arg field: (required) The field to collapse the result set on
+    :arg inner_hits: The number of inner hits and their sort order
+    :arg max_concurrent_group_searches: The number of concurrent requests
+        allowed to retrieve the inner_hits per group
+    :arg collapse:
     """
 
-    excludes: Union[
-        Union[str, InstrumentedField],
-        Sequence[Union[str, InstrumentedField]],
-        DefaultType,
+    field: Union[str, InstrumentedField, DefaultType]
+    inner_hits: Union[
+        "InnerHits", Sequence["InnerHits"], Sequence[Dict[str, Any]], DefaultType
     ]
-    includes: Union[
-        Union[str, InstrumentedField],
-        Sequence[Union[str, InstrumentedField]],
-        DefaultType,
-    ]
+    max_concurrent_group_searches: Union[int, DefaultType]
+    collapse: Union["FieldCollapse", Dict[str, Any], DefaultType]
 
     def __init__(
         self,
         *,
-        excludes: Union[
-            Union[str, InstrumentedField],
-            Sequence[Union[str, InstrumentedField]],
-            DefaultType,
+        field: Union[str, InstrumentedField, DefaultType] = DEFAULT,
+        inner_hits: Union[
+            "InnerHits", Sequence["InnerHits"], Sequence[Dict[str, Any]], DefaultType
         ] = DEFAULT,
-        includes: Union[
-            Union[str, InstrumentedField],
-            Sequence[Union[str, InstrumentedField]],
-            DefaultType,
-        ] = DEFAULT,
+        max_concurrent_group_searches: Union[int, DefaultType] = DEFAULT,
+        collapse: Union["FieldCollapse", Dict[str, Any], DefaultType] = DEFAULT,
         **kwargs: Any,
     ):
-        if excludes is not DEFAULT:
-            kwargs["excludes"] = str(excludes)
-        if includes is not DEFAULT:
-            kwargs["includes"] = str(includes)
+        if field is not DEFAULT:
+            kwargs["field"] = str(field)
+        if inner_hits is not DEFAULT:
+            kwargs["inner_hits"] = inner_hits
+        if max_concurrent_group_searches is not DEFAULT:
+            kwargs["max_concurrent_group_searches"] = max_concurrent_group_searches
+        if collapse is not DEFAULT:
+            kwargs["collapse"] = collapse
         super().__init__(kwargs)
 
 
@@ -2288,7 +3293,9 @@ class IntervalsAllOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[Sequence["IntervalsContainer"], Dict[str, Any], DefaultType]
+    intervals: Union[
+        Sequence["IntervalsContainer"], Sequence[Dict[str, Any]], DefaultType
+    ]
     max_gaps: Union[int, DefaultType]
     ordered: Union[bool, DefaultType]
     filter: Union["IntervalsFilter", Dict[str, Any], DefaultType]
@@ -2297,7 +3304,7 @@ class IntervalsAllOf(AttrDict[Any]):
         self,
         *,
         intervals: Union[
-            Sequence["IntervalsContainer"], Dict[str, Any], DefaultType
+            Sequence["IntervalsContainer"], Sequence[Dict[str, Any]], DefaultType
         ] = DEFAULT,
         max_gaps: Union[int, DefaultType] = DEFAULT,
         ordered: Union[bool, DefaultType] = DEFAULT,
@@ -2321,14 +3328,16 @@ class IntervalsAnyOf(AttrDict[Any]):
     :arg filter: Rule used to filter returned intervals.
     """
 
-    intervals: Union[Sequence["IntervalsContainer"], Dict[str, Any], DefaultType]
+    intervals: Union[
+        Sequence["IntervalsContainer"], Sequence[Dict[str, Any]], DefaultType
+    ]
     filter: Union["IntervalsFilter", Dict[str, Any], DefaultType]
 
     def __init__(
         self,
         *,
         intervals: Union[
-            Sequence["IntervalsContainer"], Dict[str, Any], DefaultType
+            Sequence["IntervalsContainer"], Sequence[Dict[str, Any]], DefaultType
         ] = DEFAULT,
         filter: Union["IntervalsFilter", Dict[str, Any], DefaultType] = DEFAULT,
         **kwargs: Any,
@@ -2526,6 +3535,285 @@ class TextEmbedding(AttrDict[Any]):
         super().__init__(kwargs)
 
 
+class FieldSort(AttrDict[Any]):
+    """
+    :arg missing:
+    :arg mode:
+    :arg nested:
+    :arg order:
+    :arg unmapped_type:
+    :arg numeric_type:
+    :arg format:
+    """
+
+    missing: Union[str, int, float, bool, DefaultType]
+    mode: Union[Literal["min", "max", "sum", "avg", "median"], DefaultType]
+    nested: Union["NestedSortValue", Dict[str, Any], DefaultType]
+    order: Union[Literal["asc", "desc"], DefaultType]
+    unmapped_type: Union[
+        Literal[
+            "none",
+            "geo_point",
+            "geo_shape",
+            "ip",
+            "binary",
+            "keyword",
+            "text",
+            "search_as_you_type",
+            "date",
+            "date_nanos",
+            "boolean",
+            "completion",
+            "nested",
+            "object",
+            "version",
+            "murmur3",
+            "token_count",
+            "percolator",
+            "integer",
+            "long",
+            "short",
+            "byte",
+            "float",
+            "half_float",
+            "scaled_float",
+            "double",
+            "integer_range",
+            "float_range",
+            "long_range",
+            "double_range",
+            "date_range",
+            "ip_range",
+            "alias",
+            "join",
+            "rank_feature",
+            "rank_features",
+            "flattened",
+            "shape",
+            "histogram",
+            "constant_keyword",
+            "aggregate_metric_double",
+            "dense_vector",
+            "semantic_text",
+            "sparse_vector",
+            "match_only_text",
+            "icu_collation_keyword",
+        ],
+        DefaultType,
+    ]
+    numeric_type: Union[Literal["long", "double", "date", "date_nanos"], DefaultType]
+    format: Union[str, DefaultType]
+
+    def __init__(
+        self,
+        *,
+        missing: Union[str, int, float, bool, DefaultType] = DEFAULT,
+        mode: Union[
+            Literal["min", "max", "sum", "avg", "median"], DefaultType
+        ] = DEFAULT,
+        nested: Union["NestedSortValue", Dict[str, Any], DefaultType] = DEFAULT,
+        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
+        unmapped_type: Union[
+            Literal[
+                "none",
+                "geo_point",
+                "geo_shape",
+                "ip",
+                "binary",
+                "keyword",
+                "text",
+                "search_as_you_type",
+                "date",
+                "date_nanos",
+                "boolean",
+                "completion",
+                "nested",
+                "object",
+                "version",
+                "murmur3",
+                "token_count",
+                "percolator",
+                "integer",
+                "long",
+                "short",
+                "byte",
+                "float",
+                "half_float",
+                "scaled_float",
+                "double",
+                "integer_range",
+                "float_range",
+                "long_range",
+                "double_range",
+                "date_range",
+                "ip_range",
+                "alias",
+                "join",
+                "rank_feature",
+                "rank_features",
+                "flattened",
+                "shape",
+                "histogram",
+                "constant_keyword",
+                "aggregate_metric_double",
+                "dense_vector",
+                "semantic_text",
+                "sparse_vector",
+                "match_only_text",
+                "icu_collation_keyword",
+            ],
+            DefaultType,
+        ] = DEFAULT,
+        numeric_type: Union[
+            Literal["long", "double", "date", "date_nanos"], DefaultType
+        ] = DEFAULT,
+        format: Union[str, DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if missing is not DEFAULT:
+            kwargs["missing"] = missing
+        if mode is not DEFAULT:
+            kwargs["mode"] = mode
+        if nested is not DEFAULT:
+            kwargs["nested"] = nested
+        if order is not DEFAULT:
+            kwargs["order"] = order
+        if unmapped_type is not DEFAULT:
+            kwargs["unmapped_type"] = unmapped_type
+        if numeric_type is not DEFAULT:
+            kwargs["numeric_type"] = numeric_type
+        if format is not DEFAULT:
+            kwargs["format"] = format
+        super().__init__(kwargs)
+
+
+class ScoreSort(AttrDict[Any]):
+    """
+    :arg order:
+    """
+
+    order: Union[Literal["asc", "desc"], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if order is not DEFAULT:
+            kwargs["order"] = order
+        super().__init__(kwargs)
+
+
+class GeoDistanceSort(AttrDict[Any]):
+    """
+    :arg _field: The field to use in this query.
+    :arg _value: The query value for the field.
+    :arg mode:
+    :arg distance_type:
+    :arg ignore_unmapped:
+    :arg order:
+    :arg unit:
+    :arg nested:
+    """
+
+    _field: Union[str, "InstrumentedField", "DefaultType"]
+    _value: Union[
+        Union["LatLonGeoLocation", "GeoHashLocation", Sequence[float], str],
+        Sequence[Union["LatLonGeoLocation", "GeoHashLocation", Sequence[float], str]],
+        Dict[str, Any],
+        "DefaultType",
+    ]
+    mode: Union[Literal["min", "max", "sum", "avg", "median"], DefaultType]
+    distance_type: Union[Literal["arc", "plane"], DefaultType]
+    ignore_unmapped: Union[bool, DefaultType]
+    order: Union[Literal["asc", "desc"], DefaultType]
+    unit: Union[
+        Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], DefaultType
+    ]
+    nested: Union["NestedSortValue", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        _field: Union[str, "InstrumentedField", "DefaultType"] = DEFAULT,
+        _value: Union[
+            Union["LatLonGeoLocation", "GeoHashLocation", Sequence[float], str],
+            Sequence[
+                Union["LatLonGeoLocation", "GeoHashLocation", Sequence[float], str]
+            ],
+            Dict[str, Any],
+            "DefaultType",
+        ] = DEFAULT,
+        *,
+        mode: Union[
+            Literal["min", "max", "sum", "avg", "median"], DefaultType
+        ] = DEFAULT,
+        distance_type: Union[Literal["arc", "plane"], DefaultType] = DEFAULT,
+        ignore_unmapped: Union[bool, DefaultType] = DEFAULT,
+        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
+        unit: Union[
+            Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], DefaultType
+        ] = DEFAULT,
+        nested: Union["NestedSortValue", Dict[str, Any], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if _field is not DEFAULT:
+            kwargs[str(_field)] = _value
+        if mode is not DEFAULT:
+            kwargs["mode"] = mode
+        if distance_type is not DEFAULT:
+            kwargs["distance_type"] = distance_type
+        if ignore_unmapped is not DEFAULT:
+            kwargs["ignore_unmapped"] = ignore_unmapped
+        if order is not DEFAULT:
+            kwargs["order"] = order
+        if unit is not DEFAULT:
+            kwargs["unit"] = unit
+        if nested is not DEFAULT:
+            kwargs["nested"] = nested
+        super().__init__(kwargs)
+
+
+class ScriptSort(AttrDict[Any]):
+    """
+    :arg script: (required)
+    :arg order:
+    :arg type:
+    :arg mode:
+    :arg nested:
+    """
+
+    script: Union["Script", Dict[str, Any], DefaultType]
+    order: Union[Literal["asc", "desc"], DefaultType]
+    type: Union[Literal["string", "number", "version"], DefaultType]
+    mode: Union[Literal["min", "max", "sum", "avg", "median"], DefaultType]
+    nested: Union["NestedSortValue", Dict[str, Any], DefaultType]
+
+    def __init__(
+        self,
+        *,
+        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
+        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
+        type: Union[Literal["string", "number", "version"], DefaultType] = DEFAULT,
+        mode: Union[
+            Literal["min", "max", "sum", "avg", "median"], DefaultType
+        ] = DEFAULT,
+        nested: Union["NestedSortValue", Dict[str, Any], DefaultType] = DEFAULT,
+        **kwargs: Any,
+    ):
+        if script is not DEFAULT:
+            kwargs["script"] = script
+        if order is not DEFAULT:
+            kwargs["order"] = order
+        if type is not DEFAULT:
+            kwargs["type"] = type
+        if mode is not DEFAULT:
+            kwargs["mode"] = mode
+        if nested is not DEFAULT:
+            kwargs["nested"] = nested
+        super().__init__(kwargs)
+
+
 class SpanContainingQuery(QueryBase):
     """
     :arg big: (required) Can be any span query. Matching spans from `big`
@@ -2687,7 +3975,7 @@ class SpanNearQuery(QueryBase):
     :arg _name:
     """
 
-    clauses: Union[Sequence["SpanQuery"], Dict[str, Any], DefaultType]
+    clauses: Union[Sequence["SpanQuery"], Sequence[Dict[str, Any]], DefaultType]
     in_order: Union[bool, DefaultType]
     slop: Union[int, DefaultType]
     boost: Union[float, DefaultType]
@@ -2696,7 +3984,9 @@ class SpanNearQuery(QueryBase):
     def __init__(
         self,
         *,
-        clauses: Union[Sequence["SpanQuery"], Dict[str, Any], DefaultType] = DEFAULT,
+        clauses: Union[
+            Sequence["SpanQuery"], Sequence[Dict[str, Any]], DefaultType
+        ] = DEFAULT,
         in_order: Union[bool, DefaultType] = DEFAULT,
         slop: Union[int, DefaultType] = DEFAULT,
         boost: Union[float, DefaultType] = DEFAULT,
@@ -2784,14 +4074,16 @@ class SpanOrQuery(QueryBase):
     :arg _name:
     """
 
-    clauses: Union[Sequence["SpanQuery"], Dict[str, Any], DefaultType]
+    clauses: Union[Sequence["SpanQuery"], Sequence[Dict[str, Any]], DefaultType]
     boost: Union[float, DefaultType]
     _name: Union[str, DefaultType]
 
     def __init__(
         self,
         *,
-        clauses: Union[Sequence["SpanQuery"], Dict[str, Any], DefaultType] = DEFAULT,
+        clauses: Union[
+            Sequence["SpanQuery"], Sequence[Dict[str, Any]], DefaultType
+        ] = DEFAULT,
         boost: Union[float, DefaultType] = DEFAULT,
         _name: Union[str, DefaultType] = DEFAULT,
         **kwargs: Any,
@@ -2844,297 +4136,41 @@ class SpanWithinQuery(QueryBase):
         super().__init__(**kwargs)
 
 
-class HighlightField(HighlightBase):
+class BucketCorrelationFunctionCountCorrelationIndicator(AttrDict[Any]):
     """
-    :arg fragment_offset:
-    :arg matched_fields:
-    :arg analyzer:
-    :arg type:
-    :arg boundary_chars: A string that contains each boundary character.
-        Defaults to `.,!? \t\n` if omitted.
-    :arg boundary_max_scan: How far to scan for boundary characters.
-        Defaults to `20` if omitted.
-    :arg boundary_scanner: Specifies how to break the highlighted
-        fragments: chars, sentence, or word. Only valid for the unified
-        and fvh highlighters. Defaults to `sentence` for the `unified`
-        highlighter. Defaults to `chars` for the `fvh` highlighter.
-    :arg boundary_scanner_locale: Controls which locale is used to search
-        for sentence and word boundaries. This parameter takes a form of a
-        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
-        Defaults to `Locale.ROOT` if omitted.
-    :arg force_source:
-    :arg fragmenter: Specifies how text should be broken up in highlight
-        snippets: `simple` or `span`. Only valid for the `plain`
-        highlighter. Defaults to `span` if omitted.
-    :arg fragment_size: The size of the highlighted fragment in
-        characters. Defaults to `100` if omitted.
-    :arg highlight_filter:
-    :arg highlight_query: Highlight matches for a query other than the
-        search query. This is especially useful if you use a rescore query
-        because those are not taken into account by highlighting by
-        default.
-    :arg max_fragment_length:
-    :arg max_analyzed_offset: If set to a non-negative value, highlighting
-        stops at this defined maximum limit. The rest of the text is not
-        processed, thus not highlighted and no error is returned The
-        `max_analyzed_offset` query setting does not override the
-        `index.highlight.max_analyzed_offset` setting, which prevails when
-        it’s set to lower value than the query setting.
-    :arg no_match_size: The amount of text you want to return from the
-        beginning of the field if there are no matching fragments to
-        highlight.
-    :arg number_of_fragments: The maximum number of fragments to return.
-        If the number of fragments is set to `0`, no fragments are
-        returned. Instead, the entire field contents are highlighted and
-        returned. This can be handy when you need to highlight short texts
-        such as a title or address, but fragmentation is not required. If
-        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
-        to `5` if omitted.
-    :arg options:
-    :arg order: Sorts highlighted fragments by score when set to `score`.
-        By default, fragments will be output in the order they appear in
-        the field (order: `none`). Setting this option to `score` will
-        output the most relevant fragments first. Each highlighter applies
-        its own logic to compute relevancy scores. Defaults to `none` if
-        omitted.
-    :arg phrase_limit: Controls the number of matching phrases in a
-        document that are considered. Prevents the `fvh` highlighter from
-        analyzing too many phrases and consuming too much memory. When
-        using `matched_fields`, `phrase_limit` phrases per matched field
-        are considered. Raising the limit increases query time and
-        consumes more memory. Only supported by the `fvh` highlighter.
-        Defaults to `256` if omitted.
-    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
-        tags to use for the highlighted text. By default, highlighted text
-        is wrapped in `<em>` and `</em>` tags.
-    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
-        tags to use for the highlighted text. By default, highlighted text
-        is wrapped in `<em>` and `</em>` tags.
-    :arg require_field_match: By default, only fields that contains a
-        query match are highlighted. Set to `false` to highlight all
-        fields. Defaults to `True` if omitted.
-    :arg tags_schema: Set to `styled` to use the built-in tag schema.
+    :arg doc_count: (required) The total number of documents that
+        initially created the expectations. It’s required to be greater
+        than or equal to the sum of all values in the buckets_path as this
+        is the originating superset of data to which the term values are
+        correlated.
+    :arg expectations: (required) An array of numbers with which to
+        correlate the configured `bucket_path` values. The length of this
+        value must always equal the number of buckets returned by the
+        `bucket_path`.
+    :arg fractions: An array of fractions to use when averaging and
+        calculating variance. This should be used if the pre-calculated
+        data and the buckets_path have known gaps. The length of
+        fractions, if provided, must equal expectations.
     """
 
-    fragment_offset: Union[int, DefaultType]
-    matched_fields: Union[
-        Union[str, InstrumentedField],
-        Sequence[Union[str, InstrumentedField]],
-        DefaultType,
-    ]
-    analyzer: Union[str, Dict[str, Any], DefaultType]
-    type: Union[Literal["plain", "fvh", "unified"], DefaultType]
-    boundary_chars: Union[str, DefaultType]
-    boundary_max_scan: Union[int, DefaultType]
-    boundary_scanner: Union[Literal["chars", "sentence", "word"], DefaultType]
-    boundary_scanner_locale: Union[str, DefaultType]
-    force_source: Union[bool, DefaultType]
-    fragmenter: Union[Literal["simple", "span"], DefaultType]
-    fragment_size: Union[int, DefaultType]
-    highlight_filter: Union[bool, DefaultType]
-    highlight_query: Union[Query, DefaultType]
-    max_fragment_length: Union[int, DefaultType]
-    max_analyzed_offset: Union[int, DefaultType]
-    no_match_size: Union[int, DefaultType]
-    number_of_fragments: Union[int, DefaultType]
-    options: Union[Mapping[str, Any], DefaultType]
-    order: Union[Literal["score"], DefaultType]
-    phrase_limit: Union[int, DefaultType]
-    post_tags: Union[Sequence[str], DefaultType]
-    pre_tags: Union[Sequence[str], DefaultType]
-    require_field_match: Union[bool, DefaultType]
-    tags_schema: Union[Literal["styled"], DefaultType]
+    doc_count: Union[int, DefaultType]
+    expectations: Union[Sequence[float], DefaultType]
+    fractions: Union[Sequence[float], DefaultType]
 
     def __init__(
         self,
         *,
-        fragment_offset: Union[int, DefaultType] = DEFAULT,
-        matched_fields: Union[
-            Union[str, InstrumentedField],
-            Sequence[Union[str, InstrumentedField]],
-            DefaultType,
-        ] = DEFAULT,
-        analyzer: Union[str, Dict[str, Any], DefaultType] = DEFAULT,
-        type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
-        boundary_chars: Union[str, DefaultType] = DEFAULT,
-        boundary_max_scan: Union[int, DefaultType] = DEFAULT,
-        boundary_scanner: Union[
-            Literal["chars", "sentence", "word"], DefaultType
-        ] = DEFAULT,
-        boundary_scanner_locale: Union[str, DefaultType] = DEFAULT,
-        force_source: Union[bool, DefaultType] = DEFAULT,
-        fragmenter: Union[Literal["simple", "span"], DefaultType] = DEFAULT,
-        fragment_size: Union[int, DefaultType] = DEFAULT,
-        highlight_filter: Union[bool, DefaultType] = DEFAULT,
-        highlight_query: Union[Query, DefaultType] = DEFAULT,
-        max_fragment_length: Union[int, DefaultType] = DEFAULT,
-        max_analyzed_offset: Union[int, DefaultType] = DEFAULT,
-        no_match_size: Union[int, DefaultType] = DEFAULT,
-        number_of_fragments: Union[int, DefaultType] = DEFAULT,
-        options: Union[Mapping[str, Any], DefaultType] = DEFAULT,
-        order: Union[Literal["score"], DefaultType] = DEFAULT,
-        phrase_limit: Union[int, DefaultType] = DEFAULT,
-        post_tags: Union[Sequence[str], DefaultType] = DEFAULT,
-        pre_tags: Union[Sequence[str], DefaultType] = DEFAULT,
-        require_field_match: Union[bool, DefaultType] = DEFAULT,
-        tags_schema: Union[Literal["styled"], DefaultType] = DEFAULT,
+        doc_count: Union[int, DefaultType] = DEFAULT,
+        expectations: Union[Sequence[float], DefaultType] = DEFAULT,
+        fractions: Union[Sequence[float], DefaultType] = DEFAULT,
         **kwargs: Any,
     ):
-        if fragment_offset is not DEFAULT:
-            kwargs["fragment_offset"] = fragment_offset
-        if matched_fields is not DEFAULT:
-            kwargs["matched_fields"] = str(matched_fields)
-        if analyzer is not DEFAULT:
-            kwargs["analyzer"] = analyzer
-        if type is not DEFAULT:
-            kwargs["type"] = type
-        if boundary_chars is not DEFAULT:
-            kwargs["boundary_chars"] = boundary_chars
-        if boundary_max_scan is not DEFAULT:
-            kwargs["boundary_max_scan"] = boundary_max_scan
-        if boundary_scanner is not DEFAULT:
-            kwargs["boundary_scanner"] = boundary_scanner
-        if boundary_scanner_locale is not DEFAULT:
-            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if force_source is not DEFAULT:
-            kwargs["force_source"] = force_source
-        if fragmenter is not DEFAULT:
-            kwargs["fragmenter"] = fragmenter
-        if fragment_size is not DEFAULT:
-            kwargs["fragment_size"] = fragment_size
-        if highlight_filter is not DEFAULT:
-            kwargs["highlight_filter"] = highlight_filter
-        if highlight_query is not DEFAULT:
-            kwargs["highlight_query"] = highlight_query
-        if max_fragment_length is not DEFAULT:
-            kwargs["max_fragment_length"] = max_fragment_length
-        if max_analyzed_offset is not DEFAULT:
-            kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if no_match_size is not DEFAULT:
-            kwargs["no_match_size"] = no_match_size
-        if number_of_fragments is not DEFAULT:
-            kwargs["number_of_fragments"] = number_of_fragments
-        if options is not DEFAULT:
-            kwargs["options"] = options
-        if order is not DEFAULT:
-            kwargs["order"] = order
-        if phrase_limit is not DEFAULT:
-            kwargs["phrase_limit"] = phrase_limit
-        if post_tags is not DEFAULT:
-            kwargs["post_tags"] = post_tags
-        if pre_tags is not DEFAULT:
-            kwargs["pre_tags"] = pre_tags
-        if require_field_match is not DEFAULT:
-            kwargs["require_field_match"] = require_field_match
-        if tags_schema is not DEFAULT:
-            kwargs["tags_schema"] = tags_schema
-        super().__init__(**kwargs)
-
-
-class ScoreSort(AttrDict[Any]):
-    """
-    :arg order:
-    """
-
-    order: Union[Literal["asc", "desc"], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if order is not DEFAULT:
-            kwargs["order"] = order
-        super().__init__(kwargs)
-
-
-class GeoDistanceSort(AttrDict[Any]):
-    """
-    :arg mode:
-    :arg distance_type:
-    :arg ignore_unmapped:
-    :arg order:
-    :arg unit:
-    :arg nested:
-    """
-
-    mode: Union[Literal["min", "max", "sum", "avg", "median"], DefaultType]
-    distance_type: Union[Literal["arc", "plane"], DefaultType]
-    ignore_unmapped: Union[bool, DefaultType]
-    order: Union[Literal["asc", "desc"], DefaultType]
-    unit: Union[
-        Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], DefaultType
-    ]
-    nested: Union["NestedSortValue", Dict[str, Any], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        mode: Union[
-            Literal["min", "max", "sum", "avg", "median"], DefaultType
-        ] = DEFAULT,
-        distance_type: Union[Literal["arc", "plane"], DefaultType] = DEFAULT,
-        ignore_unmapped: Union[bool, DefaultType] = DEFAULT,
-        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
-        unit: Union[
-            Literal["in", "ft", "yd", "mi", "nmi", "km", "m", "cm", "mm"], DefaultType
-        ] = DEFAULT,
-        nested: Union["NestedSortValue", Dict[str, Any], DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if mode is not DEFAULT:
-            kwargs["mode"] = mode
-        if distance_type is not DEFAULT:
-            kwargs["distance_type"] = distance_type
-        if ignore_unmapped is not DEFAULT:
-            kwargs["ignore_unmapped"] = ignore_unmapped
-        if order is not DEFAULT:
-            kwargs["order"] = order
-        if unit is not DEFAULT:
-            kwargs["unit"] = unit
-        if nested is not DEFAULT:
-            kwargs["nested"] = nested
-        super().__init__(kwargs)
-
-
-class ScriptSort(AttrDict[Any]):
-    """
-    :arg script: (required)
-    :arg order:
-    :arg type:
-    :arg mode:
-    :arg nested:
-    """
-
-    script: Union["Script", Dict[str, Any], DefaultType]
-    order: Union[Literal["asc", "desc"], DefaultType]
-    type: Union[Literal["string", "number", "version"], DefaultType]
-    mode: Union[Literal["min", "max", "sum", "avg", "median"], DefaultType]
-    nested: Union["NestedSortValue", Dict[str, Any], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        script: Union["Script", Dict[str, Any], DefaultType] = DEFAULT,
-        order: Union[Literal["asc", "desc"], DefaultType] = DEFAULT,
-        type: Union[Literal["string", "number", "version"], DefaultType] = DEFAULT,
-        mode: Union[
-            Literal["min", "max", "sum", "avg", "median"], DefaultType
-        ] = DEFAULT,
-        nested: Union["NestedSortValue", Dict[str, Any], DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if script is not DEFAULT:
-            kwargs["script"] = script
-        if order is not DEFAULT:
-            kwargs["order"] = order
-        if type is not DEFAULT:
-            kwargs["type"] = type
-        if mode is not DEFAULT:
-            kwargs["mode"] = mode
-        if nested is not DEFAULT:
-            kwargs["nested"] = nested
+        if doc_count is not DEFAULT:
+            kwargs["doc_count"] = doc_count
+        if expectations is not DEFAULT:
+            kwargs["expectations"] = expectations
+        if fractions is not DEFAULT:
+            kwargs["fractions"] = fractions
         super().__init__(kwargs)
 
 

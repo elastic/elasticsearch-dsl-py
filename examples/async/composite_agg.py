@@ -17,19 +17,19 @@
 
 import asyncio
 import os
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, Mapping, Sequence
 
 from elasticsearch.helpers import async_bulk
 
-from elasticsearch_dsl import A, Agg, AsyncSearch, Response, async_connections
+from elasticsearch_dsl import Agg, AsyncSearch, Response, aggs, async_connections
 from tests.test_integration.test_data import DATA, GIT_INDEX
 
 
 async def scan_aggs(
     search: AsyncSearch,
-    source_aggs: Union[Dict[str, Agg], List[Dict[str, Agg]]],
+    source_aggs: Sequence[Mapping[str, Agg]],
     inner_aggs: Dict[str, Agg] = {},
-    size: Optional[int] = 10,
+    size: int = 10,
 ) -> AsyncIterator[Response]:
     """
     Helper function used to iterate over all possible bucket combinations of
@@ -40,7 +40,12 @@ async def scan_aggs(
     async def run_search(**kwargs: Any) -> Response:
         s = search[:0]
         bucket = s.aggs.bucket(
-            "comp", "composite", sources=source_aggs, size=size, **kwargs
+            "comp",
+            aggs.Composite(
+                sources=source_aggs,
+                size=size,
+                **kwargs,
+            ),
         )
         for agg_name, agg in inner_aggs.items():
             bucket[agg_name] = agg
@@ -72,8 +77,8 @@ async def main() -> None:
     # run some aggregations on the data
     async for b in scan_aggs(
         AsyncSearch(index="git"),
-        {"files": A("terms", field="files")},
-        {"first_seen": A("min", field="committed_date")},
+        [{"files": aggs.Terms(field="files")}],
+        {"first_seen": aggs.Min(field="committed_date")},
     ):
         print(
             "File %s has been modified %d times, first seen at %s."

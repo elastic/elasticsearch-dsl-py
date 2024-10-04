@@ -43,13 +43,17 @@ class {{ k.name }}({{ k.parent if k.parent else "AttrDict[Any]" }}):
     def __init__(
         self,
         {% for arg in k.args %}
-        {% if arg.positional %}{{ arg.name }}: {{ arg.type }} = DEFAULT,{% endif %}
+            {% if arg.positional %}
+        {{ arg.name }}: {{ arg.type }} = DEFAULT,
+            {% endif %}
         {% endfor %}
         {% if k.args and not k.args[-1].positional %}
         *,
         {% endif %}
         {% for arg in k.args %}
-        {% if not arg.positional %}{{ arg.name }}: {{ arg.type }} = DEFAULT,{% endif %}
+            {% if not arg.positional %}
+        {{ arg.name }}: {{ arg.type }} = DEFAULT,
+            {% endif %}
         {% endfor %}
         **kwargs: Any
     ):
