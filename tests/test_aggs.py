@@ -220,6 +220,7 @@ def test_filters_correctly_identifies_the_hash() -> None:
 
 
 def test_bucket_sort_agg() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     bucket_sort_agg = aggs.BucketSort(sort=[{"total_sales": {"order": "desc"}}], size=3)  # type: ignore
     assert bucket_sort_agg.to_dict() == {
         "bucket_sort": {"sort": [{"total_sales": {"order": "desc"}}], "size": 3}
@@ -251,6 +252,7 @@ def test_bucket_sort_agg() -> None:
 
 
 def test_bucket_sort_agg_only_trnunc() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     bucket_sort_agg = aggs.BucketSort(**{"from": 1, "size": 1, "_expand__to_dot": False})  # type: ignore
     assert bucket_sort_agg.to_dict() == {"bucket_sort": {"from": 1, "size": 1}}
     bucket_sort_agg = aggs.BucketSort(from_=1, size=1, _expand__to_dot=False)
@@ -265,6 +267,7 @@ def test_bucket_sort_agg_only_trnunc() -> None:
 
 
 def test_geohash_grid_aggregation() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     a = aggs.GeohashGrid(**{"field": "centroid", "precision": 3})  # type: ignore
     assert {"geohash_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
     a = aggs.GeohashGrid(field="centroid", precision=3)
@@ -272,6 +275,7 @@ def test_geohash_grid_aggregation() -> None:
 
 
 def test_geohex_grid_aggregation() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     a = aggs.GeohexGrid(**{"field": "centroid", "precision": 3})  # type: ignore
     assert {"geohex_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
     a = aggs.GeohexGrid(field="centroid", precision=3)
@@ -279,6 +283,7 @@ def test_geohex_grid_aggregation() -> None:
 
 
 def test_geotile_grid_aggregation() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     a = aggs.GeotileGrid(**{"field": "centroid", "precision": 3})  # type: ignore
     assert {"geotile_grid": {"field": "centroid", "precision": 3}} == a.to_dict()
     a = aggs.GeotileGrid(field="centroid", precision=3)
@@ -318,6 +323,7 @@ def test_variable_width_histogram_aggregation() -> None:
 
 
 def test_ip_prefix_aggregation() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     a = aggs.IPPrefix(**{"field": "ipv4", "prefix_length": 24})  # type: ignore
     assert {"ip_prefix": {"field": "ipv4", "prefix_length": 24}} == a.to_dict()
     a = aggs.IPPrefix(field="ipv4", prefix_length=24)
@@ -501,6 +507,7 @@ def test_adjancecy_matrix_aggregation() -> None:
 
 
 def test_top_metrics_aggregation() -> None:
+    # test the dictionary (type ignored) and fully typed alterantives
     a = aggs.TopMetrics(metrics={"field": "m"}, sort={"s": "desc"})  # type: ignore
     assert {
         "top_metrics": {"metrics": {"field": "m"}, "sort": {"s": "desc"}}

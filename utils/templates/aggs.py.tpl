@@ -318,6 +318,3 @@ class {{ k.name }}({{ k.parent if k.parent else parent }}[_R]):
 
     {% endif %}
 {% endfor %}
-{# the following aggregation is in technical preview and does not exist in the specification #}
-class RandomSampler(Bucket[_R]):
-    name = "random_sampler"

@@ -2788,6 +2788,39 @@ class ReverseNested(Bucket[_R]):
         super().__init__(path=path, **kwargs)
 
 
+class RandomSampler(Bucket[_R]):
+    """
+    A single bucket aggregation that randomly includes documents in the
+    aggregated results. Sampling provides significant speed improvement at
+    the cost of accuracy.
+
+    :arg probability: (required) The probability that a document will be
+        included in the aggregated data. Must be greater than 0, less than
+        0.5, or exactly 1. The lower the probability, the fewer documents
+        are matched.
+    :arg seed: The seed to generate the random sampling of documents. When
+        a seed is provided, the random subset of documents is the same
+        between calls.
+    :arg shard_seed: When combined with seed, setting shard_seed ensures
+        100% consistent sampling over shards where data is exactly the
+        same.
+    """
+
+    name = "random_sampler"
+
+    def __init__(
+        self,
+        *,
+        probability: Union[float, "DefaultType"] = DEFAULT,
+        seed: Union[int, "DefaultType"] = DEFAULT,
+        shard_seed: Union[int, "DefaultType"] = DEFAULT,
+        **kwargs: Any,
+    ):
+        super().__init__(
+            probability=probability, seed=seed, shard_seed=shard_seed, **kwargs
+        )
+
+
 class Sampler(Bucket[_R]):
     """
     A filtering aggregation used to limit any sub aggregations' processing
@@ -3696,7 +3729,3 @@ class VariableWidthHistogram(Bucket[_R]):
 
     def result(self, search: "SearchBase[_R]", data: Any) -> AttrDict[Any]:
         return FieldBucketData(self, search, data)
-
-
-class RandomSampler(Bucket[_R]):
-    name = "random_sampler"
