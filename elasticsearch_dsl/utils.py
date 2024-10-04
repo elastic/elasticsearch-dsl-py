@@ -365,6 +365,7 @@ class DslBase(metaclass=DslMeta):
 
     def _setattr(self, name: str, value: Any) -> None:
         # if this attribute has special type assigned to it...
+        name = AttrDict.RESERVED.get(name, name)
         if name in self._param_defs:
             pinfo = self._param_defs[name]
 

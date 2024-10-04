@@ -624,7 +624,9 @@ class FunctionScore(Query):
             Literal["multiply", "replace", "sum", "avg", "max", "min"], "DefaultType"
         ] = DEFAULT,
         functions: Union[
-            Sequence["types.FunctionScoreContainer"], Dict[str, Any], "DefaultType"
+            Sequence["types.FunctionScoreContainer"],
+            Sequence[Dict[str, Any]],
+            "DefaultType",
         ] = DEFAULT,
         max_boost: Union[float, "DefaultType"] = DEFAULT,
         min_score: Union[float, "DefaultType"] = DEFAULT,
@@ -1688,7 +1690,7 @@ class Pinned(Query):
         organic: Union[Query, "DefaultType"] = DEFAULT,
         ids: Union[Sequence[str], "DefaultType"] = DEFAULT,
         docs: Union[
-            Sequence["types.PinnedDoc"], Dict[str, Any], "DefaultType"
+            Sequence["types.PinnedDoc"], Sequence[Dict[str, Any]], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,
@@ -2372,7 +2374,7 @@ class SpanNear(Query):
         self,
         *,
         clauses: Union[
-            Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"
+            Sequence["types.SpanQuery"], Sequence[Dict[str, Any]], "DefaultType"
         ] = DEFAULT,
         in_order: Union[bool, "DefaultType"] = DEFAULT,
         slop: Union[int, "DefaultType"] = DEFAULT,
@@ -2459,7 +2461,7 @@ class SpanOr(Query):
         self,
         *,
         clauses: Union[
-            Sequence["types.SpanQuery"], Dict[str, Any], "DefaultType"
+            Sequence["types.SpanQuery"], Sequence[Dict[str, Any]], "DefaultType"
         ] = DEFAULT,
         boost: Union[float, "DefaultType"] = DEFAULT,
         _name: Union[str, "DefaultType"] = DEFAULT,

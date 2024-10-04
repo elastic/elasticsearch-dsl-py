@@ -32,6 +32,7 @@ jinja_env = Environment(
     lstrip_blocks=True,
 )
 query_py = jinja_env.get_template("query.py.tpl")
+aggs_py = jinja_env.get_template("aggs.py.tpl")
 types_py = jinja_env.get_template("types.py.tpl")
 
 # map with name replacements for Elasticsearch attributes
@@ -42,6 +43,22 @@ PROP_REPLACEMENTS = {"from": "from_"}
 TYPE_REPLACEMENTS = {
     "_types.query_dsl:DistanceFeatureQuery": "_types.query_dsl:DistanceFeatureQueryBase",
 }
+
+# some aggregation types are complicated to determine from the schema, so they
+# have their correct type here
+AGG_TYPES = {
+    "bucket_count_ks_test": "Pipeline",
+    "bucket_correlation": "Pipeline",
+    "bucket_sort": "Bucket",
+    "categorize_text": "Bucket",
+    "filter": "Bucket",
+    "moving_avg": "Pipeline",
+    "variable_width_histogram": "Bucket",
+}
+
+
+def property_to_class_name(name):
+    return "".join([w.title() if w != "ip" else "IP" for w in name.split("_")])
 
 
 def wrapped_doc(text, width=70, initial_indent="", subsequent_indent=""):
@@ -60,6 +77,15 @@ def add_dict_type(type_):
         type_ = f"{type_[:-1]}, Dict[str, Any]]"
     else:
         type_ = f"Union[{type_}, Dict[str, Any]]"
+    return type_
+
+
+def add_seq_dict_type(type_):
+    """Add List[Dict[str, Any]] to a Python type hint."""
+    if type_.startswith("Union["):
+        type_ = f"{type_[:-1]}, Sequence[Dict[str, Any]]]"
+    else:
+        type_ = f"Union[{type_}, Sequence[Dict[str, Any]]]"
     return type_
 
 
@@ -101,6 +127,18 @@ class ElasticsearchSchema:
             ):
                 return t
 
+    def inherits_from(self, type_, name, namespace=None):
+        while "inherits" in type_:
+            type_ = self.find_type(
+                type_["inherits"]["type"]["name"],
+                type_["inherits"]["type"]["namespace"],
+            )
+            if type_["name"]["name"] == name and (
+                namespace is None or type_["name"]["namespace"] == namespace
+            ):
+                return True
+        return False
+
     def get_python_type(self, schema_type):
         """Obtain Python typing details for a given schema type
 
@@ -137,6 +175,17 @@ class ElasticsearchSchema:
             ):
                 # QueryContainer maps to the DSL's Query class
                 return "Query", {"type": "query"}
+            elif (
+                type_name["namespace"] == "_types.aggregations"
+                and type_name["name"] == "Buckets"
+            ):
+                return "Dict[str, Query]", {"type": "query", "hash": True}
+            elif (
+                type_name["namespace"] == "_types.aggregations"
+                and type_name["name"] == "CompositeAggregationSource"
+            ):
+                # QueryContainer maps to the DSL's Query class
+                return "Agg[_R]", None
             else:
                 # for any other instances we get the type and recurse
                 type_ = self.find_type(type_name["name"], type_name["namespace"])
@@ -156,7 +205,9 @@ class ElasticsearchSchema:
             # for dicts we use Mapping[key_type, value_type]
             key_type, key_param = self.get_python_type(schema_type["key"])
             value_type, value_param = self.get_python_type(schema_type["value"])
-            return f"Mapping[{key_type}, {value_type}]", None
+            return f"Mapping[{key_type}, {value_type}]", (
+                {**value_param, "hash": True} if value_param else None
+            )
 
         elif schema_type["kind"] == "union_of":
             if (
@@ -258,7 +309,9 @@ class ElasticsearchSchema:
             type_ = "Any"
             param = None
         if type_ != "Any":
-            if "types." in type_:
+            if 'Sequence["types.' in type_:
+                type_ = add_seq_dict_type(type_)  # interfaces can be given as dicts
+            elif "types." in type_:
                 type_ = add_dict_type(type_)  # interfaces can be given as dicts
             type_ = add_not_set(type_)
         if for_types_py:
@@ -302,6 +355,59 @@ class ElasticsearchSchema:
         if param and "params" in k:
             k["params"].append(param)
 
+    def add_behaviors(self, type_, k, for_types_py=False):
+        """Add behaviors reported in the specification of the given type to the
+        class representation.
+        """
+        if "behaviors" in type_:
+            for behavior in type_["behaviors"]:
+                if (
+                    behavior["type"]["name"] != "AdditionalProperty"
+                    or behavior["type"]["namespace"] != "_spec_utils"
+                ):
+                    # we do not support this behavior, so we ignore it
+                    continue
+                key_type, _ = schema.get_python_type(behavior["generics"][0])
+                if "InstrumentedField" in key_type:
+                    value_type, _ = schema.get_python_type(behavior["generics"][1])
+                    if for_types_py:
+                        value_type = value_type.replace('"DefaultType"', "DefaultType")
+                        value_type = value_type.replace(
+                            '"InstrumentedField"', "InstrumentedField"
+                        )
+                        value_type = re.sub(
+                            r'"(function\.[a-zA-Z0-9_]+)"', r"\1", value_type
+                        )
+                        value_type = re.sub(
+                            r'"types\.([a-zA-Z0-9_]+)"', r'"\1"', value_type
+                        )
+                        value_type = re.sub(
+                            r'"(wrappers\.[a-zA-Z0-9_]+)"', r"\1", value_type
+                        )
+                    k["args"].append(
+                        {
+                            "name": "_field",
+                            "type": add_not_set(key_type),
+                            "doc": [":arg _field: The field to use in this query."],
+                            "required": False,
+                            "positional": True,
+                        }
+                    )
+                    k["args"].append(
+                        {
+                            "name": "_value",
+                            "type": add_not_set(add_dict_type(value_type)),
+                            "doc": [":arg _value: The query value for the field."],
+                            "required": False,
+                            "positional": True,
+                        }
+                    )
+                    k["is_single_field"] = True
+                else:
+                    raise RuntimeError(
+                        f"Non-field AdditionalProperty are not supported for interface {type_['name']['namespace']}:{type_['name']['name']}."
+                    )
+
     def property_to_python_class(self, p):
         """Return a dictionary with template data necessary to render a schema
         property as a Python class.
@@ -334,59 +440,41 @@ class ElasticsearchSchema:
         """
         k = {
             "property_name": p["name"],
-            "name": "".join([w.title() for w in p["name"].split("_")]),
+            "name": property_to_class_name(p["name"]),
         }
         k["docstring"] = wrapped_doc(p.get("description") or "")
+        other_classes = []
         kind = p["type"]["kind"]
         if kind == "instance_of":
             namespace = p["type"]["type"]["namespace"]
             name = p["type"]["type"]["name"]
             if f"{namespace}:{name}" in TYPE_REPLACEMENTS:
                 namespace, name = TYPE_REPLACEMENTS[f"{namespace}:{name}"].split(":")
-            type_ = schema.find_type(name, namespace)
+            if name == "QueryContainer" and namespace == "_types.query_dsl":
+                type_ = {
+                    "kind": "interface",
+                    "properties": [p],
+                }
+            else:
+                type_ = schema.find_type(name, namespace)
+            if p["name"] in AGG_TYPES:
+                k["parent"] = AGG_TYPES[p["name"]]
+
             if type_["kind"] == "interface":
+                # set the correct parent for bucket and pipeline aggregations
+                if self.inherits_from(
+                    type_, "PipelineAggregationBase", "_types.aggregations"
+                ):
+                    k["parent"] = "Pipeline"
+                elif self.inherits_from(
+                    type_, "BucketAggregationBase", "_types.aggregations"
+                ):
+                    k["parent"] = "Bucket"
+
+                # generate class attributes
                 k["args"] = []
                 k["params"] = []
-                if "behaviors" in type_:
-                    for behavior in type_["behaviors"]:
-                        if (
-                            behavior["type"]["name"] != "AdditionalProperty"
-                            or behavior["type"]["namespace"] != "_spec_utils"
-                        ):
-                            # we do not support this behavior, so we ignore it
-                            continue
-                        key_type, _ = schema.get_python_type(behavior["generics"][0])
-                        if "InstrumentedField" in key_type:
-                            value_type, _ = schema.get_python_type(
-                                behavior["generics"][1]
-                            )
-                            k["args"].append(
-                                {
-                                    "name": "_field",
-                                    "type": add_not_set(key_type),
-                                    "doc": [
-                                        ":arg _field: The field to use in this query."
-                                    ],
-                                    "required": False,
-                                    "positional": True,
-                                }
-                            )
-                            k["args"].append(
-                                {
-                                    "name": "_value",
-                                    "type": add_not_set(add_dict_type(value_type)),
-                                    "doc": [
-                                        ":arg _value: The query value for the field."
-                                    ],
-                                    "required": False,
-                                    "positional": True,
-                                }
-                            )
-                            k["is_single_field"] = True
-                        else:
-                            raise RuntimeError(
-                                f"Non-field AdditionalProperty are not supported for interface {namespace}:{name}."
-                            )
+                self.add_behaviors(type_, k)
                 while True:
                     for arg in type_["properties"]:
                         self.add_attribute(k, arg)
@@ -397,6 +485,21 @@ class ElasticsearchSchema:
                         )
                     else:
                         break
+
+            elif type_["kind"] == "type_alias":
+                if type_["type"]["kind"] == "union_of":
+                    # for unions we create sub-classes
+                    for other in type_["type"]["items"]:
+                        other_class = self.interface_to_python_class(
+                            other["type"]["name"], self.interfaces, for_types_py=False
+                        )
+                        other_class["parent"] = k["name"]
+                        other_classes.append(other_class)
+                else:
+                    raise RuntimeError(
+                        "Cannot generate code for instances of type_alias instances that are not unions."
+                    )
+
             else:
                 raise RuntimeError(
                     f"Cannot generate code for instances of kind '{type_['kind']}'"
@@ -444,9 +547,9 @@ class ElasticsearchSchema:
 
         else:
             raise RuntimeError(f"Cannot generate code for type {p['type']}")
-        return k
+        return [k] + other_classes
 
-    def interface_to_python_class(self, interface, interfaces):
+    def interface_to_python_class(self, interface, interfaces, for_types_py=True):
         """Return a dictionary with template data necessary to render an
         interface a Python class.
 
@@ -475,9 +578,10 @@ class ElasticsearchSchema:
         if type_["kind"] != "interface":
             raise RuntimeError(f"Type {interface} is not an interface")
         k = {"name": interface, "args": []}
+        self.add_behaviors(type_, k, for_types_py=for_types_py)
         while True:
             for arg in type_["properties"]:
-                schema.add_attribute(k, arg, for_types_py=True)
+                schema.add_attribute(k, arg, for_types_py=for_types_py)
 
             if "inherits" not in type_ or "type" not in type_["inherits"]:
                 break
@@ -500,10 +604,25 @@ def generate_query_py(schema, filename):
     classes = []
     query_container = schema.find_type("QueryContainer", "_types.query_dsl")
     for p in query_container["properties"]:
-        classes.append(schema.property_to_python_class(p))
+        classes += schema.property_to_python_class(p)
 
     with open(filename, "wt") as f:
         f.write(query_py.render(classes=classes, parent="Query"))
+    print(f"Generated {filename}.")
+
+
+def generate_aggs_py(schema, filename):
+    """Generate aggs.py with all the properties of `AggregationContainer` as
+    Python classes.
+    """
+    classes = []
+    aggs_container = schema.find_type("AggregationContainer", "_types.aggregations")
+    for p in aggs_container["properties"]:
+        if "containerProperty" not in p or not p["containerProperty"]:
+            classes += schema.property_to_python_class(p)
+
+    with open(filename, "wt") as f:
+        f.write(aggs_py.render(classes=classes, parent="Agg"))
     print(f"Generated {filename}.")
 
 
@@ -542,4 +661,5 @@ def generate_types_py(schema, filename):
 if __name__ == "__main__":
     schema = ElasticsearchSchema()
     generate_query_py(schema, "elasticsearch_dsl/query.py")
+    generate_aggs_py(schema, "elasticsearch_dsl/aggs.py")
     generate_types_py(schema, "elasticsearch_dsl/types.py")
