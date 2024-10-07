@@ -141,9 +141,7 @@ class TermsFacet(Facet[_R]):
     def add_filter(self, filter_values: List[FilterValueType]) -> Optional[Query]:
         """Create a terms filter instead of bool containing term filters."""
         if filter_values:
-            return Terms(
-                _expand__to_dot=False, **{self._params["field"]: filter_values}
-            )
+            return Terms(self._params["field"], filter_values, _expand__to_dot=False)
         return None
 
 
@@ -173,13 +171,13 @@ class RangeFacet(Facet[_R]):
 
     def get_value_filter(self, filter_value: FilterValueType) -> Query:
         f, t = self._ranges[filter_value]
-        limits = {}
+        limits: Dict[str, Any] = {}
         if f is not None:
             limits["gte"] = f
         if t is not None:
             limits["lt"] = t
 
-        return Range(_expand__to_dot=False, **{self._params["field"]: limits})
+        return Range(self._params["field"], limits, _expand__to_dot=False)
 
 
 class HistogramFacet(Facet[_R]):
@@ -187,13 +185,12 @@ class HistogramFacet(Facet[_R]):
 
     def get_value_filter(self, filter_value: FilterValueType) -> Range:
         return Range(
-            _expand__to_dot=False,
-            **{
-                self._params["field"]: {
-                    "gte": filter_value,
-                    "lt": filter_value + self._params["interval"],
-                }
+            self._params["field"],
+            {
+                "gte": filter_value,
+                "lt": filter_value + self._params["interval"],
             },
+            _expand__to_dot=False,
         )
 
 
@@ -258,15 +255,12 @@ class DateHistogramFacet(Facet[_R]):
             interval_type = "interval"
 
         return Range(
-            _expand__to_dot=False,
-            **{
-                self._params["field"]: {
-                    "gte": filter_value,
-                    "lt": self.DATE_INTERVALS[self._params[interval_type]](
-                        filter_value
-                    ),
-                }
+            self._params["field"],
+            {
+                "gte": filter_value,
+                "lt": self.DATE_INTERVALS[self._params[interval_type]](filter_value),
             },
+            _expand__to_dot=False,
         )
 
 

@@ -35,6 +35,7 @@ from typing import (
     cast,
 )
 
+from elastic_transport.client_utils import DEFAULT
 from typing_extensions import Self, TypeAlias, TypeVar
 
 from .exceptions import UnknownDslObject, ValidationException
@@ -162,6 +163,7 @@ class AttrDict(Generic[_ValT]):
     """
 
     _d_: Dict[str, _ValT]
+    RESERVED: Dict[str, str] = {"from_": "from"}
 
     def __init__(self, d: Dict[str, _ValT]):
         # assign the inner dict manually to prevent __setattr__ from firing
@@ -210,20 +212,20 @@ class AttrDict(Generic[_ValT]):
 
     def __delattr__(self, attr_name: str) -> None:
         try:
-            del self._d_[attr_name]
+            del self._d_[self.RESERVED.get(attr_name, attr_name)]
         except KeyError:
             raise AttributeError(
                 f"{self.__class__.__name__!r} object has no attribute {attr_name!r}"
             )
 
     def __getitem__(self, key: str) -> Any:
-        return _wrap(self._d_[key])
+        return _wrap(self._d_[self.RESERVED.get(key, key)])
 
     def __setitem__(self, key: str, value: _ValT) -> None:
-        self._d_[key] = value
+        self._d_[self.RESERVED.get(key, key)] = value
 
     def __delitem__(self, key: str) -> None:
-        del self._d_[key]
+        del self._d_[self.RESERVED.get(key, key)]
 
     def __setattr__(self, name: str, value: _ValT) -> None:
         # the __orig__class__ attribute has to be treated as an exception, as
@@ -231,7 +233,7 @@ class AttrDict(Generic[_ValT]):
         if (
             name in self._d_ or not hasattr(self.__class__, name)
         ) and name != "__orig_class__":
-            self._d_[name] = value
+            self._d_[self.RESERVED.get(name, name)] = value
         else:
             # there is an attribute on the class (could be property, ..) - don't add it as field
             super().__setattr__(name, value)
@@ -328,6 +330,8 @@ class DslBase(metaclass=DslMeta):
             _expand__to_dot = EXPAND__TO_DOT
         self._params: Dict[str, Any] = {}
         for pname, pvalue in params.items():
+            if pvalue == DEFAULT:
+                continue
             # expand "__" to dots
             if "__" in pname and _expand__to_dot:
                 pname = pname.replace("__", ".")
