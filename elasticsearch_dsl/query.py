@@ -552,7 +552,7 @@ class Terms(Query):
 
     def _setattr(self, name: str, value: Any) -> None:
         # here we convert any iterables that are not strings to lists
-        if hasattr(value, "__iter__") and not isinstance(value, (str, list)):
+        if hasattr(value, "__iter__") and not isinstance(value, (str, list, dict)):
             value = list(value)
         super()._setattr(name, value)
 

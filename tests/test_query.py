@@ -84,6 +84,14 @@ def test_terms_to_dict() -> None:
     assert {"terms": {"_type": ["article", "section"], "boost": 1.1}} == query.Terms(
         _type=("article", "section"), boost=1.1
     ).to_dict()
+    assert {"terms": {"_type": "article", "boost": 1.1}} == query.Terms(
+        _type="article", boost=1.1
+    ).to_dict()
+    assert {
+        "terms": {"_id": {"index": "my-other-index", "id": "my-id"}, "boost": 1.1}
+    } == query.Terms(
+        _id={"index": "my-other-index", "id": "my-id"}, boost=1.1
+    ).to_dict()
 
 
 def test_bool_to_dict() -> None:
