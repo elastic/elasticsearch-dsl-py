@@ -3,6 +3,11 @@
 Changelog
 =========
 
+8.15.4 (2024-10-07)
+-------------------
+
+* Fixed the use of dictionaries as values in ``Terms`` query (`#1920 <https://github.com/elastic/elasticsearch-dsl-py/issues/1920>`_)
+
 8.15.3 (2024-09-12)
 -------------------
 
