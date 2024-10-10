@@ -37,52 +37,57 @@ class {{ k.name }}({{ k.parent if k.parent else "AttrDict[Any]" }}):
         {% endfor %}
     """
         {% for arg in k.args %}
+            {% if arg.name not in ["keys", "items"] %}
     {{ arg.name }}: {{ arg.type }}
+            {% else %}
+    {{ arg.name }}: {{ arg.type }}  # type: ignore[assignment]
+            {% endif %}
         {% endfor %}
+        {% if not k.for_response %}
 
     def __init__(
         self,
-        {% for arg in k.args %}
-            {% if arg.positional %}
+            {% for arg in k.args %}
+                {% if arg.positional %}
         {{ arg.name }}: {{ arg.type }} = DEFAULT,
-            {% endif %}
-        {% endfor %}
-        {% if k.args and not k.args[-1].positional %}
+                {% endif %}
+            {% endfor %}
+            {% if k.args and not k.args[-1].positional %}
         *,
-        {% endif %}
-        {% for arg in k.args %}
-            {% if not arg.positional %}
-        {{ arg.name }}: {{ arg.type }} = DEFAULT,
             {% endif %}
-        {% endfor %}
+            {% for arg in k.args %}
+                {% if not arg.positional %}
+        {{ arg.name }}: {{ arg.type }} = DEFAULT,
+                {% endif %}
+            {% endfor %}
         **kwargs: Any
     ):
-        {% if k.is_single_field %}
+            {% if k.is_single_field %}
         if _field is not DEFAULT:
             kwargs[str(_field)] = _value
-        {% elif k.is_multi_field %}
+            {% elif k.is_multi_field %}
         if _fields is not DEFAULT:
             for field, value in _fields.items():
                 kwargs[str(field)] = value
-        {% endif %}
-        {% for arg in k.args %}
-            {% if not arg.positional %}
-        if {{ arg.name }} is not DEFAULT:
-                {% if "InstrumentedField" in arg.type %}
-            kwargs["{{ arg.name }}"] = str({{ arg.name }})
-                {% else %}
-            kwargs["{{ arg.name }}"] = {{ arg.name }}
-                {% endif %}
             {% endif %}
-        {% endfor %}
-        {% if k.parent %}
+            {% for arg in k.args %}
+                {% if not arg.positional %}
+        if {{ arg.name }} is not DEFAULT:
+                    {% if "InstrumentedField" in arg.type %}
+            kwargs["{{ arg.name }}"] = str({{ arg.name }})
+                    {% else %}
+            kwargs["{{ arg.name }}"] = {{ arg.name }}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            {% if k.parent %}
         super().__init__(**kwargs)
-        {% else %}
+            {% else %}
         super().__init__(kwargs)
+            {% endif %}
         {% endif %}
     {% else %}
     pass
     {% endif %}
-
 
 {% endfor %}

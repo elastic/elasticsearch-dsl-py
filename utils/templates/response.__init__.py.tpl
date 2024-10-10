@@ -34,11 +34,11 @@ from ..utils import _R, AttrDict, AttrList, _wrap
 from .hit import Hit, HitMeta
 
 if TYPE_CHECKING:
-    from .. import types
     from ..aggs import Agg
     from ..faceted_search_base import FacetedSearchBase
     from ..search_base import Request, SearchBase
     from ..update_by_query_base import UpdateByQueryBase
+    from .. import types
 
 __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 
@@ -46,44 +46,22 @@ __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 class Response(AttrDict[Any], Generic[_R]):
     """An Elasticsearch response.
 
-    :arg took: (required)
-    :arg timed_out: (required)
-    :arg _shards: (required)
-    :arg hits: search results
-    :arg aggregations: aggregation results
-    :arg _clusters:
-    :arg fields:
-    :arg max_score:
-    :arg num_reduce_phases:
-    :arg profile:
-    :arg pit_id:
-    :arg _scroll_id:
-    :arg suggest:
-    :arg terminated_early:
+    {% for arg in response.args %}
+        {% for line in arg.doc %}
+    {{ line }}
+        {% endfor %}
+    {% endfor %}
     """
-
     _search: "SearchBase[_R]"
     _faceted_search: "FacetedSearchBase[_R]"
     _doc_class: Optional[_R]
     _hits: List[_R]
 
-    took: int
-    timed_out: bool
-    _shards: "types.ShardStatistics"
-    _clusters: "types.ClusterStatistics"
-    fields: Mapping[str, Any]
-    max_score: float
-    num_reduce_phases: int
-    profile: "types.Profile"
-    pit_id: str
-    _scroll_id: str
-    suggest: Mapping[
-        str,
-        Sequence[
-            Union["types.CompletionSuggest", "types.PhraseSuggest", "types.TermSuggest"]
-        ],
-    ]
-    terminated_early: bool
+    {% for arg in response.args %}
+        {% if arg.name not in ["hits", "aggregations"] %}
+    {{ arg.name }}: {{ arg.type }}
+        {% endif %}
+    {% endfor %}
 
     def __init__(
         self,
