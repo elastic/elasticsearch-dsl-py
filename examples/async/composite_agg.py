@@ -30,7 +30,7 @@ async def scan_aggs(
     source_aggs: Sequence[Mapping[str, Agg]],
     inner_aggs: Dict[str, Agg] = {},
     size: int = 10,
-) -> AsyncIterator[Response]:
+) -> AsyncIterator[Any]:
     """
     Helper function used to iterate over all possible bucket combinations of
     ``source_aggs``, returning results of ``inner_aggs`` for each. Uses the
@@ -52,13 +52,13 @@ async def scan_aggs(
         return await s.execute()
 
     response = await run_search()
-    while response.aggregations.comp.buckets:
-        for b in response.aggregations.comp.buckets:
+    while response.aggregations["comp"].buckets:
+        for b in response.aggregations["comp"].buckets:
             yield b
-        if "after_key" in response.aggregations.comp:
-            after = response.aggregations.comp.after_key
+        if "after_key" in response.aggregations["comp"]:
+            after = response.aggregations["comp"].after_key
         else:
-            after = response.aggregations.comp.buckets[-1].key
+            after = response.aggregations["comp"].buckets[-1].key
         response = await run_search(after=after)
 
 

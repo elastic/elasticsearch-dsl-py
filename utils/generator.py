@@ -82,7 +82,7 @@ def add_dict_type(type_):
 
 
 def add_seq_dict_type(type_):
-    """Add List[Dict[str, Any]] to a Python type hint."""
+    """Add Sequence[Dict[str, Any]] to a Python type hint."""
     if type_.startswith("Union["):
         type_ = f"{type_[:-1]}, Sequence[Dict[str, Any]]]"
     else:
@@ -172,7 +172,10 @@ class ElasticsearchSchema:
                 elif type_name["name"] == "null":
                     return "None", None
                 elif type_name["name"] == "Field":
-                    return 'Union[str, "InstrumentedField"]', None
+                    if for_response:
+                        return "str", None
+                    else:
+                        return 'Union[str, "InstrumentedField"]', None
                 else:
                     # not an instance of a native type, so we get the type and try again
                     return self.get_python_type(
@@ -189,7 +192,10 @@ class ElasticsearchSchema:
                 type_name["namespace"] == "_types.aggregations"
                 and type_name["name"] == "Buckets"
             ):
-                return "Dict[str, Query]", {"type": "query", "hash": True}
+                if for_response:
+                    return "Union[Sequence[Any], Dict[str, Any]]", None
+                else:
+                    return "Dict[str, Query]", {"type": "query", "hash": True}
             elif (
                 type_name["namespace"] == "_types.aggregations"
                 and type_name["name"] == "CompositeAggregationSource"
@@ -343,9 +349,7 @@ class ElasticsearchSchema:
         attributes.
         """
         try:
-            type_, param = schema.get_python_type(
-                arg["type"], for_response=for_response
-            )
+            type_, param = self.get_python_type(arg["type"], for_response=for_response)
         except RuntimeError:
             type_ = "Any"
             param = None
@@ -409,11 +413,11 @@ class ElasticsearchSchema:
                 ):
                     # we do not support this behavior, so we ignore it
                     continue
-                key_type, _ = schema.get_python_type(
+                key_type, _ = self.get_python_type(
                     behavior["generics"][0], for_response=for_response
                 )
                 if "InstrumentedField" in key_type:
-                    value_type, _ = schema.get_python_type(
+                    value_type, _ = self.get_python_type(
                         behavior["generics"][1], for_response=for_response
                     )
                     if for_types_py:
@@ -502,7 +506,7 @@ class ElasticsearchSchema:
                     "properties": [p],
                 }
             else:
-                type_ = schema.find_type(name, namespace)
+                type_ = self.find_type(name, namespace)
             if p["name"] in AGG_TYPES:
                 k["parent"] = AGG_TYPES[p["name"]]
 
@@ -525,7 +529,7 @@ class ElasticsearchSchema:
                     for arg in type_["properties"]:
                         self.add_attribute(k, arg)
                     if "inherits" in type_ and "type" in type_["inherits"]:
-                        type_ = schema.find_type(
+                        type_ = self.find_type(
                             type_["inherits"]["type"]["name"],
                             type_["inherits"]["type"]["namespace"],
                         )
@@ -538,6 +542,7 @@ class ElasticsearchSchema:
                     for other in type_["type"]["items"]:
                         other_class = self.interface_to_python_class(
                             other["type"]["name"],
+                            other["type"]["namespace"],
                             for_types_py=False,
                         )
                         other_class["parent"] = k["name"]
@@ -553,9 +558,9 @@ class ElasticsearchSchema:
                 )
 
         elif kind == "dictionary_of":
-            key_type, _ = schema.get_python_type(p["type"]["key"])
+            key_type, _ = self.get_python_type(p["type"]["key"])
             if "InstrumentedField" in key_type:
-                value_type, _ = schema.get_python_type(p["type"]["value"])
+                value_type, _ = self.get_python_type(p["type"]["value"])
                 if p["type"]["singleKey"]:
                     # special handling for single-key dicts with field key
                     k["args"] = [
@@ -636,43 +641,85 @@ class ElasticsearchSchema:
             # but the location of the properties is different
             type_ = type_["body"]
         k = {"name": interface, "for_response": for_response, "args": []}
+        k["docstring"] = wrapped_doc(type_.get("description") or "")
         self.add_behaviors(
             type_, k, for_types_py=for_types_py, for_response=for_response
         )
+        generics = []
         while True:
             for arg in type_["properties"]:
                 if interface == "ResponseBody" and arg["name"] == "hits":
                     k["args"].append(
                         {
                             "name": "hits",
-                            "type": "List[_R]",
+                            "type": "Sequence[_R]",
                             "doc": [":arg hits: search results"],
                             "required": arg["required"],
                         }
                     )
                 elif interface == "ResponseBody" and arg["name"] == "aggregations":
+                    # Aggregations are tricky because the DSL client uses a more
+                    # flexible class than what can be generated from the schema.
+                    # To handle this we let the generator do its work by calling
+                    # `add_attribute()`, but then we save this generated attribute
+                    # apart and replace it with the existing `AggResponse` class.
+                    # The generated type is then used in type hints in variables
+                    # and ethods of this class.
+                    self.add_attribute(
+                        k, arg, for_types_py=for_types_py, for_response=for_response
+                    )
+                    k["aggregate_type"] = (
+                        k["args"][-1]["type"]
+                        .split("Mapping[str, ")[1]
+                        .rsplit("]", 1)[0]
+                    )
+                    k["args"][-1] = {
+                        "name": "aggregations",
+                        "type": '"AggResponse[_R]"',
+                        "doc": [":arg aggregations: aggregation results"],
+                        "required": arg["required"],
+                    }
+                elif (
+                    "name" in type_
+                    and type_["name"]["name"] == "MultiBucketAggregateBase"
+                    and arg["name"] == "buckets"
+                ):
+                    print("**", interface, generics)
+                    if generics[0]["type"]["name"] == "Void":
+                        generic_type = "Any"
+                    else:
+                        _g = self.find_type(
+                            generics[0]["type"]["name"],
+                            generics[0]["type"]["namespace"],
+                        )
+                        generic_type, _ = self.get_python_type(
+                            _g, for_response=for_response
+                        )
+                        generic_type = re.sub(
+                            r'"types\.([a-zA-Z0-9_]+)"', r'"\1"', generic_type
+                        )
                     k["args"].append(
                         {
-                            "name": "aggregations",
-                            "type": '"AggResponse[_R]"',
-                            "doc": [":arg aggregations: aggregation results"],
-                            "required": arg["required"],
+                            "name": arg["name"],
+                            # for the type we only include the array form, since
+                            # this client does not request the dict form
+                            "type": f"Sequence[{generic_type}]",
+                            "doc": [":arg buckets: (required) the aggregation buckets"],
+                            "required": True,
                         }
                     )
                 else:
-                    schema.add_attribute(
+                    self.add_attribute(
                         k, arg, for_types_py=for_types_py, for_response=for_response
                     )
 
             if "inherits" not in type_ or "type" not in type_["inherits"]:
                 break
 
-            if "parent" not in k:
-                k["parent"] = type_["inherits"]["type"]["name"]
-            if type_["inherits"]["type"]["name"] not in self.interfaces:
-                self.interfaces.append(type_["inherits"]["type"]["name"])
-                if for_response:
-                    self.response_interfaces.append(type_["inherits"]["type"]["name"])
+            if "generics" in type_["inherits"]:
+                for generic_type in type_["inherits"]["generics"]:
+                    generics.append(generic_type)
+
             type_ = self.find_type(
                 type_["inherits"]["type"]["name"],
                 type_["inherits"]["type"]["namespace"],
@@ -755,16 +802,6 @@ def generate_types_py(schema, filename):
         if k in classes_list:
             continue
         classes_list.append(k)
-        parent = k.get("parent")
-        parent_index = len(classes_list) - 1
-        while parent:
-            try:
-                classes_list.index(classes[parent])
-                break
-            except ValueError:
-                pass
-            classes_list.insert(parent_index, classes[parent])
-            parent = classes[parent].get("parent")
 
     with open(filename, "wt") as f:
         f.write(types_py.render(classes=classes_list))
