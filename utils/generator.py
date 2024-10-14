@@ -99,15 +99,6 @@ def add_not_set(type_):
     return type_
 
 
-# def add_optional(type_):
-#     """Add Optional to a Python type hint."""
-#     if type_.startswith("Union["):
-#         type_ = f"{type_[:-1]}, None]"
-#     else:
-#         type_ = f"Union[{type_}, None]"
-#     return type_
-
-
 class ElasticsearchSchema:
     """Operations related to the Elasticsearch schema."""
 

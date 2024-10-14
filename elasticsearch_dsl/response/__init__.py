@@ -215,7 +215,7 @@ class AggResponse(AttrDict[Any], Generic[_R]):
 
 
 class UpdateByQueryResponse(AttrDict[Any], Generic[_R]):
-    """An Elasticsearch response.
+    """An Elasticsearch update by query response.
 
     :arg batches:
     :arg failures:
