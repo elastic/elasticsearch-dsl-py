@@ -215,7 +215,44 @@ class AggResponse(AttrDict[Any], Generic[_R]):
 
 
 class UpdateByQueryResponse(AttrDict[Any], Generic[_R]):
+    """An Elasticsearch response.
+
+    :arg batches:
+    :arg failures:
+    :arg noops:
+    :arg deleted:
+    :arg requests_per_second:
+    :arg retries:
+    :arg task:
+    :arg timed_out:
+    :arg took:
+    :arg total:
+    :arg updated:
+    :arg version_conflicts:
+    :arg throttled:
+    :arg throttled_millis:
+    :arg throttled_until:
+    :arg throttled_until_millis:
+    """
+
     _search: "UpdateByQueryBase[_R]"
+
+    batches: int
+    failures: Sequence["types.BulkIndexByScrollFailure"]
+    noops: int
+    deleted: int
+    requests_per_second: float
+    retries: "types.Retries"
+    task: Union[str, int]
+    timed_out: bool
+    took: Any
+    total: int
+    updated: int
+    version_conflicts: int
+    throttled: Any
+    throttled_millis: Any
+    throttled_until: Any
+    throttled_until_millis: Any
 
     def __init__(
         self,

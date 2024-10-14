@@ -4458,6 +4458,22 @@ class AggregationProfileDelegateDebugFilter(AttrDict[Any]):
     segments_counted_in_constant_time: int
 
 
+class BulkIndexByScrollFailure(AttrDict[Any]):
+    """
+    :arg cause: (required)
+    :arg id: (required)
+    :arg index: (required)
+    :arg status: (required)
+    :arg type: (required)
+    """
+
+    cause: "ErrorCause"
+    id: str
+    index: str
+    status: int
+    type: str
+
+
 class ClusterDetails(AttrDict[Any]):
     """
     :arg status: (required)
@@ -4882,6 +4898,16 @@ class QueryProfile(AttrDict[Any]):
     time_in_nanos: Any
     type: str
     children: Sequence["QueryProfile"]
+
+
+class Retries(AttrDict[Any]):
+    """
+    :arg bulk: (required)
+    :arg search: (required)
+    """
+
+    bulk: int
+    search: int
 
 
 class SearchProfile(AttrDict[Any]):

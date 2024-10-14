@@ -638,8 +638,12 @@ class ElasticsearchSchema:
         ```
         """
         type_ = self.find_type(interface, namespace)
-        if type_["kind"] != "interface":
+        if type_["kind"] not in ["interface", "response"]:
             raise RuntimeError(f"Type {interface} is not an interface")
+        if type_["kind"] == "response":
+            # we consider responses as interfaces because they also have properties
+            # but the location of the properties is different
+            type_ = type_["body"]
         k = {"name": interface, "for_response": for_response, "args": []}
         self.add_behaviors(
             type_, k, for_types_py=for_types_py, for_response=for_response
@@ -718,14 +722,22 @@ def generate_response_init_py(schema, filename):
     """Generate response/__init__.py with all the response properties
     documented and typed.
     """
-    response_interface = schema.interface_to_python_class(
+    search_response = schema.interface_to_python_class(
         "ResponseBody",
         "_global.search",
         for_types_py=False,
         for_response=True,
     )
+    ubq_response = schema.interface_to_python_class(
+        "Response",
+        "_global.update_by_query",
+        for_types_py=False,
+        for_response=True,
+    )
     with open(filename, "wt") as f:
-        f.write(response_init_py.render(response=response_interface))
+        f.write(
+            response_init_py.render(response=search_response, ubq_response=ubq_response)
+        )
     print(f"Generated {filename}.")
 
 

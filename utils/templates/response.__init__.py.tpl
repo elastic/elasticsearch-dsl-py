@@ -193,7 +193,19 @@ class AggResponse(AttrDict[Any], Generic[_R]):
 
 
 class UpdateByQueryResponse(AttrDict[Any], Generic[_R]):
+    """An Elasticsearch response.
+
+    {% for arg in ubq_response.args %}
+        {% for line in arg.doc %}
+    {{ line }}
+        {% endfor %}
+    {% endfor %}
+    """
     _search: "UpdateByQueryBase[_R]"
+
+    {% for arg in ubq_response.args %}
+    {{ arg.name }}: {{ arg.type }}
+    {% endfor %}
 
     def __init__(
         self,
