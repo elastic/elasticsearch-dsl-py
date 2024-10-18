@@ -185,7 +185,7 @@ def main() -> None:
         )
         print(f"Summary: {hit.summary}")
         if args.show_inner_hits:
-            for passage in hit.meta.inner_hits.passages:
+            for passage in hit.meta.inner_hits["passages"]:
                 print(f"  - [Score: {passage.meta.score}] {passage.content!r}")
         print("")
 
