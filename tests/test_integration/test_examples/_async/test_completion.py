@@ -32,7 +32,7 @@ async def test_person_suggests_on_all_variants_of_name(
     s = Person.search().suggest("t", "kra", completion={"field": "suggest"})
     response = await s.execute()
 
-    opts = response.suggest.t[0].options
+    opts = response.suggest["t"][0].options
 
     assert 1 == len(opts)
     assert opts[0]._score == 42

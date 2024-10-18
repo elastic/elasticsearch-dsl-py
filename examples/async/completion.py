@@ -103,7 +103,7 @@ async def main() -> None:
         response = await s.execute()
 
         # print out all the options we got
-        for option in response.suggest.auto_complete[0].options:
+        for option in response.suggest["auto_complete"][0].options:
             print("%10s: %25s (%d)" % (text, option._source.name, option._score))
 
     # close the connection
