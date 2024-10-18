@@ -189,7 +189,7 @@ class Question(Post):
         elasticsearch.
         """
         if "inner_hits" in self.meta and "answer" in self.meta.inner_hits:
-            return cast(List[Any], self.meta.inner_hits.answer.hits)
+            return cast(List[Any], self.meta.inner_hits["answer"].hits)
         return [a for a in self.search_answers()]
 
     def save(self, **kwargs: Any) -> None:  # type: ignore[override]

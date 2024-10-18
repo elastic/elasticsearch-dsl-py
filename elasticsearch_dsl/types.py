@@ -5078,49 +5078,49 @@ class HistogramBucket(AttrDict[Any]):
 
 class Hit(AttrDict[Any]):
     """
-    :arg _index: (required)
-    :arg _id:
-    :arg _score:
-    :arg _explanation:
+    :arg index: (required)
+    :arg id:
+    :arg score:
+    :arg explanation:
     :arg fields:
     :arg highlight:
     :arg inner_hits:
     :arg matched_queries:
-    :arg _nested:
-    :arg _ignored:
+    :arg nested:
+    :arg ignored:
     :arg ignored_field_values:
-    :arg _shard:
-    :arg _node:
-    :arg _routing:
-    :arg _source:
-    :arg _rank:
-    :arg _seq_no:
-    :arg _primary_term:
-    :arg _version:
+    :arg shard:
+    :arg node:
+    :arg routing:
+    :arg source:
+    :arg rank:
+    :arg seq_no:
+    :arg primary_term:
+    :arg version:
     :arg sort:
     """
 
-    _index: str
-    _id: str
-    _score: Union[float, None]
-    _explanation: "Explanation"
+    index: str
+    id: str
+    score: Union[float, None]
+    explanation: "Explanation"
     fields: Mapping[str, Any]
     highlight: Mapping[str, Sequence[str]]
     inner_hits: Mapping[str, "InnerHitsResult"]
     matched_queries: Union[Sequence[str], Mapping[str, float]]
-    _nested: "NestedIdentity"
-    _ignored: Sequence[str]
+    nested: "NestedIdentity"
+    ignored: Sequence[str]
     ignored_field_values: Mapping[
         str, Sequence[Union[int, float, str, bool, None, Any]]
     ]
-    _shard: str
-    _node: str
-    _routing: str
-    _source: Any
-    _rank: int
-    _seq_no: int
-    _primary_term: int
-    _version: int
+    shard: str
+    node: str
+    routing: str
+    source: Any
+    rank: int
+    seq_no: int
+    primary_term: int
+    version: int
     sort: Sequence[Union[int, float, str, bool, None, Any]]
 
 

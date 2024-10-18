@@ -702,12 +702,12 @@ class ElasticsearchSchema:
                     # types via generics, each in array or object configurations.
                     # Typing this attribute proved very difficult. A solution
                     # that worked with mypy and pyright is to type "buckets"
-                    # with the array (list) form, and create a `buckets_as_dict`
-                    # property that is typed appropriate for accessing the
-                    # buckets when in object (dictionary) form.
+                    # for the list form, and create a `buckets_as_dict`
+                    # property that is typed appropriately for accessing the
+                    # buckets in dictionary form.
                     # The generic type is assumed to be the first in the list,
-                    # which is a simplification that should be removed when a
-                    # more complete implementation of generic is added.
+                    # which is a simplification that should be improved when a
+                    # more complete implementation of generics is added.
                     if generics[0]["type"]["name"] == "Void":
                         generic_type = "Any"
                     else:
@@ -733,6 +733,11 @@ class ElasticsearchSchema:
                     )
                     k["buckets_as_dict"] = generic_type
                 else:
+                    if interface == "Hit" and arg["name"].startswith("_"):
+                        # Python DSL removes the undersore prefix from all the
+                        # properties of the hit, so we do the same
+                        arg["name"] = arg["name"][1:]
+
                     self.add_attribute(
                         k, arg, for_types_py=for_types_py, for_response=for_response
                     )
