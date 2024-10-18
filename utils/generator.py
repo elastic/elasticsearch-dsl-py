@@ -99,6 +99,18 @@ def add_not_set(type_):
     return type_
 
 
+def type_for_types_py(type_):
+    """Converts a type rendered in a generic way to the format needed in the
+    types.py module.
+    """
+    type_ = type_.replace('"DefaultType"', "DefaultType")
+    type_ = type_.replace('"InstrumentedField"', "InstrumentedField")
+    type_ = re.sub(r'"(function\.[a-zA-Z0-9_]+)"', r"\1", type_)
+    type_ = re.sub(r'"types\.([a-zA-Z0-9_]+)"', r'"\1"', type_)
+    type_ = re.sub(r'"(wrappers\.[a-zA-Z0-9_]+)"', r"\1", type_)
+    return type_
+
+
 class ElasticsearchSchema:
     """Operations related to the Elasticsearch schema."""
 
@@ -361,11 +373,7 @@ class ElasticsearchSchema:
                     type_ = add_dict_type(type_)  # interfaces can be given as dicts
                 type_ = add_not_set(type_)
         if for_types_py:
-            type_ = type_.replace('"DefaultType"', "DefaultType")
-            type_ = type_.replace('"InstrumentedField"', "InstrumentedField")
-            type_ = re.sub(r'"(function\.[a-zA-Z0-9_]+)"', r"\1", type_)
-            type_ = re.sub(r'"types\.([a-zA-Z0-9_]+)"', r'"\1"', type_)
-            type_ = re.sub(r'"(wrappers\.[a-zA-Z0-9_]+)"', r"\1", type_)
+            type_ = type_for_types_py(type_)
         required = "(required) " if arg["required"] else ""
         server_default = (
             f" Defaults to `{arg['serverDefault']}` if omitted."
@@ -630,6 +638,9 @@ class ElasticsearchSchema:
                 "required": bool,
                 "positional": bool,
             ],
+            "buckets_as_dict": "type" # optional, only present in aggregation response
+                                      # classes that have buckets that can have a list
+                                      # or dict representation
         }
         ```
         """
@@ -658,13 +669,14 @@ class ElasticsearchSchema:
                         }
                     )
                 elif interface == "ResponseBody" and arg["name"] == "aggregations":
-                    # Aggregations are tricky because the DSL client uses a more
-                    # flexible class than what can be generated from the schema.
+                    # Aggregations are tricky because the DSL client uses a
+                    # flexible representation that is difficult to generate
+                    # from the schema.
                     # To handle this we let the generator do its work by calling
-                    # `add_attribute()`, but then we save this generated attribute
-                    # apart and replace it with the existing `AggResponse` class.
+                    # `add_attribute()`, but then we save the generated attribute
+                    # apart and replace it with the DSL's `AggResponse` class.
                     # The generated type is then used in type hints in variables
-                    # and ethods of this class.
+                    # and methods of this class.
                     self.add_attribute(
                         k, arg, for_types_py=for_types_py, for_response=for_response
                     )
@@ -684,7 +696,18 @@ class ElasticsearchSchema:
                     and type_["name"]["name"] == "MultiBucketAggregateBase"
                     and arg["name"] == "buckets"
                 ):
-                    print("**", interface, generics)
+                    # Also during aggregation response generation, the "buckets"
+                    # attribute that many aggregation responses have is very
+                    # complex, supporting over a dozen different aggregation
+                    # types via generics, each in array or object configurations.
+                    # Typing this attribute proved very difficult. A solution
+                    # that worked with mypy and pyright is to type "buckets"
+                    # with the array (list) form, and create a `buckets_as_dict`
+                    # property that is typed appropriate for accessing the
+                    # buckets when in object (dictionary) form.
+                    # The generic type is assumed to be the first in the list,
+                    # which is a simplification that should be removed when a
+                    # more complete implementation of generic is added.
                     if generics[0]["type"]["name"] == "Void":
                         generic_type = "Any"
                     else:
@@ -695,19 +718,20 @@ class ElasticsearchSchema:
                         generic_type, _ = self.get_python_type(
                             _g, for_response=for_response
                         )
-                        generic_type = re.sub(
-                            r'"types\.([a-zA-Z0-9_]+)"', r'"\1"', generic_type
-                        )
+                        generic_type = type_for_types_py(generic_type)
                     k["args"].append(
                         {
                             "name": arg["name"],
                             # for the type we only include the array form, since
                             # this client does not request the dict form
                             "type": f"Sequence[{generic_type}]",
-                            "doc": [":arg buckets: (required) the aggregation buckets"],
+                            "doc": [
+                                ":arg buckets: (required) the aggregation buckets as a list"
+                            ],
                             "required": True,
                         }
                     )
+                    k["buckets_as_dict"] = generic_type
                 else:
                     self.add_attribute(
                         k, arg, for_types_py=for_types_py, for_response=for_response
@@ -717,6 +741,10 @@ class ElasticsearchSchema:
                 break
 
             if "generics" in type_["inherits"]:
+                # Generics are only supported for certain specific cases at this
+                # time. Here we just save them so that they can be recalled later
+                # while traversing over to parent classes to find inherited
+                # attributes.
                 for generic_type in type_["inherits"]["generics"]:
                     generics.append(generic_type)
 
