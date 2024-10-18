@@ -165,7 +165,7 @@ class DocumentOptions:
         fields.update(annotations.keys())
         field_defaults = {}
         for name in fields:
-            value = None
+            value: Any = None
             required = None
             multi = None
             if name in annotations:
@@ -201,7 +201,7 @@ class DocumentOptions:
                     field_args = [type_]
                 elif type_ in self.type_annotation_map:
                     # use best field type for the type hint provided
-                    field, field_kwargs = self.type_annotation_map[type_]
+                    field, field_kwargs = self.type_annotation_map[type_]  # type: ignore
 
                 if field:
                     field_kwargs = {
