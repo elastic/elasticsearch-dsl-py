@@ -94,6 +94,12 @@ class {{ k.name }}({{ k.parent if k.parent else "AttrDict[Any]" }}):
         super().__init__(kwargs)
             {% endif %}
         {% endif %}
+        {% if k.buckets_as_dict %}
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, {{ k.buckets_as_dict }}]:
+        return self.buckets  # type: ignore
+        {% endif %}
     {% else %}
     pass
     {% endif %}

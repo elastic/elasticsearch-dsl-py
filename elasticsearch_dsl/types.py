@@ -4029,12 +4029,16 @@ class WktGeoBounds(AttrDict[Any]):
 
 class AdjacencyMatrixAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["AdjacencyMatrixBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "AdjacencyMatrixBucket"]:
+        return self.buckets  # type: ignore
 
 
 class AdjacencyMatrixBucket(AttrDict[Any]):
@@ -4194,13 +4198,17 @@ class ArrayPercentilesItem(AttrDict[Any]):
 class AutoDateHistogramAggregate(AttrDict[Any]):
     """
     :arg interval: (required)
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     interval: str
     buckets: Sequence["DateHistogramBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "DateHistogramBucket"]:
+        return self.buckets  # type: ignore
 
 
 class AvgAggregate(AttrDict[Any]):
@@ -4407,13 +4415,17 @@ class CompletionSuggestOption(AttrDict[Any]):
 class CompositeAggregate(AttrDict[Any]):
     """
     :arg after_key:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     after_key: Mapping[str, Union[int, float, str, bool, None, Any]]
     buckets: Sequence["CompositeBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "CompositeBucket"]:
+        return self.buckets  # type: ignore
 
 
 class CompositeBucket(AttrDict[Any]):
@@ -4442,12 +4454,16 @@ class CumulativeCardinalityAggregate(AttrDict[Any]):
 
 class DateHistogramAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["DateHistogramBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "DateHistogramBucket"]:
+        return self.buckets  # type: ignore
 
 
 class DateHistogramBucket(AttrDict[Any]):
@@ -4468,12 +4484,16 @@ class DateRangeAggregate(AttrDict[Any]):
     aggregation: `from` and `to` in `buckets` are milliseconds since the
     Epoch, represented as a floating point number.
 
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["RangeBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "RangeBucket"]:
+        return self.buckets  # type: ignore
 
 
 class DerivativeAggregate(AttrDict[Any]):
@@ -4567,7 +4587,7 @@ class DoubleTermsAggregate(AttrDict[Any]):
 
     :arg doc_count_error_upper_bound:
     :arg sum_other_doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -4575,6 +4595,10 @@ class DoubleTermsAggregate(AttrDict[Any]):
     sum_other_doc_count: int
     buckets: Sequence["DoubleTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "DoubleTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class DoubleTermsBucket(AttrDict[Any]):
@@ -4808,12 +4832,16 @@ class FilterAggregate(AttrDict[Any]):
 
 class FiltersAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["FiltersBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "FiltersBucket"]:
+        return self.buckets  # type: ignore
 
 
 class FiltersBucket(AttrDict[Any]):
@@ -4826,12 +4854,16 @@ class FiltersBucket(AttrDict[Any]):
 
 class FrequentItemSetsAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["FrequentItemSetsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "FrequentItemSetsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class FrequentItemSetsBucket(AttrDict[Any]):
@@ -4878,22 +4910,30 @@ class GeoDistanceAggregate(AttrDict[Any]):
     Result of a `geo_distance` aggregation. The unit for `from` and `to`
     is meters by default.
 
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["RangeBucket"]
     meta: Mapping[str, Any]
 
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "RangeBucket"]:
+        return self.buckets  # type: ignore
+
 
 class GeoHashGridAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["GeoHashGridBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "GeoHashGridBucket"]:
+        return self.buckets  # type: ignore
 
 
 class GeoHashGridBucket(AttrDict[Any]):
@@ -4908,12 +4948,16 @@ class GeoHashGridBucket(AttrDict[Any]):
 
 class GeoHexGridAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["GeoHexGridBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "GeoHexGridBucket"]:
+        return self.buckets  # type: ignore
 
 
 class GeoHexGridBucket(AttrDict[Any]):
@@ -4954,12 +4998,16 @@ class GeoLineAggregate(AttrDict[Any]):
 
 class GeoTileGridAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["GeoTileGridBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "GeoTileGridBucket"]:
+        return self.buckets  # type: ignore
 
 
 class GeoTileGridBucket(AttrDict[Any]):
@@ -5004,12 +5052,16 @@ class HdrPercentilesAggregate(AttrDict[Any]):
 
 class HistogramAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["HistogramBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "HistogramBucket"]:
+        return self.buckets  # type: ignore
 
 
 class HistogramBucket(AttrDict[Any]):
@@ -5145,12 +5197,16 @@ class InnerHitsResult(AttrDict[Any]):
 
 class IpPrefixAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["IpPrefixBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "IpPrefixBucket"]:
+        return self.buckets  # type: ignore
 
 
 class IpPrefixBucket(AttrDict[Any]):
@@ -5171,12 +5227,16 @@ class IpPrefixBucket(AttrDict[Any]):
 
 class IpRangeAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["IpRangeBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "IpRangeBucket"]:
+        return self.buckets  # type: ignore
 
 
 class IpRangeBucket(AttrDict[Any]):
@@ -5280,12 +5340,16 @@ class LongRareTermsAggregate(AttrDict[Any]):
     Result of the `rare_terms` aggregation when the field is some kind of
     whole number like a integer, long, or a date.
 
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["LongRareTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "LongRareTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class LongRareTermsBucket(AttrDict[Any]):
@@ -5307,7 +5371,7 @@ class LongTermsAggregate(AttrDict[Any]):
 
     :arg doc_count_error_upper_bound:
     :arg sum_other_doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -5315,6 +5379,10 @@ class LongTermsAggregate(AttrDict[Any]):
     sum_other_doc_count: int
     buckets: Sequence["LongTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "LongTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class LongTermsBucket(AttrDict[Any]):
@@ -5421,7 +5489,7 @@ class MultiTermsAggregate(AttrDict[Any]):
     """
     :arg doc_count_error_upper_bound:
     :arg sum_other_doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -5429,6 +5497,10 @@ class MultiTermsAggregate(AttrDict[Any]):
     sum_other_doc_count: int
     buckets: Sequence["MultiTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "MultiTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class MultiTermsBucket(AttrDict[Any]):
@@ -5587,12 +5659,16 @@ class QueryProfile(AttrDict[Any]):
 
 class RangeAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["RangeBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "RangeBucket"]:
+        return self.buckets  # type: ignore
 
 
 class RangeBucket(AttrDict[Any]):
@@ -5739,7 +5815,7 @@ class SignificantLongTermsAggregate(AttrDict[Any]):
     """
     :arg bg_count:
     :arg doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -5747,6 +5823,10 @@ class SignificantLongTermsAggregate(AttrDict[Any]):
     doc_count: int
     buckets: Sequence["SignificantLongTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "SignificantLongTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class SignificantLongTermsBucket(AttrDict[Any]):
@@ -5769,7 +5849,7 @@ class SignificantStringTermsAggregate(AttrDict[Any]):
     """
     :arg bg_count:
     :arg doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -5777,6 +5857,10 @@ class SignificantStringTermsAggregate(AttrDict[Any]):
     doc_count: int
     buckets: Sequence["SignificantStringTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "SignificantStringTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class SignificantStringTermsBucket(AttrDict[Any]):
@@ -5902,12 +5986,16 @@ class StringRareTermsAggregate(AttrDict[Any]):
     """
     Result of the `rare_terms` aggregation when the field is a string.
 
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["StringRareTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "StringRareTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class StringRareTermsBucket(AttrDict[Any]):
@@ -5952,7 +6040,7 @@ class StringTermsAggregate(AttrDict[Any]):
 
     :arg doc_count_error_upper_bound:
     :arg sum_other_doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -5960,6 +6048,10 @@ class StringTermsAggregate(AttrDict[Any]):
     sum_other_doc_count: int
     buckets: Sequence["StringTermsBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "StringTermsBucket"]:
+        return self.buckets  # type: ignore
 
 
 class StringTermsBucket(AttrDict[Any]):
@@ -6055,12 +6147,16 @@ class TermSuggestOption(AttrDict[Any]):
 
 class TimeSeriesAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["TimeSeriesBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "TimeSeriesBucket"]:
+        return self.buckets  # type: ignore
 
 
 class TimeSeriesBucket(AttrDict[Any]):
@@ -6118,12 +6214,16 @@ class UnmappedRareTermsAggregate(AttrDict[Any]):
     Result of a `rare_terms` aggregation when the field is unmapped.
     `buckets` is always empty.
 
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence[Any]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, Any]:
+        return self.buckets  # type: ignore
 
 
 class UnmappedSamplerAggregate(AttrDict[Any]):
@@ -6143,7 +6243,7 @@ class UnmappedSignificantTermsAggregate(AttrDict[Any]):
 
     :arg bg_count:
     :arg doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -6151,6 +6251,10 @@ class UnmappedSignificantTermsAggregate(AttrDict[Any]):
     doc_count: int
     buckets: Sequence[Any]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, Any]:
+        return self.buckets  # type: ignore
 
 
 class UnmappedTermsAggregate(AttrDict[Any]):
@@ -6160,7 +6264,7 @@ class UnmappedTermsAggregate(AttrDict[Any]):
 
     :arg doc_count_error_upper_bound:
     :arg sum_other_doc_count:
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
@@ -6168,6 +6272,10 @@ class UnmappedTermsAggregate(AttrDict[Any]):
     sum_other_doc_count: int
     buckets: Sequence[Any]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, Any]:
+        return self.buckets  # type: ignore
 
 
 class ValueCountAggregate(AttrDict[Any]):
@@ -6188,12 +6296,16 @@ class ValueCountAggregate(AttrDict[Any]):
 
 class VariableWidthHistogramAggregate(AttrDict[Any]):
     """
-    :arg buckets: (required) the aggregation buckets
+    :arg buckets: (required) the aggregation buckets as a list
     :arg meta:
     """
 
     buckets: Sequence["VariableWidthHistogramBucket"]
     meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "VariableWidthHistogramBucket"]:
+        return self.buckets  # type: ignore
 
 
 class VariableWidthHistogramBucket(AttrDict[Any]):

@@ -26,7 +26,6 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    TypedDict,
     Union,
     cast,
 )
@@ -174,25 +173,25 @@ class Response(AttrDict[Any], Generic[_R]):
         return self._search.extra(search_after=self.hits[-1].meta.sort)  # type: ignore
 
 
-_Aggregate = {{ response["aggregate_type"] }}
-_AggResponseMeta = TypedDict("_AggResponseMeta", {"search": "Request[_R]", "aggs": Mapping[str, _Aggregate]})
+AggregateResponseType = {{ response["aggregate_type"] }}
 
 
 class AggResponse(AttrDict[Any], Generic[_R]):
+    """An Elasticsearch aggregation response."""
     _meta: Dict[str, Any]
 
     def __init__(self, aggs: "Agg[_R]", search: "Request[_R]", data: Dict[str, Any]):
         super(AttrDict, self).__setattr__("_meta", {"search": search, "aggs": aggs})
         super().__init__(data)
 
-    def __getitem__(self, attr_name: str) -> _Aggregate:
+    def __getitem__(self, attr_name: str) -> AggregateResponseType:
         if attr_name in self._meta["aggs"]:
             # don't do self._meta['aggs'][attr_name] to avoid copying
             agg = self._meta["aggs"].aggs[attr_name]
-            return cast(_Aggregate, agg.result(self._meta["search"], self._d_[attr_name]))
+            return cast(AggregateResponseType, agg.result(self._meta["search"], self._d_[attr_name]))
         return super().__getitem__(attr_name)  # type: ignore
 
-    def __iter__(self) -> Iterator[_Aggregate]:  # type: ignore[override]
+    def __iter__(self) -> Iterator[AggregateResponseType]:  # type: ignore[override]
         for name in self._meta["aggs"]:
             yield self[name]
 
