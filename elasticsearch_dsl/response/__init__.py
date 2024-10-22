@@ -40,7 +40,14 @@ if TYPE_CHECKING:
     from ..search_base import Request, SearchBase
     from ..update_by_query_base import UpdateByQueryBase
 
-__all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
+__all__ = [
+    "Response",
+    "AggResponse",
+    "UpdateByQueryResponse",
+    "Hit",
+    "HitMeta",
+    "AggregateResponseType",
+]
 
 
 class Response(AttrDict[Any], Generic[_R]):

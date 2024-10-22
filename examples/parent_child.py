@@ -46,7 +46,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from elasticsearch_dsl import (
     Date,
     Document,
-    Index,
     InnerDoc,
     Join,
     Keyword,
@@ -91,7 +90,6 @@ class Post(Document):
         # definitions here help type checkers understand additional arguments
         # that are allowed in the constructor
         _routing: str = mapped_field(default=None)
-        _index: Index = mapped_field(default=None)
         _id: Optional[int] = mapped_field(default=None)
 
     created: Optional[datetime] = mapped_field(default=None)
@@ -160,8 +158,6 @@ class Question(Post):
         answer = Answer(
             # required make sure the answer is stored in the same shard
             _routing=self.meta.id,
-            # since we don't have explicit index, ensure same index as self
-            _index=self.meta.index,
             # set up the parent/child mapping
             question_answer={"name": "answer", "parent": self.meta.id},
             # pass in the field values

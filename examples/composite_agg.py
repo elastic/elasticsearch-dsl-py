@@ -16,11 +16,12 @@
 #  under the License.
 
 import os
-from typing import Any, Dict, Iterator, Mapping, Sequence
+from typing import Any, Dict, Iterator, Mapping, Sequence, cast
 
 from elasticsearch.helpers import bulk
 
 from elasticsearch_dsl import Agg, Response, Search, aggs, connections
+from elasticsearch_dsl.types import CompositeAggregate
 from tests.test_integration.test_data import DATA, GIT_INDEX
 
 
@@ -29,7 +30,7 @@ def scan_aggs(
     source_aggs: Sequence[Mapping[str, Agg]],
     inner_aggs: Dict[str, Agg] = {},
     size: int = 10,
-) -> Iterator[Any]:
+) -> Iterator[CompositeAggregate]:
     """
     Helper function used to iterate over all possible bucket combinations of
     ``source_aggs``, returning results of ``inner_aggs`` for each. Uses the
@@ -53,7 +54,7 @@ def scan_aggs(
     response = run_search()
     while response.aggregations["comp"].buckets:
         for b in response.aggregations["comp"].buckets:
-            yield b
+            yield cast(CompositeAggregate, b)
         if "after_key" in response.aggregations["comp"]:
             after = response.aggregations["comp"].after_key
         else:
