@@ -271,6 +271,18 @@ field needs to be referenced, such as when specifying sort options in a
 When specifying sorting order, the ``+`` and ``-`` unary operators can be used
 on the class field attributes to indicate ascending and descending order.
 
+Finally, the ``ClassVar`` annotation can be used to define a regular class
+attribute that should not be mapped to the Elasticsearch index::
+
+.. code:: python
+
+    from typing import ClassVar
+
+    class MyDoc(Document):
+        title: M[str]
+        created_at: M[datetime] = mapped_field(default_factory=datetime.now)
+        my_var: ClassVar[str]  # regular class variable, ignored by Elasticsearch
+
 Note on dates
 ~~~~~~~~~~~~~
 
