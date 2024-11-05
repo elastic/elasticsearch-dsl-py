@@ -44,7 +44,7 @@ __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 
 
 class Response(AttrDict[Any], Generic[_R]):
-    """An Elasticsearch response.
+    """An Elasticsearch _search response.
 
     :arg took: (required)
     :arg timed_out: (required)
