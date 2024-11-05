@@ -147,9 +147,10 @@ following table:
      - ``Date(format="yyyy-MM-dd", required=True)``
 
 To type a field as optional, the standard ``Optional`` modifier from the Python
-``typing`` package can be used. The ``List`` modifier can be added to a field
-to convert it to an array, similar to using the ``multi=True`` argument on the
-field object.
+``typing`` package can be used. When using Python 3.10 or newer, "pipe" syntax
+can also be used, by adding ``| None`` to a type. The ``List`` modifier can be
+added to a field to convert it to an array, similar to using the ``multi=True``
+argument on the field object.
 
 .. code:: python
 
@@ -157,6 +158,7 @@ field object.
 
     class MyDoc(Document):
         pub_date: Optional[datetime]  # same as pub_date = Date()
+        middle_name: str | None       # same as middle_name = Text()
         authors: List[str]            # same as authors = Text(multi=True, required=True)
         comments: Optional[List[str]] # same as comments = Text(multi=True)
 
