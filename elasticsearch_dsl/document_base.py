@@ -33,7 +33,7 @@ from typing import (
 )
 
 try:
-    from types import UnionType
+    from types import UnionType  # type: ignore[attr-defined]
 except ImportError:
     UnionType = None
 

@@ -790,13 +790,13 @@ def test_doc_with_pipe_type_hints() -> None:
 
         class BadlyTypedDoc(AsyncDocument):
             s: str
-            f: str | int | None
+            f: str | int | None  # type: ignore[syntax]
 
     class TypedDoc(AsyncDocument):
         s: str
-        f1: str | None
-        f2: M[int | None]
-        f3: M[datetime | None]
+        f1: str | None  # type: ignore[syntax]
+        f2: M[int | None]  # type: ignore[syntax]
+        f3: M[datetime | None]  # type: ignore[syntax]
 
     props = TypedDoc._doc_type.mapping.to_dict()["properties"]
     assert props == {

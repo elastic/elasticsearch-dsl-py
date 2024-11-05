@@ -44,7 +44,7 @@ __all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
 
 
 class Response(AttrDict[Any], Generic[_R]):
-    """An Elasticsearch _search response.
+    """An Elasticsearch search response.
 
     {% for arg in response.args %}
         {% for line in arg.doc %}
