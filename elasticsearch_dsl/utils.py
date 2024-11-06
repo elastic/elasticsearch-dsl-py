@@ -28,6 +28,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
     Type,
@@ -48,6 +49,7 @@ if TYPE_CHECKING:
     from .field import Field
     from .index_base import IndexBase
     from .response import Hit  # noqa: F401
+    from .types import Hit as HitBaseType
 
 UsingType: TypeAlias = Union[str, "Elasticsearch"]
 AsyncUsingType: TypeAlias = Union[str, "AsyncElasticsearch"]
@@ -468,7 +470,15 @@ class DslBase(metaclass=DslMeta):
         return c
 
 
-class HitMeta(AttrDict[Any]):
+if TYPE_CHECKING:
+    HitMetaBase = HitBaseType
+else:
+    HitMetaBase = AttrDict[Any]
+
+
+class HitMeta(HitMetaBase):
+    inner_hits: Mapping[str, Any]
+
     def __init__(
         self,
         document: Dict[str, Any],

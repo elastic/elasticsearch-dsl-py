@@ -40,11 +40,18 @@ if TYPE_CHECKING:
     from ..search_base import Request, SearchBase
     from ..update_by_query_base import UpdateByQueryBase
 
-__all__ = ["Response", "AggResponse", "UpdateByQueryResponse", "Hit", "HitMeta"]
+__all__ = [
+    "Response",
+    "AggResponse",
+    "UpdateByQueryResponse",
+    "Hit",
+    "HitMeta",
+    "AggregateResponseType",
+]
 
 
 class Response(AttrDict[Any], Generic[_R]):
-    """An Elasticsearch response.
+    """An Elasticsearch search response.
 
     :arg took: (required)
     :arg timed_out: (required)
@@ -195,21 +202,100 @@ class Response(AttrDict[Any], Generic[_R]):
         return self._search.extra(search_after=self.hits[-1].meta.sort)  # type: ignore
 
 
+AggregateResponseType = Union[
+    "types.CardinalityAggregate",
+    "types.HdrPercentilesAggregate",
+    "types.HdrPercentileRanksAggregate",
+    "types.TDigestPercentilesAggregate",
+    "types.TDigestPercentileRanksAggregate",
+    "types.PercentilesBucketAggregate",
+    "types.MedianAbsoluteDeviationAggregate",
+    "types.MinAggregate",
+    "types.MaxAggregate",
+    "types.SumAggregate",
+    "types.AvgAggregate",
+    "types.WeightedAvgAggregate",
+    "types.ValueCountAggregate",
+    "types.SimpleValueAggregate",
+    "types.DerivativeAggregate",
+    "types.BucketMetricValueAggregate",
+    "types.StatsAggregate",
+    "types.StatsBucketAggregate",
+    "types.ExtendedStatsAggregate",
+    "types.ExtendedStatsBucketAggregate",
+    "types.GeoBoundsAggregate",
+    "types.GeoCentroidAggregate",
+    "types.HistogramAggregate",
+    "types.DateHistogramAggregate",
+    "types.AutoDateHistogramAggregate",
+    "types.VariableWidthHistogramAggregate",
+    "types.StringTermsAggregate",
+    "types.LongTermsAggregate",
+    "types.DoubleTermsAggregate",
+    "types.UnmappedTermsAggregate",
+    "types.LongRareTermsAggregate",
+    "types.StringRareTermsAggregate",
+    "types.UnmappedRareTermsAggregate",
+    "types.MultiTermsAggregate",
+    "types.MissingAggregate",
+    "types.NestedAggregate",
+    "types.ReverseNestedAggregate",
+    "types.GlobalAggregate",
+    "types.FilterAggregate",
+    "types.ChildrenAggregate",
+    "types.ParentAggregate",
+    "types.SamplerAggregate",
+    "types.UnmappedSamplerAggregate",
+    "types.GeoHashGridAggregate",
+    "types.GeoTileGridAggregate",
+    "types.GeoHexGridAggregate",
+    "types.RangeAggregate",
+    "types.DateRangeAggregate",
+    "types.GeoDistanceAggregate",
+    "types.IpRangeAggregate",
+    "types.IpPrefixAggregate",
+    "types.FiltersAggregate",
+    "types.AdjacencyMatrixAggregate",
+    "types.SignificantLongTermsAggregate",
+    "types.SignificantStringTermsAggregate",
+    "types.UnmappedSignificantTermsAggregate",
+    "types.CompositeAggregate",
+    "types.FrequentItemSetsAggregate",
+    "types.TimeSeriesAggregate",
+    "types.ScriptedMetricAggregate",
+    "types.TopHitsAggregate",
+    "types.InferenceAggregate",
+    "types.StringStatsAggregate",
+    "types.BoxPlotAggregate",
+    "types.TopMetricsAggregate",
+    "types.TTestAggregate",
+    "types.RateAggregate",
+    "types.CumulativeCardinalityAggregate",
+    "types.MatrixStatsAggregate",
+    "types.GeoLineAggregate",
+]
+
+
 class AggResponse(AttrDict[Any], Generic[_R]):
+    """An Elasticsearch aggregation response."""
+
     _meta: Dict[str, Any]
 
     def __init__(self, aggs: "Agg[_R]", search: "Request[_R]", data: Dict[str, Any]):
         super(AttrDict, self).__setattr__("_meta", {"search": search, "aggs": aggs})
         super().__init__(data)
 
-    def __getitem__(self, attr_name: str) -> Any:
+    def __getitem__(self, attr_name: str) -> AggregateResponseType:
         if attr_name in self._meta["aggs"]:
             # don't do self._meta['aggs'][attr_name] to avoid copying
             agg = self._meta["aggs"].aggs[attr_name]
-            return agg.result(self._meta["search"], self._d_[attr_name])
-        return super().__getitem__(attr_name)
+            return cast(
+                AggregateResponseType,
+                agg.result(self._meta["search"], self._d_[attr_name]),
+            )
+        return super().__getitem__(attr_name)  # type: ignore
 
-    def __iter__(self) -> Iterator["Agg"]:  # type: ignore[override]
+    def __iter__(self) -> Iterator[AggregateResponseType]:  # type: ignore[override]
         for name in self._meta["aggs"]:
             yield self[name]
 
