@@ -28,8 +28,16 @@ PipeSeparatedFlags = str
 
 {% for k in classes %}
 class {{ k.name }}({{ k.parent if k.parent else "AttrDict[Any]" }}):
-    {% if k.args %}
+    {% if k.docstring or k.args %}
     """
+        {% for line in k.docstring %}
+    {{ line }}
+        {% endfor %}
+        {% if k.args %}
+            {% if k.docstring %}
+
+            {% endif %}
+        {% endif %}
         {% for arg in k.args %}
             {% for line in arg.doc %}
     {{ line }}
@@ -85,6 +93,12 @@ class {{ k.name }}({{ k.parent if k.parent else "AttrDict[Any]" }}):
             {% else %}
         super().__init__(kwargs)
             {% endif %}
+        {% endif %}
+        {% if k.buckets_as_dict %}
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, {{ k.buckets_as_dict }}]:
+        return self.buckets  # type: ignore
         {% endif %}
     {% else %}
     pass
