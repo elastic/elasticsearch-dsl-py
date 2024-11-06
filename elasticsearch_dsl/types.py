@@ -26,10 +26,6 @@ from elasticsearch_dsl.utils import AttrDict
 PipeSeparatedFlags = str
 
 
-class Aggregation(AttrDict[Any]):
-    pass
-
-
 class AggregationRange(AttrDict[Any]):
     """
     :arg from: Start of the range (inclusive).
@@ -147,27 +143,6 @@ class BucketCorrelationFunctionCountCorrelationIndicator(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class BucketPathAggregation(Aggregation):
-    """
-    :arg buckets_path: Path to the buckets that contain one set of values
-        to correlate.
-    """
-
-    buckets_path: Union[str, Sequence[str], Mapping[str, str], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        buckets_path: Union[
-            str, Sequence[str], Mapping[str, str], DefaultType
-        ] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if buckets_path is not DEFAULT:
-            kwargs["buckets_path"] = buckets_path
-        super().__init__(**kwargs)
-
-
 class ChiSquareHeuristic(AttrDict[Any]):
     """
     :arg background_is_superset: (required) Set to `false` if you defined
@@ -241,34 +216,7 @@ class ClassificationInferenceOptions(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class QueryBase(AttrDict[Any]):
-    """
-    :arg boost: Floating point number used to decrease or increase the
-        relevance scores of the query. Boost values are relative to the
-        default value of 1.0. A boost value between 0 and 1.0 decreases
-        the relevance score. A value greater than 1.0 increases the
-        relevance score. Defaults to `1` if omitted.
-    :arg _name:
-    """
-
-    boost: Union[float, DefaultType]
-    _name: Union[str, DefaultType]
-
-    def __init__(
-        self,
-        *,
-        boost: Union[float, DefaultType] = DEFAULT,
-        _name: Union[str, DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if boost is not DEFAULT:
-            kwargs["boost"] = boost
-        if _name is not DEFAULT:
-            kwargs["_name"] = _name
-        super().__init__(kwargs)
-
-
-class CommonTermsQuery(QueryBase):
+class CommonTermsQuery(AttrDict[Any]):
     """
     :arg query: (required)
     :arg analyzer:
@@ -322,7 +270,7 @@ class CommonTermsQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class CoordsGeoBounds(AttrDict[Any]):
@@ -415,7 +363,12 @@ class DateRangeExpression(AttrDict[Any]):
 
 
 class EmptyObject(AttrDict[Any]):
-    pass
+    """
+    For empty Class assignments
+    """
+
+    def __init__(self, **kwargs: Any):
+        super().__init__(kwargs)
 
 
 class EwmaModelSettings(AttrDict[Any]):
@@ -450,6 +403,9 @@ class ExtendedBounds(AttrDict[Any]):
 
 class FieldAndFormat(AttrDict[Any]):
     """
+    A reference to a field with formatting instructions on how to return
+    the value
+
     :arg field: (required) Wildcard pattern. The request returns values
         for field names matching this pattern.
     :arg format: Format in which the values are returned.
@@ -800,7 +756,7 @@ class FunctionScoreContainer(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class FuzzyQuery(QueryBase):
+class FuzzyQuery(AttrDict[Any]):
     """
     :arg value: (required) Term you wish to find in the provided field.
     :arg max_expansions: Maximum number of variations created. Defaults to
@@ -859,7 +815,7 @@ class FuzzyQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class GeoDistanceSort(AttrDict[Any]):
@@ -1084,171 +1040,7 @@ class HdrMethod(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class HighlightBase(AttrDict[Any]):
-    """
-    :arg type:
-    :arg boundary_chars: A string that contains each boundary character.
-        Defaults to `.,!? \t\n` if omitted.
-    :arg boundary_max_scan: How far to scan for boundary characters.
-        Defaults to `20` if omitted.
-    :arg boundary_scanner: Specifies how to break the highlighted
-        fragments: chars, sentence, or word. Only valid for the unified
-        and fvh highlighters. Defaults to `sentence` for the `unified`
-        highlighter. Defaults to `chars` for the `fvh` highlighter.
-    :arg boundary_scanner_locale: Controls which locale is used to search
-        for sentence and word boundaries. This parameter takes a form of a
-        language tag, for example: `"en-US"`, `"fr-FR"`, `"ja-JP"`.
-        Defaults to `Locale.ROOT` if omitted.
-    :arg force_source:
-    :arg fragmenter: Specifies how text should be broken up in highlight
-        snippets: `simple` or `span`. Only valid for the `plain`
-        highlighter. Defaults to `span` if omitted.
-    :arg fragment_size: The size of the highlighted fragment in
-        characters. Defaults to `100` if omitted.
-    :arg highlight_filter:
-    :arg highlight_query: Highlight matches for a query other than the
-        search query. This is especially useful if you use a rescore query
-        because those are not taken into account by highlighting by
-        default.
-    :arg max_fragment_length:
-    :arg max_analyzed_offset: If set to a non-negative value, highlighting
-        stops at this defined maximum limit. The rest of the text is not
-        processed, thus not highlighted and no error is returned The
-        `max_analyzed_offset` query setting does not override the
-        `index.highlight.max_analyzed_offset` setting, which prevails when
-        it’s set to lower value than the query setting.
-    :arg no_match_size: The amount of text you want to return from the
-        beginning of the field if there are no matching fragments to
-        highlight.
-    :arg number_of_fragments: The maximum number of fragments to return.
-        If the number of fragments is set to `0`, no fragments are
-        returned. Instead, the entire field contents are highlighted and
-        returned. This can be handy when you need to highlight short texts
-        such as a title or address, but fragmentation is not required. If
-        `number_of_fragments` is `0`, `fragment_size` is ignored. Defaults
-        to `5` if omitted.
-    :arg options:
-    :arg order: Sorts highlighted fragments by score when set to `score`.
-        By default, fragments will be output in the order they appear in
-        the field (order: `none`). Setting this option to `score` will
-        output the most relevant fragments first. Each highlighter applies
-        its own logic to compute relevancy scores. Defaults to `none` if
-        omitted.
-    :arg phrase_limit: Controls the number of matching phrases in a
-        document that are considered. Prevents the `fvh` highlighter from
-        analyzing too many phrases and consuming too much memory. When
-        using `matched_fields`, `phrase_limit` phrases per matched field
-        are considered. Raising the limit increases query time and
-        consumes more memory. Only supported by the `fvh` highlighter.
-        Defaults to `256` if omitted.
-    :arg post_tags: Use in conjunction with `pre_tags` to define the HTML
-        tags to use for the highlighted text. By default, highlighted text
-        is wrapped in `<em>` and `</em>` tags.
-    :arg pre_tags: Use in conjunction with `post_tags` to define the HTML
-        tags to use for the highlighted text. By default, highlighted text
-        is wrapped in `<em>` and `</em>` tags.
-    :arg require_field_match: By default, only fields that contains a
-        query match are highlighted. Set to `false` to highlight all
-        fields. Defaults to `True` if omitted.
-    :arg tags_schema: Set to `styled` to use the built-in tag schema.
-    """
-
-    type: Union[Literal["plain", "fvh", "unified"], DefaultType]
-    boundary_chars: Union[str, DefaultType]
-    boundary_max_scan: Union[int, DefaultType]
-    boundary_scanner: Union[Literal["chars", "sentence", "word"], DefaultType]
-    boundary_scanner_locale: Union[str, DefaultType]
-    force_source: Union[bool, DefaultType]
-    fragmenter: Union[Literal["simple", "span"], DefaultType]
-    fragment_size: Union[int, DefaultType]
-    highlight_filter: Union[bool, DefaultType]
-    highlight_query: Union[Query, DefaultType]
-    max_fragment_length: Union[int, DefaultType]
-    max_analyzed_offset: Union[int, DefaultType]
-    no_match_size: Union[int, DefaultType]
-    number_of_fragments: Union[int, DefaultType]
-    options: Union[Mapping[str, Any], DefaultType]
-    order: Union[Literal["score"], DefaultType]
-    phrase_limit: Union[int, DefaultType]
-    post_tags: Union[Sequence[str], DefaultType]
-    pre_tags: Union[Sequence[str], DefaultType]
-    require_field_match: Union[bool, DefaultType]
-    tags_schema: Union[Literal["styled"], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
-        boundary_chars: Union[str, DefaultType] = DEFAULT,
-        boundary_max_scan: Union[int, DefaultType] = DEFAULT,
-        boundary_scanner: Union[
-            Literal["chars", "sentence", "word"], DefaultType
-        ] = DEFAULT,
-        boundary_scanner_locale: Union[str, DefaultType] = DEFAULT,
-        force_source: Union[bool, DefaultType] = DEFAULT,
-        fragmenter: Union[Literal["simple", "span"], DefaultType] = DEFAULT,
-        fragment_size: Union[int, DefaultType] = DEFAULT,
-        highlight_filter: Union[bool, DefaultType] = DEFAULT,
-        highlight_query: Union[Query, DefaultType] = DEFAULT,
-        max_fragment_length: Union[int, DefaultType] = DEFAULT,
-        max_analyzed_offset: Union[int, DefaultType] = DEFAULT,
-        no_match_size: Union[int, DefaultType] = DEFAULT,
-        number_of_fragments: Union[int, DefaultType] = DEFAULT,
-        options: Union[Mapping[str, Any], DefaultType] = DEFAULT,
-        order: Union[Literal["score"], DefaultType] = DEFAULT,
-        phrase_limit: Union[int, DefaultType] = DEFAULT,
-        post_tags: Union[Sequence[str], DefaultType] = DEFAULT,
-        pre_tags: Union[Sequence[str], DefaultType] = DEFAULT,
-        require_field_match: Union[bool, DefaultType] = DEFAULT,
-        tags_schema: Union[Literal["styled"], DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if type is not DEFAULT:
-            kwargs["type"] = type
-        if boundary_chars is not DEFAULT:
-            kwargs["boundary_chars"] = boundary_chars
-        if boundary_max_scan is not DEFAULT:
-            kwargs["boundary_max_scan"] = boundary_max_scan
-        if boundary_scanner is not DEFAULT:
-            kwargs["boundary_scanner"] = boundary_scanner
-        if boundary_scanner_locale is not DEFAULT:
-            kwargs["boundary_scanner_locale"] = boundary_scanner_locale
-        if force_source is not DEFAULT:
-            kwargs["force_source"] = force_source
-        if fragmenter is not DEFAULT:
-            kwargs["fragmenter"] = fragmenter
-        if fragment_size is not DEFAULT:
-            kwargs["fragment_size"] = fragment_size
-        if highlight_filter is not DEFAULT:
-            kwargs["highlight_filter"] = highlight_filter
-        if highlight_query is not DEFAULT:
-            kwargs["highlight_query"] = highlight_query
-        if max_fragment_length is not DEFAULT:
-            kwargs["max_fragment_length"] = max_fragment_length
-        if max_analyzed_offset is not DEFAULT:
-            kwargs["max_analyzed_offset"] = max_analyzed_offset
-        if no_match_size is not DEFAULT:
-            kwargs["no_match_size"] = no_match_size
-        if number_of_fragments is not DEFAULT:
-            kwargs["number_of_fragments"] = number_of_fragments
-        if options is not DEFAULT:
-            kwargs["options"] = options
-        if order is not DEFAULT:
-            kwargs["order"] = order
-        if phrase_limit is not DEFAULT:
-            kwargs["phrase_limit"] = phrase_limit
-        if post_tags is not DEFAULT:
-            kwargs["post_tags"] = post_tags
-        if pre_tags is not DEFAULT:
-            kwargs["pre_tags"] = pre_tags
-        if require_field_match is not DEFAULT:
-            kwargs["require_field_match"] = require_field_match
-        if tags_schema is not DEFAULT:
-            kwargs["tags_schema"] = tags_schema
-        super().__init__(kwargs)
-
-
-class Highlight(HighlightBase):
+class Highlight(AttrDict[Any]):
     """
     :arg fields: (required)
     :arg encoder:
@@ -1427,10 +1219,10 @@ class Highlight(HighlightBase):
             kwargs["require_field_match"] = require_field_match
         if tags_schema is not DEFAULT:
             kwargs["tags_schema"] = tags_schema
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class HighlightField(HighlightBase):
+class HighlightField(AttrDict[Any]):
     """
     :arg fragment_offset:
     :arg matched_fields:
@@ -1614,7 +1406,7 @@ class HighlightField(HighlightBase):
             kwargs["require_field_match"] = require_field_match
         if tags_schema is not DEFAULT:
             kwargs["tags_schema"] = tags_schema
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class HoltLinearModelSettings(AttrDict[Any]):
@@ -2164,7 +1956,7 @@ class IntervalsPrefix(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class IntervalsQuery(QueryBase):
+class IntervalsQuery(AttrDict[Any]):
     """
     :arg all_of: Returns matches that span a combination of other rules.
     :arg any_of: Returns intervals produced by any of its sub-rules.
@@ -2220,7 +2012,7 @@ class IntervalsQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class IntervalsWildcard(AttrDict[Any]):
@@ -2365,7 +2157,7 @@ class LikeDocument(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class MatchBoolPrefixQuery(QueryBase):
+class MatchBoolPrefixQuery(AttrDict[Any]):
     """
     :arg query: (required) Terms you wish to find in the provided field.
         The last term is used in a prefix query.
@@ -2451,10 +2243,10 @@ class MatchBoolPrefixQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class MatchPhrasePrefixQuery(QueryBase):
+class MatchPhrasePrefixQuery(AttrDict[Any]):
     """
     :arg query: (required) Text you wish to find in the provided field.
     :arg analyzer: Analyzer used to convert text in the query value into
@@ -2509,10 +2301,10 @@ class MatchPhrasePrefixQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class MatchPhraseQuery(QueryBase):
+class MatchPhraseQuery(AttrDict[Any]):
     """
     :arg query: (required) Query terms that are analyzed and turned into a
         phrase query.
@@ -2561,10 +2353,10 @@ class MatchPhraseQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class MatchQuery(QueryBase):
+class MatchQuery(AttrDict[Any]):
     """
     :arg query: (required) Text, number, boolean value or date you wish to
         find in the provided field.
@@ -2668,94 +2460,7 @@ class MatchQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
-
-
-class PipelineAggregationBase(BucketPathAggregation):
-    """
-    :arg format: `DecimalFormat` pattern for the output value. If
-        specified, the formatted value is returned in the aggregation’s
-        `value_as_string` property.
-    :arg gap_policy: Policy to apply when gaps are found in the data.
-        Defaults to `skip` if omitted.
-    :arg buckets_path: Path to the buckets that contain one set of values
-        to correlate.
-    """
-
-    format: Union[str, DefaultType]
-    gap_policy: Union[Literal["skip", "insert_zeros", "keep_values"], DefaultType]
-    buckets_path: Union[str, Sequence[str], Mapping[str, str], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        format: Union[str, DefaultType] = DEFAULT,
-        gap_policy: Union[
-            Literal["skip", "insert_zeros", "keep_values"], DefaultType
-        ] = DEFAULT,
-        buckets_path: Union[
-            str, Sequence[str], Mapping[str, str], DefaultType
-        ] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if format is not DEFAULT:
-            kwargs["format"] = format
-        if gap_policy is not DEFAULT:
-            kwargs["gap_policy"] = gap_policy
-        if buckets_path is not DEFAULT:
-            kwargs["buckets_path"] = buckets_path
-        super().__init__(**kwargs)
-
-
-class MovingAverageAggregationBase(PipelineAggregationBase):
-    """
-    :arg minimize:
-    :arg predict:
-    :arg window:
-    :arg format: `DecimalFormat` pattern for the output value. If
-        specified, the formatted value is returned in the aggregation’s
-        `value_as_string` property.
-    :arg gap_policy: Policy to apply when gaps are found in the data.
-        Defaults to `skip` if omitted.
-    :arg buckets_path: Path to the buckets that contain one set of values
-        to correlate.
-    """
-
-    minimize: Union[bool, DefaultType]
-    predict: Union[int, DefaultType]
-    window: Union[int, DefaultType]
-    format: Union[str, DefaultType]
-    gap_policy: Union[Literal["skip", "insert_zeros", "keep_values"], DefaultType]
-    buckets_path: Union[str, Sequence[str], Mapping[str, str], DefaultType]
-
-    def __init__(
-        self,
-        *,
-        minimize: Union[bool, DefaultType] = DEFAULT,
-        predict: Union[int, DefaultType] = DEFAULT,
-        window: Union[int, DefaultType] = DEFAULT,
-        format: Union[str, DefaultType] = DEFAULT,
-        gap_policy: Union[
-            Literal["skip", "insert_zeros", "keep_values"], DefaultType
-        ] = DEFAULT,
-        buckets_path: Union[
-            str, Sequence[str], Mapping[str, str], DefaultType
-        ] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if minimize is not DEFAULT:
-            kwargs["minimize"] = minimize
-        if predict is not DEFAULT:
-            kwargs["predict"] = predict
-        if window is not DEFAULT:
-            kwargs["window"] = window
-        if format is not DEFAULT:
-            kwargs["format"] = format
-        if gap_policy is not DEFAULT:
-            kwargs["gap_policy"] = gap_policy
-        if buckets_path is not DEFAULT:
-            kwargs["buckets_path"] = buckets_path
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class MultiTermLookup(AttrDict[Any]):
@@ -2869,7 +2574,7 @@ class PinnedDoc(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class PrefixQuery(QueryBase):
+class PrefixQuery(AttrDict[Any]):
     """
     :arg value: (required) Beginning characters of terms you wish to find
         in the provided field.
@@ -2912,7 +2617,7 @@ class PrefixQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class QueryVectorBuilder(AttrDict[Any]):
@@ -2933,15 +2638,11 @@ class QueryVectorBuilder(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class RankFeatureFunction(AttrDict[Any]):
+class RankFeatureFunctionLinear(AttrDict[Any]):
     pass
 
 
-class RankFeatureFunctionLinear(RankFeatureFunction):
-    pass
-
-
-class RankFeatureFunctionLogarithm(RankFeatureFunction):
+class RankFeatureFunctionLogarithm(AttrDict[Any]):
     """
     :arg scaling_factor: (required) Configurable scaling factor.
     """
@@ -2953,10 +2654,10 @@ class RankFeatureFunctionLogarithm(RankFeatureFunction):
     ):
         if scaling_factor is not DEFAULT:
             kwargs["scaling_factor"] = scaling_factor
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class RankFeatureFunctionSaturation(RankFeatureFunction):
+class RankFeatureFunctionSaturation(AttrDict[Any]):
     """
     :arg pivot: Configurable pivot value so that the result will be less
         than 0.5.
@@ -2967,10 +2668,10 @@ class RankFeatureFunctionSaturation(RankFeatureFunction):
     def __init__(self, *, pivot: Union[float, DefaultType] = DEFAULT, **kwargs: Any):
         if pivot is not DEFAULT:
             kwargs["pivot"] = pivot
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class RankFeatureFunctionSigmoid(RankFeatureFunction):
+class RankFeatureFunctionSigmoid(AttrDict[Any]):
     """
     :arg pivot: (required) Configurable pivot value so that the result
         will be less than 0.5.
@@ -2991,10 +2692,10 @@ class RankFeatureFunctionSigmoid(RankFeatureFunction):
             kwargs["pivot"] = pivot
         if exponent is not DEFAULT:
             kwargs["exponent"] = exponent
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class RegexpQuery(QueryBase):
+class RegexpQuery(AttrDict[Any]):
     """
     :arg value: (required) Regular expression for terms you wish to find
         in the provided field.
@@ -3048,7 +2749,7 @@ class RegexpQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class RegressionInferenceOptions(AttrDict[Any]):
@@ -3334,7 +3035,7 @@ class SourceFilter(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class SpanContainingQuery(QueryBase):
+class SpanContainingQuery(AttrDict[Any]):
     """
     :arg big: (required) Can be any span query. Matching spans from `big`
         that contain matches from `little` are returned.
@@ -3370,10 +3071,10 @@ class SpanContainingQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanFieldMaskingQuery(QueryBase):
+class SpanFieldMaskingQuery(AttrDict[Any]):
     """
     :arg field: (required)
     :arg query: (required)
@@ -3407,10 +3108,10 @@ class SpanFieldMaskingQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanFirstQuery(QueryBase):
+class SpanFirstQuery(AttrDict[Any]):
     """
     :arg end: (required) Controls the maximum end position permitted in a
         match.
@@ -3445,10 +3146,10 @@ class SpanFirstQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanMultiTermQuery(QueryBase):
+class SpanMultiTermQuery(AttrDict[Any]):
     """
     :arg match: (required) Should be a multi term query (one of
         `wildcard`, `fuzzy`, `prefix`, `range`, or `regexp` query).
@@ -3478,10 +3179,10 @@ class SpanMultiTermQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanNearQuery(QueryBase):
+class SpanNearQuery(AttrDict[Any]):
     """
     :arg clauses: (required) Array of one or more other span type queries.
     :arg in_order: Controls whether matches are required to be in-order.
@@ -3523,10 +3224,10 @@ class SpanNearQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanNotQuery(QueryBase):
+class SpanNotQuery(AttrDict[Any]):
     """
     :arg exclude: (required) Span query whose matches must not overlap
         those returned.
@@ -3580,10 +3281,10 @@ class SpanNotQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanOrQuery(QueryBase):
+class SpanOrQuery(AttrDict[Any]):
     """
     :arg clauses: (required) Array of one or more other span type queries.
     :arg boost: Floating point number used to decrease or increase the
@@ -3614,7 +3315,7 @@ class SpanOrQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class SpanQuery(AttrDict[Any]):
@@ -3705,7 +3406,7 @@ class SpanQuery(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class SpanTermQuery(QueryBase):
+class SpanTermQuery(AttrDict[Any]):
     """
     :arg value: (required)
     :arg boost: Floating point number used to decrease or increase the
@@ -3734,10 +3435,10 @@ class SpanTermQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class SpanWithinQuery(QueryBase):
+class SpanWithinQuery(AttrDict[Any]):
     """
     :arg big: (required) Can be any span query. Matching spans from
         `little` that are enclosed within `big` are returned.
@@ -3773,7 +3474,7 @@ class SpanWithinQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class TDigest(AttrDict[Any]):
@@ -3793,7 +3494,7 @@ class TDigest(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class TermQuery(QueryBase):
+class TermQuery(AttrDict[Any]):
     """
     :arg value: (required) Term you wish to find in the provided field.
     :arg case_insensitive: Allows ASCII case insensitive matching of the
@@ -3830,7 +3531,7 @@ class TermQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class TermsLookup(AttrDict[Any]):
@@ -3889,7 +3590,7 @@ class TermsPartition(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class TermsSetQuery(QueryBase):
+class TermsSetQuery(AttrDict[Any]):
     """
     :arg terms: (required) Array of terms you wish to find in the provided
         field.
@@ -3941,7 +3642,7 @@ class TermsSetQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class TestPopulation(AttrDict[Any]):
@@ -3996,7 +3697,7 @@ class TextEmbedding(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class TextExpansionQuery(QueryBase):
+class TextExpansionQuery(AttrDict[Any]):
     """
     :arg model_id: (required) The text expansion NLP model to use
     :arg model_text: (required) The query text
@@ -4037,7 +3738,7 @@ class TextExpansionQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class TokenPruningConfig(AttrDict[Any]):
@@ -4222,7 +3923,7 @@ class WeightedAverageValue(AttrDict[Any]):
         super().__init__(kwargs)
 
 
-class WeightedTokensQuery(QueryBase):
+class WeightedTokensQuery(AttrDict[Any]):
     """
     :arg tokens: (required) The tokens representing this query
     :arg pruning_config: Token pruning configurations
@@ -4258,10 +3959,10 @@ class WeightedTokensQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
-class WildcardQuery(QueryBase):
+class WildcardQuery(AttrDict[Any]):
     """
     :arg case_insensitive: Allows case insensitive matching of the pattern
         with the indexed field values when set to true. Default is false
@@ -4310,7 +4011,7 @@ class WildcardQuery(QueryBase):
             kwargs["boost"] = boost
         if _name is not DEFAULT:
             kwargs["_name"] = _name
-        super().__init__(**kwargs)
+        super().__init__(kwargs)
 
 
 class WktGeoBounds(AttrDict[Any]):
@@ -4324,6 +4025,30 @@ class WktGeoBounds(AttrDict[Any]):
         if wkt is not DEFAULT:
             kwargs["wkt"] = wkt
         super().__init__(kwargs)
+
+
+class AdjacencyMatrixAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["AdjacencyMatrixBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "AdjacencyMatrixBucket"]:
+        return self.buckets  # type: ignore
+
+
+class AdjacencyMatrixBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: str
+    doc_count: int
 
 
 class AggregationBreakdown(AttrDict[Any]):
@@ -4458,6 +4183,100 @@ class AggregationProfileDelegateDebugFilter(AttrDict[Any]):
     segments_counted_in_constant_time: int
 
 
+class ArrayPercentilesItem(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg value: (required)
+    :arg value_as_string:
+    """
+
+    key: str
+    value: Union[float, None]
+    value_as_string: str
+
+
+class AutoDateHistogramAggregate(AttrDict[Any]):
+    """
+    :arg interval: (required)
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    interval: str
+    buckets: Sequence["DateHistogramBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "DateHistogramBucket"]:
+        return self.buckets  # type: ignore
+
+
+class AvgAggregate(AttrDict[Any]):
+    """
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class BoxPlotAggregate(AttrDict[Any]):
+    """
+    :arg min: (required)
+    :arg max: (required)
+    :arg q1: (required)
+    :arg q2: (required)
+    :arg q3: (required)
+    :arg lower: (required)
+    :arg upper: (required)
+    :arg min_as_string:
+    :arg max_as_string:
+    :arg q1_as_string:
+    :arg q2_as_string:
+    :arg q3_as_string:
+    :arg lower_as_string:
+    :arg upper_as_string:
+    :arg meta:
+    """
+
+    min: float
+    max: float
+    q1: float
+    q2: float
+    q3: float
+    lower: float
+    upper: float
+    min_as_string: str
+    max_as_string: str
+    q1_as_string: str
+    q2_as_string: str
+    q3_as_string: str
+    lower_as_string: str
+    upper_as_string: str
+    meta: Mapping[str, Any]
+
+
+class BucketMetricValueAggregate(AttrDict[Any]):
+    """
+    :arg keys: (required)
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    keys: Sequence[str]  # type: ignore[assignment]
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
 class BulkIndexByScrollFailure(AttrDict[Any]):
     """
     :arg cause: (required)
@@ -4472,6 +4291,26 @@ class BulkIndexByScrollFailure(AttrDict[Any]):
     index: str
     status: int
     type: str
+
+
+class CardinalityAggregate(AttrDict[Any]):
+    """
+    :arg value: (required)
+    :arg meta:
+    """
+
+    value: int
+    meta: Mapping[str, Any]
+
+
+class ChildrenAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
 
 
 class ClusterDetails(AttrDict[Any]):
@@ -4526,19 +4365,7 @@ class Collector(AttrDict[Any]):
     children: Sequence["Collector"]
 
 
-class SuggestBase(AttrDict[Any]):
-    """
-    :arg length: (required)
-    :arg offset: (required)
-    :arg text: (required)
-    """
-
-    length: int
-    offset: int
-    text: str
-
-
-class CompletionSuggest(SuggestBase):
+class CompletionSuggest(AttrDict[Any]):
     """
     :arg options: (required)
     :arg length: (required)
@@ -4583,6 +4410,108 @@ class CompletionSuggestOption(AttrDict[Any]):
     _score: float
     _source: Any
     score: float
+
+
+class CompositeAggregate(AttrDict[Any]):
+    """
+    :arg after_key:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    after_key: Mapping[str, Union[int, float, str, bool, None, Any]]
+    buckets: Sequence["CompositeBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "CompositeBucket"]:
+        return self.buckets  # type: ignore
+
+
+class CompositeBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: Mapping[str, Union[int, float, str, bool, None, Any]]
+    doc_count: int
+
+
+class CumulativeCardinalityAggregate(AttrDict[Any]):
+    """
+    Result of the `cumulative_cardinality` aggregation
+
+    :arg value: (required)
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: int
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class DateHistogramAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["DateHistogramBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "DateHistogramBucket"]:
+        return self.buckets  # type: ignore
+
+
+class DateHistogramBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    """
+
+    key: Any
+    doc_count: int
+    key_as_string: str
+
+
+class DateRangeAggregate(AttrDict[Any]):
+    """
+    Result of a `date_range` aggregation. Same format as a for a `range`
+    aggregation: `from` and `to` in `buckets` are milliseconds since the
+    Epoch, represented as a floating point number.
+
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["RangeBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "RangeBucket"]:
+        return self.buckets  # type: ignore
+
+
+class DerivativeAggregate(AttrDict[Any]):
+    """
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg normalized_value:
+    :arg normalized_value_as_string:
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    normalized_value: float
+    normalized_value_as_string: str
+    value_as_string: str
+    meta: Mapping[str, Any]
 
 
 class DfsKnnProfile(AttrDict[Any]):
@@ -4651,8 +4580,47 @@ class DfsStatisticsProfile(AttrDict[Any]):
     children: Sequence["DfsStatisticsProfile"]
 
 
+class DoubleTermsAggregate(AttrDict[Any]):
+    """
+    Result of a `terms` aggregation when the field is some kind of decimal
+    number like a float, double, or distance.
+
+    :arg doc_count_error_upper_bound:
+    :arg sum_other_doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    doc_count_error_upper_bound: int
+    sum_other_doc_count: int
+    buckets: Sequence["DoubleTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "DoubleTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class DoubleTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    :arg doc_count_error_upper_bound:
+    """
+
+    key: float
+    doc_count: int
+    key_as_string: str
+    doc_count_error_upper_bound: int
+
+
 class ErrorCause(AttrDict[Any]):
     """
+    Cause and details about a request failure. This class defines the
+    properties common to all error types. Additional details are also
+    provided, that depend on the error type.
+
     :arg type: (required) The type of error
     :arg reason: A human-readable explanation of the error, in english
     :arg stack_trace: The server stack trace. Present only if the
@@ -4668,6 +4636,138 @@ class ErrorCause(AttrDict[Any]):
     caused_by: "ErrorCause"
     root_cause: Sequence["ErrorCause"]
     suppressed: Sequence["ErrorCause"]
+
+
+class Explanation(AttrDict[Any]):
+    """
+    :arg description: (required)
+    :arg details: (required)
+    :arg value: (required)
+    """
+
+    description: str
+    details: Sequence["ExplanationDetail"]
+    value: float
+
+
+class ExplanationDetail(AttrDict[Any]):
+    """
+    :arg description: (required)
+    :arg value: (required)
+    :arg details:
+    """
+
+    description: str
+    value: float
+    details: Sequence["ExplanationDetail"]
+
+
+class ExtendedStatsAggregate(AttrDict[Any]):
+    """
+    :arg sum_of_squares: (required)
+    :arg variance: (required)
+    :arg variance_population: (required)
+    :arg variance_sampling: (required)
+    :arg std_deviation: (required)
+    :arg std_deviation_population: (required)
+    :arg std_deviation_sampling: (required)
+    :arg count: (required)
+    :arg min: (required)
+    :arg max: (required)
+    :arg avg: (required)
+    :arg sum: (required)
+    :arg std_deviation_bounds:
+    :arg sum_of_squares_as_string:
+    :arg variance_as_string:
+    :arg variance_population_as_string:
+    :arg variance_sampling_as_string:
+    :arg std_deviation_as_string:
+    :arg std_deviation_bounds_as_string:
+    :arg min_as_string:
+    :arg max_as_string:
+    :arg avg_as_string:
+    :arg sum_as_string:
+    :arg meta:
+    """
+
+    sum_of_squares: Union[float, None]
+    variance: Union[float, None]
+    variance_population: Union[float, None]
+    variance_sampling: Union[float, None]
+    std_deviation: Union[float, None]
+    std_deviation_population: Union[float, None]
+    std_deviation_sampling: Union[float, None]
+    count: int
+    min: Union[float, None]
+    max: Union[float, None]
+    avg: Union[float, None]
+    sum: float
+    std_deviation_bounds: "StandardDeviationBounds"
+    sum_of_squares_as_string: str
+    variance_as_string: str
+    variance_population_as_string: str
+    variance_sampling_as_string: str
+    std_deviation_as_string: str
+    std_deviation_bounds_as_string: "StandardDeviationBoundsAsString"
+    min_as_string: str
+    max_as_string: str
+    avg_as_string: str
+    sum_as_string: str
+    meta: Mapping[str, Any]
+
+
+class ExtendedStatsBucketAggregate(AttrDict[Any]):
+    """
+    :arg sum_of_squares: (required)
+    :arg variance: (required)
+    :arg variance_population: (required)
+    :arg variance_sampling: (required)
+    :arg std_deviation: (required)
+    :arg std_deviation_population: (required)
+    :arg std_deviation_sampling: (required)
+    :arg count: (required)
+    :arg min: (required)
+    :arg max: (required)
+    :arg avg: (required)
+    :arg sum: (required)
+    :arg std_deviation_bounds:
+    :arg sum_of_squares_as_string:
+    :arg variance_as_string:
+    :arg variance_population_as_string:
+    :arg variance_sampling_as_string:
+    :arg std_deviation_as_string:
+    :arg std_deviation_bounds_as_string:
+    :arg min_as_string:
+    :arg max_as_string:
+    :arg avg_as_string:
+    :arg sum_as_string:
+    :arg meta:
+    """
+
+    sum_of_squares: Union[float, None]
+    variance: Union[float, None]
+    variance_population: Union[float, None]
+    variance_sampling: Union[float, None]
+    std_deviation: Union[float, None]
+    std_deviation_population: Union[float, None]
+    std_deviation_sampling: Union[float, None]
+    count: int
+    min: Union[float, None]
+    max: Union[float, None]
+    avg: Union[float, None]
+    sum: float
+    std_deviation_bounds: "StandardDeviationBounds"
+    sum_of_squares_as_string: str
+    variance_as_string: str
+    variance_population_as_string: str
+    variance_sampling_as_string: str
+    std_deviation_as_string: str
+    std_deviation_bounds_as_string: "StandardDeviationBoundsAsString"
+    min_as_string: str
+    max_as_string: str
+    avg_as_string: str
+    sum_as_string: str
+    meta: Mapping[str, Any]
 
 
 class FetchProfile(AttrDict[Any]):
@@ -4718,6 +4818,439 @@ class FetchProfileDebug(AttrDict[Any]):
 
     stored_fields: Sequence[str]
     fast_path: int
+
+
+class FilterAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class FiltersAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["FiltersBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "FiltersBucket"]:
+        return self.buckets  # type: ignore
+
+
+class FiltersBucket(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    """
+
+    doc_count: int
+
+
+class FrequentItemSetsAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["FrequentItemSetsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "FrequentItemSetsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class FrequentItemSetsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg support: (required)
+    :arg doc_count: (required)
+    """
+
+    key: Mapping[str, Sequence[str]]
+    support: float
+    doc_count: int
+
+
+class GeoBoundsAggregate(AttrDict[Any]):
+    """
+    :arg bounds:
+    :arg meta:
+    """
+
+    bounds: Union[
+        "CoordsGeoBounds",
+        "TopLeftBottomRightGeoBounds",
+        "TopRightBottomLeftGeoBounds",
+        "WktGeoBounds",
+    ]
+    meta: Mapping[str, Any]
+
+
+class GeoCentroidAggregate(AttrDict[Any]):
+    """
+    :arg count: (required)
+    :arg location:
+    :arg meta:
+    """
+
+    count: int
+    location: Union["LatLonGeoLocation", "GeoHashLocation", Sequence[float], str]
+    meta: Mapping[str, Any]
+
+
+class GeoDistanceAggregate(AttrDict[Any]):
+    """
+    Result of a `geo_distance` aggregation. The unit for `from` and `to`
+    is meters by default.
+
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["RangeBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "RangeBucket"]:
+        return self.buckets  # type: ignore
+
+
+class GeoHashGridAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["GeoHashGridBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "GeoHashGridBucket"]:
+        return self.buckets  # type: ignore
+
+
+class GeoHashGridBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: str
+    doc_count: int
+
+
+class GeoHexGridAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["GeoHexGridBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "GeoHexGridBucket"]:
+        return self.buckets  # type: ignore
+
+
+class GeoHexGridBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: str
+    doc_count: int
+
+
+class GeoLine(AttrDict[Any]):
+    """
+    A GeoJson GeoLine.
+
+    :arg type: (required) Always `"LineString"`
+    :arg coordinates: (required) Array of `[lon, lat]` coordinates
+    """
+
+    type: str
+    coordinates: Sequence[Sequence[float]]
+
+
+class GeoLineAggregate(AttrDict[Any]):
+    """
+    :arg type: (required)
+    :arg geometry: (required)
+    :arg properties: (required)
+    :arg meta:
+    """
+
+    type: str
+    geometry: "GeoLine"
+    properties: Any
+    meta: Mapping[str, Any]
+
+
+class GeoTileGridAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["GeoTileGridBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "GeoTileGridBucket"]:
+        return self.buckets  # type: ignore
+
+
+class GeoTileGridBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: str
+    doc_count: int
+
+
+class GlobalAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class HdrPercentileRanksAggregate(AttrDict[Any]):
+    """
+    :arg values: (required)
+    :arg meta:
+    """
+
+    values: Union[Mapping[str, Union[str, int, None]], Sequence["ArrayPercentilesItem"]]
+    meta: Mapping[str, Any]
+
+
+class HdrPercentilesAggregate(AttrDict[Any]):
+    """
+    :arg values: (required)
+    :arg meta:
+    """
+
+    values: Union[Mapping[str, Union[str, int, None]], Sequence["ArrayPercentilesItem"]]
+    meta: Mapping[str, Any]
+
+
+class HistogramAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["HistogramBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "HistogramBucket"]:
+        return self.buckets  # type: ignore
+
+
+class HistogramBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    """
+
+    key: float
+    doc_count: int
+    key_as_string: str
+
+
+class Hit(AttrDict[Any]):
+    """
+    :arg index: (required)
+    :arg id:
+    :arg score:
+    :arg explanation:
+    :arg fields:
+    :arg highlight:
+    :arg inner_hits:
+    :arg matched_queries:
+    :arg nested:
+    :arg ignored:
+    :arg ignored_field_values:
+    :arg shard:
+    :arg node:
+    :arg routing:
+    :arg source:
+    :arg rank:
+    :arg seq_no:
+    :arg primary_term:
+    :arg version:
+    :arg sort:
+    """
+
+    index: str
+    id: str
+    score: Union[float, None]
+    explanation: "Explanation"
+    fields: Mapping[str, Any]
+    highlight: Mapping[str, Sequence[str]]
+    inner_hits: Mapping[str, "InnerHitsResult"]
+    matched_queries: Union[Sequence[str], Mapping[str, float]]
+    nested: "NestedIdentity"
+    ignored: Sequence[str]
+    ignored_field_values: Mapping[
+        str, Sequence[Union[int, float, str, bool, None, Any]]
+    ]
+    shard: str
+    node: str
+    routing: str
+    source: Any
+    rank: int
+    seq_no: int
+    primary_term: int
+    version: int
+    sort: Sequence[Union[int, float, str, bool, None, Any]]
+
+
+class HitsMetadata(AttrDict[Any]):
+    """
+    :arg hits: (required)
+    :arg total: Total hit count information, present only if
+        `track_total_hits` wasn't `false` in the search request.
+    :arg max_score:
+    """
+
+    hits: Sequence["Hit"]
+    total: Union["TotalHits", int]
+    max_score: Union[float, None]
+
+
+class InferenceAggregate(AttrDict[Any]):
+    """
+    :arg value:
+    :arg feature_importance:
+    :arg top_classes:
+    :arg warning:
+    :arg meta:
+    """
+
+    value: Union[int, float, str, bool, None, Any]
+    feature_importance: Sequence["InferenceFeatureImportance"]
+    top_classes: Sequence["InferenceTopClassEntry"]
+    warning: str
+    meta: Mapping[str, Any]
+
+
+class InferenceClassImportance(AttrDict[Any]):
+    """
+    :arg class_name: (required)
+    :arg importance: (required)
+    """
+
+    class_name: str
+    importance: float
+
+
+class InferenceFeatureImportance(AttrDict[Any]):
+    """
+    :arg feature_name: (required)
+    :arg importance:
+    :arg classes:
+    """
+
+    feature_name: str
+    importance: float
+    classes: Sequence["InferenceClassImportance"]
+
+
+class InferenceTopClassEntry(AttrDict[Any]):
+    """
+    :arg class_name: (required)
+    :arg class_probability: (required)
+    :arg class_score: (required)
+    """
+
+    class_name: Union[int, float, str, bool, None, Any]
+    class_probability: float
+    class_score: float
+
+
+class InnerHitsResult(AttrDict[Any]):
+    """
+    :arg hits: (required)
+    """
+
+    hits: "HitsMetadata"
+
+
+class IpPrefixAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["IpPrefixBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "IpPrefixBucket"]:
+        return self.buckets  # type: ignore
+
+
+class IpPrefixBucket(AttrDict[Any]):
+    """
+    :arg is_ipv6: (required)
+    :arg key: (required)
+    :arg prefix_length: (required)
+    :arg doc_count: (required)
+    :arg netmask:
+    """
+
+    is_ipv6: bool
+    key: str
+    prefix_length: int
+    doc_count: int
+    netmask: str
+
+
+class IpRangeAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["IpRangeBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "IpRangeBucket"]:
+        return self.buckets  # type: ignore
+
+
+class IpRangeBucket(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg key:
+    :arg from:
+    :arg to:
+    """
+
+    doc_count: int
+    key: str
+    from_: str
+    to: str
 
 
 class KnnCollectorResult(AttrDict[Any]):
@@ -4802,7 +5335,231 @@ class KnnQueryProfileResult(AttrDict[Any]):
     children: Sequence["KnnQueryProfileResult"]
 
 
-class PhraseSuggest(SuggestBase):
+class LongRareTermsAggregate(AttrDict[Any]):
+    """
+    Result of the `rare_terms` aggregation when the field is some kind of
+    whole number like a integer, long, or a date.
+
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["LongRareTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "LongRareTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class LongRareTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    """
+
+    key: int
+    doc_count: int
+    key_as_string: str
+
+
+class LongTermsAggregate(AttrDict[Any]):
+    """
+    Result of a `terms` aggregation when the field is some kind of whole
+    number like a integer, long, or a date.
+
+    :arg doc_count_error_upper_bound:
+    :arg sum_other_doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    doc_count_error_upper_bound: int
+    sum_other_doc_count: int
+    buckets: Sequence["LongTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "LongTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class LongTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    :arg doc_count_error_upper_bound:
+    """
+
+    key: int
+    doc_count: int
+    key_as_string: str
+    doc_count_error_upper_bound: int
+
+
+class MatrixStatsAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg fields:
+    :arg meta:
+    """
+
+    doc_count: int
+    fields: Sequence["MatrixStatsFields"]
+    meta: Mapping[str, Any]
+
+
+class MatrixStatsFields(AttrDict[Any]):
+    """
+    :arg name: (required)
+    :arg count: (required)
+    :arg mean: (required)
+    :arg variance: (required)
+    :arg skewness: (required)
+    :arg kurtosis: (required)
+    :arg covariance: (required)
+    :arg correlation: (required)
+    """
+
+    name: str
+    count: int
+    mean: float
+    variance: float
+    skewness: float
+    kurtosis: float
+    covariance: Mapping[str, float]
+    correlation: Mapping[str, float]
+
+
+class MaxAggregate(AttrDict[Any]):
+    """
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class MedianAbsoluteDeviationAggregate(AttrDict[Any]):
+    """
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class MinAggregate(AttrDict[Any]):
+    """
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class MissingAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class MultiTermsAggregate(AttrDict[Any]):
+    """
+    :arg doc_count_error_upper_bound:
+    :arg sum_other_doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    doc_count_error_upper_bound: int
+    sum_other_doc_count: int
+    buckets: Sequence["MultiTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "MultiTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class MultiTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    :arg doc_count_error_upper_bound:
+    """
+
+    key: Sequence[Union[int, float, str, bool, None, Any]]
+    doc_count: int
+    key_as_string: str
+    doc_count_error_upper_bound: int
+
+
+class NestedAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class NestedIdentity(AttrDict[Any]):
+    """
+    :arg field: (required)
+    :arg offset: (required)
+    :arg _nested:
+    """
+
+    field: str
+    offset: int
+    _nested: "NestedIdentity"
+
+
+class ParentAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class PercentilesBucketAggregate(AttrDict[Any]):
+    """
+    :arg values: (required)
+    :arg meta:
+    """
+
+    values: Union[Mapping[str, Union[str, int, None]], Sequence["ArrayPercentilesItem"]]
+    meta: Mapping[str, Any]
+
+
+class PhraseSuggest(AttrDict[Any]):
     """
     :arg options: (required)
     :arg length: (required)
@@ -4900,6 +5657,50 @@ class QueryProfile(AttrDict[Any]):
     children: Sequence["QueryProfile"]
 
 
+class RangeAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["RangeBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "RangeBucket"]:
+        return self.buckets  # type: ignore
+
+
+class RangeBucket(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg from:
+    :arg to:
+    :arg from_as_string:
+    :arg to_as_string:
+    :arg key: The bucket key. Present if the aggregation is _not_ keyed
+    """
+
+    doc_count: int
+    from_: float
+    to: float
+    from_as_string: str
+    to_as_string: str
+    key: str
+
+
+class RateAggregate(AttrDict[Any]):
+    """
+    :arg value: (required)
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: float
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
 class Retries(AttrDict[Any]):
     """
     :arg bulk: (required)
@@ -4908,6 +5709,36 @@ class Retries(AttrDict[Any]):
 
     bulk: int
     search: int
+
+
+class ReverseNestedAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class SamplerAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class ScriptedMetricAggregate(AttrDict[Any]):
+    """
+    :arg value: (required)
+    :arg meta:
+    """
+
+    value: Any
+    meta: Mapping[str, Any]
 
 
 class SearchProfile(AttrDict[Any]):
@@ -4980,7 +5811,311 @@ class ShardStatistics(AttrDict[Any]):
     skipped: int
 
 
-class TermSuggest(SuggestBase):
+class SignificantLongTermsAggregate(AttrDict[Any]):
+    """
+    :arg bg_count:
+    :arg doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    bg_count: int
+    doc_count: int
+    buckets: Sequence["SignificantLongTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "SignificantLongTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class SignificantLongTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg score: (required)
+    :arg bg_count: (required)
+    :arg doc_count: (required)
+    :arg key_as_string:
+    """
+
+    key: int
+    score: float
+    bg_count: int
+    doc_count: int
+    key_as_string: str
+
+
+class SignificantStringTermsAggregate(AttrDict[Any]):
+    """
+    :arg bg_count:
+    :arg doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    bg_count: int
+    doc_count: int
+    buckets: Sequence["SignificantStringTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "SignificantStringTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class SignificantStringTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg score: (required)
+    :arg bg_count: (required)
+    :arg doc_count: (required)
+    """
+
+    key: str
+    score: float
+    bg_count: int
+    doc_count: int
+
+
+class SimpleValueAggregate(AttrDict[Any]):
+    """
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class StandardDeviationBounds(AttrDict[Any]):
+    """
+    :arg upper: (required)
+    :arg lower: (required)
+    :arg upper_population: (required)
+    :arg lower_population: (required)
+    :arg upper_sampling: (required)
+    :arg lower_sampling: (required)
+    """
+
+    upper: Union[float, None]
+    lower: Union[float, None]
+    upper_population: Union[float, None]
+    lower_population: Union[float, None]
+    upper_sampling: Union[float, None]
+    lower_sampling: Union[float, None]
+
+
+class StandardDeviationBoundsAsString(AttrDict[Any]):
+    """
+    :arg upper: (required)
+    :arg lower: (required)
+    :arg upper_population: (required)
+    :arg lower_population: (required)
+    :arg upper_sampling: (required)
+    :arg lower_sampling: (required)
+    """
+
+    upper: str
+    lower: str
+    upper_population: str
+    lower_population: str
+    upper_sampling: str
+    lower_sampling: str
+
+
+class StatsAggregate(AttrDict[Any]):
+    """
+    Statistics aggregation result. `min`, `max` and `avg` are missing if
+    there were no values to process (`count` is zero).
+
+    :arg count: (required)
+    :arg min: (required)
+    :arg max: (required)
+    :arg avg: (required)
+    :arg sum: (required)
+    :arg min_as_string:
+    :arg max_as_string:
+    :arg avg_as_string:
+    :arg sum_as_string:
+    :arg meta:
+    """
+
+    count: int
+    min: Union[float, None]
+    max: Union[float, None]
+    avg: Union[float, None]
+    sum: float
+    min_as_string: str
+    max_as_string: str
+    avg_as_string: str
+    sum_as_string: str
+    meta: Mapping[str, Any]
+
+
+class StatsBucketAggregate(AttrDict[Any]):
+    """
+    :arg count: (required)
+    :arg min: (required)
+    :arg max: (required)
+    :arg avg: (required)
+    :arg sum: (required)
+    :arg min_as_string:
+    :arg max_as_string:
+    :arg avg_as_string:
+    :arg sum_as_string:
+    :arg meta:
+    """
+
+    count: int
+    min: Union[float, None]
+    max: Union[float, None]
+    avg: Union[float, None]
+    sum: float
+    min_as_string: str
+    max_as_string: str
+    avg_as_string: str
+    sum_as_string: str
+    meta: Mapping[str, Any]
+
+
+class StringRareTermsAggregate(AttrDict[Any]):
+    """
+    Result of the `rare_terms` aggregation when the field is a string.
+
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["StringRareTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "StringRareTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class StringRareTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: str
+    doc_count: int
+
+
+class StringStatsAggregate(AttrDict[Any]):
+    """
+    :arg count: (required)
+    :arg min_length: (required)
+    :arg max_length: (required)
+    :arg avg_length: (required)
+    :arg entropy: (required)
+    :arg distribution:
+    :arg min_length_as_string:
+    :arg max_length_as_string:
+    :arg avg_length_as_string:
+    :arg meta:
+    """
+
+    count: int
+    min_length: Union[int, None]
+    max_length: Union[int, None]
+    avg_length: Union[float, None]
+    entropy: Union[float, None]
+    distribution: Union[Mapping[str, float], None]
+    min_length_as_string: str
+    max_length_as_string: str
+    avg_length_as_string: str
+    meta: Mapping[str, Any]
+
+
+class StringTermsAggregate(AttrDict[Any]):
+    """
+    Result of a `terms` aggregation when the field is a string.
+
+    :arg doc_count_error_upper_bound:
+    :arg sum_other_doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    doc_count_error_upper_bound: int
+    sum_other_doc_count: int
+    buckets: Sequence["StringTermsBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "StringTermsBucket"]:
+        return self.buckets  # type: ignore
+
+
+class StringTermsBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    :arg doc_count_error_upper_bound:
+    """
+
+    key: Union[int, float, str, bool, None, Any]
+    doc_count: int
+    doc_count_error_upper_bound: int
+
+
+class SumAggregate(AttrDict[Any]):
+    """
+    Sum aggregation result. `value` is always present and is zero if there
+    were no values to process.
+
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class TDigestPercentileRanksAggregate(AttrDict[Any]):
+    """
+    :arg values: (required)
+    :arg meta:
+    """
+
+    values: Union[Mapping[str, Union[str, int, None]], Sequence["ArrayPercentilesItem"]]
+    meta: Mapping[str, Any]
+
+
+class TDigestPercentilesAggregate(AttrDict[Any]):
+    """
+    :arg values: (required)
+    :arg meta:
+    """
+
+    values: Union[Mapping[str, Union[str, int, None]], Sequence["ArrayPercentilesItem"]]
+    meta: Mapping[str, Any]
+
+
+class TTestAggregate(AttrDict[Any]):
+    """
+    :arg value: (required)
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class TermSuggest(AttrDict[Any]):
     """
     :arg options: (required)
     :arg length: (required)
@@ -5008,3 +6143,203 @@ class TermSuggestOption(AttrDict[Any]):
     freq: int
     highlighted: str
     collate_match: bool
+
+
+class TimeSeriesAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["TimeSeriesBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "TimeSeriesBucket"]:
+        return self.buckets  # type: ignore
+
+
+class TimeSeriesBucket(AttrDict[Any]):
+    """
+    :arg key: (required)
+    :arg doc_count: (required)
+    """
+
+    key: Mapping[str, Union[int, float, str, bool, None, Any]]
+    doc_count: int
+
+
+class TopHitsAggregate(AttrDict[Any]):
+    """
+    :arg hits: (required)
+    :arg meta:
+    """
+
+    hits: "HitsMetadata"
+    meta: Mapping[str, Any]
+
+
+class TopMetrics(AttrDict[Any]):
+    """
+    :arg sort: (required)
+    :arg metrics: (required)
+    """
+
+    sort: Sequence[Union[Union[int, float, str, bool, None, Any], None]]
+    metrics: Mapping[str, Union[Union[int, float, str, bool, None, Any], None]]
+
+
+class TopMetricsAggregate(AttrDict[Any]):
+    """
+    :arg top: (required)
+    :arg meta:
+    """
+
+    top: Sequence["TopMetrics"]
+    meta: Mapping[str, Any]
+
+
+class TotalHits(AttrDict[Any]):
+    """
+    :arg relation: (required)
+    :arg value: (required)
+    """
+
+    relation: Literal["eq", "gte"]
+    value: int
+
+
+class UnmappedRareTermsAggregate(AttrDict[Any]):
+    """
+    Result of a `rare_terms` aggregation when the field is unmapped.
+    `buckets` is always empty.
+
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence[Any]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, Any]:
+        return self.buckets  # type: ignore
+
+
+class UnmappedSamplerAggregate(AttrDict[Any]):
+    """
+    :arg doc_count: (required)
+    :arg meta:
+    """
+
+    doc_count: int
+    meta: Mapping[str, Any]
+
+
+class UnmappedSignificantTermsAggregate(AttrDict[Any]):
+    """
+    Result of the `significant_terms` aggregation on an unmapped field.
+    `buckets` is always empty.
+
+    :arg bg_count:
+    :arg doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    bg_count: int
+    doc_count: int
+    buckets: Sequence[Any]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, Any]:
+        return self.buckets  # type: ignore
+
+
+class UnmappedTermsAggregate(AttrDict[Any]):
+    """
+    Result of a `terms` aggregation when the field is unmapped. `buckets`
+    is always empty.
+
+    :arg doc_count_error_upper_bound:
+    :arg sum_other_doc_count:
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    doc_count_error_upper_bound: int
+    sum_other_doc_count: int
+    buckets: Sequence[Any]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, Any]:
+        return self.buckets  # type: ignore
+
+
+class ValueCountAggregate(AttrDict[Any]):
+    """
+    Value count aggregation result. `value` is always present.
+
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
+
+
+class VariableWidthHistogramAggregate(AttrDict[Any]):
+    """
+    :arg buckets: (required) the aggregation buckets as a list
+    :arg meta:
+    """
+
+    buckets: Sequence["VariableWidthHistogramBucket"]
+    meta: Mapping[str, Any]
+
+    @property
+    def buckets_as_dict(self) -> Mapping[str, "VariableWidthHistogramBucket"]:
+        return self.buckets  # type: ignore
+
+
+class VariableWidthHistogramBucket(AttrDict[Any]):
+    """
+    :arg min: (required)
+    :arg key: (required)
+    :arg max: (required)
+    :arg doc_count: (required)
+    :arg min_as_string:
+    :arg key_as_string:
+    :arg max_as_string:
+    """
+
+    min: float
+    key: float
+    max: float
+    doc_count: int
+    min_as_string: str
+    key_as_string: str
+    max_as_string: str
+
+
+class WeightedAvgAggregate(AttrDict[Any]):
+    """
+    Weighted average aggregation result. `value` is missing if the weight
+    was set to zero.
+
+    :arg value: (required) The metric value. A missing value generally
+        means that there was no data to aggregate, unless specified
+        otherwise.
+    :arg value_as_string:
+    :arg meta:
+    """
+
+    value: Union[float, None]
+    value_as_string: str
+    meta: Mapping[str, Any]
