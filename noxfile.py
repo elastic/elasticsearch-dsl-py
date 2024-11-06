@@ -34,7 +34,7 @@ SOURCE_FILES = (
         "3.9",
         "3.10",
         "3.11",
-        "3.12",
+        "3.13",
     ]
 )
 def test(session):
@@ -55,7 +55,7 @@ def test(session):
     session.run("pytest", *argv)
 
 
-@nox.session(python="3.12")
+@nox.session(python="3.13")
 def format(session):
     session.install("black~=24.0", "isort", "unasync", "setuptools", ".[develop]")
     session.run("python", "utils/run-unasync.py")
@@ -67,7 +67,7 @@ def format(session):
     lint(session)
 
 
-@nox.session(python="3.12")
+@nox.session(python="3.13")
 def lint(session):
     session.install("flake8", "black~=24.0", "isort", "unasync", "setuptools")
     session.run("black", "--check", "--target-version=py38", *SOURCE_FILES)
