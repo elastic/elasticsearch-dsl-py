@@ -21,6 +21,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    ClassVar,
     Dict,
     Generic,
     List,
@@ -165,7 +166,10 @@ class DocumentOptions:
         #     field8: M[str] = mapped_field(MyCustomText(), default="foo")
         #
         #     # legacy format without Python typing
-        #     field8 = Text()
+        #     field9 = Text()
+        #
+        #     # ignore attributes
+        #     field10: ClassVar[string] = "a regular class variable"
         annotations = attrs.get("__annotations__", {})
         fields = set([n for n in attrs if isinstance(attrs[n], Field)])
         fields.update(annotations.keys())
@@ -178,10 +182,14 @@ class DocumentOptions:
                 # the field has a type annotation, so next we try to figure out
                 # what field type we can use
                 type_ = annotations[name]
+                skip = False
                 required = True
                 multi = False
                 while hasattr(type_, "__origin__"):
-                    if type_.__origin__ == Mapped:
+                    if type_.__origin__ == ClassVar:
+                        skip = True
+                        break
+                    elif type_.__origin__ == Mapped:
                         # M[type] -> extract the wrapped type
                         type_ = type_.__args__[0]
                     elif type_.__origin__ == Union:
@@ -198,6 +206,9 @@ class DocumentOptions:
                         type_ = type_.__args__[0]
                     else:
                         break
+                if skip or type_ == ClassVar:
+                    # skip ClassVar attributes
+                    continue
                 if type(type_) is UnionType:
                     # a union given with the pipe syntax
                     args = get_args(type_)
