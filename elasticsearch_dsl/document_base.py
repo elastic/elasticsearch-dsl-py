@@ -29,8 +29,14 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    get_args,
     overload,
 )
+
+try:
+    from types import UnionType  # type: ignore[attr-defined]
+except ImportError:
+    UnionType = None
 
 from typing_extensions import dataclass_transform
 
@@ -203,6 +209,14 @@ class DocumentOptions:
                 if skip or type_ == ClassVar:
                     # skip ClassVar attributes
                     continue
+                if type(type_) is UnionType:
+                    # a union given with the pipe syntax
+                    args = get_args(type_)
+                    if len(args) == 2 and args[1] is type(None):
+                        required = False
+                        type_ = type_.__args__[0]
+                    else:
+                        raise TypeError("Unsupported union")
                 field = None
                 field_args: List[Any] = []
                 field_kwargs: Dict[str, Any] = {}

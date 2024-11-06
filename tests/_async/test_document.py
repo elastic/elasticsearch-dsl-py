@@ -24,6 +24,7 @@
 import codecs
 import ipaddress
 import pickle
+import sys
 from datetime import datetime
 from hashlib import md5
 from typing import Any, ClassVar, Dict, List, Optional
@@ -789,6 +790,36 @@ def test_doc_with_type_hints() -> None:
         "aggs": {"terms_agg": {"terms": {"field": "k1"}}},
         "sort": ["st", {"dt": {"order": "desc"}}, "ob.st"],
     }
+
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="requires Python 3.10")
+def test_doc_with_pipe_type_hints() -> None:
+    with pytest.raises(TypeError):
+
+        class BadlyTypedDoc(AsyncDocument):
+            s: str
+            f: str | int | None  # type: ignore[syntax]
+
+    class TypedDoc(AsyncDocument):
+        s: str
+        f1: str | None  # type: ignore[syntax]
+        f2: M[int | None]  # type: ignore[syntax]
+        f3: M[datetime | None]  # type: ignore[syntax]
+
+    props = TypedDoc._doc_type.mapping.to_dict()["properties"]
+    assert props == {
+        "s": {"type": "text"},
+        "f1": {"type": "text"},
+        "f2": {"type": "integer"},
+        "f3": {"type": "date"},
+    }
+
+    doc = TypedDoc()
+    with raises(ValidationException) as exc_info:
+        doc.full_clean()
+    assert set(exc_info.value.args[0].keys()) == {"s"}
+    doc.s = "s"
+    doc.full_clean()
 
 
 def test_instrumented_field() -> None:
