@@ -26,7 +26,7 @@ import ipaddress
 import pickle
 from datetime import datetime
 from hashlib import md5
-from typing import Any, Dict, List, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 import pytest
 from pytest import raises
@@ -675,6 +675,8 @@ def test_doc_with_type_hints() -> None:
         s4: M[Optional[Secret]] = mapped_field(
             SecretField(), default_factory=lambda: "foo"
         )
+        i1: ClassVar
+        i2: ClassVar[int]
 
     props = TypedDoc._doc_type.mapping.to_dict()["properties"]
     assert props == {
@@ -708,6 +710,9 @@ def test_doc_with_type_hints() -> None:
         "s4": {"type": "text"},
     }
 
+    TypedDoc.i1 = "foo"
+    TypedDoc.i2 = 123
+
     doc = TypedDoc()
     assert doc.k3 == "foo"
     assert doc.s4 == "foo"
@@ -722,6 +727,9 @@ def test_doc_with_type_hints() -> None:
         "s2",
         "s3",
     }
+
+    assert TypedDoc.i1 == "foo"
+    assert TypedDoc.i2 == 123
 
     doc.st = "s"
     doc.li = [1, 2, 3]
