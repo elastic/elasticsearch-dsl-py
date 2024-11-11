@@ -57,6 +57,7 @@ def main(check=False):
         "AsyncIndexMeta": "IndexMeta",
         "AsyncIndexTemplate": "IndexTemplate",
         "AsyncIndex": "Index",
+        "AsyncNewIndexTemplate": "NewIndexTemplate",
         "AsyncUpdateByQuery": "UpdateByQuery",
         "AsyncMapping": "Mapping",
         "AsyncFacetedSearch": "FacetedSearch",

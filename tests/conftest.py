@@ -122,6 +122,7 @@ class ElasticsearchTestCase(TestCase):
         )
         self.client.indices.delete(index="*", expand_wildcards=expand_wildcards)
         self.client.indices.delete_template(name="*")
+        self.client.indices.delete_index_template(name="*")
 
     def es_version(self) -> Tuple[int, ...]:
         if not hasattr(self, "_es_version"):
@@ -172,6 +173,9 @@ def write_client(client: Elasticsearch) -> Generator[Elasticsearch, None, None]:
     for index_name in client.indices.get(index="test-*", expand_wildcards="all"):
         client.indices.delete(index=index_name)
     client.options(ignore_status=404).indices.delete_template(name="test-template")
+    client.options(ignore_status=404).indices.delete_index_template(
+        name="test-template"
+    )
 
 
 @pytest_asyncio.fixture
