@@ -79,7 +79,14 @@ from .field import (
     construct_field,
 )
 from .function import SF
-from .index import AsyncIndex, AsyncIndexTemplate, Index, IndexTemplate
+from .index import (
+    AsyncIndex,
+    AsyncIndexTemplate,
+    AsyncNewIndexTemplate,
+    Index,
+    IndexTemplate,
+    NewIndexTemplate,
+)
 from .mapping import AsyncMapping, Mapping
 from .query import Q, Query
 from .response import AggResponse, Response, UpdateByQueryResponse
@@ -109,6 +116,7 @@ __all__ = [
     "AsyncIndexTemplate",
     "AsyncMapping",
     "AsyncMultiSearch",
+    "AsyncNewIndexTemplate",
     "AsyncSearch",
     "AsyncUpdateByQuery",
     "AttrDict",
@@ -158,6 +166,7 @@ __all__ = [
     "Murmur3",
     "Nested",
     "NestedFacet",
+    "NewIndexTemplate",
     "Object",
     "Percolator",
     "Q",
