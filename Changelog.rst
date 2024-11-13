@@ -3,6 +3,18 @@
 Changelog
 =========
 
+8.16.0 (2024-11-13)
+-------------------
+
+* Autogenerate parts of the library using documentation and types from the Elasticsearch specification
+    * query classes (`#1890 <https://github.com/elastic/elasticsearch-dsl-py/pull/1890>`_)
+    * aggregation classes (`#1918 <https://github.com/elastic/elasticsearch-dsl-py/pull/1918>`_)
+    * response classes (`#1929 <https://github.com/elastic/elasticsearch-dsl-py/pull/1929>`_ `#1932 <https://github.com/elastic/elasticsearch-dsl-py/pull/1932>`_)
+* Support pipe syntax to declare optional document fields (`#1937 <https://github.com/elastic/elasticsearch-dsl-py/pull/1937>`_)
+* Ignore document attributes typed with ``ClassVar`` (`#1936 <https://github.com/elastic/elasticsearch-dsl-py/pull/1936>`_)
+* Support Python 3.13 (`#1938 <https://github.com/elastic/elasticsearch-dsl-py/pull/1938>`_)
+
+
 8.15.4 (2024-10-07)
 -------------------
 
