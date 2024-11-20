@@ -226,7 +226,7 @@ class Answer(Post):
 
 async def setup() -> None:
     """Create an IndexTemplate and save it into elasticsearch."""
-    index_template = Post._index.as_template("base")
+    index_template = Post._index.as_new_template("base", priority=100)
     await index_template.save()
 
 

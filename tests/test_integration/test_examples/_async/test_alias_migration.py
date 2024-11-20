@@ -28,7 +28,7 @@ async def test_alias_migration(async_write_client: AsyncElasticsearch) -> None:
     await alias_migration.setup()
 
     # verify that template, index, and alias has been set up
-    assert await async_write_client.indices.exists_template(name=ALIAS)
+    assert await async_write_client.indices.exists_index_template(name=ALIAS)
     assert await async_write_client.indices.exists(index=PATTERN)
     assert await async_write_client.indices.exists_alias(name=ALIAS)
 
