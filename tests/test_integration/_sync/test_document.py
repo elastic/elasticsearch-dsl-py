@@ -35,6 +35,7 @@ from elasticsearch_dsl import (
     Binary,
     Boolean,
     Date,
+    DenseVector,
     Document,
     Double,
     InnerDoc,
@@ -789,3 +790,28 @@ def test_bulk(data_client: Elasticsearch) -> None:
         "age": 45,
         "languages": ["es"],
     }
+
+
+@pytest.mark.sync
+def test_dense_vector_quantization(client: Elasticsearch) -> None:
+    class Doc(Document):
+        float_vector: List[float] = mapped_field(DenseVector())
+        byte_vector: List[int] = mapped_field(DenseVector(element_type="byte"))
+        bit_vector: str = mapped_field(DenseVector(element_type="bit"))
+
+        class Index:
+            name = "vectors"
+
+    Doc._index.delete(ignore_unavailable=True)
+    Doc.init()
+
+    doc = Doc(
+        float_vector=[1.0, 1.2, 2.3], byte_vector=[12, 23, 34, 45], bit_vector="12abf0"
+    )
+    doc.save(refresh=True)
+
+    docs = Doc.search().execute()
+    assert len(docs) == 1
+    assert docs[0].float_vector == doc.float_vector
+    assert docs[0].byte_vector == doc.byte_vector
+    assert docs[0].bit_vector == doc.bit_vector
