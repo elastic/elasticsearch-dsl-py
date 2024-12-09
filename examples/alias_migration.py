@@ -44,6 +44,7 @@ from elasticsearch_dsl import Document, Keyword, connections, mapped_field
 
 ALIAS = "test-blog"
 PATTERN = ALIAS + "-*"
+PRIORITY = 100
 
 
 class BlogPost(Document):
@@ -81,7 +82,9 @@ def setup() -> None:
     deploy.
     """
     # create an index template
-    index_template = BlogPost._index.as_template(ALIAS, PATTERN)
+    index_template = BlogPost._index.as_composable_template(
+        ALIAS, PATTERN, priority=PRIORITY
+    )
     # upload the template into elasticsearch
     # potentially overriding the one already there
     index_template.save()

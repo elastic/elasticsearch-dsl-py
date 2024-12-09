@@ -225,7 +225,7 @@ class Answer(Post):
 
 def setup() -> None:
     """Create an IndexTemplate and save it into elasticsearch."""
-    index_template = Post._index.as_template("base")
+    index_template = Post._index.as_composable_template("base", priority=100)
     index_template.save()
 
 
