@@ -16,8 +16,8 @@
 #  under the License.
 
 from ._async.index import (  # noqa: F401
+    AsyncComposableIndexTemplate,
     AsyncIndex,
     AsyncIndexTemplate,
-    AsyncNewIndexTemplate,
 )
-from ._sync.index import Index, IndexTemplate, NewIndexTemplate  # noqa: F401
+from ._sync.index import ComposableIndexTemplate, Index, IndexTemplate  # noqa: F401

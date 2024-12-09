@@ -80,12 +80,12 @@ from .field import (
 )
 from .function import SF
 from .index import (
+    AsyncComposableIndexTemplate,
     AsyncIndex,
     AsyncIndexTemplate,
-    AsyncNewIndexTemplate,
+    ComposableIndexTemplate,
     Index,
     IndexTemplate,
-    NewIndexTemplate,
 )
 from .mapping import AsyncMapping, Mapping
 from .query import Q, Query
@@ -109,6 +109,7 @@ __all__ = [
     "A",
     "Agg",
     "AggResponse",
+    "AsyncComposableIndexTemplate",
     "AsyncDocument",
     "AsyncEmptySearch",
     "AsyncFacetedSearch",
@@ -116,7 +117,6 @@ __all__ = [
     "AsyncIndexTemplate",
     "AsyncMapping",
     "AsyncMultiSearch",
-    "AsyncNewIndexTemplate",
     "AsyncSearch",
     "AsyncUpdateByQuery",
     "AttrDict",
@@ -125,6 +125,7 @@ __all__ = [
     "Boolean",
     "Byte",
     "Completion",
+    "ComposableIndexTemplate",
     "ConstantKeyword",
     "CustomField",
     "Date",
@@ -166,7 +167,6 @@ __all__ = [
     "Murmur3",
     "Nested",
     "NestedFacet",
-    "NewIndexTemplate",
     "Object",
     "Percolator",
     "Q",

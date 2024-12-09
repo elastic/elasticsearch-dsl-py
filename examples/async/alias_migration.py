@@ -83,7 +83,9 @@ async def setup() -> None:
     deploy.
     """
     # create an index template
-    index_template = BlogPost._index.as_new_template(ALIAS, PATTERN, priority=PRIORITY)
+    index_template = BlogPost._index.as_composable_template(
+        ALIAS, PATTERN, priority=PRIORITY
+    )
     # upload the template into elasticsearch
     # potentially overriding the one already there
     await index_template.save()

@@ -19,10 +19,10 @@ import pytest
 from elasticsearch import AsyncElasticsearch
 
 from elasticsearch_dsl import (
+    AsyncComposableIndexTemplate,
     AsyncDocument,
     AsyncIndex,
     AsyncIndexTemplate,
-    AsyncNewIndexTemplate,
     Date,
     Text,
     analysis,
@@ -57,8 +57,10 @@ async def test_index_template_works(async_write_client: AsyncElasticsearch) -> N
 
 
 @pytest.mark.asyncio
-async def test_new_index_template_works(async_write_client: AsyncElasticsearch) -> None:
-    it = AsyncNewIndexTemplate("test-template", "test-*")
+async def test_composable_index_template_works(
+    async_write_client: AsyncElasticsearch,
+) -> None:
+    it = AsyncComposableIndexTemplate("test-template", "test-*")
     it.document(Post)
     it.settings(number_of_replicas=0, number_of_shards=1)
     await it.save()

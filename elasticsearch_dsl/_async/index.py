@@ -73,7 +73,7 @@ class AsyncIndexTemplate:
         )
 
 
-class AsyncNewIndexTemplate:
+class AsyncComposableIndexTemplate:
     def __init__(
         self,
         name: str,
@@ -150,16 +150,16 @@ class AsyncIndex(IndexBase):
             template_name, pattern or self._name, index=self, order=order
         )
 
-    def as_new_template(
+    def as_composable_template(
         self,
         template_name: str,
         pattern: Optional[str] = None,
         priority: Optional[int] = None,
-    ) -> AsyncNewIndexTemplate:
+    ) -> AsyncComposableIndexTemplate:
         # TODO: should we allow pattern to be a top-level arg?
         # or maybe have an IndexPattern that allows for it and have
         # Document._index be that?
-        return AsyncNewIndexTemplate(
+        return AsyncComposableIndexTemplate(
             template_name, pattern or self._name, index=self, priority=priority
         )
 

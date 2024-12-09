@@ -19,11 +19,11 @@ import pytest
 from elasticsearch import Elasticsearch
 
 from elasticsearch_dsl import (
+    ComposableIndexTemplate,
     Date,
     Document,
     Index,
     IndexTemplate,
-    NewIndexTemplate,
     Text,
     analysis,
 )
@@ -57,8 +57,10 @@ def test_index_template_works(write_client: Elasticsearch) -> None:
 
 
 @pytest.mark.sync
-def test_new_index_template_works(write_client: Elasticsearch) -> None:
-    it = NewIndexTemplate("test-template", "test-*")
+def test_composable_index_template_works(
+    write_client: Elasticsearch,
+) -> None:
+    it = ComposableIndexTemplate("test-template", "test-*")
     it.document(Post)
     it.settings(number_of_replicas=0, number_of_shards=1)
     it.save()
