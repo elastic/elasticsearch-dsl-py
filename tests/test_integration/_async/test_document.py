@@ -23,7 +23,7 @@
 
 from datetime import datetime
 from ipaddress import ip_address
-from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, List, Union
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, List, Tuple, Union
 
 import pytest
 from elasticsearch import AsyncElasticsearch, ConflictError, NotFoundError
@@ -37,6 +37,7 @@ from elasticsearch_dsl import (
     Binary,
     Boolean,
     Date,
+    DenseVector,
     Double,
     InnerDoc,
     Ip,
@@ -795,3 +796,57 @@ async def test_bulk(async_data_client: AsyncElasticsearch) -> None:
         "age": 45,
         "languages": ["es"],
     }
+
+
+@pytest.mark.asyncio
+async def test_legacy_dense_vector(
+    async_client: AsyncElasticsearch, es_version: Tuple[int, ...]
+) -> None:
+    if es_version >= (8, 16):
+        pytest.skip("this test is a legacy version for Elasticsearch 8.15 or older")
+
+    class Doc(AsyncDocument):
+        float_vector: List[float] = mapped_field(DenseVector(dims=3))
+
+        class Index:
+            name = "vectors"
+
+    await Doc._index.delete(ignore_unavailable=True)
+    await Doc.init()
+
+    doc = Doc(float_vector=[1.0, 1.2, 2.3])
+    await doc.save(refresh=True)
+
+    docs = await Doc.search().execute()
+    assert len(docs) == 1
+    assert docs[0].float_vector == doc.float_vector
+
+
+@pytest.mark.asyncio
+async def test_dense_vector(
+    async_client: AsyncElasticsearch, es_version: Tuple[int, ...]
+) -> None:
+    if es_version < (8, 16):
+        pytest.skip("this test requires Elasticsearch 8.16 or newer")
+
+    class Doc(AsyncDocument):
+        float_vector: List[float] = mapped_field(DenseVector())
+        byte_vector: List[int] = mapped_field(DenseVector(element_type="byte"))
+        bit_vector: str = mapped_field(DenseVector(element_type="bit"))
+
+        class Index:
+            name = "vectors"
+
+    await Doc._index.delete(ignore_unavailable=True)
+    await Doc.init()
+
+    doc = Doc(
+        float_vector=[1.0, 1.2, 2.3], byte_vector=[12, 23, 34, 45], bit_vector="12abf0"
+    )
+    await doc.save(refresh=True)
+
+    docs = await Doc.search().execute()
+    assert len(docs) == 1
+    assert docs[0].float_vector == doc.float_vector
+    assert docs[0].byte_vector == doc.byte_vector
+    assert docs[0].bit_vector == doc.bit_vector

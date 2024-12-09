@@ -389,12 +389,22 @@ class Float(Field):
         return float(data)
 
 
-class DenseVector(Float):
+class DenseVector(Field):
     name = "dense_vector"
+    _coerce = True
 
     def __init__(self, **kwargs: Any):
-        kwargs["multi"] = True
+        self._element_type = kwargs.get("element_type", "float")
+        if self._element_type in ["float", "byte"]:
+            kwargs["multi"] = True
         super().__init__(**kwargs)
+
+    def _deserialize(self, data: Any) -> Any:
+        if self._element_type == "float":
+            return float(data)
+        elif self._element_type == "byte":
+            return int(data)
+        return data
 
 
 class SparseVector(Field):
