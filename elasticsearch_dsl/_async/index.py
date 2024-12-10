@@ -143,9 +143,6 @@ class AsyncIndex(IndexBase):
         pattern: Optional[str] = None,
         order: Optional[int] = None,
     ) -> AsyncIndexTemplate:
-        # TODO: should we allow pattern to be a top-level arg?
-        # or maybe have an IndexPattern that allows for it and have
-        # Document._index be that?
         return AsyncIndexTemplate(
             template_name, pattern or self._name, index=self, order=order
         )
@@ -156,9 +153,6 @@ class AsyncIndex(IndexBase):
         pattern: Optional[str] = None,
         priority: Optional[int] = None,
     ) -> AsyncComposableIndexTemplate:
-        # TODO: should we allow pattern to be a top-level arg?
-        # or maybe have an IndexPattern that allows for it and have
-        # Document._index be that?
         return AsyncComposableIndexTemplate(
             template_name, pattern or self._name, index=self, priority=priority
         )
