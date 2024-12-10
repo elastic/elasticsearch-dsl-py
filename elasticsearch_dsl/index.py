@@ -15,5 +15,9 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._async.index import AsyncIndex, AsyncIndexTemplate  # noqa: F401
-from ._sync.index import Index, IndexTemplate  # noqa: F401
+from ._async.index import (  # noqa: F401
+    AsyncComposableIndexTemplate,
+    AsyncIndex,
+    AsyncIndexTemplate,
+)
+from ._sync.index import ComposableIndexTemplate, Index, IndexTemplate  # noqa: F401

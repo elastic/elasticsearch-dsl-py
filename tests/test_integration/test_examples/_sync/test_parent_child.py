@@ -44,7 +44,7 @@ nick = User(
 @pytest.fixture
 def question(write_client: Elasticsearch) -> Question:
     setup()
-    assert write_client.indices.exists_template(name="base")
+    assert write_client.indices.exists_index_template(name="base")
 
     # create a question object
     q = Question(

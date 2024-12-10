@@ -79,7 +79,14 @@ from .field import (
     construct_field,
 )
 from .function import SF
-from .index import AsyncIndex, AsyncIndexTemplate, Index, IndexTemplate
+from .index import (
+    AsyncComposableIndexTemplate,
+    AsyncIndex,
+    AsyncIndexTemplate,
+    ComposableIndexTemplate,
+    Index,
+    IndexTemplate,
+)
 from .mapping import AsyncMapping, Mapping
 from .query import Q, Query
 from .response import AggResponse, Response, UpdateByQueryResponse
@@ -102,6 +109,7 @@ __all__ = [
     "A",
     "Agg",
     "AggResponse",
+    "AsyncComposableIndexTemplate",
     "AsyncDocument",
     "AsyncEmptySearch",
     "AsyncFacetedSearch",
@@ -117,6 +125,7 @@ __all__ = [
     "Boolean",
     "Byte",
     "Completion",
+    "ComposableIndexTemplate",
     "ConstantKeyword",
     "CustomField",
     "Date",

@@ -28,7 +28,7 @@ def test_alias_migration(write_client: Elasticsearch) -> None:
     alias_migration.setup()
 
     # verify that template, index, and alias has been set up
-    assert write_client.indices.exists_template(name=ALIAS)
+    assert write_client.indices.exists_index_template(name=ALIAS)
     assert write_client.indices.exists(index=PATTERN)
     assert write_client.indices.exists_alias(name=ALIAS)
 

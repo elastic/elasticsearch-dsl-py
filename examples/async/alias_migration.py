@@ -45,6 +45,7 @@ from elasticsearch_dsl import AsyncDocument, Keyword, async_connections, mapped_
 
 ALIAS = "test-blog"
 PATTERN = ALIAS + "-*"
+PRIORITY = 100
 
 
 class BlogPost(AsyncDocument):
@@ -82,7 +83,9 @@ async def setup() -> None:
     deploy.
     """
     # create an index template
-    index_template = BlogPost._index.as_template(ALIAS, PATTERN)
+    index_template = BlogPost._index.as_composable_template(
+        ALIAS, PATTERN, priority=PRIORITY
+    )
     # upload the template into elasticsearch
     # potentially overriding the one already there
     await index_template.save()

@@ -18,7 +18,15 @@
 import pytest
 from elasticsearch import Elasticsearch
 
-from elasticsearch_dsl import Date, Document, Index, IndexTemplate, Text, analysis
+from elasticsearch_dsl import (
+    ComposableIndexTemplate,
+    Date,
+    Document,
+    Index,
+    IndexTemplate,
+    Text,
+    analysis,
+)
 
 
 class Post(Document):
@@ -28,7 +36,31 @@ class Post(Document):
 
 @pytest.mark.sync
 def test_index_template_works(write_client: Elasticsearch) -> None:
-    it = IndexTemplate("test-template", "test-*")
+    it = IndexTemplate("test-template", "test-legacy-*")
+    it.document(Post)
+    it.settings(number_of_replicas=0, number_of_shards=1)
+    it.save()
+
+    i = Index("test-legacy-blog")
+    i.create()
+
+    assert {
+        "test-legacy-blog": {
+            "mappings": {
+                "properties": {
+                    "title": {"type": "text", "analyzer": "my_analyzer"},
+                    "published_from": {"type": "date"},
+                }
+            }
+        }
+    } == write_client.indices.get_mapping(index="test-legacy-blog")
+
+
+@pytest.mark.sync
+def test_composable_index_template_works(
+    write_client: Elasticsearch,
+) -> None:
+    it = ComposableIndexTemplate("test-template", "test-*")
     it.document(Post)
     it.settings(number_of_replicas=0, number_of_shards=1)
     it.save()

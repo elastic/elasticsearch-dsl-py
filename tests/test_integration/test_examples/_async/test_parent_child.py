@@ -45,7 +45,7 @@ nick = User(
 @pytest_asyncio.fixture
 async def question(async_write_client: AsyncElasticsearch) -> Question:
     await setup()
-    assert await async_write_client.indices.exists_template(name="base")
+    assert await async_write_client.indices.exists_index_template(name="base")
 
     # create a question object
     q = Question(
