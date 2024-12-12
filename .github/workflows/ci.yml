@@ -83,7 +83,7 @@ jobs:
           "3.12",
           "3.13",
         ]
-        es-version: [8.0.0, 8.15.0]
+        es-version: [8.0.0, 8.16.0]
 
     steps:
       - name: Remove irrelevant software to free up disk space
