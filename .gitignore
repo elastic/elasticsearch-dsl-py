@@ -17,3 +17,5 @@ venv
 
 # sample code for GitHub issues
 issues
+.direnv
+.envrc

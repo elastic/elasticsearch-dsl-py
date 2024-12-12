@@ -69,6 +69,43 @@ class IndexTemplate:
         return es.indices.put_template(name=self._template_name, body=self.to_dict())
 
 
+class ComposableIndexTemplate:
+    def __init__(
+        self,
+        name: str,
+        template: str,
+        index: Optional["Index"] = None,
+        priority: Optional[int] = None,
+        **kwargs: Any,
+    ):
+        if index is None:
+            self._index = Index(template, **kwargs)
+        else:
+            if kwargs:
+                raise ValueError(
+                    "You cannot specify options for Index when"
+                    " passing an Index instance."
+                )
+            self._index = index.clone()
+            self._index._name = template
+        self._template_name = name
+        self.priority = priority
+
+    def __getattr__(self, attr_name: str) -> Any:
+        return getattr(self._index, attr_name)
+
+    def to_dict(self) -> Dict[str, Any]:
+        d: Dict[str, Any] = {"template": self._index.to_dict()}
+        d["index_patterns"] = [self._index._name]
+        if self.priority is not None:
+            d["priority"] = self.priority
+        return d
+
+    def save(self, using: Optional[UsingType] = None) -> "ObjectApiResponse[Any]":
+        es = get_connection(using or self._index._using)
+        return es.indices.put_index_template(name=self._template_name, **self.to_dict())
+
+
 class Index(IndexBase):
     _using: UsingType
 
@@ -96,11 +133,18 @@ class Index(IndexBase):
         pattern: Optional[str] = None,
         order: Optional[int] = None,
     ) -> IndexTemplate:
-        # TODO: should we allow pattern to be a top-level arg?
-        # or maybe have an IndexPattern that allows for it and have
-        # Document._index be that?
         return IndexTemplate(
             template_name, pattern or self._name, index=self, order=order
+        )
+
+    def as_composable_template(
+        self,
+        template_name: str,
+        pattern: Optional[str] = None,
+        priority: Optional[int] = None,
+    ) -> ComposableIndexTemplate:
+        return ComposableIndexTemplate(
+            template_name, pattern or self._name, index=self, priority=priority
         )
 
     def load_mappings(self, using: Optional[UsingType] = None) -> None:
