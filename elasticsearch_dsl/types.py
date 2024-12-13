@@ -33,16 +33,16 @@ class AggregationRange(AttrDict[Any]):
     :arg to: End of the range (exclusive).
     """
 
-    from_: Union[float, DefaultType]
+    from_: Union[float, None, DefaultType]
     key: Union[str, DefaultType]
-    to: Union[float, DefaultType]
+    to: Union[float, None, DefaultType]
 
     def __init__(
         self,
         *,
-        from_: Union[float, DefaultType] = DEFAULT,
+        from_: Union[float, None, DefaultType] = DEFAULT,
         key: Union[str, DefaultType] = DEFAULT,
-        to: Union[float, DefaultType] = DEFAULT,
+        to: Union[float, None, DefaultType] = DEFAULT,
         **kwargs: Any,
     ):
         if from_ is not DEFAULT:
@@ -1226,7 +1226,6 @@ class HighlightField(AttrDict[Any]):
     """
     :arg fragment_offset:
     :arg matched_fields:
-    :arg analyzer:
     :arg type:
     :arg boundary_chars: A string that contains each boundary character.
         Defaults to `.,!? \t\n` if omitted.
@@ -1300,7 +1299,6 @@ class HighlightField(AttrDict[Any]):
         Sequence[Union[str, InstrumentedField]],
         DefaultType,
     ]
-    analyzer: Union[str, Dict[str, Any], DefaultType]
     type: Union[Literal["plain", "fvh", "unified"], DefaultType]
     boundary_chars: Union[str, DefaultType]
     boundary_max_scan: Union[int, DefaultType]
@@ -1332,7 +1330,6 @@ class HighlightField(AttrDict[Any]):
             Sequence[Union[str, InstrumentedField]],
             DefaultType,
         ] = DEFAULT,
-        analyzer: Union[str, Dict[str, Any], DefaultType] = DEFAULT,
         type: Union[Literal["plain", "fvh", "unified"], DefaultType] = DEFAULT,
         boundary_chars: Union[str, DefaultType] = DEFAULT,
         boundary_max_scan: Union[int, DefaultType] = DEFAULT,
@@ -1362,8 +1359,6 @@ class HighlightField(AttrDict[Any]):
             kwargs["fragment_offset"] = fragment_offset
         if matched_fields is not DEFAULT:
             kwargs["matched_fields"] = str(matched_fields)
-        if analyzer is not DEFAULT:
-            kwargs["analyzer"] = analyzer
         if type is not DEFAULT:
             kwargs["type"] = type
         if boundary_chars is not DEFAULT:
