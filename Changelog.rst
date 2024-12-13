@@ -3,6 +3,12 @@
 Changelog
 =========
 
+8.17.0 (2024-12-13)
+-------------------
+
+* Added support for quantized dense vector options (`#1948 <https://github.com/elastic/elasticsearch-dsl-py/pull/1948>`_)
+* Added support for composable index templates (`#1943 <https://github.com/elastic/elasticsearch-dsl-py/pull/1943>`_)
+
 8.16.0 (2024-11-13)
 -------------------
 
