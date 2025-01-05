@@ -490,6 +490,10 @@ class GeoPoint(Field):
     name = "geo_point"
 
 
+class Point(Field):
+    name = "point"
+
+
 class GeoShape(Field):
     name = "geo_shape"
 
