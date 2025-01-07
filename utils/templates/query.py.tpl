@@ -174,7 +174,6 @@ class {{ k.name }}({{ parent }}):
            shortcut property. Until the code generator can support shortcut
            properties directly that solution is added here #}
         "filter": {"type": "query"},
-        "functions": {"type": "score_function", "multi": True},
     {% endif %}
     }
     {% endif %}
