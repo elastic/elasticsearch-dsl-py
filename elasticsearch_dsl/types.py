@@ -19,7 +19,7 @@ from typing import Any, Dict, Literal, Mapping, Sequence, Union
 
 from elastic_transport.client_utils import DEFAULT, DefaultType
 
-from elasticsearch_dsl import Query, function
+from elasticsearch_dsl import Query
 from elasticsearch_dsl.document_base import InstrumentedField
 from elasticsearch_dsl.utils import AttrDict
 
@@ -685,74 +685,6 @@ class FrequentItemSetsField(AttrDict[Any]):
             kwargs["exclude"] = exclude
         if include is not DEFAULT:
             kwargs["include"] = include
-        super().__init__(kwargs)
-
-
-class FunctionScoreContainer(AttrDict[Any]):
-    """
-    :arg exp: Function that scores a document with a exponential decay,
-        depending on the distance of a numeric field value of the document
-        from an origin.
-    :arg gauss: Function that scores a document with a normal decay,
-        depending on the distance of a numeric field value of the document
-        from an origin.
-    :arg linear: Function that scores a document with a linear decay,
-        depending on the distance of a numeric field value of the document
-        from an origin.
-    :arg field_value_factor: Function allows you to use a field from a
-        document to influence the score. It’s similar to using the
-        script_score function, however, it avoids the overhead of
-        scripting.
-    :arg random_score: Generates scores that are uniformly distributed
-        from 0 up to but not including 1. In case you want scores to be
-        reproducible, it is possible to provide a `seed` and `field`.
-    :arg script_score: Enables you to wrap another query and customize the
-        scoring of it optionally with a computation derived from other
-        numeric field values in the doc using a script expression.
-    :arg filter:
-    :arg weight:
-    """
-
-    exp: Union[function.DecayFunction, DefaultType]
-    gauss: Union[function.DecayFunction, DefaultType]
-    linear: Union[function.DecayFunction, DefaultType]
-    field_value_factor: Union[function.FieldValueFactorScore, DefaultType]
-    random_score: Union[function.RandomScore, DefaultType]
-    script_score: Union[function.ScriptScore, DefaultType]
-    filter: Union[Query, DefaultType]
-    weight: Union[float, DefaultType]
-
-    def __init__(
-        self,
-        *,
-        exp: Union[function.DecayFunction, DefaultType] = DEFAULT,
-        gauss: Union[function.DecayFunction, DefaultType] = DEFAULT,
-        linear: Union[function.DecayFunction, DefaultType] = DEFAULT,
-        field_value_factor: Union[
-            function.FieldValueFactorScore, DefaultType
-        ] = DEFAULT,
-        random_score: Union[function.RandomScore, DefaultType] = DEFAULT,
-        script_score: Union[function.ScriptScore, DefaultType] = DEFAULT,
-        filter: Union[Query, DefaultType] = DEFAULT,
-        weight: Union[float, DefaultType] = DEFAULT,
-        **kwargs: Any,
-    ):
-        if exp is not DEFAULT:
-            kwargs["exp"] = exp
-        if gauss is not DEFAULT:
-            kwargs["gauss"] = gauss
-        if linear is not DEFAULT:
-            kwargs["linear"] = linear
-        if field_value_factor is not DEFAULT:
-            kwargs["field_value_factor"] = field_value_factor
-        if random_score is not DEFAULT:
-            kwargs["random_score"] = random_score
-        if script_score is not DEFAULT:
-            kwargs["script_score"] = script_score
-        if filter is not DEFAULT:
-            kwargs["filter"] = filter
-        if weight is not DEFAULT:
-            kwargs["weight"] = weight
         super().__init__(kwargs)
 
 
