@@ -562,6 +562,33 @@ def test_function_score_to_dict() -> None:
     assert d == q.to_dict()
 
 
+def test_function_score_class_based_to_dict() -> None:
+    q = query.FunctionScore(
+        query=query.Match(title="python"),
+        functions=[
+            function.RandomScore(),
+            function.FieldValueFactor(
+                field="comment_count",
+                filter=query.Term(tags="python"),
+            ),
+        ],
+    )
+
+    d = {
+        "function_score": {
+            "query": {"match": {"title": "python"}},
+            "functions": [
+                {"random_score": {}},
+                {
+                    "filter": {"term": {"tags": "python"}},
+                    "field_value_factor": {"field": "comment_count"},
+                },
+            ],
+        }
+    }
+    assert d == q.to_dict()
+
+
 def test_function_score_with_single_function() -> None:
     d = {
         "function_score": {
