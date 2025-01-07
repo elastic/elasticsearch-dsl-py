@@ -612,9 +612,9 @@ class FunctionScore(Query):
 
     name = "function_score"
     _param_defs = {
+        "functions": {"type": "score_function", "multi": True},
         "query": {"type": "query"},
         "filter": {"type": "query"},
-        "functions": {"type": "score_function", "multi": True},
     }
 
     def __init__(
@@ -623,11 +623,7 @@ class FunctionScore(Query):
         boost_mode: Union[
             Literal["multiply", "replace", "sum", "avg", "max", "min"], "DefaultType"
         ] = DEFAULT,
-        functions: Union[
-            Sequence["types.FunctionScoreContainer"],
-            Sequence[Dict[str, Any]],
-            "DefaultType",
-        ] = DEFAULT,
+        functions: Union[Sequence[ScoreFunction], "DefaultType"] = DEFAULT,
         max_boost: Union[float, "DefaultType"] = DEFAULT,
         min_score: Union[float, "DefaultType"] = DEFAULT,
         query: Union[Query, "DefaultType"] = DEFAULT,

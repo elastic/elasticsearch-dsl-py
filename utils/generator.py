@@ -201,6 +201,12 @@ class ElasticsearchSchema:
                 # QueryContainer maps to the DSL's Query class
                 return "Query", {"type": "query"}
             elif (
+                type_name["namespace"] == "_types.query_dsl"
+                and type_name["name"] == "FunctionScoreContainer"
+            ):
+                # FunctionScoreContainer maps to the DSL's ScoreFunction class
+                return "ScoreFunction", {"type": "score_function"}
+            elif (
                 type_name["namespace"] == "_types.aggregations"
                 and type_name["name"] == "Buckets"
             ):
