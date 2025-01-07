@@ -486,6 +486,14 @@ class Binary(Field):
         return base64.b64encode(data).decode()
 
 
+class Point(Field):
+    name = "point"
+
+
+class Shape(Field):
+    name = "shape"
+
+
 class GeoPoint(Field):
     name = "geo_point"
 
