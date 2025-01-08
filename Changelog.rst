@@ -3,6 +3,12 @@
 Changelog
 =========
 
+8.17.1 (2025-01-08)
+-------------------
+
+* Added support for the ``point`` and ``shape`` fields (`#1963 <https://github.com/elastic/elasticsearch-dsl-py/pull/1963>`_)
+* Corrected typing hints for the ``FunctionScore`` query (`#1960 <https://github.com/elastic/elasticsearch-dsl-py/pull/1960>`_)
+
 8.17.0 (2024-12-13)
 -------------------
 
