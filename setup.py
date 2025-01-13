@@ -20,7 +20,7 @@ from os.path import dirname, join
 
 from setuptools import find_packages, setup
 
-VERSION = (7, 4, 1)
+VERSION = (7, 4, 1, "rover-prod-py311")
 __version__ = VERSION
 __versionstr__ = ".".join(map(str, VERSION))
 
@@ -76,6 +76,8 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
