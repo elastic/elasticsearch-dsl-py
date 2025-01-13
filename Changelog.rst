@@ -3,6 +3,12 @@
 Changelog
 =========
 
+7.4.1.rover-prod-py311 (2025-01-13)
+------------------
+Rover fork for Python 3.11 support
+ * Update setup.py to require Python 3.11
+
+
 7.4.1 (2023-03-01)
 ------------------
 
