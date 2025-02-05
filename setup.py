@@ -30,7 +30,8 @@ f.close()
 install_requires = [
     "python-dateutil",
     "typing-extensions",
-    "elasticsearch>=8.0.0,<9.0.0",
+    #"elasticsearch>=8.0.0,<9.0.0",
+    "elasticsearch @ https://github.com/elastic/elasticsearch-py/archive/refs/heads/main.zip#egg=elasticsearch",
     "elastic-transport>=8.0.0,<9.0.0",
 ]
 
