@@ -19,11 +19,10 @@ import sys
 
 from elasticsearch import __version__, dsl  # noqa: F401
 
-VERSION = __version__
-__versionstr__ = ".".join(map(str, VERSION))
-
 modules = [mod for mod in sys.modules.keys() if mod.startswith("elasticsearch.dsl")]
 for mod in modules:
     sys.modules[mod.replace("elasticsearch.dsl", "elasticsearch_dsl")] = sys.modules[
         mod
     ]
+sys.modules["elasticsearch_dsl"].VERSION = __version__
+sys.modules["elasticsearch_dsl"].__versionstr__ = ".".join(map(str, __version__))
