@@ -20,7 +20,7 @@ Elasticsearch DSL
    use the following links:
 
    - `8.x releases starting with 8.18.0 <https://www.elastic.co/guide/en/elasticsearch/client/python-api/8.18/elasticsearch-dsl.html>`_
-   - `9.x releases <https://www.elastic.co/docs/reference/elasticsearch-py/elasticsearch-dsl>`_
+   - `9.x releases <https://www.elastic.co/docs/reference/elasticsearch/clients/python/elasticsearch-dsl>`_
 
 Elasticsearch DSL is a high-level library whose aim is to help with writing and
 running queries against Elasticsearch. It is built on top of the official
