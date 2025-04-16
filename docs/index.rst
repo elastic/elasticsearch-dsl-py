@@ -1,6 +1,27 @@
 Elasticsearch DSL
 =================
 
+.. note::
+
+   As of release 8.18.0, the Elasticsearch DSL package is part of the official
+   `Elasticsearch Python client <https://github.com/elastic/elasticsearch-py>`_,
+   so a separate install is not needed anymore. To migrate, follow these steps:
+
+   - Uninstall the ``elasticsearch-dsl`` package
+   - Make sure you have version 8.18.0 or newer of the ``elasticsearch`` package
+     installed
+   - Replace ``elasticsearch_dsl`` with ``elasticsearch.dsl`` in your imports
+
+   To prevent applications from breaking unexpectedly due to this change, the
+   8.18.0 release of the ``elasticsearch-dsl`` package automatically redirects
+   all imports to the corresponding modules of the Python client package.
+
+   This documentation site applies to releases before 8.18.0. For newer releases
+   use the following links:
+
+   - `8.x releases starting with 8.18.0 <https://www.elastic.co/guide/en/elasticsearch/client/python-api/8.18/elasticsearch-dsl.html>`_
+   - `9.x releases <https://www.elastic.co/docs/reference/elasticsearch/clients/python/elasticsearch-dsl>`_
+
 Elasticsearch DSL is a high-level library whose aim is to help with writing and
 running queries against Elasticsearch. It is built on top of the official
 low-level client (`elasticsearch-py <https://github.com/elastic/elasticsearch-py>`_).
