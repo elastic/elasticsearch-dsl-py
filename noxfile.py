@@ -40,6 +40,7 @@ SOURCE_FILES = (
 )
 def test(session):
     session.install(".[develop]")
+    session.install("elasticsearch<9")  # tests run against 8.x servers
 
     if session.posargs:
         argv = session.posargs
