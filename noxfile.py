@@ -58,9 +58,7 @@ def test(session):
 
 @nox.session(python="3.13")
 def format(session):
-    session.install("black~=24.0", "isort", "unasync", "setuptools", ".[develop]")
-    session.run("python", "utils/run-unasync.py")
-    session.run("python", "utils/generator.py", env={"PYTHONPATH": "./"})
+    session.install("black~=24.0", "isort", "setuptools", ".[develop]")
     session.run("black", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
@@ -70,30 +68,17 @@ def format(session):
 
 @nox.session(python="3.13")
 def lint(session):
-    session.install("flake8", "black~=24.0", "isort", "unasync", "setuptools")
+    session.install("flake8", "black~=24.0", "isort", "setuptools")
     session.run("black", "--check", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", "--check", *SOURCE_FILES)
-    session.run("python", "utils/run-unasync.py", "--check")
     session.run("flake8", "--ignore=E501,E741,W503,E704", *SOURCE_FILES)
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
 
 
 @nox.session(python="3.8")
 def type_check(session):
-    session.install(".[develop]")
-    session.run(
-        "mypy",
-        "--strict",
-        "--implicit-reexport",
-        "--explicit-package-bases",
-        "elasticsearch_dsl",
-        "tests",
-        "examples",
-    )
-    session.run(
-        "pyright",
-        "examples",
-    )
+    # type checking is done by the unified client now
+    pass
 
 
 @nox.session()
