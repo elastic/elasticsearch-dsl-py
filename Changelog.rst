@@ -3,6 +3,11 @@
 Changelog
 =========
 
+8.18.0 (2025-04-16)
+-------------------
+
+* This package has been added to the `Elasticsearch Python client <https://github.com/elastic/elasticsearch-py>`_. Development continues there. (`#1972 <https://github.com/elastic/elasticsearch-dsl-py/pull/1972>`_)
+
 8.17.1 (2025-01-08)
 -------------------
 
